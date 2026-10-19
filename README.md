@@ -4,12 +4,12 @@
 
 # VahanaIQ
 
-**VahanaIQ** is a Sri Lankan vehicle lease calculator and affordability discovery platform. It aligns directly with Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026.
+**VahanaIQ** is a Sri Lankan vehicle lease calculator and affordability discovery platform. Its down-payment rules follow Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026, clause 2.1.
 
 🔗 **Live Public App:** [https://akila-w.github.io/vahanaiq/](https://akila-w.github.io/vahanaiq/)
 
 ## Features
-- **CBSL Regulatory Engine:** 50% down payment cap on unregistered passenger cars, 84-month tenure limit, 40%/50% DTI ceilings, and statutory LTV warnings.
+- **CBSL Regulatory Engine:** 60% minimum down payment (40% maximum LTV) for brand new, reconditioned and recently registered cars, 40% minimum for cars registered over a year, an 84-month tenure cap, 40%/50% DTI ceilings, and LTV warnings.
 - **Smart Multi-Input AI Extraction:** Analyzes vehicle names, comparative queries, raw classified ad text (Ikman, Riyasewana, Patpat, FB Marketplace), or uploaded/clipboard screenshots of Japanese auction sheets.
 - **Zero-Touch Studio Photos:** Automatically resolves studio car press photos via local catalog, Wikipedia REST API, and Wikimedia Commons, normalising them onto 8:5 pure white studio plates.
 - **One-Click Batch Add & Discovery:** Compare multiple vehicles side-by-side or add all trim levels for any model year in a single click.

@@ -1,4 +1,4 @@
-import { fmt, esc, num, computeLeaseTable } from "./calculator.js?v=2.6.1";
+import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.6.1";
 import { baseVehicles } from "./catalog.js?v=2.6.1";
 import { normalizeImageToStudio } from "./canvas-utils.js?v=2.6.1";
 import { searchVehicle } from "./gemini.js?v=2.6.1";
@@ -161,8 +161,8 @@ function render() {
     const fillCol = r.status === "bad" ? "var(--bad)" : r.status === "mid" ? "var(--mid)" : "var(--accent)";
     const condLabel = r.cond === "Used" ? "Registered Used" : r.cond === "Recond" ? "Reconditioned" : "Brand New";
     const isUnreg = (r.cond || "New") !== "Used";
-    const showLtvWarn = s.down < 50 && isUnreg;
-    const ltvWarnBadge = showLtvWarn ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026 mandates min. 50% down payment for unregistered & reconditioned vehicles (current down payment: ${s.down}%)">⚠️ &lt;50% down</span>` : "";
+    const showLtvWarn = s.down < DOWN_MIN_UNREG && isUnreg;
+    const ltvWarnBadge = showLtvWarn ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least 60% down (current down payment: ${s.down}%)">⚠️ &lt;60% down</span>` : "";
     
     return `<tr>
 <td class="name"><div class="car">${r.img ? `<img src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy" onerror="this.onerror=null;this.outerHTML='<div class=\\'ph\\'><svg width=\\'22\\' height=\\'22\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' style=\\'opacity:0.55\\'><rect width=\\'18\\' height=\\'18\\' x=\\'3\\' y=\\'3\\' rx=\\'3\\'/><path d=\\'m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9\\'/><path d=\\'M14 21v-4a2 2 0 0 0-4 0v4\\'/></svg><span>No photo</span></div>';">` : '<div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span></div>'}<div><b>${esc(r.name)}</b><small>${esc(r.pt || "")}${r.km ? " · " + esc(r.km) : ""}</small><div class="warr">${r.w === "Official" ? "Official warranty" : "Grey market"}<span class="cond-tag clickable-cond" data-idx="${r._idx}" title="Click to cycle condition (Brand New ⇄ Reconditioned ⇄ Registered Used)">${condLabel} <span class="cycle-icon" aria-hidden="true">⇄</span></span>${ltvWarnBadge}${r.custom ? ` · <button class="link" type="button" data-del="${r._idx}" aria-label="Remove ${esc(r.name)}">remove</button>` : ""}</div></div></div></td>

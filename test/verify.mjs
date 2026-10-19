@@ -162,7 +162,7 @@ const domElements = {
 // Initial default input values
 domElements.rate.value = "16";
 domElements.tenure.value = "84";
-domElements.down.value = "50";
+domElements.down.value = "60";
 domElements.income.value = "";
 domElements.debt.value = "0";
 domElements.dti.value = "0.4";
@@ -222,16 +222,16 @@ domElements.income.value = "";
 let s = getSettings();
 assert.equal(s.rate, 16);
 assert.equal(s.n, 84);
-assert.equal(s.down, 50);
+assert.equal(s.down, 60);
 assert.equal(s.income, 0);
 assert.equal(domElements.tenureHint.textContent, "Maximum 84");
-assert.equal(domElements.downHint.textContent, "Minimum 50% for unregistered cars");
+assert.match(domElements.downHint.textContent, /^Minimum 40%.*need 60%/);
 
-// 1b: Clamping down payment < 30%
+// 1b: Clamping down payment below the 40% CBSL floor (cl. 2.1, registered over a year)
 domElements.down.value = "10";
 s = getSettings();
-assert.equal(s.down, 30, "Down payment < 30 should clamp to 30");
-assert.equal(domElements.downHint.textContent, "Clamped to 30% minimum down payment");
+assert.equal(s.down, 40, "Down payment < 40 should clamp to 40");
+assert.equal(domElements.downHint.textContent, "Raised to the 40% minimum down payment");
 assert.match(domElements.downHint.className, /warn/);
 
 // 1c: Clamping tenure < 6 months
