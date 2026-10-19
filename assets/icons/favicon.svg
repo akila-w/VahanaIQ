@@ -1,6 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <!-- VahanaIQ Option 1A Apex Monogram (Clean Transparent Vector) -->
-  <path d="M12 22 H33 L48 82 H31 Z" fill="#0F766E"/>
-  <path d="M52 82 H69 L88 22 H70 L50 72 Z" fill="#2DD4BF"/>
-  <circle cx="88" cy="11" r="7.5" fill="#5EEAD4"/>
+  <style>
+    .v-left { fill: #0F766E; }
+    .v-right { fill: #2DD4BF; }
+    .v-spark { fill: #5EEAD4; }
+    @media (prefers-color-scheme: dark) {
+      .v-left { fill: #2DD4BF; }
+      .v-right { fill: #5EEAD4; }
+      .v-spark { fill: #A7F3D0; }
+    }
+  </style>
+  <path class="v-left" d="M12 22 H33 L48 82 H31 Z"/>
+  <path class="v-right" d="M52 82 H69 L88 22 H70 L50 72 Z"/>
+  <circle class="v-spark" cx="88" cy="11" r="7.5"/>
 </svg>
