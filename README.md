@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icons/logo-full-lockup.svg" alt="VahanaIQ Logo" width="360">
+</p>
+
 # VahanaIQ
 
 **VahanaIQ** is a Sri Lankan vehicle lease calculator and affordability discovery platform. It aligns directly with Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026.
@@ -17,8 +21,10 @@
 ```
 vahanaiq/
 ├── index.html            # Main web application entry point
-├── manifest.json         # PWA Manifest
+├── manifest.json         # PWA Manifest (multi-size maskable icons)
 ├── README.md             # Project documentation
+├── docs/
+│   └── brand-guide.md    # Brand identity, design system & typography specs
 ├── css/
 │   └── style.css         # Modern responsive styles & dark/light theme
 ├── js/
@@ -30,8 +36,11 @@ vahanaiq/
 │   └── storage.js        # LocalStorage persistence & magic link handler
 └── assets/
     ├── icons/
-    │   └── favicon.svg   # Vector brand icon
-    └── images/           # High-resolution studio press photos (12 vehicles)
+    │   ├── favicon.svg                       # 64x64 Vector brand icon & favicon
+    │   ├── logo-option-1-apex.svg            # 120x120 Standalone brand mark
+    │   ├── logo-option-1-apex-transparent.svg# Clean vector mark (transparent)
+    │   └── logo-full-lockup.svg              # Full brand lockup & social preview
+    └── images/                               # High-resolution studio press photos (12 vehicles)
 ```
 
 ## Running Locally

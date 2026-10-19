@@ -8,9 +8,16 @@
   "theme_color": "#0f766e",
   "icons": [
     {
-      "src": "assets/icons/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "assets/icons/favicon.svg?v=2",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/logo-option-1-apex.svg",
+      "sizes": "120x120 192x192 512x512 any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
