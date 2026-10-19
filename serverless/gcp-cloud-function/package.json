@@ -1,0 +1,9 @@
+{
+  "name": "vahanaiq-vehicle-search",
+  "version": "1.0.0",
+  "description": "VahanaIQ vehicle search serverless proxy for Google Cloud Functions",
+  "main": "index.js",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.0"
+  }
+}
