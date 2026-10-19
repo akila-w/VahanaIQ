@@ -1,9 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-  <rect width="120" height="120" fill="#0F172A"/>
-  <g transform="translate(60, 60) scale(1.22) translate(-63, -50)">
-    <path d="M26 34 L43 34 L57 82 L42 82 Z" fill="#0F766E"/>
-    <path d="M63 82 L77 82 L94 34 L78 34 L60 72 Z" fill="#2DD4BF"/>
-    <path d="M50 82 L60 52 L70 82 Z" fill="#0F172A"/>
-    <circle cx="94" cy="24" r="6.5" fill="#5EEAD4"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <style>
+    :root {
+      --left: #2DD4BF;
+      --right: #5EEAD4;
+      --spark: #A7F3D0;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --left: #0F766E;
+        --right: #0D9488;
+        --spark: #14B8A6;
+      }
+    }
+    .v-left { fill: var(--left); }
+    .v-right { fill: var(--right); }
+    .v-spark { fill: var(--spark); }
+  </style>
+  <g transform="translate(60, 60) scale(1.25) translate(-63, -50)">
+    <path class="v-left" d="M26 34 L43 34 L57 82 L42 82 Z"/>
+    <path class="v-right" d="M63 82 L77 82 L94 34 L78 34 L60 72 Z"/>
+    <circle class="v-spark" cx="94" cy="24" r="6.5"/>
   </g>
 </svg>
