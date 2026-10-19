@@ -1,9 +1,9 @@
-import { fmt, esc, num, computeLeaseTable } from "./calculator.js?v=2.6.0";
-import { baseVehicles } from "./catalog.js?v=2.6.0";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.6.0";
-import { discoverActiveModel, searchVehicleWithGemini } from "./gemini.js?v=2.6.0";
-import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.6.0";
-import { getApiKey, getProxyUrl, setApiKey, removeApiKey, initMagicLink, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.6.0";
+import { fmt, esc, num, computeLeaseTable } from "./calculator.js?v=2.6.1";
+import { baseVehicles } from "./catalog.js?v=2.6.1";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.6.1";
+import { discoverActiveModel, searchVehicleWithGemini } from "./gemini.js?v=2.6.1";
+import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.6.1";
+import { getApiKey, getProxyUrl, setApiKey, removeApiKey, initMagicLink, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.6.1";
 
 // Force purge any legacy cached model entry holding 3.8 flash
 if (typeof localStorage !== "undefined" && localStorage.getItem("sl_lease_gemini_model")?.includes("gemini-3.8-flash")) {

@@ -1,5 +1,5 @@
 // Storage & Magic Link Importer
-import { config } from "./config.js?v=2.6.0";
+import { config } from "./config.js?v=2.6.1";
 
 export const getApiKey = () => localStorage.getItem("sl_lease_gemini_key") || config.apiKey || "";
 export const setApiKey = k => localStorage.setItem("sl_lease_gemini_key", k.trim());

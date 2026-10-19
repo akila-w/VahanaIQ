@@ -1,5 +1,5 @@
 // Google AI Studio API: Model Discovery, OpenAPI Schema Enforcement, and Sri Lankan Automotive Analysis
-import { getProxyUrl, getApiKey } from "./storage.js?v=2.6.0";
+import { getProxyUrl, getApiKey } from "./storage.js?v=2.6.1";
 
 const PREFERRED_MODEL_VERSION = "2.5";
 
