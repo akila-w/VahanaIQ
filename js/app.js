@@ -116,7 +116,7 @@ function render() {
   if (rateHint && !fieldError("rate")) {
     rateHint.className = "hint";
     if (s.income > 200000 && s.rate === 16) {
-      rateHint.innerHTML = `<button type="button" id="applyPrefRateBtn" style="color:var(--accent);font-weight:600;cursor:pointer;background:none;border:none;padding:0;font:inherit">You earn over Rs. 200,000 — click to apply 15% preferential rate</button>`;
+      rateHint.innerHTML = `<button type="button" class="hint-btn" id="applyPrefRateBtn">Earning over Rs. 200,000? Apply the 15% preferential rate</button>`;
       $("applyPrefRateBtn").onclick = () => {
         $("rate").value = "15";
         render();
@@ -164,6 +164,9 @@ function render() {
 
   $("sort").value = [...$("sort").options].some(o => o.value === sortKey + "|" + sortDir) ? sortKey + "|" + sortDir : "";
 
+  updateFilterCount();
+  updateBudgetExtras(s, f, room, rows);
+
   const maxRent = Math.max(1, ...rows.map(r => r.rental));
   const scale = s.income ? Math.max(room, maxRent) : maxRent;
   const labels = { ok: "Comfortable", mid: "Stretching", bad: "Out of reach", na: "" };
@@ -172,18 +175,22 @@ function render() {
 
   $("rows").innerHTML = list.map(r => {
     const w = Math.min(100, r.rental / scale * 100);
-    const mk = s.income ? `<span class="mark" style="left:${Math.min(100, room / scale * 100)}%" title="Your highest rental"></span>` : "";
+    const mk = `<span class="mark" style="left:${Math.min(100, room / scale * 100)}%" title="Your highest affordable rental"></span>`;
     const fillCol = r.status === "bad" ? "var(--bad)" : r.status === "mid" ? "var(--mid)" : "var(--accent)";
     const cl = condLabel(r.cond);
     const isUnreg = (r.cond || "New") !== "Used";
     const ltvWarnBadge = s.down < DOWN_MIN_UNREG && isUnreg ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least 60% down (current down payment: ${s.down}%)">⚠️ &lt;60% down</span>` : "";
     const img = r.img ? `<img src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy">` : NO_PHOTO;
 
+    const spec = [r.pt, r.km].filter(Boolean).map(t => `<span class="spec">${esc(t)}</span>`).join(" · ");
+    const bar = s.income
+      ? `<div class="track" role="img" aria-label="Rental Rs. ${fmt(r.rental)} against your highest affordable rental of Rs. ${fmt(room)}"><span class="fill" style="width:${w}%;background:${fillCol}"></span>${mk}</div>`
+      : `<span class="na bar-empty">Add income to compare</span>`;
     return `<tr data-key="${r._key}">
-<td class="name"><div class="car">${img}<div><b>${esc(r.name)}</b><small>${esc(r.pt || "")}${r.km ? " · " + esc(r.km) : ""}</small><div class="warr">${r.w === "Official" ? "Official warranty" : "Grey market"}<button type="button" class="cond-tag" data-act="cond" data-key="${r._key}" aria-label="Change condition, currently ${cl}" title="Change condition (Brand New, Reconditioned, Registered Used)">${cl} <span class="cycle-icon" aria-hidden="true">⇄</span></button>${ltvWarnBadge}<span class="row-actions">${rowActions(r)}</span></div></div></div></td>
+<td class="name"><div class="car">${img}<div><b>${esc(r.name)}</b><small>${spec}</small><div class="warr">${r.w === "Official" ? "Official warranty" : "Grey market"}<button type="button" class="cond-tag" data-act="cond" data-key="${r._key}" aria-label="Change condition, currently ${cl}" title="Change condition (Brand New, Reconditioned, Registered Used)">${cl} <span class="cycle-icon" aria-hidden="true">⇄</span></button>${ltvWarnBadge}<span class="row-actions">${rowActions(r)}</span></div></div></div></td>
 <td class="n price-cell" data-label="Price (Rs.)"><span class="price-wrap"><span class="price-val">${fmt(r.price)}</span><button type="button" class="icon-btn edit-price" data-act="price" data-key="${r._key}" aria-label="Edit price, ${esc(r.name)}" title="Edit price">✎</button></span></td>
 <td class="n" data-label="Monthly rental (Rs.)"><b>${fmt(r.rental)}</b></td>
-<td data-label="Share of your budget"><div class="track" role="img" aria-label="Rental is ${Math.round(w)}% of the scale"><span class="fill" style="width:${w}%;background:${fillCol}"></span>${mk}</div></td>
+<td data-label="Share of your budget">${bar}</td>
 <td class="n" data-label="Total interest (Rs.)">${fmt(r.interest)}</td>
 <td class="n" data-label="Total outlay (Rs.)">${fmt(r.total)}</td>
 <td class="n" data-label="Income needed (Rs.)">${fmt(r.need)}</td>
@@ -200,6 +207,69 @@ function render() {
   }
 
   saveState(currentState());
+}
+
+// Mobile "Filters & sort" toggle shows how many filters are active
+const FILTER_DEFAULTS = { warr: "all", condFilter: "all", maxprice: "", afford: "all" };
+function updateFilterCount() {
+  const n = Object.entries(FILTER_DEFAULTS).filter(([id, def]) => $(id) && String($(id).value).trim() !== def).length;
+  $("filtersCount").textContent = n ? `(${n})` : "";
+  $("filtersCount").hidden = !n;
+  $("filtersToggle").setAttribute("aria-label", n ? `Filters and sort, ${n} active` : "Filters and sort");
+}
+
+$("filtersToggle").addEventListener("click", () => {
+  const open = $("filtersToggle").getAttribute("aria-expanded") !== "true";
+  $("filtersToggle").setAttribute("aria-expanded", String(open));
+  $("toolsPanel").classList.toggle("collapsed", !open);
+});
+
+// Budget legend, sticky mobile summary and the debounced screen-reader sentence
+let liveTimer = null;
+let budgetBarText = "";
+function updateBudgetExtras(s, f, room, rows) {
+  const limit = Math.round(s.dti * 100);
+  const legend = $("budgetLegend");
+  legend.hidden = !s.income;
+  if (s.income) {
+    legend.innerHTML = `<span><span class="legend-tick" aria-hidden="true"></span>Tick: your highest affordable rental (${limit}% of income${s.debt ? ", after existing payments" : ""})</span>
+<span><span class="tag ok">Comfortable</span> rental plus existing payments up to 40% of income</span>
+<span><span class="tag mid">Stretching</span> over 40%, up to 50%</span>
+<span><span class="tag bad">Out of reach</span> over 50%</span>`;
+  }
+
+  let sentence = "", bar = "";
+  if (!s.income) {
+    sentence = `Monthly rental is Rs. ${fmt(1e6 * f * (1 - s.down / 100))} for every Rs. 1 million of price.`;
+  } else if (s.down >= 100) {
+    sentence = "100% cash purchase, no lease rental.";
+  } else if (room <= 0) {
+    sentence = bar = `Your existing payments already use up your ${limit}% limit. No room for a lease rental.`;
+  } else {
+    const maxPrice = room / f / (1 - s.down / 100);
+    const ok = rows.filter(r => r.rental <= room).length;
+    sentence = `Highest monthly rental Rs. ${fmt(room)}. Highest vehicle price Rs. ${fmt(maxPrice)}. ${ok} of ${rows.length} vehicles fit your budget.`;
+    bar = `Max rental Rs. ${fmt(room)} · Max price Rs. ${(maxPrice / 1e6).toFixed(1)}M`;
+  }
+  budgetBarText = bar;
+  $("budgetBar").textContent = bar;
+  syncBudgetBar();
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => { $("budgetLive").textContent = sentence; }, 500);
+}
+
+// The bar shows once the budget panel has scrolled out of view
+function syncBudgetBar() {
+  const panel = $("budgetPanel");
+  const box = panel.getBoundingClientRect ? panel.getBoundingClientRect() : null;
+  const panelVisible = !box || (box.bottom > 0 && box.top < window.innerHeight);
+  const show = !!budgetBarText && !panelVisible;
+  $("budgetBar").hidden = !show;
+  if (document.body && document.body.classList) document.body.classList.toggle("has-budget-bar", show);
+}
+if (typeof window.addEventListener === "function") {
+  window.addEventListener("scroll", syncBudgetBar, { passive: true });
+  window.addEventListener("resize", syncBudgetBar);
 }
 
 // Current input values for saving and sharing (invalid fields are skipped)
@@ -405,15 +475,27 @@ $("paneManual").addEventListener("keydown", e => {
   }
 });
 
-function selectTab(which) {
+function selectTab(which, focus) {
   const ai = which === "ai";
-  $("tabAiBtn").classList.toggle("active", ai);
-  $("tabManualBtn").classList.toggle("active", !ai);
+  [["tabAiBtn", ai], ["tabManualBtn", !ai]].forEach(([id, on]) => {
+    $(id).classList.toggle("active", on);
+    $(id).setAttribute("aria-selected", String(on));
+    $(id).setAttribute("tabindex", on ? "0" : "-1");
+  });
   $("paneAi").hidden = !ai;
   $("paneManual").hidden = ai;
+  if (focus) $(ai ? "tabAiBtn" : "tabManualBtn").focus();
 }
 $("tabAiBtn").addEventListener("click", () => selectTab("ai"));
 $("tabManualBtn").addEventListener("click", () => selectTab("manual"));
+// Arrow keys, Home and End move between the two tabs
+$("tabAiBtn").parentNode.addEventListener("keydown", e => {
+  const keys = { ArrowLeft: 1, ArrowRight: 1, Home: "ai", End: "manual" };
+  if (!(e.key in keys)) return;
+  e.preventDefault();
+  const next = keys[e.key] === 1 ? ($("tabAiBtn").getAttribute("aria-selected") === "true" ? "manual" : "ai") : keys[e.key];
+  selectTab(next, true);
+});
 
 // Classified Ad / Auction Sheet Screenshot Upload & Clipboard Paste
 function setAttachedAdImage(file) {
@@ -634,8 +716,8 @@ function setAiImgPreview(src) {
   let existingPh = previewBox.querySelector(".pimg-ph");
 
   if (!currentAiImgSrc) {
-    preview.src = "";
-    preview.style.display = "none";
+    preview.removeAttribute("src");
+    preview.hidden = true;
     if (!existingPh) {
       existingPh = document.createElement("div");
       existingPh.className = "ph pimg-ph";
@@ -646,7 +728,7 @@ function setAiImgPreview(src) {
     existingPh.style.display = "flex";
   } else {
     if (existingPh) existingPh.style.display = "none";
-    preview.style.display = "block";
+    preview.hidden = false;
     preview.src = currentAiImgSrc;
   }
 }
@@ -756,7 +838,7 @@ function renderDiscoveryChecklist(vehicles) {
     const condLabel = v.condition === "Used" ? "Registered Used" : v.condition === "Recond" ? "Reconditioned" : "Brand New";
     return `<label class="discovery-item selected" data-i="${i}">
       <input type="checkbox" class="disc-check" data-idx="${i}" checked style="width:auto">
-      <img class="discovery-thumb" id="discThumb${i}" src="" alt="${esc(title)}">
+      <img class="discovery-thumb" id="discThumb${i}" alt="${esc(title)}" hidden>
       <div style="flex:1">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
           <b>${esc(title)}</b>
@@ -780,7 +862,7 @@ function renderDiscoveryChecklist(vehicles) {
       const imgEl = $(`discThumb${i}`);
       if (imgEl && imgUrl) {
         normalizeImageToStudio(imgUrl, normalized => {
-          if (imgEl) imgEl.src = normalized || imgUrl;
+          if (imgEl) { imgEl.src = normalized || imgUrl; imgEl.hidden = false; }
         });
       }
     } catch (e) {}

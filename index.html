@@ -56,22 +56,22 @@
         <input id="tenure" type="number" min="6" max="84" step="1" value="84" inputmode="numeric" aria-describedby="tenureHint">
         <div class="hint" id="tenureHint">Maximum 84</div>
       </div>
-      <div>
+      <div class="span-2">
         <label for="down">Down payment (% of price)</label>
         <input id="down" type="number" min="40" max="100" step="1" value="60" inputmode="numeric" aria-describedby="downHint">
         <div class="hint" id="downHint">Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%; they're flagged ⚠️ below that.</div>
       </div>
-      <div>
+      <div class="span-2">
         <label for="income">Net monthly income (Rs.)</label>
         <input id="income" type="text" placeholder="Optional" inputmode="numeric" autocomplete="off" aria-describedby="incomeHint">
         <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
       </div>
-      <div>
+      <div class="span-2">
         <label for="debt">Existing monthly loan and card payments (Rs.)</label>
         <input id="debt" type="text" value="0" inputmode="numeric" autocomplete="off" aria-describedby="debtHint">
         <div class="hint" id="debtHint">Total per month; 0 if none</div>
       </div>
-      <div>
+      <div class="span-2">
         <label for="dti">Debt-to-income limit</label>
         <select id="dti">
           <option value="0.4">40% (comfortable)</option>
@@ -81,17 +81,19 @@
     </div>
   </section>
 
-  <section class="panel" aria-live="polite" aria-labelledby="h-sum">
+  <section class="panel" id="budgetPanel" aria-labelledby="h-sum">
     <h2 id="h-sum">Your budget</h2>
     <div class="summary" id="summary"></div>
+    <p class="sr-only" id="budgetLive" role="status"></p>
   </section>
 
   <section class="panel" aria-labelledby="h-list">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <h2 id="h-list" style="margin:0" tabindex="-1">Vehicles</h2>
+    <div class="panel-head">
+      <h2 id="h-list" tabindex="-1">Vehicles</h2>
       <span id="resetCatalogWrap" hidden><button class="link-btn" id="resetCatalogBtn" type="button">Reset to original 12 vehicles</button></span>
     </div>
-    <div class="tools">
+    <button class="btn-outline filters-toggle" id="filtersToggle" type="button" aria-expanded="false" aria-controls="toolsPanel">Filters &amp; sort <span class="count" id="filtersCount" hidden></span></button>
+    <div class="tools collapsed" id="toolsPanel">
       <div>
         <label for="sort">Sort by</label>
         <select id="sort">
@@ -140,6 +142,7 @@
         </select>
       </div>
     </div>
+    <div class="legend" id="budgetLegend" hidden></div>
     <div class="wrap">
       <table>
         <thead><tr id="head"></tr></thead>
@@ -152,6 +155,8 @@
   <p class="foot">Rentals use the standard amortisation formula with monthly compounding. Insurance, registration, fuel, servicing, processing fees and early settlement charges are not included. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). This is not financial advice.</p>
 </main>
 
+<div class="budget-bar" id="budgetBar" aria-hidden="true" hidden></div>
+
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <!-- AI SEARCH & ADD VEHICLE MODAL -->
@@ -162,15 +167,15 @@
       <button class="close-btn" id="closeAiModalBtn" type="button" aria-label="Close">&times;</button>
     </div>
 
-    <div class="tabs">
-      <button class="tab active" id="tabAiBtn" type="button">✨ Search with Gemini AI</button>
-      <button class="tab" id="tabManualBtn" type="button">Quick Manual Entry</button>
+    <div class="tabs" role="tablist" aria-label="How to add a vehicle">
+      <button class="tab active" id="tabAiBtn" type="button" role="tab" aria-selected="true" aria-controls="paneAi">✨ Search with Gemini AI</button>
+      <button class="tab" id="tabManualBtn" type="button" role="tab" aria-selected="false" aria-controls="paneManual" tabindex="-1">Quick Manual Entry</button>
     </div>
 
     <!-- AI SEARCH PANE -->
-    <div id="paneAi">
+    <div id="paneAi" role="tabpanel" aria-labelledby="tabAiBtn">
       <div class="ai-search-bar">
-        <textarea id="aiSearchQuery" rows="2" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." aria-label="Search vehicle with Gemini AI or paste advertisement"></textarea>
+        <textarea id="aiSearchQuery" rows="3" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." aria-label="Search vehicle with Gemini AI or paste advertisement"></textarea>
         <div class="ai-search-actions">
           <button class="btn" id="aiSearchBtn" type="button" style="white-space:nowrap">✨ Search</button>
           <label class="btn-outline btn-sm" id="aiUploadAdBtn" style="cursor:pointer;white-space:nowrap;margin:0" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
@@ -183,6 +188,7 @@
         <span id="aiAttachedAdLabel">📷 Ad / Auction sheet screenshot attached</span>
         <button type="button" class="link" id="aiRemoveAdImgBtn" style="font-size:0.8rem">Remove</button>
       </div>
+      <p class="hint ai-note">Search runs through VahanaIQ's server using Google Gemini. Prices are estimates; check them before relying on them.</p>
       <div id="aiSearchMsg" class="hint" style="min-height:18px;margin-bottom:8px"></div>
 
       <!-- DISCOVERY / COMPARATIVE CHECKLIST BOX -->
@@ -244,7 +250,7 @@
         <div>
           <label>Vehicle Studio Photo (Front 3/4 view on white plate)</label>
           <div class="preview-box">
-            <img class="pimg" id="aiImgPreview" src="" alt="Preview">
+            <img class="pimg" id="aiImgPreview" alt="Preview of the vehicle photo" hidden>
             <div>
               <input id="aiImgUrl" type="url" placeholder="Studio image URL..." aria-label="Studio photo image URL" style="font-size:0.82rem;margin-bottom:6px">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -267,7 +273,7 @@
     </div>
 
     <!-- QUICK MANUAL PANE -->
-    <div id="paneManual" hidden>
+    <div id="paneManual" role="tabpanel" aria-labelledby="tabManualBtn" hidden>
       <div class="grid" style="margin-bottom:12px">
         <div style="grid-column:span 2"><label for="mName">Vehicle Name &amp; Trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
         <div><label for="mPrice">Price in LKR</label><input id="mPrice" type="text" placeholder="e.g. 18,500,000" inputmode="numeric" autocomplete="off"></div>

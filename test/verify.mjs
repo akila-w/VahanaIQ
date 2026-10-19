@@ -56,6 +56,7 @@ class MockElement {
   querySelector() { return null; }
   querySelectorAll() { return []; }
   insertBefore() {}
+  get parentNode() { return this; }
   setAttribute(k, v) { this[k] = v; }
   removeAttribute(k) { delete this[k]; }
   getAttribute(k) { return this[k] || null; }
@@ -163,7 +164,14 @@ const domElements = {
   debtHint: new MockElement("debtHint"),
   maxpriceHint: new MockElement("maxpriceHint"),
   "h-list": new MockElement("h-list"),
-  toast: new MockElement("toast")
+  toast: new MockElement("toast"),
+  filtersToggle: new MockElement("filtersToggle", "BUTTON"),
+  filtersCount: new MockElement("filtersCount"),
+  toolsPanel: new MockElement("toolsPanel"),
+  budgetLegend: new MockElement("budgetLegend"),
+  budgetLive: new MockElement("budgetLive"),
+  budgetBar: new MockElement("budgetBar"),
+  budgetPanel: new MockElement("budgetPanel")
 };
 
 // Initial default input values
