@@ -38,18 +38,48 @@ Determine:
 4. Suggested studio_photo_url: A clean official studio press photograph URL of the vehicle (front-left 3/4 view on white background).`;
 
   try {
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `${systemPrompt}\n\n${promptText}` }] }],
-        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
-      })
-    });
+    const candidateModels = [
+      "models/gemini-3.8-flash",
+      "models/gemini-2.5-flash",
+      "models/gemini-2.0-flash",
+      "models/gemini-1.5-flash"
+    ];
 
-    if (!geminiRes.ok) {
-      const err = await geminiRes.json().catch(() => ({}));
-      res.status(geminiRes.status).json({ error: err.error?.message || `HTTP ${geminiRes.status}` });
+    let geminiRes = null;
+    let lastErr = "";
+
+    for (const model of candidateModels) {
+      try {
+        const attempt = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: `${systemPrompt}\n\n${promptText}` }] }],
+            generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+          })
+        });
+
+        if (attempt.ok) {
+          geminiRes = attempt;
+          break;
+        } else {
+          const errJson = await attempt.json().catch(() => ({}));
+          lastErr = errJson.error?.message || `HTTP ${attempt.status}`;
+          // If model is sunset or invalid for this key, continue to next candidate
+          if (lastErr.includes("no longer available") || attempt.status === 404 || attempt.status === 400) {
+            continue;
+          }
+          // If rate limited or other error, break and return
+          geminiRes = attempt;
+          break;
+        }
+      } catch (err) {
+        lastErr = err.message;
+      }
+    }
+
+    if (!geminiRes || !geminiRes.ok) {
+      res.status(geminiRes ? geminiRes.status : 500).json({ error: lastErr || "Failed to reach Gemini API" });
       return;
     }
 

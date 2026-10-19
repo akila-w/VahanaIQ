@@ -62,19 +62,47 @@ Determine:
 3. For each trim: trim_name, powertrain (e.g. 1.5L Strong HEV, 1.0L Turbo), real-world Sri Lankan fuel_economy_kml (e.g. 24-28 km/l), warranty_type ("Official" or "Grey"), and condition_prices (object with keys: "brand_new", "recond", "used_low", "used_med" containing price in Sri Lankan Rupees LKR).
 4. Suggested studio_photo_url: A clean official studio press photograph URL of the vehicle (front-left 3/4 view on white background).`;
 
-      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: `${systemPrompt}\n\n${promptText}` }] }],
-          generationConfig: { temperature: 0.2, responseMimeType: "application/json" }
-        })
-      });
+      const candidateModels = [
+        "models/gemini-3.8-flash",
+        "models/gemini-2.5-flash",
+        "models/gemini-2.0-flash",
+        "models/gemini-1.5-flash"
+      ];
 
-      if (!geminiRes.ok) {
-        const errJson = await geminiRes.json().catch(() => ({}));
-        return new Response(JSON.stringify({ error: errJson.error?.message || `Gemini API error ${geminiRes.status}` }), {
-          status: geminiRes.status,
+      let geminiRes = null;
+      let lastErr = "";
+
+      for (const model of candidateModels) {
+        try {
+          const attempt = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `${systemPrompt}\n\n${promptText}` }] }],
+              generationConfig: { temperature: 0.2, responseMimeType: "application/json" }
+            })
+          });
+
+          if (attempt.ok) {
+            geminiRes = attempt;
+            break;
+          } else {
+            const errJson = await attempt.json().catch(() => ({}));
+            lastErr = errJson.error?.message || `Gemini API error ${attempt.status}`;
+            if (lastErr.includes("no longer available") || attempt.status === 404 || attempt.status === 400) {
+              continue;
+            }
+            geminiRes = attempt;
+            break;
+          }
+        } catch (err) {
+          lastErr = err.message;
+        }
+      }
+
+      if (!geminiRes || !geminiRes.ok) {
+        return new Response(JSON.stringify({ error: lastErr || "Failed to reach Gemini API" }), {
+          status: geminiRes ? geminiRes.status : 500,
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
         });
       }
