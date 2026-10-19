@@ -181,8 +181,8 @@
     </div>
 
     <div class="tabs" role="tablist" aria-label="How to add a vehicle">
-      <button class="tab active" id="tabAiBtn" type="button" role="tab" aria-selected="true" aria-controls="paneAi">✨ Search with Gemini AI</button>
-      <button class="tab" id="tabManualBtn" type="button" role="tab" aria-selected="false" aria-controls="paneManual" tabindex="-1">Quick Manual Entry</button>
+      <button class="tab active" id="tabAiBtn" type="button" role="tab" aria-selected="true" aria-controls="paneAi">✨ Search with AI</button>
+      <button class="tab" id="tabManualBtn" type="button" role="tab" aria-selected="false" aria-controls="paneManual" tabindex="-1">Enter manually</button>
     </div>
 
     <!-- AI SEARCH PANE -->
@@ -191,9 +191,9 @@
         <textarea id="aiSearchQuery" rows="3" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." aria-label="Search vehicle with Gemini AI or paste advertisement"></textarea>
         <div class="ai-search-actions">
           <button class="btn" id="aiSearchBtn" type="button" style="white-space:nowrap">✨ Search</button>
-          <label class="btn-outline btn-sm" id="aiUploadAdBtn" style="cursor:pointer;white-space:nowrap;margin:0" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
+          <label class="btn-outline btn-sm file-btn" id="aiUploadAdBtn" style="white-space:nowrap;margin:0" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
             📷 Ad / Sheet
-            <input id="aiAdFile" type="file" accept="image/*" style="display:none">
+            <input id="aiAdFile" class="sr-only" type="file" accept="image/*">
           </label>
         </div>
       </div>
@@ -244,7 +244,7 @@
 
         <div class="grid" style="margin-bottom:12px">
           <div>
-            <label for="aiPriceInput">Price in LKR <small style="color:var(--accent);cursor:pointer" id="aiResetPriceBtn" title="Reset to AI estimate">↺ reset</small></label>
+            <label for="aiPriceInput">Price in LKR <button type="button" class="link-btn" id="aiResetPriceBtn" aria-label="Reset price to the AI estimate">↺ reset</button></label>
             <input id="aiPriceInput" type="text" inputmode="numeric" autocomplete="off">
           </div>
           <div>
@@ -267,9 +267,9 @@
             <div>
               <input id="aiImgUrl" type="url" placeholder="Studio image URL..." aria-label="Studio photo image URL" style="font-size:0.82rem;margin-bottom:6px">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <label class="btn-outline btn-sm" style="cursor:pointer;margin:0">
+                <label class="btn-outline btn-sm file-btn" style="margin:0">
                   📁 Upload photo
-                  <input id="aiImgFile" type="file" accept="image/*" style="display:none">
+                  <input id="aiImgFile" class="sr-only" type="file" accept="image/*">
                 </label>
                 <span class="hint" style="margin:0">Automatically centred on 8:5 white studio plate</span>
               </div>

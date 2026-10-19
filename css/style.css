@@ -13,6 +13,8 @@
   --on-accent: #ffffff;
   --badge-bg: #ccfbf1;
   --badge-ink: #115e59;
+  --ok-ink: #047857;
+  --mid-ink: #92400e;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -34,6 +36,8 @@
     --on-accent: #0f172a;
     --badge-bg: #134e4a;
     --badge-ink: #99f6e4;
+    --ok-ink: #34d399;
+    --mid-ink: #fbbf24;
   }
 }
 
@@ -41,6 +45,8 @@
   --on-accent: #ffffff;
   --badge-bg: #ccfbf1;
   --badge-ink: #115e59;
+  --ok-ink: #047857;
+  --mid-ink: #92400e;
   --bg: #f8fafc;
   --panel: #ffffff;
   --ink: #0f172a;
@@ -58,6 +64,8 @@
   --on-accent: #0f172a;
   --badge-bg: #134e4a;
   --badge-ink: #99f6e4;
+  --ok-ink: #34d399;
+  --mid-ink: #fbbf24;
   --bg: #0b1120;
   --panel: #0f172a;
   --ink: #f1f5f9;
@@ -484,8 +492,9 @@ th.n {
   font-weight: 500;
 }
 
-.ok { color: var(--ok); }
-.mid { color: var(--mid); }
+/* Text uses the -ink tokens (darker in light theme for 4.5:1); bar fills keep the brand colours */
+.ok { color: var(--ok-ink); }
+.mid { color: var(--mid-ink); }
 .bad { color: var(--bad); }
 .na { color: var(--mute); }
 .warr { font-size: 0.8125rem; color: var(--mute); }
@@ -571,6 +580,29 @@ button.link-btn {
 button.link-btn:focus-visible, h2[tabindex]:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+label.file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+label.file-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+label.file-btn:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .stat-wide {
@@ -805,6 +837,7 @@ body.modal-open {
   color: var(--mute);
   border-bottom: 2px solid transparent;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .tab:focus-visible, .close-btn:focus-visible {
@@ -855,7 +888,7 @@ body.modal-open {
 
 .badge-grey {
   background: rgba(183, 121, 31, 0.15);
-  color: var(--mid);
+  color: var(--mid-ink);
 }
 
 .preview-box {
@@ -903,7 +936,7 @@ body.modal-open {
   font-size: 0.8125rem;
   font-weight: 600;
   background: rgba(217, 119, 6, 0.15);
-  color: var(--mid);
+  color: var(--mid-ink);
   margin-left: 4px;
   vertical-align: middle;
 }
