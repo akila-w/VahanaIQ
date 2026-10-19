@@ -57,6 +57,7 @@ class MockElement {
   querySelectorAll() { return []; }
   insertBefore() {}
   setAttribute(k, v) { this[k] = v; }
+  removeAttribute(k) { delete this[k]; }
   getAttribute(k) { return this[k] || null; }
 }
 
@@ -156,7 +157,13 @@ const domElements = {
   mPt: new MockElement("mPt", "INPUT"),
   mImgUrl: new MockElement("mImgUrl", "INPUT"),
   mAddBtn: new MockElement("mAddBtn", "BUTTON"),
-  mErr: new MockElement("mErr")
+  mErr: new MockElement("mErr"),
+  resetInputsBtn: new MockElement("resetInputsBtn", "BUTTON"),
+  incomeHint: new MockElement("incomeHint"),
+  debtHint: new MockElement("debtHint"),
+  maxpriceHint: new MockElement("maxpriceHint"),
+  "h-list": new MockElement("h-list"),
+  toast: new MockElement("toast")
 };
 
 // Initial default input values

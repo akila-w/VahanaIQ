@@ -41,31 +41,35 @@
   </div>
 
   <section class="panel" aria-labelledby="h-terms">
-    <h2 id="h-terms">Loan terms and your income</h2>
+    <div class="panel-head">
+      <h2 id="h-terms">Loan terms and your income</h2>
+      <button class="link-btn" id="resetInputsBtn" type="button">Reset inputs</button>
+    </div>
     <div class="grid terms-grid">
       <div>
         <label for="rate">Interest rate (% p.a.)</label>
-        <input id="rate" type="number" min="0" max="40" step="0.1" value="16" inputmode="decimal">
+        <input id="rate" type="number" min="0" max="40" step="0.1" value="16" inputmode="decimal" aria-describedby="rateHint">
         <div class="hint" id="rateHint">15% may apply if you earn over Rs. 200,000</div>
       </div>
       <div>
         <label for="tenure">Tenure (months)</label>
-        <input id="tenure" type="number" min="6" max="84" step="1" value="84" inputmode="numeric">
+        <input id="tenure" type="number" min="6" max="84" step="1" value="84" inputmode="numeric" aria-describedby="tenureHint">
         <div class="hint" id="tenureHint">Maximum 84</div>
       </div>
       <div>
         <label for="down">Down payment (% of price)</label>
-        <input id="down" type="number" min="40" max="100" step="1" value="60" inputmode="numeric">
+        <input id="down" type="number" min="40" max="100" step="1" value="60" inputmode="numeric" aria-describedby="downHint">
         <div class="hint" id="downHint">Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%; they're flagged ⚠️ below that.</div>
       </div>
       <div>
         <label for="income">Net monthly income (Rs.)</label>
-        <input id="income" type="number" min="0" step="1000" placeholder="Optional" inputmode="numeric">
-        <div class="hint">Leave empty to skip the affordability check</div>
+        <input id="income" type="text" placeholder="Optional" inputmode="numeric" autocomplete="off" aria-describedby="incomeHint">
+        <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
       </div>
       <div>
         <label for="debt">Existing monthly loan and card payments (Rs.)</label>
-        <input id="debt" type="number" min="0" step="1000" value="0" inputmode="numeric">
+        <input id="debt" type="text" value="0" inputmode="numeric" autocomplete="off" aria-describedby="debtHint">
+        <div class="hint" id="debtHint">Total per month; 0 if none</div>
       </div>
       <div>
         <label for="dti">Debt-to-income limit</label>
@@ -84,8 +88,8 @@
 
   <section class="panel" aria-labelledby="h-list">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <h2 id="h-list" style="margin:0">Vehicles</h2>
-      <span id="resetCatalogWrap" hidden><button class="link" id="resetCatalogBtn" type="button">Reset to original 12 vehicles</button></span>
+      <h2 id="h-list" style="margin:0" tabindex="-1">Vehicles</h2>
+      <span id="resetCatalogWrap" hidden><button class="link-btn" id="resetCatalogBtn" type="button">Reset to original 12 vehicles</button></span>
     </div>
     <div class="tools">
       <div>
@@ -125,7 +129,8 @@
       </div>
       <div>
         <label for="maxprice">Maximum price (Rs. million)</label>
-        <input id="maxprice" type="number" min="0" step="0.5" placeholder="No limit" inputmode="decimal">
+        <input id="maxprice" type="number" min="0" step="0.5" placeholder="No limit" inputmode="decimal" aria-describedby="maxpriceHint">
+        <div class="hint" id="maxpriceHint">Leave empty for no limit</div>
       </div>
       <div>
         <label for="afford">Show</label>
@@ -146,6 +151,8 @@
 
   <p class="foot">Rentals use the standard amortisation formula with monthly compounding. Insurance, registration, fuel, servicing, processing fees and early settlement charges are not included. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). This is not financial advice.</p>
 </main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <!-- AI SEARCH & ADD VEHICLE MODAL -->
 <div class="modal-bg" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aititle" inert>
@@ -219,7 +226,7 @@
         <div class="grid" style="margin-bottom:12px">
           <div>
             <label for="aiPriceInput">Price in LKR <small style="color:var(--accent);cursor:pointer" id="aiResetPriceBtn" title="Reset to AI estimate">↺ reset</small></label>
-            <input id="aiPriceInput" type="number" min="0" step="50000" inputmode="numeric">
+            <input id="aiPriceInput" type="text" inputmode="numeric" autocomplete="off">
           </div>
           <div>
             <label for="aiWarrSelect">Warranty</label>
@@ -263,7 +270,7 @@
     <div id="paneManual" hidden>
       <div class="grid" style="margin-bottom:12px">
         <div style="grid-column:span 2"><label for="mName">Vehicle Name &amp; Trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
-        <div><label for="mPrice">Price in LKR</label><input id="mPrice" type="number" min="0" step="50000" placeholder="e.g. 18500000" inputmode="numeric"></div>
+        <div><label for="mPrice">Price in LKR</label><input id="mPrice" type="text" placeholder="e.g. 18,500,000" inputmode="numeric" autocomplete="off"></div>
         <div><label for="mCond">Condition</label><select id="mCond"><option value="New">Brand New</option><option value="Recond">Reconditioned</option><option value="Used">Registered Used</option></select></div>
         <div><label for="mWarr">Warranty</label><select id="mWarr"><option value="Grey">Grey market</option><option value="Official">Official</option></select></div>
         <div><label for="mPt">Powertrain / Fuel</label><input id="mPt" type="text" placeholder="e.g. 2.0L Petrol"></div>

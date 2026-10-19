@@ -6,7 +6,7 @@
 export const DOWN_MIN = 40;          // lowest down payment any car can have (registered over a year)
 export const DOWN_MIN_UNREG = 60;    // brand new, reconditioned and recently registered cars
 
-export const fmt = n => Math.round(n).toLocaleString("en-LK");
+export const fmt = n => (Math.round(n) || 0).toLocaleString("en-LK"); // "|| 0" turns -0 into 0
 export const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const num = id => {
   const el = typeof id === "string" ? document.getElementById(id) : id;
@@ -77,8 +77,8 @@ export function getSettings() {
   return { rate, n, down, income: income > 0 ? income : 0, debt, dti };
 }
 
-export function computeLeaseTable(cars) {
-  const s = getSettings();
+export function computeLeaseTable(cars, settings = getSettings()) {
+  const s = settings;
   const f = rental(1, s.rate, s.n);
   const rows = cars.map((c, idx) => {
     let loan, dp, rent, interest, total, need;

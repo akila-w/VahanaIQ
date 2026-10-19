@@ -39,7 +39,7 @@ export function loadSavedCars(base) {
 
 export function saveCars(cars) {
   try {
-    const custom = cars.filter(c => c.custom);
+    const custom = cars.filter(c => c.custom).map(({ _key, ...c }) => c);
     localStorage.setItem("sl_lease_custom_cars_v2", JSON.stringify(custom));
   } catch (e) {
     console.error("Failed to save custom cars", e);

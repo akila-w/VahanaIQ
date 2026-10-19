@@ -356,6 +356,9 @@ th.n {
 
 .cond-tag {
   display: inline-block;
+  font: inherit;
+  border: 1px solid transparent;
+  cursor: pointer;
   padding: 1px 6px;
   border-radius: 4px;
   font-size: 0.72rem;
@@ -425,6 +428,121 @@ button.link {
 
 button.link:focus-visible {
   outline: 2px solid var(--accent);
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.panel-head h2 {
+  margin: 0;
+}
+
+button.link-btn {
+  all: unset;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+button.link-btn:focus-visible, h2[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.stat-wide {
+  grid-column: 1 / -1;
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+button.row-btn {
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: 2px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button.row-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+button.row-btn.danger {
+  color: var(--bad);
+  border-color: currentColor;
+}
+
+button.icon-btn {
+  font: inherit;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--mute);
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1.2;
+}
+
+button.icon-btn:hover {
+  color: var(--accent);
+  border-color: var(--line);
+}
+
+.price-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translate(-50%, 200%);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--panel);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.toast:empty {
+  padding: 0;
+  box-shadow: none;
+}
+
+.toast.show {
+  transform: translate(-50%, 0);
+}
+
+.toast button.btn-outline {
+  background: transparent;
+  color: var(--panel);
+  border-color: var(--panel);
 }
 
 .foot {
@@ -616,13 +734,7 @@ body.modal-open {
   vertical-align: middle;
 }
 
-.clickable-cond {
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.15s ease;
-}
-
-.clickable-cond:hover {
+button.cond-tag:hover {
   filter: brightness(1.15);
   outline: 1px dashed var(--accent);
 }
@@ -633,32 +745,6 @@ body.modal-open {
   margin-left: 3px;
   display: inline-block;
   vertical-align: baseline;
-}
-
-.price-cell {
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-
-.price-cell:hover {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.edit-icon {
-  font-size: 0.78rem;
-  opacity: 0.45;
-  margin-left: 4px;
-  display: inline-block;
-  vertical-align: baseline;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-}
-
-.price-cell:hover .edit-icon {
-  opacity: 1;
-  color: var(--accent);
-  transform: scale(1.15);
 }
 
 .inline-price-input {
@@ -798,12 +884,16 @@ body.modal-open {
   .tools,
   #resetCatalogWrap,
   .modal-bg,
-  .edit-icon,
   .cycle-icon,
   .hint,
   .link,
-  button {
+  .toast,
+  button:not(.cond-tag) {
     display: none !important;
+  }
+
+  button.cond-tag {
+    border: 0 !important;
   }
 
   /* Paper-friendly panels and header */
