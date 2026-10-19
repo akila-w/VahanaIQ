@@ -1,24 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
-  <style>
-    :root {
-      --left: #2DD4BF;
-      --right: #5EEAD4;
-      --spark: #A7F3D0;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --left: #0F766E;
-        --right: #0D9488;
-        --spark: #14B8A6;
-      }
-    }
-    .v-left { fill: var(--left); }
-    .v-right { fill: var(--right); }
-    .v-spark { fill: var(--spark); }
-  </style>
-  <g transform="translate(60, 60) scale(1.25) translate(-63, -50)">
-    <path class="v-left" d="M26 34 L43 34 L57 82 L42 82 Z"/>
-    <path class="v-right" d="M63 82 L77 82 L94 34 L78 34 L60 72 Z"/>
-    <circle class="v-spark" cx="94" cy="24" r="6.5"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="fav-l" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#04433B"/>
+    </linearGradient>
+    <linearGradient id="fav-r" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+    <linearGradient id="fav-dot" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5EEAD4"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0F172A"/>
+  <path d="M14 20 H25 L33 52 H22 Z" fill="url(#fav-l)"/>
+  <path d="M37 52 H48 L59 20 H48 L35 46 Z" fill="url(#fav-r)"/>
+  <circle cx="58" cy="13" r="4.2" fill="url(#fav-dot)"/>
 </svg>
