@@ -21,17 +21,44 @@ export function getSettings() {
   let down = num("down");
   if (!(down >= 0)) down = 50;
   
+  const rawN = num("tenure");
+  const rawDown = num("down");
+
   const nCap = n > 84;
-  n = Math.min(84, Math.max(1, Math.round(n)));
+  const nLow = isFinite(rawN) && rawN < 6;
+  n = Math.min(84, Math.max(6, Math.round(n)));
+  
+  const downLow = isFinite(rawDown) && rawDown < 30;
   down = Math.min(100, Math.max(30, down));
 
   const tenureHint = document.getElementById("tenureHint");
   const downHint = document.getElementById("downHint");
   
-  tenureHint.textContent = nCap ? "Capped at the 84-month maximum" : "Maximum 84";
-  tenureHint.className = "hint" + (nCap ? " warn" : "");
-  downHint.textContent = down < 50 ? "Lower than 50% down (applicable for registered used vehicles)" : "Minimum 50% for unregistered cars";
-  downHint.className = "hint";
+  if (tenureHint) {
+    if (nCap) {
+      tenureHint.textContent = "Capped at the 84-month maximum";
+      tenureHint.className = "hint warn";
+    } else if (nLow) {
+      tenureHint.textContent = "Minimum 6 months";
+      tenureHint.className = "hint warn";
+    } else {
+      tenureHint.textContent = "Maximum 84";
+      tenureHint.className = "hint";
+    }
+  }
+
+  if (downHint) {
+    if (downLow) {
+      downHint.textContent = "Clamped to 30% minimum down payment";
+      downHint.className = "hint warn";
+    } else if (down < 50) {
+      downHint.textContent = "Lower than 50% down (applicable for registered used vehicles)";
+      downHint.className = "hint";
+    } else {
+      downHint.textContent = "Minimum 50% for unregistered cars";
+      downHint.className = "hint";
+    }
+  }
 
   const income = num("income");
   const debt = Math.max(0, num("debt") || 0);
@@ -43,19 +70,29 @@ export function getSettings() {
 export function computeLeaseTable(cars) {
   const s = getSettings();
   const f = rental(1, s.rate, s.n);
-  const rows = cars.map(c => {
-    const loan = c.price * (1 - s.down / 100);
-    const dp = c.price - loan;
-    const rent = loan * f;
-    const interest = rent * s.n - loan;
-    const total = dp + rent * s.n;
-    const need = (rent + s.debt) / s.dti;
+  const rows = cars.map((c, idx) => {
+    let loan, dp, rent, interest, total, need;
+    if (s.down >= 100) {
+      loan = 0;
+      dp = c.price;
+      rent = 0;
+      interest = 0;
+      total = c.price;
+      need = s.debt / s.dti;
+    } else {
+      loan = c.price * (1 - s.down / 100);
+      dp = c.price - loan;
+      rent = loan * f;
+      interest = rent * s.n - loan;
+      total = dp + rent * s.n;
+      need = (rent + s.debt) / s.dti;
+    }
     let status = "na";
     if (s.income) {
       const load = (rent + s.debt) / s.income;
       status = load <= 0.4 ? "ok" : load <= 0.5 ? "mid" : "bad";
     }
-    return Object.assign({}, c, { loan, dp, rental: rent, interest, total, need, status });
+    return Object.assign({}, c, { _idx: idx, loan, dp, rental: rent, interest, total, need, status });
   });
 
   const room = s.income ? Math.max(0, s.income * s.dti - s.debt) : 0;

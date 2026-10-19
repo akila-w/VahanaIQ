@@ -1,5 +1,5 @@
 // Storage & Magic Link Importer
-import { config } from "./config.js?v=2.5.1";
+import { config } from "./config.js?v=2.6.0";
 
 export const getApiKey = () => localStorage.getItem("sl_lease_gemini_key") || config.apiKey || "";
 export const setApiKey = k => localStorage.setItem("sl_lease_gemini_key", k.trim());
@@ -21,13 +21,25 @@ export function initMagicLink() {
   }
 }
 
+export function cloneBaseCars(base) {
+  return base.map((c, i) => Object.assign({}, c, { _baseId: i, custom: false }));
+}
+
 export function loadSavedCars(base) {
-  let list = base.slice();
+  let list = cloneBaseCars(base);
   try {
     const saved = localStorage.getItem("sl_lease_custom_cars_v2");
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) list = list.concat(parsed);
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) {
+          if (typeof item._baseId === "number" && list[item._baseId]) {
+            list[item._baseId] = Object.assign({}, list[item._baseId], item, { custom: true });
+          } else {
+            list.push(Object.assign({}, item, { custom: true }));
+          }
+        }
+      }
     }
   } catch (e) {
     console.error("Failed to load custom cars", e);

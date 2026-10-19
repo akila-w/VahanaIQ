@@ -1,5 +1,108 @@
 const functions = require('@google-cloud/functions-framework');
 
+const VEHICLE_RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    is_available_in_sri_lanka: { type: 'BOOLEAN' },
+    is_multi_vehicle: {
+      type: 'BOOLEAN',
+      description: 'Set to true if user asked to compare multiple vehicles or find best vehicles in a budget'
+    },
+    discovered_vehicles: {
+      type: 'ARRAY',
+      description: 'List of discovered or compared vehicles when is_multi_vehicle is true',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          model_name: { type: 'STRING' },
+          year: { type: 'INTEGER' },
+          trim_name: { type: 'STRING' },
+          powertrain: { type: 'STRING' },
+          fuel_economy_kml: { type: 'STRING' },
+          condition: { type: 'STRING', enum: ['New', 'Recond', 'Used'] },
+          warranty_type: { type: 'STRING', enum: ['Official', 'Grey'] },
+          price_lkr: { type: 'INTEGER' },
+          wikipedia_slug: { type: 'STRING' }
+        },
+        required: ['model_name', 'year', 'trim_name', 'powertrain', 'condition', 'warranty_type', 'price_lkr']
+      }
+    },
+    model_name: {
+      type: 'STRING',
+      description: 'Canonical make + model without year, e.g. Toyota Yaris Cross'
+    },
+    wikipedia_slug: {
+      type: 'STRING',
+      description: 'Canonical English Wikipedia page title for image lookup, e.g. Toyota_Yaris_Cross'
+    },
+    availability_notes: { type: 'STRING' },
+    import_route: {
+      type: 'STRING',
+      enum: ['Official Agent', 'Grey Import', 'Registered Fleet']
+    },
+    seller_price_lkr: {
+      type: 'INTEGER',
+      description: 'Seller asking price in LKR if extracted from classified ad text, listing, or auction sheet, else 0'
+    },
+    detected_condition: {
+      type: 'STRING',
+      enum: ['New', 'Recond', 'Used']
+    },
+    reason: {
+      type: 'STRING',
+      description: 'Reason if vehicle is unavailable or not road-legal in Sri Lanka'
+    },
+    alternatives: {
+      type: 'ARRAY',
+      items: { type: 'STRING' }
+    },
+    model_years: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          year: { type: 'INTEGER' },
+          trims: {
+            type: 'ARRAY',
+            items: {
+              type: 'OBJECT',
+              properties: {
+                trim_name: { type: 'STRING' },
+                powertrain: { type: 'STRING' },
+                fuel_economy_kml: { type: 'STRING' },
+                warranty_type: {
+                  type: 'STRING',
+                  enum: ['Official', 'Grey']
+                },
+                condition_prices: {
+                  type: 'OBJECT',
+                  properties: {
+                    brand_new: { type: 'INTEGER' },
+                    recond: { type: 'INTEGER' },
+                    used_low: { type: 'INTEGER' },
+                    used_med: { type: 'INTEGER' }
+                  },
+                  required: ['brand_new', 'recond', 'used_low', 'used_med']
+                }
+              },
+              required: ['trim_name', 'powertrain', 'fuel_economy_kml', 'warranty_type', 'condition_prices']
+            }
+          }
+        },
+        required: ['year', 'trims']
+      }
+    }
+  },
+  required: [
+    'is_available_in_sri_lanka',
+    'model_name',
+    'wikipedia_slug',
+    'availability_notes',
+    'import_route',
+    'model_years'
+  ]
+};
+
 functions.http('vehicleSearch', async (req, res) => {
   // CORS configuration
   res.set('Access-Control-Allow-Origin', '*');
@@ -16,9 +119,9 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  const { query } = req.body || {};
-  if (!query || typeof query !== 'string' || query.trim().length === 0) {
-    res.status(400).json({ error: 'Missing query parameter' });
+  const { query, image } = req.body || {};
+  if (!query && !image) {
+    res.status(400).json({ error: 'Missing query or image parameter' });
     return;
   }
 
@@ -30,23 +133,42 @@ functions.http('vehicleSearch', async (req, res) => {
 
   const systemPrompt = `You are an expert Sri Lankan automotive market analyst and finance assessor. Evaluate vehicles based on actual Sri Lankan road regulations and active market availability (official franchise dealers like AMW, DIMO, John Keells CG, Stafford; Japanese auction grey market imports; or registered local fleet). Return strictly valid JSON conforming to the requested schema.`;
   
-  const promptText = `Vehicle query: "${query.trim().slice(0, 120)}".
-Determine:
-1. Is this vehicle actively available or road-legal in Sri Lanka (is_available_in_sri_lanka: true/false)? If false, provide reason (e.g. LHD, banned class, never imported) and suggest 2-3 popular Sri Lankan market alternatives.
-2. If available, return available model_years (array of years e.g. 2024, 2022, 2020), and for each year the available trim levels in Sri Lanka.
-3. For each trim: trim_name, powertrain (e.g. 1.5L Strong HEV, 1.0L Turbo), real-world Sri Lankan fuel_economy_kml (e.g. 24-28 km/l), warranty_type ("Official" or "Grey"), and condition_prices (object with keys: "brand_new", "recond", "used_low", "used_med" containing price in Sri Lankan Rupees LKR).
-4. Suggested studio_photo_url: A clean official studio press photograph URL of the vehicle (front-left 3/4 view on white background).`;
+  const promptText = `Vehicle query / input: "${(query || '').trim().slice(0, 500)}".
+Instructions:
+1. If the input or attached image is a classified advertisement (e.g. from Ikman, Riyasewana, Patpat, Facebook Marketplace) or Japanese auction sheet:
+   - Extract exact make, model, year, and trim.
+   - Extract the seller's asking price in LKR as seller_price_lkr.
+   - Detect condition as detected_condition ("New", "Recond", or "Used").
+2. If the user asks for a comparative query or budget discovery:
+   - Set is_multi_vehicle: true
+   - Populate discovered_vehicles with an array of distinct vehicles matching the query.
+3. Availability check:
+   - Determine is_available_in_sri_lanka. If false, provide reason and 2-3 popular Sri Lankan alternatives.
+4. If available:
+   - Return model_name (canonical Make + Model without year).
+   - Return wikipedia_slug (canonical English Wikipedia article title for image lookup).
+   - Return import_route ("Official Agent", "Grey Import", or "Registered Fleet").
+   - Return model_years array with available trims, powertrains, real-world fuel economy in km/l, warranty type, and condition prices in LKR.`;
+
+  const parts = [{ text: `${systemPrompt}\n\n${promptText}` }];
+  if (image && image.data) {
+    parts.push({
+      inlineData: {
+        mimeType: image.mimeType || 'image/jpeg',
+        data: image.data
+      }
+    });
+  }
 
   try {
     const candidateModels = [
-      "models/gemini-3.8-flash",
-      "models/gemini-2.5-flash",
-      "models/gemini-2.0-flash",
-      "models/gemini-1.5-flash"
+      'models/gemini-2.5-flash',
+      'models/gemini-2.0-flash',
+      'models/gemini-1.5-flash'
     ];
 
     let geminiRes = null;
-    let lastErr = "";
+    let lastErr = '';
 
     for (const model of candidateModels) {
       try {
@@ -54,8 +176,12 @@ Determine:
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: `${systemPrompt}\n\n${promptText}` }] }],
-            generationConfig: { temperature: 0.2, responseMimeType: 'application/json' }
+            contents: [{ parts }],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: 'application/json',
+              responseSchema: VEHICLE_RESPONSE_SCHEMA
+            }
           })
         });
 
@@ -65,11 +191,9 @@ Determine:
         } else {
           const errJson = await attempt.json().catch(() => ({}));
           lastErr = errJson.error?.message || `HTTP ${attempt.status}`;
-          // If model is sunset, invalid, or requires prepayment credits on this key, continue to next candidate
-          if (lastErr.includes("no longer available") || lastErr.includes("depleted") || attempt.status === 404 || attempt.status === 400) {
+          if (lastErr.includes('no longer available') || lastErr.includes('depleted') || attempt.status === 404 || attempt.status === 400) {
             continue;
           }
-          // If rate limited or other error, break and return
           geminiRes = attempt;
           break;
         }
@@ -79,7 +203,7 @@ Determine:
     }
 
     if (!geminiRes || !geminiRes.ok) {
-      res.status(geminiRes ? geminiRes.status : 500).json({ error: lastErr || "Failed to reach Gemini API" });
+      res.status(geminiRes ? geminiRes.status : 500).json({ error: lastErr || 'Failed to reach Gemini API' });
       return;
     }
 

@@ -15,8 +15,8 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="assets/icons/logo-full-lockup.svg">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css">
-  <script type="module" src="js/app.js"></script>
+  <link rel="stylesheet" href="css/style.css?v=2.6.0">
+  <script type="module" src="js/app.js?v=2.6.0"></script>
 </head>
 <body>
 <main>
@@ -42,7 +42,7 @@
       <div>
         <label for="rate">Interest rate (% p.a.)</label>
         <input id="rate" type="number" min="0" max="40" step="0.1" value="16">
-        <div class="hint">15% may apply if you earn over Rs. 200,000</div>
+        <div class="hint" id="rateHint">15% may apply if you earn over Rs. 200,000</div>
       </div>
       <div>
         <label for="tenure">Tenure (months)</label>
@@ -93,8 +93,13 @@
           <option value="rental|1">Monthly rental, low to high</option>
           <option value="rental|-1">Monthly rental, high to low</option>
           <option value="interest|1">Total interest, low to high</option>
+          <option value="interest|-1">Total interest, high to low</option>
+          <option value="total|1">Total outlay, low to high</option>
+          <option value="total|-1">Total outlay, high to low</option>
           <option value="need|1">Income needed, low to high</option>
+          <option value="need|-1">Income needed, high to low</option>
           <option value="name|1">Name, A to Z</option>
+          <option value="name|-1">Name, Z to A</option>
         </select>
       </div>
       <div>
@@ -181,11 +186,34 @@
 
     <!-- AI SEARCH PANE -->
     <div id="paneAi">
-      <div style="display:flex;gap:8px;margin-bottom:10px">
-        <input id="aiSearchQuery" type="text" placeholder="e.g. Toyota Yaris Cross, Suzuki Spacia, Honda Elevate, BYD Atto 3..." style="flex:1">
-        <button class="btn" id="aiSearchBtn" type="button">Search</button>
+      <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
+        <textarea id="aiSearchQuery" rows="2" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." style="flex:1;resize:vertical;min-height:42px;font:inherit"></textarea>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn" id="aiSearchBtn" type="button" style="white-space:nowrap">✨ Search</button>
+          <label class="btn-outline btn-sm" id="aiUploadAdBtn" style="cursor:pointer;white-space:nowrap;margin:0" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
+            📷 Ad / Sheet
+            <input id="aiAdFile" type="file" accept="image/*" style="display:none">
+          </label>
+        </div>
+      </div>
+      <div id="aiAttachedAdBox" class="callout callout-info" style="display:none;align-items:center;justify-content:space-between;padding:6px 12px;margin-bottom:8px">
+        <span id="aiAttachedAdLabel">📷 Ad / Auction sheet screenshot attached</span>
+        <button type="button" class="link" id="aiRemoveAdImgBtn" style="font-size:0.8rem">Remove</button>
       </div>
       <div id="aiSearchMsg" class="hint" style="min-height:18px;margin-bottom:8px"></div>
+
+      <!-- DISCOVERY / COMPARATIVE CHECKLIST BOX -->
+      <div id="aiDiscoveryBox" hidden>
+        <div class="callout callout-info" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <b id="aiDiscoveryTitle">Discovered Vehicles</b>
+          <button class="link-btn" id="aiToggleSelectAllBtn" type="button" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:600;font-size:0.82rem">Select All / None</button>
+        </div>
+        <div id="aiDiscoveryList" class="discovery-list" style="display:flex;flex-direction:column;gap:8px;max-height:45vh;overflow-y:auto;margin-bottom:14px"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+          <button class="btn-outline" id="aiDiscoveryBackBtn" type="button">Back</button>
+          <button class="btn" id="aiAddSelectedBtn" type="button">Add selected to comparison</button>
+        </div>
+      </div>
 
       <!-- UNAVAILABLE CALLOUT -->
       <div id="aiUnavailBox" class="callout callout-warn" hidden></div>
@@ -247,8 +275,9 @@
           </div>
         </div>
 
-        <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px">
+        <div style="margin-top:16px;display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:8px">
           <button class="btn-outline" id="aiCancelBtn" type="button">Cancel</button>
+          <button class="btn-outline" id="aiAddAllTrimsBtn" type="button">Add all trims for <span id="aiTrimsYearLabel">2024</span></button>
           <button class="btn" id="aiConfirmAddBtn" type="button">Add to comparison</button>
         </div>
       </div>

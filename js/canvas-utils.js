@@ -1,6 +1,15 @@
 // HTML5 Canvas Normalisation Engine: 8:5 Studio Plate on Pure White (#FFFFFF)
 export function normalizeImageToStudio(src, callback) {
-  if (!src) { callback(""); return; }
+  if (!src || typeof src !== "string" || !src.trim()) {
+    callback("");
+    return;
+  }
+  const cleanSrc = src.trim();
+  if (typeof window !== "undefined" && (cleanSrc === window.location.href || cleanSrc === window.location.origin + window.location.pathname)) {
+    callback("");
+    return;
+  }
+
   const img = new Image();
   img.crossOrigin = "Anonymous";
   img.onload = () => {
@@ -34,9 +43,24 @@ export function normalizeImageToStudio(src, callback) {
       ctx.drawImage(img, dx, dy, dw, dh);
       callback(canvas.toDataURL("image/jpeg", 0.88));
     } catch (err) {
-      callback(src);
+      // Tainted canvas due to CORS or local origin - pass raw src through
+      callback(cleanSrc);
     }
   };
-  img.onerror = () => { callback(src); };
-  img.src = src;
+
+  img.onerror = () => {
+    // If CORS-enabled load failed, try loading without crossOrigin to verify if image exists
+    const fallbackImg = new Image();
+    fallbackImg.onload = () => {
+      // Image exists but doesn't allow CORS for canvas manipulation; pass through valid URL
+      callback(cleanSrc);
+    };
+    fallbackImg.onerror = () => {
+      // Image truly failed (404, broken URL, etc.); return empty string so broken URL is never saved
+      callback("");
+    };
+    fallbackImg.src = cleanSrc;
+  };
+
+  img.src = cleanSrc;
 }
