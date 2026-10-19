@@ -65,8 +65,8 @@ Determine:
         } else {
           const errJson = await attempt.json().catch(() => ({}));
           lastErr = errJson.error?.message || `HTTP ${attempt.status}`;
-          // If model is sunset or invalid for this key, continue to next candidate
-          if (lastErr.includes("no longer available") || attempt.status === 404 || attempt.status === 400) {
+          // If model is sunset, invalid, or requires prepayment credits on this key, continue to next candidate
+          if (lastErr.includes("no longer available") || lastErr.includes("depleted") || attempt.status === 404 || attempt.status === 400) {
             continue;
           }
           // If rate limited or other error, break and return
