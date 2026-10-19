@@ -17,8 +17,8 @@
     </filter>
   </defs>
 
-  <!-- Container badge (optional background for standalone/app icon) -->
-  <rect width="120" height="120" rx="28" fill="#0F172A"/>
+  <!-- Full-bleed opaque square (no rx; OS & Safari apply native squircle masks) -->
+  <rect width="120" height="120" fill="#0F172A"/>
 
   <!-- Geometric V Left Wing (Solid Anchor) -->
   <path d="M26 34 L43 34 L57 82 L42 82 Z" fill="url(#apex-grad-left)"/>

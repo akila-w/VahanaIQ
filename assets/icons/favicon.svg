@@ -1,20 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <defs>
-    <linearGradient id="fav-l" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0F766E"/>
-      <stop offset="100%" stop-color="#04433B"/>
-    </linearGradient>
-    <linearGradient id="fav-r" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2DD4BF"/>
-      <stop offset="100%" stop-color="#0F766E"/>
-    </linearGradient>
-    <linearGradient id="fav-dot" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5EEAD4"/>
-      <stop offset="100%" stop-color="#14B8A6"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="16" fill="#0F172A"/>
-  <path d="M14 20 H25 L33 52 H22 Z" fill="url(#fav-l)"/>
-  <path d="M37 52 H48 L59 20 H48 L35 46 Z" fill="url(#fav-r)"/>
-  <circle cx="58" cy="13" r="4.2" fill="url(#fav-dot)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <style>
+    /* Option A: 100% Full-Bleed Tile (Linear/Stripe style) */
+    /* Alpha = 1.0 on perimeter short-circuits Safari's automatic white box heuristic */
+    .bg { fill: #0F172A; }
+    .v-left { fill: #0F766E; }
+    .v-right { fill: #2DD4BF; }
+    .v-spark { fill: #5EEAD4; }
+
+    @media (prefers-color-scheme: dark) {
+      .v-left { fill: #14B8A6; }
+      .v-right { fill: #5EEAD4; }
+      .v-spark { fill: #A7F3D0; }
+    }
+  </style>
+
+  <!-- 100% Full-Bleed Opaque Square (No rx/ry; Safari & OS mask corners natively) -->
+  <rect class="bg" width="64" height="64"/>
+
+  <!-- Centred VahanaIQ Apex Monogram with safe zone padding -->
+  <path class="v-left" d="M14 20 H25 L33 52 H22 Z"/>
+  <path class="v-right" d="M37 52 H48 L59 20 H48 L35 46 Z"/>
+  <circle class="v-spark" cx="58" cy="13" r="4.2"/>
 </svg>

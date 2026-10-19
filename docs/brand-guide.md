@@ -44,6 +44,7 @@ The identity system introduces three distinct vector logo directions:
 ### Clear Space & Minimum Sizing
 - **Minimum Digital Size:** 16px × 16px (Favicon), 32px × 32px (Header navigation).
 - **Clear Space:** Maintain minimum clear space equal to 50% of the logo's height on all four sides.
+- **Safari / WebKit Full-Bleed Tile Rule:** Favicon and touch-icon assets use a 100% full-bleed square background (no pre-rounded `rx` corners). Perimeter pixels maintain `alpha = 1.0` to short-circuit Safari's dark-mode contrast heuristic and prevent unwanted white boxes, allowing the OS to apply native squircle masks cleanly.
 - **Unacceptable Usage:** Do not distort proportions, apply drop-shadows with opacity > 25%, or place against low-contrast busy photographic backgrounds without an underlay plate.
 
 ---
