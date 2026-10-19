@@ -9,6 +9,6 @@
 // If using direct Google AI Studio API without a proxy, restrict your key
 // in Google Cloud Console to HTTP Referrer (https://akila-w.github.io/*).
 export const config = {
-  proxyUrl: "",
+  proxyUrl: "https://vahanaiq-search-71962876227.asia-south1.run.app",
   apiKey: ""
 };
