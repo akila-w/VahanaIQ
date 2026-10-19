@@ -165,6 +165,7 @@ $("saveKeyBtn").addEventListener("click", () => {
 $("clearKeyBtn").addEventListener("click", () => {
   removeApiKey();
   localStorage.removeItem("sl_lease_gemini_model");
+  localStorage.removeItem("sl_lease_gemini_model_v");
   updateKeyStatusUI();
 });
 
@@ -175,7 +176,7 @@ $("testKeyBtn").addEventListener("click", async () => {
   try {
     const model = await discoverActiveModel(val, true);
     const cleanName = model.replace("models/", "");
-    $("keyStatus").innerHTML = `<span style="color:var(--ok);font-weight:600">✓ Connection successful! Active model: ${cleanName} (Free Tier)</span>`;
+    $("keyStatus").innerHTML = `<span style="color:var(--ok);font-weight:600">✓ Connection successful! Active model: ${cleanName}</span>`;
   } catch (e) {
     $("keyStatus").innerHTML = `<span style="color:var(--bad)">Connection failed: ${e.message}</span>`;
   }

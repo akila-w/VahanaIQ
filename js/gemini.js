@@ -1,5 +1,7 @@
 // Google AI Studio API: Model Discovery and Sri Lanka Automotive Analysis
 
+const PREFERRED_MODEL_VERSION = "2.5";
+
 function parseModelVersion(name) {
   const match = name.match(/gemini-(\d+(?:\.\d+)?)/i);
   return match ? parseFloat(match[1]) : 0;
@@ -8,7 +10,8 @@ function parseModelVersion(name) {
 export async function discoverActiveModel(apiKey, forceRefresh = false) {
   if (!forceRefresh) {
     const cached = localStorage.getItem("sl_lease_gemini_model");
-    if (cached && !cached.includes("gemini-2.5-flash") && !cached.includes("gemini-2.0-flash")) {
+    const cachedVersion = localStorage.getItem("sl_lease_gemini_model_v");
+    if (cached && cachedVersion === PREFERRED_MODEL_VERSION && !cached.includes("gemini-3.8-flash")) {
       return cached;
     }
   }
@@ -26,9 +29,10 @@ export async function discoverActiveModel(apiKey, forceRefresh = false) {
   if (!models.length) throw new Error("No models with generateContent support found for this key.");
 
   // Sort candidate models:
-  // 1. Prioritise Flash models
-  // 2. Highest version number first (e.g. 3.8 > 3.0 > 2.5 > 1.5)
-  // 3. Alphabetical / stable
+  // 1. Prioritise Flash models (flash > non-flash)
+  // 2. Highest version number first (2.5 > 2.0 > 1.5)
+  // 3. Prefer non-experimental / stable
+  // 4. Alphabetical
   const candidates = [...models].sort((a, b) => {
     const aName = a.name.toLowerCase();
     const bName = b.name.toLowerCase();
@@ -43,19 +47,19 @@ export async function discoverActiveModel(apiKey, forceRefresh = false) {
     return aName.localeCompare(bName);
   });
 
-  // Ensure gemini-3.8-flash is tested first if not already top candidate
-  if (!candidates.some(c => c.name.includes("gemini-3.8-flash"))) {
-    candidates.unshift({ name: "models/gemini-3.8-flash", supportedGenerationMethods: ["generateContent"] });
+  // Ensure gemini-2.5-flash is probed first
+  if (!candidates.some(c => c.name.includes("gemini-2.5-flash"))) {
+    candidates.unshift({ name: "models/gemini-2.5-flash", supportedGenerationMethods: ["generateContent"] });
   }
 
-  // Actively test candidate models to ensure the chosen one is currently active and not deprecated
+  // Actively probe candidate models to ensure the chosen one is currently active and reachable
   let workingModel = null;
   let lastErrorMsg = "";
 
   for (const candidate of candidates) {
     const modelName = candidate.name.startsWith("models/") ? candidate.name : `models/${candidate.name}`;
-    // Skip sunset models that reject new users
-    if (modelName.includes("gemini-2.5-flash") || modelName.includes("gemini-2.0-flash")) {
+    // Skip retired legacy models
+    if (modelName.includes("gemini-1.0")) {
       continue;
     }
     try {
@@ -79,22 +83,25 @@ export async function discoverActiveModel(apiKey, forceRefresh = false) {
   }
 
   if (!workingModel) {
-    const viable = candidates.find(c => !c.name.includes("gemini-2.5-flash") && !c.name.includes("gemini-2.0-flash")) || candidates[0];
+    const viable = candidates.find(c => !c.name.includes("gemini-1.0")) || candidates[0];
     if (viable) {
       const fallback = viable.name.startsWith("models/") ? viable.name : `models/${viable.name}`;
       localStorage.setItem("sl_lease_gemini_model", fallback);
+      localStorage.setItem("sl_lease_gemini_model_v", PREFERRED_MODEL_VERSION);
       return fallback;
     }
     throw new Error(lastErrorMsg || "No active Gemini model available.");
   }
 
   localStorage.setItem("sl_lease_gemini_model", workingModel);
+  localStorage.setItem("sl_lease_gemini_model_v", PREFERRED_MODEL_VERSION);
   return workingModel;
 }
 
 export async function searchVehicleWithGemini(query, apiKey) {
   let activeModel = localStorage.getItem("sl_lease_gemini_model");
-  if (!activeModel || activeModel.includes("gemini-2.5-flash") || activeModel.includes("gemini-2.0-flash")) {
+  const cachedVersion = localStorage.getItem("sl_lease_gemini_model_v");
+  if (!activeModel || cachedVersion !== PREFERRED_MODEL_VERSION || activeModel.includes("gemini-3.8-flash")) {
     activeModel = await discoverActiveModel(apiKey);
   }
 
@@ -119,7 +126,7 @@ Determine:
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     const errMsg = err.error?.message || "";
-    if (errMsg.includes("no longer available") || res.status === 404 || res.status === 400) {
+    if (errMsg.includes("no longer available") || res.status === 404 || res.status === 400 || res.status === 429) {
       activeModel = await discoverActiveModel(apiKey, true);
       res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${activeModel}:generateContent?key=${apiKey}`, {
         method: "POST",
