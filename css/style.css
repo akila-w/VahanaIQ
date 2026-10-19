@@ -31,6 +31,20 @@
   }
 }
 
+:root[data-theme="light"] {
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --mute: #64748b;
+  --line: #e2e8f0;
+  --accent: #0f766e;
+  --accent-bright: #2dd4bf;
+  --ok: #059669;
+  --mid: #d97706;
+  --bad: #dc2626;
+  --bar: #cbd5e1;
+}
+
 :root[data-theme="dark"] {
   --bg: #0b1120;
   --panel: #0f172a;
@@ -43,6 +57,13 @@
   --mid: #fbbf24;
   --bad: #f87171;
   --bar: #334155;
+}
+
+#themeToggleBtn {
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 7px 11px;
+  cursor: pointer;
 }
 
 html {
@@ -144,6 +165,16 @@ h2 {
   gap: 12px;
 }
 
+.terms-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 768px) {
+  .terms-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 label {
   display: block;
   font-size: 0.82rem;
@@ -203,7 +234,8 @@ input:focus-visible, select:focus-visible, button:focus-visible, th button:focus
 
 .tools > div {
   min-width: 150px;
-  flex: 1;
+  flex: 1 1 170px;
+  max-width: 260px;
 }
 
 .wrap {
@@ -578,6 +610,14 @@ button.link:focus-visible {
   outline: 1px dashed var(--accent);
 }
 
+.cycle-icon {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin-left: 3px;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
 .price-cell {
   cursor: pointer;
   transition: color 0.15s ease;
@@ -587,6 +627,21 @@ button.link:focus-visible {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+.edit-icon {
+  font-size: 0.78rem;
+  opacity: 0.45;
+  margin-left: 4px;
+  display: inline-block;
+  vertical-align: baseline;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.price-cell:hover .edit-icon {
+  opacity: 1;
+  color: var(--accent);
+  transform: scale(1.15);
 }
 
 .inline-price-input {
@@ -635,6 +690,26 @@ button.link:focus-visible {
   flex-shrink: 0;
 }
 
+.ai-search-bar {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.ai-search-bar textarea {
+  flex: 1;
+  resize: vertical;
+  min-height: 42px;
+  font: inherit;
+}
+
+.ai-search-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 @media (max-width: 1040px) {
   .wrap { overflow: visible; }
   table { min-width: 0; }
@@ -675,9 +750,140 @@ button.link:focus-visible {
 }
 
 @media (max-width: 480px) {
+  .terms-grid { grid-template-columns: 1fr; }
+  .tools > div { max-width: none; flex: 1 1 100%; }
+  .ai-search-bar { flex-direction: column; align-items: stretch; }
+  .ai-search-actions { flex-direction: row; gap: 8px; }
+  .ai-search-actions .btn, .ai-search-actions .btn-outline { flex: 1; text-align: center; justify-content: center; }
   .car { flex-direction: column; align-items: flex-start; }
   .car img, .car .ph { width: 100%; height: auto; aspect-ratio: 8/5; }
   h1 { font-size: 1.4rem; }
   .panel { padding: 12px; }
   .preview-box { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+}
+
+/* Bank Quotation Printout Stylesheet */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 12mm 12mm 12mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt;
+    line-height: 1.35;
+  }
+
+  /* Hide interactive controls, buttons, toolbars, and modals */
+  .header-actions,
+  .tools,
+  #resetCatalogWrap,
+  .modal-bg,
+  .edit-icon,
+  .cycle-icon,
+  .hint,
+  .link,
+  button {
+    display: none !important;
+  }
+
+  /* Paper-friendly panels and header */
+  .panel {
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    margin-bottom: 10pt !important;
+    padding: 10pt !important;
+    break-inside: avoid;
+  }
+
+  .header-bar {
+    border-bottom: 2pt solid #0f766e;
+    padding-bottom: 8pt;
+    margin-bottom: 12pt;
+  }
+
+  h1 {
+    font-size: 16pt;
+    color: #0f766e;
+  }
+
+  .brand-badge {
+    border: 1px solid #0f766e !important;
+    color: #0f766e !important;
+    background: #f0fdf4 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .terms-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8pt !important;
+  }
+
+  input, select {
+    border: 1px solid #cbd5e1 !important;
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    font-size: 9.5pt !important;
+    padding: 3pt 6pt !important;
+  }
+
+  /* Full table view */
+  .wrap {
+    overflow: visible !important;
+  }
+
+  table {
+    min-width: 100% !important;
+    width: 100% !important;
+    font-size: 8.5pt !important;
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  th {
+    color: #334155 !important;
+    border-bottom: 1.5pt solid #0f766e !important;
+    padding: 5pt 3pt !important;
+  }
+
+  td {
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 5pt 3pt !important;
+  }
+
+  tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Budget share progress track & fill colors */
+  .track {
+    background: #e2e8f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .fill {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .tag {
+    border: 1px solid currentColor !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .car img, .car .ph {
+    border: 1px solid #cbd5e1;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

@@ -56,6 +56,8 @@ class MockElement {
   querySelector() { return null; }
   querySelectorAll() { return []; }
   insertBefore() {}
+  setAttribute(k, v) { this[k] = v; }
+  getAttribute(k) { return this[k] || null; }
 }
 
 function mockElementClassListAdd(el, c) {
@@ -99,6 +101,7 @@ const domElements = {
   resetCatalogWrap: new MockElement("resetCatalogWrap"),
   resetCatalogBtn: new MockElement("resetCatalogBtn", "BUTTON"),
   apiKeyInput: new MockElement("apiKeyInput", "INPUT"),
+  themeToggleBtn: new MockElement("themeToggleBtn", "BUTTON"),
   keyStatus: new MockElement("keyStatus"),
   settingsModal: new MockElement("settingsModal"),
   openSettingsBtn: new MockElement("openSettingsBtn", "BUTTON"),
@@ -206,7 +209,14 @@ globalThis.window = {
 // -------------------------------------------------------------
 console.log("TEST 1: Actuarial Calculator & Settings Edge Cases");
 const calcModule = await import("../js/calculator.js");
-const { getSettings, computeLeaseTable } = calcModule;
+const { num, getSettings, computeLeaseTable } = calcModule;
+
+// Test comma stripping in num()
+assert.equal(num("250,000"), 250000, "num should parse 250,000");
+assert.equal(num("18,500,000"), 18500000, "num should parse 18,500,000");
+domElements.income.value = "250,000";
+assert.equal(num("income"), 250000, "num should parse comma-formatted input value");
+domElements.income.value = "";
 
 // 1a: Default settings
 let s = getSettings();
@@ -394,6 +404,14 @@ assert(html.includes('id="rateHint"'), "index.html must include rateHint element
 assert(html.includes('id="aiDiscoveryBox"'), "index.html must include aiDiscoveryBox element");
 assert(html.includes('id="aiAddAllTrimsBtn"'), "index.html must include aiAddAllTrimsBtn element");
 assert(html.includes('id="aiAdFile"'), "index.html must include aiAdFile input for screenshot upload");
+assert(html.includes('id="themeToggleBtn"'), "index.html must include themeToggleBtn element");
+assert(html.includes('apple-touch-icon.png'), "index.html must reference PNG apple-touch-icon");
+assert(html.includes('og-image.png'), "index.html must reference PNG og-image");
+assert(html.includes('terms-grid'), "index.html must use terms-grid layout");
+assert(html.includes('aria-label="Search vehicle with Gemini AI or paste advertisement"'), "index.html must have aria-label on aiSearchQuery");
+assert(html.includes('aria-label="Studio photo image URL"'), "index.html must have aria-label on aiImgUrl");
+assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
+assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
 assert(html.includes('js/app.js?v=2.6.0'), "index.html must reference js/app.js?v=2.6.0");
 assert(html.includes('css/style.css?v=2.6.0'), "index.html must reference css/style.css?v=2.6.0");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");

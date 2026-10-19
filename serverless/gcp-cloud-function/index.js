@@ -163,8 +163,7 @@ Instructions:
   try {
     const candidateModels = [
       'models/gemini-2.5-flash',
-      'models/gemini-2.0-flash',
-      'models/gemini-1.5-flash'
+      'models/gemini-2.0-flash'
     ];
 
     let geminiRes = null;

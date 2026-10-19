@@ -14,7 +14,7 @@
 - **Zero-Touch Studio Photos:** Automatically resolves studio car press photos via local catalog, Wikipedia REST API, and Wikimedia Commons, normalising them onto 8:5 pure white studio plates.
 - **One-Click Batch Add & Discovery:** Compare multiple vehicles side-by-side or add all trim levels for any model year in a single click.
 - **Inline Table Editing:** Quick-edit LKR prices inline and cycle conditions (Brand New ⇄ Reconditioned ⇄ Registered Used) with live actuarial recalculation.
-- **Zero-Cost Google Gemini AI Integration:** Auto-discovers active Flash models (`gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-1.5-flash`) with dynamic version probing via Google AI Studio's free tier or serverless proxies.
+- **Zero-Cost Google Gemini AI Integration:** Auto-discovers active Flash models (`gemini-2.5-flash`, `gemini-2.0-flash`) with dynamic version probing via Google AI Studio's free tier or serverless proxies.
 - **Sri Lankan Market Availability Gatekeeper:** Validates if searched vehicles are actively traded in Sri Lanka or road-legal (RHD, tax brackets), suggesting local alternatives if not.
 - **Hierarchical Selector:** Multi-tier Model Year and Trim selector with condition grading.
 - **Dynamic LKR Pricing:** Market valuations automatically update as condition or trim changes.

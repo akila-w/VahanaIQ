@@ -168,8 +168,8 @@ function render() {
     const ltvWarnBadge = showLtvWarn ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026 mandates min. 50% down payment for unregistered & reconditioned vehicles (current down payment: ${s.down}%)">⚠️ &lt;50% down</span>` : "";
     
     return `<tr>
-<td class="name"><div class="car">${r.img ? `<img src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'ph\\'><svg width=\\'22\\' height=\\'22\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' style=\\'opacity:0.55\\'><rect width=\\'18\\' height=\\'18\\' x=\\'3\\' y=\\'3\\' rx=\\'3\\'/><path d=\\'m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9\\'/><path d=\\'M14 21v-4a2 2 0 0 0-4 0v4\\'/></svg><span>No photo</span></div>';">` : '<div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span></div>'}<div><b>${esc(r.name)}</b><small>${esc(r.pt || "")}${r.km ? " · " + esc(r.km) : ""}</small><div class="warr">${r.w === "Official" ? "Official warranty" : "Grey market"}<span class="cond-tag clickable-cond" data-idx="${r._idx}" title="Click to cycle condition (Brand New ⇄ Reconditioned ⇄ Registered Used)">${condLabel}</span>${ltvWarnBadge}${r.custom ? ` · <button class="link" type="button" data-del="${r._idx}" aria-label="Remove ${esc(r.name)}">remove</button>` : ""}</div></div></div></td>
-<td class="n price-cell" data-label="Price (Rs.)" data-idx="${r._idx}" title="Click to edit price inline">${fmt(r.price)}</td>
+<td class="name"><div class="car">${r.img ? `<img src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy" onerror="this.onerror=null;this.outerHTML='<div class=\\'ph\\'><svg width=\\'22\\' height=\\'22\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\' stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' style=\\'opacity:0.55\\'><rect width=\\'18\\' height=\\'18\\' x=\\'3\\' y=\\'3\\' rx=\\'3\\'/><path d=\\'m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9\\'/><path d=\\'M14 21v-4a2 2 0 0 0-4 0v4\\'/></svg><span>No photo</span></div>';">` : '<div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span></div>'}<div><b>${esc(r.name)}</b><small>${esc(r.pt || "")}${r.km ? " · " + esc(r.km) : ""}</small><div class="warr">${r.w === "Official" ? "Official warranty" : "Grey market"}<span class="cond-tag clickable-cond" data-idx="${r._idx}" title="Click to cycle condition (Brand New ⇄ Reconditioned ⇄ Registered Used)">${condLabel} <span class="cycle-icon" aria-hidden="true">⇄</span></span>${ltvWarnBadge}${r.custom ? ` · <button class="link" type="button" data-del="${r._idx}" aria-label="Remove ${esc(r.name)}">remove</button>` : ""}</div></div></div></td>
+<td class="n price-cell" data-label="Price (Rs.)" data-idx="${r._idx}" title="Click to edit price inline">${fmt(r.price)} <span class="edit-icon" aria-hidden="true">✎</span></td>
 <td class="n" data-label="Monthly rental (Rs.)"><b>${fmt(r.rental)}</b></td>
 <td data-label="Share of your budget"><div class="track" role="img" aria-label="Rental is ${Math.round(w)}% of the scale"><span class="fill" style="width:${w}%;background:${fillCol}"></span>${mk}</div></td>
 <td class="n" data-label="Total interest (Rs.)">${fmt(r.interest)}</td>
@@ -256,7 +256,7 @@ $("rows").addEventListener("click", e => {
     const idx = +priceCell.dataset.idx;
     if (!cars[idx]) return;
     const curP = cars[idx].price;
-    priceCell.innerHTML = `<input type="number" class="inline-price-input" value="${curP}" step="50000" min="0">`;
+    priceCell.innerHTML = `<input type="number" class="inline-price-input" value="${curP}" step="50000" min="0" inputmode="numeric">`;
     const input = priceCell.querySelector("input");
     input.focus();
     input.select();
@@ -475,7 +475,18 @@ $("aiSearchBtn").addEventListener("click", async () => {
     currentAiData = parsed;
     renderAiResults(parsed);
   } catch (e) {
-    $("aiSearchMsg").innerHTML = `<span style="color:var(--bad)">Search error: ${e.message}</span>`;
+    const isProxyIssue = e.message.includes("proxy") || e.message.includes("policy") || e.message.includes("HTTP 403") || e.message.includes("404") || e.message.includes("Failed to fetch");
+    const guide = isProxyIssue
+      ? `<br><small style="margin-top:6px;display:block;color:var(--mute)">Cloud proxy unavailable? You can add a free Google AI Studio key in <button type="button" class="link" id="errSettingsLink" style="font-weight:600">Settings</button> to use gemini-2.5-flash directly.</small>`
+      : "";
+    $("aiSearchMsg").innerHTML = `<span style="color:var(--bad)">Search error: ${esc(e.message)}</span>${guide}`;
+    const link = $("errSettingsLink");
+    if (link) {
+      link.addEventListener("click", () => {
+        $("aiModal").classList.remove("open");
+        $("settingsModal").classList.add("open");
+      });
+    }
   }
 });
 
@@ -867,6 +878,43 @@ $("mAddBtn").addEventListener("click", () => {
     $("aiModal").classList.remove("open");
   });
 });
+
+// Theme Switcher (☀️ / 🌙)
+function applyTheme(theme) {
+  if (typeof document !== "undefined" && document.documentElement && typeof document.documentElement.setAttribute === "function") {
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+  const btn = $("themeToggleBtn");
+  if (btn) {
+    btn.textContent = theme === "dark" ? "☀️" : "🌙";
+    btn.title = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
+    if (typeof btn.setAttribute === "function") {
+      btn.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
+    }
+  }
+}
+
+function initTheme() {
+  const saved = typeof localStorage !== "undefined" ? localStorage.getItem("vahanaiq_theme") : null;
+  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const theme = saved || (prefersDark ? "dark" : "light");
+  applyTheme(theme);
+}
+
+const themeBtn = $("themeToggleBtn");
+if (themeBtn) {
+  themeBtn.addEventListener("click", () => {
+    const cur = (typeof document !== "undefined" && document.documentElement && typeof document.documentElement.getAttribute === "function" && document.documentElement.getAttribute("data-theme")) || 
+      (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("vahanaiq_theme", next);
+    }
+    applyTheme(next);
+  });
+}
+
+initTheme();
 
 // Initialise magic link and initial render
 initMagicLink();

@@ -8,12 +8,16 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#0f766e">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261019-optA" sizes="any">
-  <link rel="apple-touch-icon" href="assets/icons/logo-option-1-apex.svg">
+  <link rel="apple-touch-icon" href="https://akila-w.github.io/vahanaiq/assets/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://akila-w.github.io/vahanaiq/assets/icons/apple-touch-icon.png">
   <meta property="og:title" content="VahanaIQ — Sri Lanka Vehicle Lease Calculator">
   <meta property="og:description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Aligned with CBSL Directions No. 01 of 2026.">
-  <meta property="og:image" content="assets/icons/logo-full-lockup.svg">
+  <meta property="og:image" content="https://akila-w.github.io/vahanaiq/assets/icons/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="assets/icons/logo-full-lockup.svg">
+  <meta name="twitter:image" content="https://akila-w.github.io/vahanaiq/assets/icons/og-image.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css?v=2.6.0">
   <script type="module" src="js/app.js?v=2.6.0"></script>
@@ -33,35 +37,36 @@
     <div class="header-actions">
       <button class="btn" id="openAiModalBtn" type="button">✨ Search &amp; Add Car (AI)</button>
       <button class="btn-outline" id="openSettingsBtn" type="button" title="Configure Free Google AI Studio API Key">⚙️ Gemini Key</button>
+      <button class="btn-outline" id="themeToggleBtn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">☀️</button>
     </div>
   </div>
 
   <section class="panel" aria-labelledby="h-terms">
     <h2 id="h-terms">Loan terms and your income</h2>
-    <div class="grid">
+    <div class="grid terms-grid">
       <div>
         <label for="rate">Interest rate (% p.a.)</label>
-        <input id="rate" type="number" min="0" max="40" step="0.1" value="16">
+        <input id="rate" type="number" min="0" max="40" step="0.1" value="16" inputmode="decimal">
         <div class="hint" id="rateHint">15% may apply if you earn over Rs. 200,000</div>
       </div>
       <div>
         <label for="tenure">Tenure (months)</label>
-        <input id="tenure" type="number" min="6" max="84" step="1" value="84">
+        <input id="tenure" type="number" min="6" max="84" step="1" value="84" inputmode="numeric">
         <div class="hint" id="tenureHint">Maximum 84</div>
       </div>
       <div>
         <label for="down">Down payment (% of price)</label>
-        <input id="down" type="number" min="30" max="100" step="1" value="50">
+        <input id="down" type="number" min="30" max="100" step="1" value="50" inputmode="numeric">
         <div class="hint" id="downHint">Minimum 50% for unregistered cars</div>
       </div>
       <div>
         <label for="income">Net monthly income (Rs.)</label>
-        <input id="income" type="number" min="0" step="1000" placeholder="Optional">
+        <input id="income" type="number" min="0" step="1000" placeholder="Optional" inputmode="numeric">
         <div class="hint">Leave empty to skip the affordability check</div>
       </div>
       <div>
         <label for="debt">Existing monthly loan and card payments (Rs.)</label>
-        <input id="debt" type="number" min="0" step="1000" value="0">
+        <input id="debt" type="number" min="0" step="1000" value="0" inputmode="numeric">
       </div>
       <div>
         <label for="dti">Debt-to-income limit</label>
@@ -121,7 +126,7 @@
       </div>
       <div>
         <label for="maxprice">Maximum price (Rs. million)</label>
-        <input id="maxprice" type="number" min="0" step="0.5" placeholder="No limit">
+        <input id="maxprice" type="number" min="0" step="0.5" placeholder="No limit" inputmode="decimal">
       </div>
       <div>
         <label for="afford">Show</label>
@@ -186,9 +191,9 @@
 
     <!-- AI SEARCH PANE -->
     <div id="paneAi">
-      <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px">
-        <textarea id="aiSearchQuery" rows="2" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." style="flex:1;resize:vertical;min-height:42px;font:inherit"></textarea>
-        <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="ai-search-bar">
+        <textarea id="aiSearchQuery" rows="2" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." aria-label="Search vehicle with Gemini AI or paste advertisement"></textarea>
+        <div class="ai-search-actions">
           <button class="btn" id="aiSearchBtn" type="button" style="white-space:nowrap">✨ Search</button>
           <label class="btn-outline btn-sm" id="aiUploadAdBtn" style="cursor:pointer;white-space:nowrap;margin:0" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
             📷 Ad / Sheet
@@ -243,7 +248,7 @@
         <div class="grid" style="margin-bottom:12px">
           <div>
             <label for="aiPriceInput">Price in LKR <small style="color:var(--accent);cursor:pointer" id="aiResetPriceBtn" title="Reset to AI estimate">↺ reset</small></label>
-            <input id="aiPriceInput" type="number" min="0" step="50000">
+            <input id="aiPriceInput" type="number" min="0" step="50000" inputmode="numeric">
           </div>
           <div>
             <label for="aiWarrSelect">Warranty</label>
@@ -263,7 +268,7 @@
           <div class="preview-box">
             <img class="pimg" id="aiImgPreview" src="" alt="Preview">
             <div>
-              <input id="aiImgUrl" type="url" placeholder="Studio image URL..." style="font-size:0.82rem;margin-bottom:6px">
+              <input id="aiImgUrl" type="url" placeholder="Studio image URL..." aria-label="Studio photo image URL" style="font-size:0.82rem;margin-bottom:6px">
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                 <label class="btn-outline btn-sm" style="cursor:pointer;margin:0">
                   📁 Upload photo
@@ -287,7 +292,7 @@
     <div id="paneManual" hidden>
       <div class="grid" style="margin-bottom:12px">
         <div style="grid-column:span 2"><label for="mName">Vehicle Name &amp; Trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
-        <div><label for="mPrice">Price in LKR</label><input id="mPrice" type="number" min="0" step="50000" placeholder="e.g. 18500000"></div>
+        <div><label for="mPrice">Price in LKR</label><input id="mPrice" type="number" min="0" step="50000" placeholder="e.g. 18500000" inputmode="numeric"></div>
         <div><label for="mCond">Condition</label><select id="mCond"><option value="New">Brand New</option><option value="Recond">Reconditioned</option><option value="Used">Registered Used</option></select></div>
         <div><label for="mWarr">Warranty</label><select id="mWarr"><option value="Grey">Grey market</option><option value="Official">Official</option></select></div>
         <div><label for="mPt">Powertrain / Fuel</label><input id="mPt" type="text" placeholder="e.g. 2.0L Petrol"></div>

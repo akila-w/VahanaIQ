@@ -4,7 +4,12 @@
 export const fmt = n => Math.round(n).toLocaleString("en-LK");
 export const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const num = id => {
-  const v = parseFloat(document.getElementById(id).value);
+  const el = typeof id === "string" ? document.getElementById(id) : id;
+  const raw = el && typeof el === "object" && "value" in el ? el.value : id;
+  if (typeof raw === "number") return isFinite(raw) ? raw : NaN;
+  if (raw === null || raw === undefined || raw === "") return NaN;
+  const clean = String(raw).replace(/,/g, "").trim();
+  const v = parseFloat(clean);
   return isFinite(v) ? v : NaN;
 };
 
