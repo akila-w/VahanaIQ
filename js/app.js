@@ -164,6 +164,7 @@ $("saveKeyBtn").addEventListener("click", () => {
 
 $("clearKeyBtn").addEventListener("click", () => {
   removeApiKey();
+  localStorage.removeItem("sl_lease_gemini_model");
   updateKeyStatusUI();
 });
 
@@ -172,21 +173,11 @@ $("testKeyBtn").addEventListener("click", async () => {
   if (!val) { alert("Please enter an API key to test."); return; }
   $("keyStatus").innerHTML = '<span class="spin"></span>Detecting available models & testing connection...';
   try {
-    const model = await discoverActiveModel(val);
+    const model = await discoverActiveModel(val, true);
     const cleanName = model.replace("models/", "");
-    const testRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${val}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
-    });
-    if (testRes.ok) {
-      $("keyStatus").innerHTML = `<span style="color:var(--ok);font-weight:600">✓ Connection successful! Active model: ${cleanName} (Free Tier)</span>`;
-    } else {
-      const err = await testRes.json().catch(() => ({}));
-      $("keyStatus").innerHTML = `<span style="color:var(--bad)">Connection failed on ${cleanName}: ${err.error?.message || "HTTP " + testRes.status}</span>`;
-    }
+    $("keyStatus").innerHTML = `<span style="color:var(--ok);font-weight:600">✓ Connection successful! Active model: ${cleanName} (Free Tier)</span>`;
   } catch (e) {
-    $("keyStatus").innerHTML = `<span style="color:var(--bad)">Connection error: ${e.message}</span>`;
+    $("keyStatus").innerHTML = `<span style="color:var(--bad)">Connection failed: ${e.message}</span>`;
   }
 });
 

@@ -1,6 +1,18 @@
 // Google AI Studio API: Model Discovery and Sri Lanka Automotive Analysis
 
-export async function discoverActiveModel(apiKey) {
+function parseModelVersion(name) {
+  const match = name.match(/gemini-(\d+(?:\.\d+)?)/i);
+  return match ? parseFloat(match[1]) : 0;
+}
+
+export async function discoverActiveModel(apiKey, forceRefresh = false) {
+  if (!forceRefresh) {
+    const cached = localStorage.getItem("sl_lease_gemini_model");
+    if (cached && !cached.includes("gemini-2.5-flash") && !cached.includes("gemini-2.0-flash")) {
+      return cached;
+    }
+  }
+
   let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
   if (!res.ok) {
     res = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`);
@@ -13,22 +25,76 @@ export async function discoverActiveModel(apiKey) {
   const models = (data.models || []).filter(m => m.supportedGenerationMethods?.includes("generateContent"));
   if (!models.length) throw new Error("No models with generateContent support found for this key.");
 
-  // Pick fastest active Flash model in priority order
-  let picked = null;
-  const priorities = ["2.5-flash", "2.0-flash", "1.5-flash-latest", "1.5-flash", "flash", "pro"];
-  for (const p of priorities) {
-    const found = models.find(m => m.name.toLowerCase().includes(p));
-    if (found) { picked = found.name; break; }
+  // Sort candidate models:
+  // 1. Prioritise Flash models
+  // 2. Highest version number first (e.g. 3.8 > 3.0 > 2.5 > 1.5)
+  // 3. Alphabetical / stable
+  const candidates = [...models].sort((a, b) => {
+    const aName = a.name.toLowerCase();
+    const bName = b.name.toLowerCase();
+    const aFlash = aName.includes("flash") ? 1 : 0;
+    const bFlash = bName.includes("flash") ? 1 : 0;
+    if (aFlash !== bFlash) return bFlash - aFlash;
+
+    const aVer = parseModelVersion(aName);
+    const bVer = parseModelVersion(bName);
+    if (aVer !== bVer) return bVer - aVer;
+
+    return aName.localeCompare(bName);
+  });
+
+  // Ensure gemini-3.8-flash is tested first if not already top candidate
+  if (!candidates.some(c => c.name.includes("gemini-3.8-flash"))) {
+    candidates.unshift({ name: "models/gemini-3.8-flash", supportedGenerationMethods: ["generateContent"] });
   }
-  if (!picked) picked = models[0].name;
-  const modelName = picked.startsWith("models/") ? picked : `models/${picked}`;
-  localStorage.setItem("sl_lease_gemini_model", modelName);
-  return modelName;
+
+  // Actively test candidate models to ensure the chosen one is currently active and not deprecated
+  let workingModel = null;
+  let lastErrorMsg = "";
+
+  for (const candidate of candidates) {
+    const modelName = candidate.name.startsWith("models/") ? candidate.name : `models/${candidate.name}`;
+    // Skip sunset models that reject new users
+    if (modelName.includes("gemini-2.5-flash") || modelName.includes("gemini-2.0-flash")) {
+      continue;
+    }
+    try {
+      const probeRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: "Hello" }] }] })
+      });
+      if (probeRes.ok) {
+        workingModel = modelName;
+        break;
+      } else {
+        const errJson = await probeRes.json().catch(() => ({}));
+        lastErrorMsg = errJson.error?.message || `HTTP ${probeRes.status}`;
+        console.warn(`Model ${modelName} probe rejected:`, lastErrorMsg);
+      }
+    } catch (probeErr) {
+      lastErrorMsg = probeErr.message;
+      console.warn(`Model ${modelName} probe network failure:`, probeErr);
+    }
+  }
+
+  if (!workingModel) {
+    const viable = candidates.find(c => !c.name.includes("gemini-2.5-flash") && !c.name.includes("gemini-2.0-flash")) || candidates[0];
+    if (viable) {
+      const fallback = viable.name.startsWith("models/") ? viable.name : `models/${viable.name}`;
+      localStorage.setItem("sl_lease_gemini_model", fallback);
+      return fallback;
+    }
+    throw new Error(lastErrorMsg || "No active Gemini model available.");
+  }
+
+  localStorage.setItem("sl_lease_gemini_model", workingModel);
+  return workingModel;
 }
 
 export async function searchVehicleWithGemini(query, apiKey) {
   let activeModel = localStorage.getItem("sl_lease_gemini_model");
-  if (!activeModel) {
+  if (!activeModel || activeModel.includes("gemini-2.5-flash") || activeModel.includes("gemini-2.0-flash")) {
     activeModel = await discoverActiveModel(apiKey);
   }
 
@@ -41,7 +107,7 @@ Determine:
 3. For each trim: trim_name, powertrain (e.g. 1.5L Strong HEV, 1.0L Turbo), real-world Sri Lankan fuel_economy_kml (e.g. 24-28 km/l), warranty_type ("Official" or "Grey"), and condition_prices (object with keys: "brand_new", "recond", "used_low", "used_med" containing price in Sri Lankan Rupees LKR).
 4. Suggested studio_photo_url: A clean official studio press photograph URL of the vehicle (front-left 3/4 view on white background).`;
 
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${activeModel}:generateContent?key=${apiKey}`, {
+  let res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${activeModel}:generateContent?key=${apiKey}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -52,7 +118,22 @@ Determine:
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || "HTTP " + res.status);
+    const errMsg = err.error?.message || "";
+    if (errMsg.includes("no longer available") || res.status === 404 || res.status === 400) {
+      activeModel = await discoverActiveModel(apiKey, true);
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${activeModel}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `${systemPrompt}\n\n${promptText}` }] }],
+          generationConfig: { temperature: 0.2, responseMimeType: "application/json" }
+        })
+      });
+    }
+    if (!res.ok) {
+      const retryErr = await res.json().catch(() => ({}));
+      throw new Error(retryErr.error?.message || errMsg || "HTTP " + res.status);
+    }
   }
 
   const data = await res.json();

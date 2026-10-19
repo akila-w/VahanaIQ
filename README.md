@@ -6,7 +6,7 @@
 
 ## Features
 - **CBSL Regulatory Engine:** 50% down payment cap on unregistered passenger cars, 84-month tenure limit, 40%/50% DTI ceilings.
-- **Zero-Cost Google Gemini AI Integration:** Auto-discovers active Flash models (`gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-1.5-flash-latest`) via Google AI Studio's free tier ($0/month, 1,500 requests/day).
+- **Zero-Cost Google Gemini AI Integration:** Auto-discovers active Flash models (`gemini-3.8-flash`, `gemini-1.5-flash-latest`) with dynamic version probing via Google AI Studio's free tier ($0/month, 1,500 requests/day).
 - **Sri Lankan Market Availability Gatekeeper:** Validates if searched vehicles are actively traded in Sri Lanka or road-legal (RHD, tax brackets), suggesting local alternatives if not.
 - **Hierarchical Selector:** Multi-tier Model Year and Trim selector with condition grading (Brand New, Reconditioned Grade 4.5+, Registered Used).
 - **Dynamic LKR Pricing:** Market valuations automatically update as condition or trim changes.
