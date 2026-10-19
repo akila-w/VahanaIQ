@@ -1,4 +1,5 @@
 // Google AI Studio API: Model Discovery and Sri Lanka Automotive Analysis
+import { getProxyUrl } from "./storage.js?v=2.5.1";
 
 const PREFERRED_MODEL_VERSION = "2.5";
 
@@ -99,6 +100,20 @@ export async function discoverActiveModel(apiKey, forceRefresh = false) {
 }
 
 export async function searchVehicleWithGemini(query, apiKey) {
+  const proxy = getProxyUrl();
+  if (proxy && !apiKey) {
+    const res = await fetch(proxy, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Proxy error HTTP ${res.status}`);
+    }
+    return await res.json();
+  }
+
   let activeModel = localStorage.getItem("sl_lease_gemini_model");
   const cachedVersion = localStorage.getItem("sl_lease_gemini_model_v");
   if (!activeModel || cachedVersion !== PREFERRED_MODEL_VERSION || activeModel.includes("gemini-3.8-flash")) {

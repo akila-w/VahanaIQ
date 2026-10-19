@@ -1,8 +1,14 @@
-import { fmt, esc, num, computeLeaseTable } from "./calculator.js";
-import { baseVehicles } from "./catalog.js";
-import { normalizeImageToStudio } from "./canvas-utils.js";
-import { discoverActiveModel, searchVehicleWithGemini } from "./gemini.js";
-import { getApiKey, setApiKey, removeApiKey, initMagicLink, loadSavedCars, saveCars } from "./storage.js";
+import { fmt, esc, num, computeLeaseTable } from "./calculator.js?v=2.5.1";
+import { baseVehicles } from "./catalog.js?v=2.5.1";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.5.1";
+import { discoverActiveModel, searchVehicleWithGemini } from "./gemini.js?v=2.5.1";
+import { getApiKey, getProxyUrl, setApiKey, removeApiKey, initMagicLink, loadSavedCars, saveCars } from "./storage.js?v=2.5.1";
+
+// Force purge any legacy cached model entry holding 3.8 flash
+if (localStorage.getItem("sl_lease_gemini_model")?.includes("gemini-3.8-flash")) {
+  localStorage.removeItem("sl_lease_gemini_model");
+  localStorage.removeItem("sl_lease_gemini_model_v");
+}
 
 const $ = id => document.getElementById(id);
 
@@ -185,7 +191,7 @@ $("testKeyBtn").addEventListener("click", async () => {
 // AI Search Modal UI
 $("openAiModalBtn").addEventListener("click", () => {
   $("aiModal").classList.add("open");
-  if (!getApiKey()) {
+  if (!getApiKey() && !getProxyUrl()) {
     $("aiSearchMsg").innerHTML = '<span style="color:var(--mid)">Tip: Configure your free Gemini key in settings (⚙️) for live Sri Lankan vehicle valuation and trims.</span>';
   } else {
     $("aiSearchMsg").textContent = "";
@@ -210,7 +216,8 @@ $("aiSearchBtn").addEventListener("click", async () => {
   const query = $("aiSearchQuery").value.trim();
   if (!query) { $("aiSearchMsg").textContent = "Please enter a vehicle name to search."; return; }
   const key = getApiKey();
-  if (!key) {
+  const proxy = getProxyUrl();
+  if (!key && !proxy) {
     $("aiModal").classList.remove("open");
     $("settingsModal").classList.add("open");
     alert("Please enter your free Google AI Studio API key first. (Zero cost, no credit card required).");

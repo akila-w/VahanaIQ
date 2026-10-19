@@ -1,7 +1,12 @@
 // Storage & Magic Link Importer
-export const getApiKey = () => localStorage.getItem("sl_lease_gemini_key") || "";
+import { config } from "./config.js?v=2.5.1";
+
+export const getApiKey = () => localStorage.getItem("sl_lease_gemini_key") || config.apiKey || "";
 export const setApiKey = k => localStorage.setItem("sl_lease_gemini_key", k.trim());
 export const removeApiKey = () => localStorage.removeItem("sl_lease_gemini_key");
+
+export const getProxyUrl = () => localStorage.getItem("sl_lease_gemini_proxy") || config.proxyUrl || "";
+export const setProxyUrl = url => localStorage.setItem("sl_lease_gemini_proxy", url.trim());
 
 export function initMagicLink() {
   if (window.location.hash.includes("apiKey=")) {
