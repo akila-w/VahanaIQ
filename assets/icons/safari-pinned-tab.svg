@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Safari Pinned Tab Mask Icon: 100% black single tone on transparent canvas -->
-  <path d="M15 26 H33 L47 76 H32 Z" fill="#000000"/>
-  <path d="M53 76 H68 L85 26 H69 L51 68 Z" fill="#000000"/>
-  <circle cx="85" cy="16" r="6" fill="#000000"/>
-</svg>
