@@ -1,5 +1,5 @@
 // Storage helpers
-import { config } from "./config.js?v=2.6.1";
+import { config } from "./config.js?v=2.7.0";
 
 export const getProxyUrl = () => config.proxyUrl || "";
 

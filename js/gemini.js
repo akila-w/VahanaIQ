@@ -1,5 +1,5 @@
 // Vehicle search through the VahanaIQ proxy, which holds the Gemini key and model choice
-import { getProxyUrl } from "./storage.js?v=2.6.1";
+import { getProxyUrl } from "./storage.js?v=2.7.0";
 
 export const VEHICLE_RESPONSE_SCHEMA = {
   type: "OBJECT",

@@ -1,14 +1,14 @@
-import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.6.1";
-import { baseVehicles, catalogMeta } from "./catalog.js?v=2.6.1";
-import { APP_VERSION } from "./config.js?v=2.6.1";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.6.1";
-import { searchVehicle } from "./gemini.js?v=2.6.1";
-import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.6.1";
-import { clearLegacyKeys, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.6.1";
-import { openModal, closeModal } from "./modal.js?v=2.6.1";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.6.1";
-import { showToast } from "./toast.js?v=2.6.1";
-import { attachMoneyInput } from "./money-input.js?v=2.6.1";
+import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.7.0";
+import { baseVehicles, catalogMeta } from "./catalog.js?v=2.7.0";
+import { APP_VERSION } from "./config.js?v=2.7.0";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.7.0";
+import { searchVehicle } from "./gemini.js?v=2.7.0";
+import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.7.0";
+import { clearLegacyKeys, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.7.0";
+import { openModal, closeModal } from "./modal.js?v=2.7.0";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.7.0";
+import { showToast } from "./toast.js?v=2.7.0";
+import { attachMoneyInput } from "./money-input.js?v=2.7.0";
 
 clearLegacyKeys();
 

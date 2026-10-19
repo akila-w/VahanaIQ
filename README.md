@@ -14,12 +14,12 @@
 - **Zero-Touch Studio Photos:** Automatically resolves studio car press photos via local catalog, Wikipedia REST API, and Wikimedia Commons, normalising them onto 8:5 pure white studio plates.
 - **One-Click Batch Add & Discovery:** Compare multiple vehicles side-by-side or add all trim levels for any model year in a single click.
 - **Inline Table Editing:** Quick-edit LKR prices inline and cycle conditions (Brand New ⇄ Reconditioned ⇄ Registered Used) with live actuarial recalculation.
-- **Zero-Cost Google Gemini AI Integration:** Auto-discovers active Flash models (`gemini-2.5-flash`, `gemini-2.0-flash`) with dynamic version probing via Google AI Studio's free tier or serverless proxies.
+- **Google Gemini AI search via a serverless proxy:** The browser never holds an API key. The proxy (`serverless/`) calls one Gemini model, `gemini-3.6-flash` by default, set with the `GEMINI_MODEL` environment variable.
 - **Sri Lankan Market Availability Gatekeeper:** Validates if searched vehicles are actively traded in Sri Lanka or road-legal (RHD, tax brackets), suggesting local alternatives if not.
 - **Hierarchical Selector:** Multi-tier Model Year and Trim selector with condition grading.
 - **Dynamic LKR Pricing:** Market valuations automatically update as condition or trim changes.
 - **HTML5 Canvas Studio Normaliser:** Automatically centres, scales, and pads any car photo onto an 8:5 pure white plate (`#FFFFFF`) with tyre contact shadow.
-- **Zero-Exposure Magic Link:** Supports `#apiKey=...` fragment parameter to auto-configure trusted devices without hardcoding credentials in source code.
+- **Shareable scenarios:** Loan terms, income, sort and filters are saved in the browser and mirrored to the URL, so a link restores the same scenario.
 
 ## Folder Structure
 ```
@@ -36,9 +36,13 @@ vahanaiq/
 │   ├── calculator.js     # Actuarial lease formulas, DTI & budget room
 │   ├── catalog.js        # Default 12 Sri Lankan vehicles
 │   ├── canvas-utils.js   # 8:5 white studio plate image normaliser
-│   ├── gemini.js         # Google AI Studio API integration & OpenAPI schema
+│   ├── gemini.js         # Proxy search call & response schema
 │   ├── image-fetcher.js  # Zero-touch Wikipedia & Wikimedia photo resolver
-│   ├── storage.js        # LocalStorage persistence & magic link handler
+│   ├── storage.js        # Saved vehicles and legacy-key cleanup
+│   ├── inputs.js         # Input validation, saved inputs and shareable URL
+│   ├── modal.js          # Accessible modal focus handling
+│   ├── money-input.js    # Rupee inputs with thousands separators
+│   ├── toast.js          # Undo toast
 │   └── config.js         # Cloud proxy and endpoint configuration
 ├── serverless/
 │   ├── cloudflare-worker.js         # Cloudflare Worker proxy ($0 / 100k req/day)
@@ -58,3 +62,10 @@ To run VahanaIQ locally with full ES module support:
 python3 -m http.server 8000
 ```
 Then open `http://localhost:8000` in your web browser. No Node.js build step or package installation required.
+
+## Deploying the search proxy (Cloud Run)
+From `serverless/gcp-cloud-function/`:
+```bash
+gcloud run deploy vahanaiq-search --source . --region asia-south1 --allow-unauthenticated --update-env-vars GEMINI_MODEL=gemini-3.6-flash
+```
+The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. Upstream errors are written to the Cloud Run logs.
