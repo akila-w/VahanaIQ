@@ -1,5 +1,6 @@
 import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.6.1";
-import { baseVehicles } from "./catalog.js?v=2.6.1";
+import { baseVehicles, catalogMeta } from "./catalog.js?v=2.6.1";
+import { APP_VERSION } from "./config.js?v=2.6.1";
 import { normalizeImageToStudio } from "./canvas-utils.js?v=2.6.1";
 import { searchVehicle } from "./gemini.js?v=2.6.1";
 import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.6.1";
@@ -104,6 +105,86 @@ function rowActions(r) {
     `<button class="row-btn" type="button" data-act="hide" data-key="${r._key}" aria-label="Hide ${name}">Hide</button>`;
 }
 
+// Table header is rebuilt only when the sort changes
+let headSig = "";
+function renderHead() {
+  const sig = sortKey + "|" + sortDir;
+  if (sig === headSig) return;
+  headSig = sig;
+  $("head").innerHTML = cols.map(c => {
+    const sortable = c[0] !== "status" && c[0] !== "bar";
+    const k = c[0];
+    const cur = k === sortKey ? (sortDir === -1 ? "descending" : "ascending") : "none";
+    const arrow = k === sortKey ? (sortDir === -1 ? " ▾" : " ▴") : "";
+    return `<th class="${c[2] || ""}" aria-sort="${cur}">${sortable ? `<button type="button" data-k="${k}">${c[1]}${arrow}</button>` : c[1]}</th>`;
+  }).join("");
+}
+
+// Vehicle rows are created once per vehicle and then updated in place,
+// so photos are not re-requested and focused buttons stay put while typing.
+const rowEls = new Map();
+
+function buildRow(key) {
+  const tr = document.createElement("tr");
+  tr.dataset.key = key;
+  tr.innerHTML = `<td class="name"><div class="car"><span class="thumb"></span><div><b class="v-name"></b><small class="v-spec"></small><div class="warr"><span class="v-warr"></span><button type="button" class="cond-tag" data-act="cond" data-key="${key}" title="Change condition (Brand New, Reconditioned, Registered Used)"><span class="v-cond"></span> <span class="cycle-icon" aria-hidden="true">⇄</span></button><span class="v-ltv"></span><span class="row-actions"></span></div></div></div></td>
+<td class="n price-cell" data-label="Price (Rs.)"><span class="price-wrap"><span class="price-val"></span><button type="button" class="icon-btn edit-price" data-act="price" data-key="${key}" title="Edit price">✎</button></span></td>
+<td class="n" data-label="Monthly rental (Rs.)"><b class="v-rent"></b></td>
+<td class="v-bar" data-label="Share of your budget"></td>
+<td class="n v-interest" data-label="Total interest (Rs.)"></td>
+<td class="n v-total" data-label="Total outlay (Rs.)"></td>
+<td class="n v-need" data-label="Income needed (Rs.)"></td>
+<td class="v-status" data-label="Status"></td>`;
+  return tr;
+}
+
+// Sets innerHTML only when it changed, so unchanged buttons keep focus
+function setHtml(el, html) {
+  if (el._html !== html) { el._html = html; el.innerHTML = html; }
+}
+
+function setThumb(tr, r) {
+  const slot = tr.querySelector(".thumb");
+  if (slot._img === r.img && slot._alt === r.name) return;
+  slot._img = r.img;
+  slot._alt = r.name;
+  slot.innerHTML = NO_PHOTO;
+  if (!r.img) return;
+  const img = new Image();
+  img.loading = "lazy";
+  img.alt = r.name;
+  img.addEventListener("error", () => { slot.innerHTML = NO_PHOTO; });
+  img.src = r.img;
+  slot.replaceChildren(img);
+}
+
+function updateRow(tr, r, { s, room, scale, labels }) {
+  const q = sel => tr.querySelector(sel);
+  const cl = condLabel(r.cond);
+  setThumb(tr, r);
+  q(".v-name").textContent = r.name;
+  setHtml(q(".v-spec"), [r.pt, r.km].filter(Boolean).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
+  q(".v-warr").textContent = r.w === "Official" ? "Official warranty" : "Grey market";
+  q(".v-cond").textContent = cl;
+  q(".cond-tag").setAttribute("aria-label", `Change condition, currently ${cl}`);
+  const isUnreg = (r.cond || "New") !== "Used";
+  setHtml(q(".v-ltv"), s.down < DOWN_MIN_UNREG && isUnreg ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least 60% down (current down payment: ${s.down}%)">⚠️ &lt;60% down</span>` : "");
+  setHtml(q(".row-actions"), rowActions(r));
+  q(".price-val").textContent = fmt(r.price);
+  q(".edit-price").setAttribute("aria-label", `Edit price, ${r.name}`);
+  q(".v-rent").textContent = fmt(r.rental);
+
+  const w = Math.min(100, r.rental / scale * 100);
+  const fillCol = r.status === "bad" ? "var(--bad)" : r.status === "mid" ? "var(--mid)" : "var(--accent)";
+  setHtml(q(".v-bar"), s.income
+    ? `<div class="track" role="img" aria-label="Rental Rs. ${fmt(r.rental)} against your highest affordable rental of Rs. ${fmt(room)}"><span class="fill" style="width:${w}%;background:${fillCol}"></span><span class="mark" style="left:${Math.min(100, room / scale * 100)}%" title="Your highest affordable rental"></span></div>`
+    : `<span class="na bar-empty">Add income to compare</span>`);
+  q(".v-interest").textContent = fmt(r.interest);
+  q(".v-total").textContent = fmt(r.total);
+  q(".v-need").textContent = fmt(r.need);
+  setHtml(q(".v-status"), r.status === "na" ? '<span class="na">-</span>' : `<span class="tag ${r.status}">${labels[r.status]}</span>`);
+}
+
 function render() {
   const settings = readSettings();
   const { s, f, rows: allRows, room } = computeLeaseTable(cars, settings);
@@ -154,13 +235,7 @@ function render() {
     return sortDir * (x - y);
   });
 
-  $("head").innerHTML = cols.map(c => {
-    const sortable = c[0] !== "status" && c[0] !== "bar";
-    const k = c[0];
-    const cur = k === sortKey ? (sortDir === -1 ? "descending" : "ascending") : "none";
-    const arrow = k === sortKey ? (sortDir === -1 ? " ▾" : " ▴") : "";
-    return `<th class="${c[2] || ""}" aria-sort="${cur}">${sortable ? `<button type="button" data-k="${k}">${c[1]}${arrow}</button>` : c[1]}</th>`;
-  }).join("");
+  renderHead();
 
   $("sort").value = [...$("sort").options].some(o => o.value === sortKey + "|" + sortDir) ? sortKey + "|" + sortDir : "";
 
@@ -173,29 +248,21 @@ function render() {
 
   $("resetCatalogWrap").hidden = !cars.some(c => c.custom);
 
-  $("rows").innerHTML = list.map(r => {
-    const w = Math.min(100, r.rental / scale * 100);
-    const mk = `<span class="mark" style="left:${Math.min(100, room / scale * 100)}%" title="Your highest affordable rental"></span>`;
-    const fillCol = r.status === "bad" ? "var(--bad)" : r.status === "mid" ? "var(--mid)" : "var(--accent)";
-    const cl = condLabel(r.cond);
-    const isUnreg = (r.cond || "New") !== "Used";
-    const ltvWarnBadge = s.down < DOWN_MIN_UNREG && isUnreg ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least 60% down (current down payment: ${s.down}%)">⚠️ &lt;60% down</span>` : "";
-    const img = r.img ? `<img src="${esc(r.img)}" alt="${esc(r.name)}" loading="lazy">` : NO_PHOTO;
-
-    const spec = [r.pt, r.km].filter(Boolean).map(t => `<span class="spec">${esc(t)}</span>`).join(" · ");
-    const bar = s.income
-      ? `<div class="track" role="img" aria-label="Rental Rs. ${fmt(r.rental)} against your highest affordable rental of Rs. ${fmt(room)}"><span class="fill" style="width:${w}%;background:${fillCol}"></span>${mk}</div>`
-      : `<span class="na bar-empty">Add income to compare</span>`;
-    return `<tr data-key="${r._key}">
-<td class="name"><div class="car">${img}<div><b>${esc(r.name)}</b><small>${spec}</small><div class="warr">${r.w === "Official" ? "Official warranty" : "Grey market"}<button type="button" class="cond-tag" data-act="cond" data-key="${r._key}" aria-label="Change condition, currently ${cl}" title="Change condition (Brand New, Reconditioned, Registered Used)">${cl} <span class="cycle-icon" aria-hidden="true">⇄</span></button>${ltvWarnBadge}<span class="row-actions">${rowActions(r)}</span></div></div></div></td>
-<td class="n price-cell" data-label="Price (Rs.)"><span class="price-wrap"><span class="price-val">${fmt(r.price)}</span><button type="button" class="icon-btn edit-price" data-act="price" data-key="${r._key}" aria-label="Edit price, ${esc(r.name)}" title="Edit price">✎</button></span></td>
-<td class="n" data-label="Monthly rental (Rs.)"><b>${fmt(r.rental)}</b></td>
-<td data-label="Share of your budget">${bar}</td>
-<td class="n" data-label="Total interest (Rs.)">${fmt(r.interest)}</td>
-<td class="n" data-label="Total outlay (Rs.)">${fmt(r.total)}</td>
-<td class="n" data-label="Income needed (Rs.)">${fmt(r.need)}</td>
-<td data-label="Status">${r.status === "na" ? '<span class="na">-</span>' : `<span class="tag ${r.status}">${labels[r.status]}</span>`}</td></tr>`;
-  }).join("");
+  const ctx = { s, room, scale, labels };
+  const tbody = $("rows");
+  const wanted = list.map(r => {
+    let tr = rowEls.get(r._key);
+    if (!tr) { tr = buildRow(r._key); rowEls.set(r._key, tr); }
+    updateRow(tr, r, ctx);
+    return tr;
+  });
+  // Put rows in order, moving only those out of place so focus and images survive
+  wanted.forEach((tr, i) => {
+    const at = tbody.children[i];
+    if (at !== tr) tbody.insertBefore(tr, at || null);
+  });
+  while (tbody.children.length > wanted.length) tbody.lastElementChild.remove();
+  for (const k of rowEls.keys()) if (!cars.some(c => c._key === k)) rowEls.delete(k);
 
   if (list.length === 0) {
     $("empty").textContent = affordVal === "ok" && !s.income
@@ -411,9 +478,15 @@ $("rows").addEventListener("click", e => {
 
 function startPriceEdit(btn, car) {
   const wrap = btn.closest(".price-wrap");
-  if (!wrap || wrap.querySelector("input")) return;
-  wrap.innerHTML = `<input type="text" class="inline-price-input" inputmode="numeric" value="${fmt(car.price)}" aria-label="Price for ${esc(car.name)}">`;
-  const input = wrap.querySelector("input");
+  if (!wrap || wrap.hidden) return;
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "inline-price-input";
+  input.inputMode = "numeric";
+  input.value = fmt(car.price);
+  input.setAttribute("aria-label", `Price for ${car.name}`);
+  wrap.hidden = true;
+  wrap.after(input);
   attachMoneyInput(input);
   input.focus();
   input.select();
@@ -428,6 +501,8 @@ function startPriceEdit(btn, car) {
       car.custom = true;
       saveCars(cars);
     }
+    input.remove();
+    wrap.hidden = false;
     render();
     focusRowControl(car._key, "price");
   };
@@ -443,6 +518,8 @@ $("resetCatalogBtn").addEventListener("click", () => {
     try { localStorage.removeItem("sl_lease_custom_cars_v2"); } catch (e) {}
     cars = cloneBaseCars(baseVehicles);
     cars.forEach(assignKey);
+    rowEls.clear();
+    $("rows").replaceChildren();
     render();
     $("h-list").focus();
   }
@@ -1011,6 +1088,13 @@ if (themeBtn) {
 }
 
 initTheme();
+
+// Footer: version and the month the catalogue prices were checked
+$("appVersion").textContent = APP_VERSION;
+{
+  const [y, m] = catalogMeta.priceUpdated.split("-").map(Number);
+  if (y && m) $("priceAsOf").textContent = `Prices as of ${new Date(y, m - 1, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}`;
+}
 
 applyState(loadState());
 render();

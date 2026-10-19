@@ -1,4 +1,8 @@
 // Default 12 Base Vehicles for Sri Lanka (Referencing Local Studio Images)
+
+// Month the catalogue prices were last checked (YYYY-MM); shown in the footer
+export const catalogMeta = { priceUpdated: "2026-10" };
+
 export const baseVehicles = [
   { name: "Toyota Corolla Cross Z (Adventure)", pt: "1.8L Strong HEV", km: "23-26 km/l", w: "Grey", price: 30500000, cond: "New", img: "assets/images/toyota-corolla-cross.jpg", custom: false },
   { name: "BYD Sealion 6 Premium (AWD)", pt: "1.5L PHEV", km: "20 km/l, 1000+ km range", w: "Official", price: 26300000, cond: "New", img: "assets/images/byd-sealion-6.jpg", custom: false },

@@ -18,20 +18,25 @@
   <meta property="og:image:type" content="image/png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://akila-w.github.io/vahanaiq/assets/icons/og-image.png">
+  <link rel="canonical" href="https://akila-w.github.io/vahanaiq/">
+  <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/style.css?v=2.6.1">
   <script type="module" src="js/app.js?v=2.6.1"></script>
 </head>
 <body>
+<noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
 <main>
 
   <div class="header-bar">
     <div>
-      <h1>
-        <img src="assets/icons/logo-option-1-apex.svg" alt="VahanaIQ logo" class="brand-logo" width="36" height="36">
-        <span>Vahana<span class="brand-iq">IQ</span></span>
-        <span class="brand-badge">CBSL 2026</span>
-      </h1>
+      <div class="brand-row">
+        <h1>
+          <img src="assets/icons/logo-option-1-apex.svg" alt="" class="brand-logo" width="36" height="36">
+          <span>Vahana<span class="brand-iq">IQ</span></span>
+        </h1>
+        <span class="brand-badge"><span aria-hidden="true">CBSL 2026</span><span class="sr-only">Down-payment rules follow CBSL Directions No. 01 of 2026</span></span>
+      </div>
       <p class="sub">Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Tenure capped at 84 months.</p>
     </div>
     <div class="header-actions">
@@ -152,7 +157,15 @@
     <p class="hint" id="empty" hidden>No vehicles match these filters.</p>
   </section>
 
-  <p class="foot">Rentals use the standard amortisation formula with monthly compounding. Insurance, registration, fuel, servicing, processing fees and early settlement charges are not included. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). This is not financial advice.</p>
+  <footer class="foot">
+    <p>Rentals use the standard amortisation formula with monthly compounding. Insurance, registration, fuel, servicing, processing fees and early settlement charges are not included. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). This is not financial advice.</p>
+    <p class="foot-meta">
+      <span id="priceAsOf">Prices as of October 2026</span>
+      <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
+      <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
+      <span>VahanaIQ v<span id="appVersion">2.7.0</span></span>
+    </p>
+  </footer>
 </main>
 
 <div class="budget-bar" id="budgetBar" aria-hidden="true" hidden></div>

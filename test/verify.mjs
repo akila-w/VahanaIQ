@@ -29,6 +29,9 @@ class MockElement {
     this.options = [];
     this.selectedOptions = [];
     this.listeners = {};
+    this.dataset = {};
+    this.children = [];
+    this._stubs = {};
     this.classList = {
       _classes: new Set(),
       add: c => mockElementClassListAdd(this, c),
@@ -53,9 +56,16 @@ class MockElement {
   closest(sel) {
     return this;
   }
-  querySelector() { return null; }
+  querySelector(sel) { return this._stubs[sel] || (this._stubs[sel] = new MockElement()); }
   querySelectorAll() { return []; }
-  insertBefore() {}
+  insertBefore(node, ref) {
+    const i = ref ? this.children.indexOf(ref) : -1;
+    if (i < 0) this.children.push(node); else this.children.splice(i, 0, node);
+  }
+  get lastElementChild() { return this.children[this.children.length - 1] || null; }
+  remove() {}
+  after() {}
+  replaceChildren(...nodes) { this.children = nodes; }
   get parentNode() { return this; }
   setAttribute(k, v) { this[k] = v; }
   removeAttribute(k) { delete this[k]; }
@@ -171,7 +181,9 @@ const domElements = {
   budgetLegend: new MockElement("budgetLegend"),
   budgetLive: new MockElement("budgetLive"),
   budgetBar: new MockElement("budgetBar"),
-  budgetPanel: new MockElement("budgetPanel")
+  budgetPanel: new MockElement("budgetPanel"),
+  appVersion: new MockElement("appVersion"),
+  priceAsOf: new MockElement("priceAsOf")
 };
 
 // Initial default input values
@@ -196,8 +208,10 @@ domElements.sort.options = [
 ];
 
 const docListeners = {};
+globalThis.Image = class extends MockElement { constructor() { super("", "IMG"); } };
 globalThis.document = {
   getElementById: id => domElements[id] || null,
+  createElement: tag => new MockElement("", tag),
   addEventListener: (ev, fn) => {
     if (!docListeners[ev]) docListeners[ev] = [];
     docListeners[ev].push(fn);
