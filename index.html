@@ -36,7 +36,6 @@
     </div>
     <div class="header-actions">
       <button class="btn" id="openAiModalBtn" type="button">✨ Search &amp; Add Car (AI)</button>
-      <button class="btn-outline" id="openSettingsBtn" type="button" title="Configure Free Google AI Studio API Key">⚙️ Gemini Key</button>
       <button class="btn-outline" id="themeToggleBtn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">☀️</button>
     </div>
   </div>
@@ -148,36 +147,8 @@
   <p class="foot">Rentals use the standard amortisation formula with monthly compounding. Insurance, registration, fuel, servicing, processing fees and early settlement charges are not included. Defaults follow CBSL Directions No. 01 of 2026. This is not financial advice.</p>
 </main>
 
-<!-- GEMINI API SETTINGS MODAL -->
-<div class="modal-bg" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="stitle">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 id="stitle">Gemini API Key (100% Free)</h2>
-      <button class="close-btn" id="closeSettingsBtn" type="button" aria-label="Close">&times;</button>
-    </div>
-    <div class="callout callout-info">
-      <b>Zero added costs:</b> Google AI Studio provides a free tier with <b>no credit card required</b>.
-      <ol style="margin:6px 0 0 18px;padding:0">
-        <li>Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">aistudio.google.com/app/apikey</a></li>
-        <li>Sign in with your Google account and click <b>Create API Key</b></li>
-        <li>Paste your key below. It is saved only in your browser's local storage.</li>
-      </ol>
-    </div>
-    <label for="apiKeyInput">Google AI Studio API Key</label>
-    <input id="apiKeyInput" type="password" placeholder="AIzaSy..." autocomplete="off">
-    <div class="hint" id="keyStatus">No key set.</div>
-    <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-      <button class="btn-outline btn-sm" id="testKeyBtn" type="button">Test connection</button>
-      <div style="display:flex;gap:8px">
-        <button class="btn-outline btn-sm" id="clearKeyBtn" type="button" style="color:var(--bad)">Clear key</button>
-        <button class="btn btn-sm" id="saveKeyBtn" type="button">Save key</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- AI SEARCH & ADD VEHICLE MODAL -->
-<div class="modal-bg" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aititle">
+<div class="modal-bg" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aititle" inert>
   <div class="modal">
     <div class="modal-header">
       <h2 id="aititle">Add vehicle to calculator</h2>

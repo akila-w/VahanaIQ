@@ -434,29 +434,31 @@ assert.equal(sealionImg, "assets/images/byd-sealion-6.jpg");
 console.log("✓ Zero-Touch Studio Image Resolver PASSED\n");
 
 // -------------------------------------------------------------
-// Test 9: Model Discovery Verification Error on Failure
+// Test 9: Proxy-only search, one configurable model, no stored keys
 // -------------------------------------------------------------
-console.log("TEST 9: discoverActiveModel throws on failure when forceRefresh=true");
-const { discoverActiveModel } = geminiModule;
+console.log("TEST 9: Proxy-only search with a single configurable model");
+const { searchVehicle } = geminiModule;
+assert.equal(typeof searchVehicle, "function", "gemini.js must export searchVehicle");
+assert.equal(geminiModule.discoverActiveModel, undefined, "Direct-key model discovery must be removed");
+assert(gcpFnCode.includes("process.env.GEMINI_MODEL"), "GCP proxy must read GEMINI_MODEL");
+assert(cfWorkerCode.includes("env.GEMINI_MODEL"), "Worker must read GEMINI_MODEL");
+assert(!gcpFnCode.includes("gemini-2.0-flash") && !cfWorkerCode.includes("gemini-2.0-flash"), "Shut-down gemini-2.0-flash must not be referenced");
 
-// Mock global fetch returning 404 for all probes
 const originalFetch = globalThis.fetch;
-globalThis.fetch = async () => ({
-  ok: false,
-  status: 404,
-  json: async () => ({ error: { message: "Model not found" } })
-});
-
+globalThis.fetch = async () => ({ ok: false, status: 502, json: async () => ({ error: "upstream_unavailable", detail: "model gone" }) });
 try {
-  await discoverActiveModel("dummy_key", true);
-  assert.fail("Should have thrown error when all models fail");
+  await searchVehicle("Toyota Aqua 2024");
+  assert.fail("searchVehicle should throw on proxy error");
 } catch (e) {
-  assert.match(e.message, /failed verification|HTTP 404|Model not found/i);
+  assert.match(e.message, /upstream_unavailable/);
 } finally {
   globalThis.fetch = originalFetch;
 }
-console.log("✓ discoverActiveModel Failure Verification PASSED\n");
-
+mockStorage.setItem("sl_lease_gemini_key", "legacy");
+const { clearLegacyKeys } = await import("../js/storage.js");
+clearLegacyKeys();
+assert.equal(mockStorage.getItem("sl_lease_gemini_key"), null, "Legacy stored keys must be cleared");
+console.log("✓ Proxy-only search PASSED\n");
 
 // -------------------------------------------------------------
 // Test 10: Inline Base Vehicle Edit Persistence Without Duplication

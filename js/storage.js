@@ -1,24 +1,14 @@
-// Storage & Magic Link Importer
+// Storage helpers
 import { config } from "./config.js?v=2.6.1";
 
-export const getApiKey = () => localStorage.getItem("sl_lease_gemini_key") || config.apiKey || "";
-export const setApiKey = k => localStorage.setItem("sl_lease_gemini_key", k.trim());
-export const removeApiKey = () => localStorage.removeItem("sl_lease_gemini_key");
+export const getProxyUrl = () => config.proxyUrl || "";
 
-export const getProxyUrl = () => localStorage.getItem("sl_lease_gemini_proxy") || config.proxyUrl || "";
-export const setProxyUrl = url => localStorage.setItem("sl_lease_gemini_proxy", url.trim());
-
-export function initMagicLink() {
-  if (window.location.hash.includes("apiKey=")) {
-    const match = window.location.hash.match(/apiKey=([^&]+)/);
-    if (match && match[1]) {
-      setApiKey(decodeURIComponent(match[1]));
-      try {
-        history.replaceState(null, "", window.location.pathname + window.location.search);
-      } catch (e) {}
-      alert("VahanaIQ: Gemini API key configured successfully on this device!");
-    }
-  }
+// Earlier versions stored a personal Gemini key, a proxy override and a cached model name.
+// None of these are used any more, so remove them from the browser.
+export function clearLegacyKeys() {
+  try {
+    ["sl_lease_gemini_key", "sl_lease_gemini_proxy", "sl_lease_gemini_model", "sl_lease_gemini_model_v"].forEach(k => localStorage.removeItem(k));
+  } catch (e) {}
 }
 
 export function cloneBaseCars(base) {

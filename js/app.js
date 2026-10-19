@@ -1,15 +1,12 @@
 import { fmt, esc, num, computeLeaseTable } from "./calculator.js?v=2.6.1";
 import { baseVehicles } from "./catalog.js?v=2.6.1";
 import { normalizeImageToStudio } from "./canvas-utils.js?v=2.6.1";
-import { discoverActiveModel, searchVehicleWithGemini } from "./gemini.js?v=2.6.1";
+import { searchVehicle } from "./gemini.js?v=2.6.1";
 import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.6.1";
-import { getApiKey, getProxyUrl, setApiKey, removeApiKey, initMagicLink, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.6.1";
+import { clearLegacyKeys, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.6.1";
+import { openModal, closeModal } from "./modal.js?v=2.6.1";
 
-// Force purge any legacy cached model entry holding 3.8 flash
-if (typeof localStorage !== "undefined" && localStorage.getItem("sl_lease_gemini_model")?.includes("gemini-3.8-flash")) {
-  localStorage.removeItem("sl_lease_gemini_model");
-  localStorage.removeItem("sl_lease_gemini_model_v");
-}
+clearLegacyKeys();
 
 const $ = id => document.getElementById(id);
 
@@ -292,103 +289,23 @@ $("resetCatalogBtn").addEventListener("click", () => {
   }
 });
 
-// API Settings UI
-function updateKeyStatusUI() {
-  const k = getApiKey();
-  const proxy = getProxyUrl();
-  if (k) {
-    $("apiKeyInput").value = k;
-    $("keyStatus").innerHTML = `<span style="color:var(--ok)">✓ Personal API Key saved (${k.slice(0, 6)}...${k.slice(-4)})</span>`;
-  } else if (proxy) {
-    $("apiKeyInput").value = "";
-    $("keyStatus").innerHTML = `<span style="color:var(--accent)">✓ Connected via built-in VahanaIQ cloud proxy. (Or provide your own Google AI Studio key above for unlimited personal quota).</span>`;
-  } else {
-    $("apiKeyInput").value = "";
-    $("keyStatus").textContent = "No key set. AI vehicle search requires a free Google AI Studio key or cloud proxy.";
-  }
-}
-
-$("openSettingsBtn").addEventListener("click", () => {
-  updateKeyStatusUI();
-  $("settingsModal").classList.add("open");
-  setTimeout(() => $("apiKeyInput").focus(), 50);
-});
-$("closeSettingsBtn").addEventListener("click", () => { $("settingsModal").classList.remove("open"); });
-
-$("saveKeyBtn").addEventListener("click", () => {
-  const val = $("apiKeyInput").value.trim();
-  if (!val) { alert("Please enter a valid Google AI Studio API key."); return; }
-  setApiKey(val);
-  updateKeyStatusUI();
-  $("settingsModal").classList.remove("open");
-});
-
-$("clearKeyBtn").addEventListener("click", () => {
-  removeApiKey();
-  localStorage.removeItem("sl_lease_gemini_model");
-  localStorage.removeItem("sl_lease_gemini_model_v");
-  updateKeyStatusUI();
-});
-
-$("testKeyBtn").addEventListener("click", async () => {
-  const val = $("apiKeyInput").value.trim();
-  if (!val) { alert("Please enter an API key to test."); return; }
-  $("keyStatus").innerHTML = '<span class="spin"></span>Detecting available models & testing connection...';
-  try {
-    const model = await discoverActiveModel(val, true);
-    const cleanName = model.replace("models/", "");
-    $("keyStatus").innerHTML = `<span style="color:var(--ok);font-weight:600">✓ Connection successful! Active model: ${cleanName}</span>`;
-  } catch (e) {
-    $("keyStatus").innerHTML = `<span style="color:var(--bad)">Connection failed: ${e.message}</span>`;
-  }
-});
-
 // AI Search Modal UI
+const closeAiModal = () => closeModal($("aiModal"));
+
 $("openAiModalBtn").addEventListener("click", () => {
-  $("aiModal").classList.add("open");
-  setTimeout(() => $("aiSearchQuery").focus(), 50);
-
-  if (!getApiKey() && !getProxyUrl()) {
-    $("aiSearchMsg").innerHTML = '<span style="color:var(--mid)">Tip: Configure your free Gemini key in settings (⚙️) for live Sri Lankan vehicle valuation and trims.</span>';
-  } else if (getProxyUrl() && !getApiKey()) {
-    $("aiSearchMsg").innerHTML = '<span class="hint" style="color:var(--mute)">Connected via VahanaIQ Cloud Proxy.</span>';
-  } else {
-    $("aiSearchMsg").textContent = "";
-  }
+  $("aiSearchMsg").textContent = "";
+  openModal($("aiModal"), $("openAiModalBtn"), $("aiSearchQuery"));
 });
 
-$("closeAiModalBtn").addEventListener("click", () => { $("aiModal").classList.remove("open"); });
-$("aiCancelBtn").addEventListener("click", () => { $("aiModal").classList.remove("open"); });
-$("mCancelBtn").addEventListener("click", () => { $("aiModal").classList.remove("open"); });
-
-// Modal Backdrop Click & Escape Key Handling
-document.addEventListener("keydown", e => {
-  if (e.key === "Escape") {
-    $("aiModal").classList.remove("open");
-    $("settingsModal").classList.remove("open");
-  }
-});
-
-$("aiModal").addEventListener("click", e => {
-  if (e.target === $("aiModal")) $("aiModal").classList.remove("open");
-});
-
-$("settingsModal").addEventListener("click", e => {
-  if (e.target === $("settingsModal")) $("settingsModal").classList.remove("open");
-});
+$("closeAiModalBtn").addEventListener("click", closeAiModal);
+$("aiCancelBtn").addEventListener("click", closeAiModal);
+$("mCancelBtn").addEventListener("click", closeAiModal);
 
 // Enter key bindings
 $("aiSearchQuery").addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
     $("aiSearchBtn").click();
-  }
-});
-
-$("apiKeyInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    $("saveKeyBtn").click();
   }
 });
 
@@ -399,14 +316,15 @@ $("paneManual").addEventListener("keydown", e => {
   }
 });
 
-$("tabAiBtn").addEventListener("click", () => {
-  $("tabAiBtn").classList.add("active"); $("tabManualBtn").classList.remove("active");
-  $("paneAi").hidden = false; $("paneManual").hidden = true;
-});
-$("tabManualBtn").addEventListener("click", () => {
-  $("tabManualBtn").classList.add("active"); $("tabAiBtn").classList.remove("active");
-  $("paneAi").hidden = true; $("paneManual").hidden = false;
-});
+function selectTab(which) {
+  const ai = which === "ai";
+  $("tabAiBtn").classList.toggle("active", ai);
+  $("tabManualBtn").classList.toggle("active", !ai);
+  $("paneAi").hidden = !ai;
+  $("paneManual").hidden = ai;
+}
+$("tabAiBtn").addEventListener("click", () => selectTab("ai"));
+$("tabManualBtn").addEventListener("click", () => selectTab("manual"));
 
 // Classified Ad / Auction Sheet Screenshot Upload & Clipboard Paste
 function setAttachedAdImage(file) {
@@ -456,39 +374,30 @@ $("aiSearchBtn").addEventListener("click", async () => {
     $("aiSearchMsg").textContent = "Please enter a vehicle name, paste an ad, or attach a screenshot.";
     return;
   }
-  const key = getApiKey();
-  const proxy = getProxyUrl();
-  if (!key && !proxy) {
-    $("aiModal").classList.remove("open");
-    $("settingsModal").classList.add("open");
-    alert("Please configure your free Google AI Studio API key in settings or connect a proxy.");
-    return;
-  }
-
   $("aiSearchMsg").innerHTML = '<span class="spin"></span>Analyzing Sri Lankan market availability, trims, and valuations...';
   $("aiUnavailBox").hidden = true;
   $("aiResultForm").hidden = true;
   $("aiDiscoveryBox").hidden = true;
 
   try {
-    const parsed = await searchVehicleWithGemini(query, key, pendingAdImage);
+    const parsed = await searchVehicle(query, pendingAdImage);
     currentAiData = parsed;
     renderAiResults(parsed);
   } catch (e) {
-    const isProxyIssue = e.message.includes("proxy") || e.message.includes("policy") || e.message.includes("HTTP 403") || e.message.includes("404") || e.message.includes("Failed to fetch");
-    const guide = isProxyIssue
-      ? `<br><small style="margin-top:6px;display:block;color:var(--mute)">Cloud proxy unavailable? You can add a free Google AI Studio key in <button type="button" class="link" id="errSettingsLink" style="font-weight:600">Settings</button> to use gemini-2.5-flash directly.</small>`
-      : "";
-    $("aiSearchMsg").innerHTML = `<span style="color:var(--bad)">Search error: ${esc(e.message)}</span>${guide}`;
-    const link = $("errSettingsLink");
-    if (link) {
-      link.addEventListener("click", () => {
-        $("aiModal").classList.remove("open");
-        $("settingsModal").classList.add("open");
-      });
-    }
+    console.error("AI vehicle search failed:", e);
+    showSearchUnavailable();
   }
 });
+
+// Friendly fallback when AI search fails: offer manual entry instead of the raw error
+function showSearchUnavailable() {
+  $("aiSearchMsg").innerHTML = `<span class="msg-error">AI search isn't available right now. You can still add the car yourself.</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter details manually</button>`;
+  $("goManualBtn").addEventListener("click", () => {
+    selectTab("manual");
+    if (!$("mName").value) $("mName").value = $("aiSearchQuery").value.trim().slice(0, 120);
+    $("mName").focus();
+  });
+}
 
 async function renderAiResults(data) {
   $("aiSearchMsg").textContent = "";
@@ -699,7 +608,7 @@ $("aiConfirmAddBtn").addEventListener("click", () => {
     });
     saveCars(cars);
     render();
-    $("aiModal").classList.remove("open");
+    closeAiModal();
   });
 });
 
@@ -740,7 +649,7 @@ $("aiAddAllTrimsBtn").addEventListener("click", () => {
     });
     saveCars(cars);
     render();
-    $("aiModal").classList.remove("open");
+    closeAiModal();
   });
 });
 
@@ -846,7 +755,7 @@ $("aiAddSelectedBtn").addEventListener("click", () => {
 
   saveCars(cars);
   render();
-  $("aiModal").classList.remove("open");
+  closeAiModal();
 });
 
 // Quick Manual Entry Add Button
@@ -875,7 +784,7 @@ $("mAddBtn").addEventListener("click", () => {
     saveCars(cars);
     render();
     $("mName").value = ""; $("mPrice").value = ""; $("mImgUrl").value = "";
-    $("aiModal").classList.remove("open");
+    closeAiModal();
   });
 });
 
@@ -916,6 +825,4 @@ if (themeBtn) {
 
 initTheme();
 
-// Initialise magic link and initial render
-initMagicLink();
 render();

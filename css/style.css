@@ -10,6 +10,7 @@
   --mid: #d97706;
   --bad: #dc2626;
   --bar: #cbd5e1;
+  --on-accent: #ffffff;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -28,10 +29,12 @@
     --mid: #fbbf24;
     --bad: #f87171;
     --bar: #334155;
+    --on-accent: #0f172a;
   }
 }
 
 :root[data-theme="light"] {
+  --on-accent: #ffffff;
   --bg: #f8fafc;
   --panel: #ffffff;
   --ink: #0f172a;
@@ -46,6 +49,7 @@
 }
 
 :root[data-theme="dark"] {
+  --on-accent: #0f172a;
   --bg: #0b1120;
   --panel: #0f172a;
   --ink: #f1f5f9;
@@ -371,7 +375,7 @@ button.btn {
   padding: 8px 14px;
   border: 1px solid var(--accent);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: 6px;
   font: inherit;
   cursor: pointer;
@@ -441,13 +445,26 @@ button.link:focus-visible {
   z-index: 1000;
   padding: 16px;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, visibility 0s linear 0.15s;
 }
 
 .modal-bg.open {
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+  transition-delay: 0s;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+.msg-error {
+  color: var(--bad);
+  display: block;
+  margin-bottom: 6px;
 }
 
 .modal {
