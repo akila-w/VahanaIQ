@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="gauge-arc" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="70%" stop-color="#14B8A6"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="gauge-v" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Calibrated Gauge Arc (260 degrees) -->
+  <path d="M22 75 A 38 38 0 1 1 78 75" stroke="url(#gauge-arc)" stroke-width="6.5" stroke-linecap="round"/>
+
+  <!-- Instrument Tick Marks -->
+  <line x1="16" y1="50" x2="22" y2="50" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <line x1="50" y1="16" x2="50" y2="22" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <line x1="84" y1="50" x2="78" y2="50" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Precision Chevron 'V' -->
+  <path d="M29 34 L50 78 L71 34" stroke="#0F766E" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Central Actuarial Hub & IQ Indicator Dot -->
+  <circle cx="50" cy="50" r="4.5" fill="#14B8A6"/>
+  <circle cx="73" cy="27" r="4" fill="#F59E0B"/>
+</svg>

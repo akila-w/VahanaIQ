@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="apex-tr-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#04433B"/>
+    </linearGradient>
+    <linearGradient id="apex-tr-right" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#0F766E"/>
+    </linearGradient>
+    <linearGradient id="apex-tr-spark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5EEAD4"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Anchor Arm -->
+  <path d="M15 26 H33 L47 76 H32 Z" fill="url(#apex-tr-left)"/>
+
+  <!-- Right Accelerated Arm -->
+  <path d="M53 76 H68 L85 26 H69 L51 68 Z" fill="url(#apex-tr-right)"/>
+
+  <!-- IQ Intelligence Spark -->
+  <circle cx="85" cy="16" r="6" fill="url(#apex-tr-spark)"/>
+</svg>

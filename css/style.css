@@ -1,14 +1,15 @@
 :root {
-  --bg: #f6f8f9;
+  --bg: #f8fafc;
   --panel: #ffffff;
-  --ink: #12263a;
-  --mute: #5b6b7a;
-  --line: #d8e0e6;
-  --accent: #0f7b6c;
-  --ok: #0f7b6c;
-  --mid: #b7791f;
-  --bad: #b83a3a;
-  --bar: #c5d3dc;
+  --ink: #0f172a;
+  --mute: #64748b;
+  --line: #e2e8f0;
+  --accent: #0f766e;
+  --accent-bright: #2dd4bf;
+  --ok: #059669;
+  --mid: #d97706;
+  --bad: #dc2626;
+  --bar: #cbd5e1;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -16,30 +17,32 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0e1a26;
-    --panel: #16283a;
-    --ink: #e8eef3;
-    --mute: #9fb0bf;
-    --line: #2a3f54;
-    --accent: #3fc1ac;
-    --ok: #3fc1ac;
-    --mid: #e0a94a;
-    --bad: #ef7b7b;
-    --bar: #34506a;
+    --bg: #0b1120;
+    --panel: #0f172a;
+    --ink: #f1f5f9;
+    --mute: #94a3b8;
+    --line: #1e293b;
+    --accent: #2dd4bf;
+    --accent-bright: #5eead4;
+    --ok: #34d399;
+    --mid: #fbbf24;
+    --bad: #f87171;
+    --bar: #334155;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0e1a26;
-  --panel: #16283a;
-  --ink: #e8eef3;
-  --mute: #9fb0bf;
-  --line: #2a3f54;
-  --accent: #3fc1ac;
-  --ok: #3fc1ac;
-  --mid: #e0a94a;
-  --bad: #ef7b7b;
-  --bar: #34506a;
+  --bg: #0b1120;
+  --panel: #0f172a;
+  --ink: #f1f5f9;
+  --mute: #94a3b8;
+  --line: #1e293b;
+  --accent: #2dd4bf;
+  --accent-bright: #5eead4;
+  --ok: #34d399;
+  --mid: #fbbf24;
+  --bad: #f87171;
+  --bar: #334155;
 }
 
 html {
@@ -76,10 +79,26 @@ h1 {
   font-size: 1.8rem;
   line-height: 1.2;
   margin: 0 0 4px;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+.brand-iq {
+  color: var(--accent);
+}
+
+.brand-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  background: rgba(15, 118, 110, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(15, 118, 110, 0.25);
+  text-transform: uppercase;
 }
 
 .sub {
