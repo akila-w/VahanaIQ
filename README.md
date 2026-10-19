@@ -1,0 +1,36 @@
+# VahanaIQ
+
+**VahanaIQ** is a Sri Lankan vehicle lease calculator and affordability discovery platform. It aligns directly with Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026.
+
+## Features
+- **CBSL Regulatory Engine:** 50% down payment cap on unregistered passenger cars, 84-month tenure limit, 40%/50% DTI ceilings.
+- **Zero-Cost Google Gemini AI Integration:** Auto-discovers active Flash models (`gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-1.5-flash-latest`) via Google AI Studio's free tier ($0/month, 1,500 requests/day).
+- **Sri Lankan Market Availability Gatekeeper:** Validates if searched vehicles are actively traded in Sri Lanka or road-legal (RHD, tax brackets), suggesting local alternatives if not.
+- **Hierarchical Selector:** Multi-tier Model Year and Trim selector with condition grading (Brand New, Reconditioned Grade 4.5+, Registered Used).
+- **Dynamic LKR Pricing:** Market valuations automatically update as condition or trim changes.
+- **HTML5 Canvas Studio Normaliser:** Automatically centres, scales, and pads any car photo onto an 8:5 pure white plate (`#FFFFFF`) with tyre contact shadow.
+- **Zero-Exposure Magic Link:** Supports `#apiKey=...` fragment parameter to auto-configure trusted devices without hardcoding credentials in source code.
+
+## Folder Structure
+```
+vahanaiq/
+├── index.html            # Main web application entry point
+├── manifest.json         # PWA Manifest
+├── README.md             # Project documentation
+├── css/
+│   └── style.css         # Modern responsive styles & dark/light theme
+├── js/
+│   ├── app.js            # Main application UI and event coordinator
+│   ├── calculator.js     # Actuarial lease formulas, DTI & budget room
+│   ├── catalog.js        # Default 12 Sri Lankan vehicles
+│   ├── canvas-utils.js   # 8:5 white studio plate image normaliser
+│   ├── gemini.js         # Google AI Studio API integration & auto-discovery
+│   └── storage.js        # LocalStorage persistence & magic link handler
+└── assets/
+    ├── icons/
+    │   └── favicon.svg   # Vector brand icon
+    └── images/           # High-resolution studio press photos (12 vehicles)
+```
+
+## Running Locally
+Simply open `index.html` in any web browser. No npm build or local server required.

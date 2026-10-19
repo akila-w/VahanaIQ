@@ -1,0 +1,16 @@
+{
+  "name": "VahanaIQ - Sri Lanka Vehicle Lease Calculator",
+  "short_name": "VahanaIQ",
+  "description": "Smart vehicle lease calculator and affordability discovery for Sri Lanka.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0e1a26",
+  "theme_color": "#0f7b6c",
+  "icons": [
+    {
+      "src": "assets/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
