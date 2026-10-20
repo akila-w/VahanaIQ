@@ -1,5 +1,5 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, DOWN_MIN } from "./calculator.js?v=2.9.0";
+import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.9.0";
 
 const STORE_KEY = "vahanaiq_inputs_v1";
 
@@ -23,7 +23,7 @@ export const FIELDS = {
 
 // Validated numeric fields: settings key, the check, and the last value that passed it
 const RULES = {
-  rate: { key: "rate", check: v => v === "" ? "Enter an interest rate." : !(num(v) >= 0 && num(v) <= 40) ? "Enter a rate between 0 and 40%." : "" },
+  rate: { key: "rateInput", check: v => v === "" ? "Enter an interest rate." : !(num(v) >= 0 && num(v) <= 40) ? "Enter a rate between 0 and 40%." : "" },
   tenure: { key: "n", check: v => v === "" || !isFinite(num(v)) ? "Enter a tenure in months." : "", snap: true },
   down: { key: "down", check: v => v === "" || !isFinite(num(v)) ? "Enter a down payment percentage." : "", snap: true },
   income: { key: "income", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Income can't be negative." : "" },
@@ -75,6 +75,8 @@ export function readSettings() {
       else setFieldState(id, "");
     }
   }
+  // The rate actually used follows the entered (or last valid) rate and its type
+  s.rate = s.rateType === "flat" ? flatToEffective(s.rateInput, s.n) : s.rateInput;
   const mp = $("maxprice");
   if (mp) {
     const err = fieldError("maxprice");
