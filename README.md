@@ -11,7 +11,7 @@
 ## Features
 - **CBSL Regulatory Engine:** 60% minimum down payment (40% maximum LTV) for brand new, reconditioned and recently registered cars and 40% for cars registered over a year, applied to each car automatically; 40%/50% DTI ceilings; terms of up to 84 months (the Direction itself sets no tenure limit).
 - **Flat or reducing rates:** Lessors often quote flat rates. Choose the rate type and a flat rate is converted to its reducing-balance equivalent, so rentals, interest and the yearly schedule are right either way.
-- **Catalogue with photos and filters:** 146 cars and SUVs sold in Sri Lanka, filterable by make, body type, fuel, seller and published price, with priced cars first and an estimated monthly rental on each.
+- **Catalogue with photos and filters:** 147 cars and SUVs sold in Sri Lanka, filterable by make, body type, fuel, seller and published price, with priced cars first and an estimated monthly rental on each.
 - **Lease details:** Each vehicle's down payment, amount financed, rental, interest, total paid and a year-by-year balance, plus optional insurance and up-front fees.
 - **Smart Multi-Input AI Extraction:** Analyzes vehicle names, comparative queries, raw classified ad text (Ikman, Riyasewana, Patpat, FB Marketplace), or uploaded/clipboard screenshots of Japanese auction sheets.
 - **Zero-Touch Studio Photos:** Automatically resolves studio car press photos via local catalog, Wikipedia REST API, and Wikimedia Commons, normalising them onto 8:5 pure white studio plates.
