@@ -1,5 +1,11 @@
 const functions = require('@google-cloud/functions-framework');
 
+// The one place the Gemini model is chosen. Override with the GEMINI_MODEL env var.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+
+// Maps an upstream Gemini HTTP status to a short code the front end can act on.
+const errorCode = status => status === 429 ? 'quota' : status === 400 ? 'bad_request' : 'upstream_unavailable';
+
 const VEHICLE_RESPONSE_SCHEMA = {
   type: 'OBJECT',
   properties: {
@@ -115,19 +121,20 @@ functions.http('vehicleSearch', async (req, res) => {
   }
 
   if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'bad_request', detail: 'Method not allowed' });
     return;
   }
 
   const { query, image } = req.body || {};
   if (!query && !image) {
-    res.status(400).json({ error: 'Missing query or image parameter' });
+    res.status(400).json({ error: 'bad_request', detail: 'Missing query or image parameter' });
     return;
   }
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    res.status(500).json({ error: 'Server GEMINI_API_KEY is not configured' });
+    console.error('GEMINI_API_KEY is not configured');
+    res.status(500).json({ error: 'internal', detail: 'Server GEMINI_API_KEY is not configured' });
     return;
   }
 
@@ -161,48 +168,24 @@ Instructions:
   }
 
   try {
-    const candidateModels = [
-      'models/gemini-2.5-flash',
-      'models/gemini-2.0-flash'
-    ];
-
-    let geminiRes = null;
-    let lastErr = '';
-
-    for (const model of candidateModels) {
-      try {
-        const attempt = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig: {
-              temperature: 0.2,
-              responseMimeType: 'application/json',
-              responseSchema: VEHICLE_RESPONSE_SCHEMA
-            }
-          })
-        });
-
-        if (attempt.ok) {
-          geminiRes = attempt;
-          break;
-        } else {
-          const errJson = await attempt.json().catch(() => ({}));
-          lastErr = errJson.error?.message || `HTTP ${attempt.status}`;
-          if (lastErr.includes('no longer available') || lastErr.includes('depleted') || attempt.status === 404 || attempt.status === 400) {
-            continue;
-          }
-          geminiRes = attempt;
-          break;
+    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: {
+          temperature: 0.2,
+          responseMimeType: 'application/json',
+          responseSchema: VEHICLE_RESPONSE_SCHEMA
         }
-      } catch (err) {
-        lastErr = err.message;
-      }
-    }
+      })
+    });
 
-    if (!geminiRes || !geminiRes.ok) {
-      res.status(geminiRes ? geminiRes.status : 500).json({ error: lastErr || 'Failed to reach Gemini API' });
+    if (!geminiRes.ok) {
+      const errJson = await geminiRes.json().catch(() => ({}));
+      const detail = errJson.error?.message || `HTTP ${geminiRes.status}`;
+      console.error(`Gemini ${MODEL} failed: HTTP ${geminiRes.status}: ${detail}`);
+      res.status(502).json({ error: errorCode(geminiRes.status), detail });
       return;
     }
 
@@ -210,6 +193,7 @@ Instructions:
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
     res.json(JSON.parse(raw));
   } catch (e) {
-    res.status(500).json({ error: e.message || 'Internal error' });
+    console.error('Proxy internal error:', e);
+    res.status(500).json({ error: 'internal', detail: e.message || 'Internal error' });
   }
 });

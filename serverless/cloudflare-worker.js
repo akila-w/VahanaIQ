@@ -7,6 +7,17 @@
  * Free tier: 100,000 requests/day at $0/month.
  */
 
+// Default Gemini model. Override with the GEMINI_MODEL variable on the Worker.
+const DEFAULT_MODEL = "gemini-3.6-flash";
+
+// Maps an upstream Gemini HTTP status to a short code the front end can act on.
+const errorCode = status => status === 429 ? "quota" : status === 400 ? "bad_request" : "upstream_unavailable";
+
+const json = (body, status = 200) => new Response(JSON.stringify(body), {
+  status,
+  headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+});
+
 const VEHICLE_RESPONSE_SCHEMA = {
   type: "OBJECT",
   properties: {
@@ -125,28 +136,20 @@ export default {
     }
 
     if (request.method !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
-        status: 405,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-      });
+      return json({ error: "bad_request", detail: "Method not allowed" }, 405);
     }
 
     try {
       const body = await request.json();
       const { query, image } = body || {};
       if (!query && !image) {
-        return new Response(JSON.stringify({ error: "Missing query or image parameter" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-        });
+        return json({ error: "bad_request", detail: "Missing query or image parameter" }, 400);
       }
 
       const apiKey = env.GEMINI_API_KEY;
       if (!apiKey) {
-        return new Response(JSON.stringify({ error: "Platform GEMINI_API_KEY secret not configured on proxy" }), {
-          status: 500,
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-        });
+        console.error("GEMINI_API_KEY secret is not configured");
+        return json({ error: "internal", detail: "Platform GEMINI_API_KEY secret not configured on proxy" }, 500);
       }
 
       const systemPrompt = "You are an expert Sri Lankan automotive market analyst and finance assessor. Evaluate vehicles based on actual Sri Lankan road regulations and active market availability (official franchise dealers like AMW, DIMO, John Keells CG, Stafford; Japanese auction grey market imports; or registered local fleet). Return strictly valid JSON conforming to the requested schema.";
@@ -178,51 +181,25 @@ Instructions:
         });
       }
 
-      const candidateModels = [
-        "models/gemini-2.5-flash",
-        "models/gemini-2.0-flash"
-      ];
-
-      let geminiRes = null;
-      let lastErr = "";
-
-      for (const model of candidateModels) {
-        try {
-          const attempt = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts }],
-              generationConfig: {
-                temperature: 0.2,
-                responseMimeType: "application/json",
-                responseSchema: VEHICLE_RESPONSE_SCHEMA
-              }
-            })
-          });
-
-          if (attempt.ok) {
-            geminiRes = attempt;
-            break;
-          } else {
-            const errJson = await attempt.json().catch(() => ({}));
-            lastErr = errJson.error?.message || `Gemini API error ${attempt.status}`;
-            if (lastErr.includes("no longer available") || attempt.status === 404 || attempt.status === 400) {
-              continue;
-            }
-            geminiRes = attempt;
-            break;
+      const model = env.GEMINI_MODEL || DEFAULT_MODEL;
+      const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            temperature: 0.2,
+            responseMimeType: "application/json",
+            responseSchema: VEHICLE_RESPONSE_SCHEMA
           }
-        } catch (err) {
-          lastErr = err.message;
-        }
-      }
+        })
+      });
 
-      if (!geminiRes || !geminiRes.ok) {
-        return new Response(JSON.stringify({ error: lastErr || "Failed to reach Gemini API" }), {
-          status: geminiRes ? geminiRes.status : 500,
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-        });
+      if (!geminiRes.ok) {
+        const errJson = await geminiRes.json().catch(() => ({}));
+        const detail = errJson.error?.message || `HTTP ${geminiRes.status}`;
+        console.error(`Gemini ${model} failed: HTTP ${geminiRes.status}: ${detail}`);
+        return json({ error: errorCode(geminiRes.status), detail }, 502);
       }
 
       const data = await geminiRes.json();
@@ -237,10 +214,8 @@ Instructions:
         }
       });
     } catch (err) {
-      return new Response(JSON.stringify({ error: err.message || "Internal server error" }), {
-        status: 500,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-      });
+      console.error("Proxy internal error:", err);
+      return json({ error: "internal", detail: err.message || "Internal server error" }, 500);
     }
   }
 };

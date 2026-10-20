@@ -1,7 +1,12 @@
 // VahanaIQ: Sri Lankan Lease & Actuarial Calculator Logic
-// Follows CBSL Directions No. 01 of 2026
+// Down-payment rules follow CBSL Directions No. 01 of 2026, cl. 2.1 (motor cars):
+// at most 40% financed for unregistered cars and cars registered under a year (60% down),
+// at most 60% financed for cars registered over a year (40% down).
 
-export const fmt = n => Math.round(n).toLocaleString("en-LK");
+export const DOWN_MIN = 40;          // lowest down payment any car can have (registered over a year)
+export const DOWN_MIN_UNREG = 60;    // brand new, reconditioned and recently registered cars
+
+export const fmt = n => (Math.round(n) || 0).toLocaleString("en-LK"); // "|| 0" turns -0 into 0
 export const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const num = id => {
   const el = typeof id === "string" ? document.getElementById(id) : id;
@@ -24,7 +29,7 @@ export function getSettings() {
   let n = num("tenure");
   if (!(n >= 1)) n = 84;
   let down = num("down");
-  if (!(down >= 0)) down = 50;
+  if (!(down >= 0)) down = DOWN_MIN_UNREG;
   
   const rawN = num("tenure");
   const rawDown = num("down");
@@ -33,8 +38,8 @@ export function getSettings() {
   const nLow = isFinite(rawN) && rawN < 6;
   n = Math.min(84, Math.max(6, Math.round(n)));
   
-  const downLow = isFinite(rawDown) && rawDown < 30;
-  down = Math.min(100, Math.max(30, down));
+  const downLow = isFinite(rawDown) && rawDown < DOWN_MIN;
+  down = Math.min(100, Math.max(DOWN_MIN, down));
 
   const tenureHint = document.getElementById("tenureHint");
   const downHint = document.getElementById("downHint");
@@ -54,13 +59,13 @@ export function getSettings() {
 
   if (downHint) {
     if (downLow) {
-      downHint.textContent = "Clamped to 30% minimum down payment";
+      downHint.textContent = "Raised to the 40% minimum down payment";
       downHint.className = "hint warn";
-    } else if (down < 50) {
-      downHint.textContent = "Lower than 50% down (applicable for registered used vehicles)";
+    } else if (down < DOWN_MIN_UNREG) {
+      downHint.textContent = "Below 60%: only cars registered over a year qualify. Others are flagged ⚠️.";
       downHint.className = "hint";
     } else {
-      downHint.textContent = "Minimum 50% for unregistered cars";
+      downHint.textContent = "Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%; they're flagged ⚠️ below that.";
       downHint.className = "hint";
     }
   }
@@ -72,8 +77,8 @@ export function getSettings() {
   return { rate, n, down, income: income > 0 ? income : 0, debt, dti };
 }
 
-export function computeLeaseTable(cars) {
-  const s = getSettings();
+export function computeLeaseTable(cars, settings = getSettings()) {
+  const s = settings;
   const f = rental(1, s.rate, s.n);
   const rows = cars.map((c, idx) => {
     let loan, dp, rent, interest, total, need;

@@ -29,6 +29,9 @@ class MockElement {
     this.options = [];
     this.selectedOptions = [];
     this.listeners = {};
+    this.dataset = {};
+    this.children = [];
+    this._stubs = {};
     this.classList = {
       _classes: new Set(),
       add: c => mockElementClassListAdd(this, c),
@@ -53,10 +56,19 @@ class MockElement {
   closest(sel) {
     return this;
   }
-  querySelector() { return null; }
+  querySelector(sel) { return this._stubs[sel] || (this._stubs[sel] = new MockElement()); }
   querySelectorAll() { return []; }
-  insertBefore() {}
+  insertBefore(node, ref) {
+    const i = ref ? this.children.indexOf(ref) : -1;
+    if (i < 0) this.children.push(node); else this.children.splice(i, 0, node);
+  }
+  get lastElementChild() { return this.children[this.children.length - 1] || null; }
+  remove() {}
+  after() {}
+  replaceChildren(...nodes) { this.children = nodes; }
+  get parentNode() { return this; }
   setAttribute(k, v) { this[k] = v; }
+  removeAttribute(k) { delete this[k]; }
   getAttribute(k) { return this[k] || null; }
 }
 
@@ -156,13 +168,28 @@ const domElements = {
   mPt: new MockElement("mPt", "INPUT"),
   mImgUrl: new MockElement("mImgUrl", "INPUT"),
   mAddBtn: new MockElement("mAddBtn", "BUTTON"),
-  mErr: new MockElement("mErr")
+  mErr: new MockElement("mErr"),
+  resetInputsBtn: new MockElement("resetInputsBtn", "BUTTON"),
+  incomeHint: new MockElement("incomeHint"),
+  debtHint: new MockElement("debtHint"),
+  maxpriceHint: new MockElement("maxpriceHint"),
+  "h-list": new MockElement("h-list"),
+  toast: new MockElement("toast"),
+  filtersToggle: new MockElement("filtersToggle", "BUTTON"),
+  filtersCount: new MockElement("filtersCount"),
+  toolsPanel: new MockElement("toolsPanel"),
+  budgetLegend: new MockElement("budgetLegend"),
+  budgetLive: new MockElement("budgetLive"),
+  budgetBar: new MockElement("budgetBar"),
+  budgetPanel: new MockElement("budgetPanel"),
+  appVersion: new MockElement("appVersion"),
+  priceAsOf: new MockElement("priceAsOf")
 };
 
 // Initial default input values
 domElements.rate.value = "16";
 domElements.tenure.value = "84";
-domElements.down.value = "50";
+domElements.down.value = "60";
 domElements.income.value = "";
 domElements.debt.value = "0";
 domElements.dti.value = "0.4";
@@ -181,8 +208,10 @@ domElements.sort.options = [
 ];
 
 const docListeners = {};
+globalThis.Image = class extends MockElement { constructor() { super("", "IMG"); } };
 globalThis.document = {
   getElementById: id => domElements[id] || null,
+  createElement: tag => new MockElement("", tag),
   addEventListener: (ev, fn) => {
     if (!docListeners[ev]) docListeners[ev] = [];
     docListeners[ev].push(fn);
@@ -222,16 +251,16 @@ domElements.income.value = "";
 let s = getSettings();
 assert.equal(s.rate, 16);
 assert.equal(s.n, 84);
-assert.equal(s.down, 50);
+assert.equal(s.down, 60);
 assert.equal(s.income, 0);
 assert.equal(domElements.tenureHint.textContent, "Maximum 84");
-assert.equal(domElements.downHint.textContent, "Minimum 50% for unregistered cars");
+assert.match(domElements.downHint.textContent, /^Minimum 40%.*need 60%/);
 
-// 1b: Clamping down payment < 30%
+// 1b: Clamping down payment below the 40% CBSL floor (cl. 2.1, registered over a year)
 domElements.down.value = "10";
 s = getSettings();
-assert.equal(s.down, 30, "Down payment < 30 should clamp to 30");
-assert.equal(domElements.downHint.textContent, "Clamped to 30% minimum down payment");
+assert.equal(s.down, 40, "Down payment < 40 should clamp to 40");
+assert.equal(domElements.downHint.textContent, "Raised to the 40% minimum down payment");
 assert.match(domElements.downHint.className, /warn/);
 
 // 1c: Clamping tenure < 6 months
@@ -412,8 +441,8 @@ assert(html.includes('aria-label="Search vehicle with Gemini AI or paste adverti
 assert(html.includes('aria-label="Studio photo image URL"'), "index.html must have aria-label on aiImgUrl");
 assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
 assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
-assert(html.includes('js/app.js?v=2.6.1'), "index.html must reference js/app.js?v=2.6.1");
-assert(html.includes('css/style.css?v=2.6.1'), "index.html must reference css/style.css?v=2.6.1");
+assert(html.includes('js/app.js?v=2.7.0'), "index.html must reference js/app.js?v=2.7.0");
+assert(html.includes('css/style.css?v=2.7.0'), "index.html must reference css/style.css?v=2.7.0");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");
 
 // -------------------------------------------------------------
@@ -434,29 +463,31 @@ assert.equal(sealionImg, "assets/images/byd-sealion-6.jpg");
 console.log("✓ Zero-Touch Studio Image Resolver PASSED\n");
 
 // -------------------------------------------------------------
-// Test 9: Model Discovery Verification Error on Failure
+// Test 9: Proxy-only search, one configurable model, no stored keys
 // -------------------------------------------------------------
-console.log("TEST 9: discoverActiveModel throws on failure when forceRefresh=true");
-const { discoverActiveModel } = geminiModule;
+console.log("TEST 9: Proxy-only search with a single configurable model");
+const { searchVehicle } = geminiModule;
+assert.equal(typeof searchVehicle, "function", "gemini.js must export searchVehicle");
+assert.equal(geminiModule.discoverActiveModel, undefined, "Direct-key model discovery must be removed");
+assert(gcpFnCode.includes("process.env.GEMINI_MODEL"), "GCP proxy must read GEMINI_MODEL");
+assert(cfWorkerCode.includes("env.GEMINI_MODEL"), "Worker must read GEMINI_MODEL");
+assert(!gcpFnCode.includes("gemini-2.0-flash") && !cfWorkerCode.includes("gemini-2.0-flash"), "Shut-down gemini-2.0-flash must not be referenced");
 
-// Mock global fetch returning 404 for all probes
 const originalFetch = globalThis.fetch;
-globalThis.fetch = async () => ({
-  ok: false,
-  status: 404,
-  json: async () => ({ error: { message: "Model not found" } })
-});
-
+globalThis.fetch = async () => ({ ok: false, status: 502, json: async () => ({ error: "upstream_unavailable", detail: "model gone" }) });
 try {
-  await discoverActiveModel("dummy_key", true);
-  assert.fail("Should have thrown error when all models fail");
+  await searchVehicle("Toyota Aqua 2024");
+  assert.fail("searchVehicle should throw on proxy error");
 } catch (e) {
-  assert.match(e.message, /failed verification|HTTP 404|Model not found/i);
+  assert.match(e.message, /upstream_unavailable/);
 } finally {
   globalThis.fetch = originalFetch;
 }
-console.log("✓ discoverActiveModel Failure Verification PASSED\n");
-
+mockStorage.setItem("sl_lease_gemini_key", "legacy");
+const { clearLegacyKeys } = await import("../js/storage.js");
+clearLegacyKeys();
+assert.equal(mockStorage.getItem("sl_lease_gemini_key"), null, "Legacy stored keys must be cleared");
+console.log("✓ Proxy-only search PASSED\n");
 
 // -------------------------------------------------------------
 // Test 10: Inline Base Vehicle Edit Persistence Without Duplication
