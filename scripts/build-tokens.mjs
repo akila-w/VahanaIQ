@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Builds css/tokens.css from design-system/tokens.json, the VahanaIQ design system's
-// tokens. tokens.json is the one place to change a colour, shadow, radius or size;
+// tokens. tokens.json is the one place to change a colour, shadow, spacing step, radius or size;
 // css/style.css only reads the custom properties this writes.
 // Colours and shadows follow the theme: Light on :root, Dark under prefers-color-scheme
 // (unless the toggle picked Light) and [data-theme="dark"], and Print under @media print.
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const TOKENS_JSON = path.join(root, 'design-system/tokens.json');
 export const TOKENS_CSS = path.join(root, 'css/tokens.css');
-const PLAIN_FAMILIES = ['spacing', 'radius', 'size', 'zIndex'];
+const PLAIN_FAMILIES = ['spacing', 'radius', 'size', 'opacity', 'zIndex'];
 
 // A colour may alias another colour token as "{name}"
 const cssValue = v => String(v).replace(/^\{([A-Za-z0-9_.-]+)\}$/, 'var(--$1)');

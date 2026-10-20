@@ -64,7 +64,8 @@ Designed to convey financial health, Sri Lankan heritage, and executive stabilit
 | **Slate Mute** | `--mute` | `#64748B` | `#94A3B8` | Labels, hints, table headers | 4.55:1 on bg (light), 6.96:1 (dark) |
 | **Alabaster White** | `--panel` | `#FFFFFF` | `#0F172A` | Card and panel surface | Surface |
 | **Page** | `--bg` | `#F8FAFC` | `#0B1120` | Page background, inputs | Surface |
-| **Border Slate** | `--line` | `#E2E8F0` | `#1E293B` | Dividers, panel and input borders | 1.23:1 (decorative, not a control cue on its own) |
+| **Border Slate** | `--line` | `#E2E8F0` | `#1E293B` | Dividers, panel, card and table borders | 1.23:1 (decorative only) |
+| **Control Border** | `--control-border` | `#7F8EA3` | `#5B6B82` | Edges of inputs, selects, textareas, outline, row and file buttons | 3.33:1 on panel, 3.19:1 on bg (light); 3.29:1 / 3.47:1 (dark) |
 | **On Emerald** | `--on-accent` | `#FFFFFF` | `#0F172A` | Text on an `--accent` fill | 5.47:1 / 9.59:1 |
 
 Fixed tints (`--callout-info-bg`, `--badge-official-bg`, `--badge-grey-bg`, `--ltv-warn-bg`, `--selected-bg`, `--scrim`) are translucent and the same in both themes. The studio plate (`--plate`, `#FFFFFF`) is white in every theme. The `--mark-*` tokens hold the logo colours and are not for UI.
@@ -111,12 +112,16 @@ The product loads no web fonts.
 ## 5. UI Components & Dark Mode Integration
 
 ### Design Tokens
-[`design-system/tokens.json`](../design-system/tokens.json) is the single source for colours, shadows, radii, sizes, layers and the font stack. `scripts/build-tokens.mjs` writes them to `css/tokens.css` as CSS custom properties. `index.html` loads that file before `css/style.css`, which only reads the variables.
+[`design-system/tokens.json`](../design-system/tokens.json) is the single source for colours, shadows, spacing, radii, sizes, opacity, layers and the font stack. `scripts/build-tokens.mjs` writes them to `css/tokens.css` as CSS custom properties. `index.html` loads that file before `css/style.css`, which only reads the variables.
 
 ```bash
 node scripts/build-tokens.mjs           # after editing tokens.json
 node scripts/build-tokens.mjs --check   # fails if css/tokens.css is out of date
 ```
+
+Padding, margins and gaps use the spacing scale (`--space-2` to `--space-40`). The few off-scale values (1px, 5px, 7px, 11px, 72px) stay as written.
+
+Disabled buttons (`.btn`, `.btn-outline`) drop to `--opacity-disabled` (0.6), show a not-allowed cursor and skip their hover change.
 
 `test/tokens.test.mjs` (run in CI) fails if `css/tokens.css` is stale, if `css/style.css` declares its own custom properties, or if it reads a variable the tokens don't define.
 

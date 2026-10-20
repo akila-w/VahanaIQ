@@ -18,7 +18,7 @@ for (const name of used) assert.ok(defined.has(name), `css/style.css reads --${n
 assert.doesNotMatch(style, /^\s*--[A-Za-z0-9_.-]+\s*:/m, 'css/style.css must not declare custom properties; add them to design-system/tokens.json');
 
 // Token names are unique across families, and every theme has the values the app relies on
-const names = ['color', 'shadow', 'spacing', 'radius', 'size', 'zIndex', 'breakpoint'].flatMap(f => (tokens[f]?.tokens ?? []).map(t => t.name));
+const names = ['color', 'shadow', 'spacing', 'radius', 'size', 'opacity', 'zIndex', 'breakpoint'].flatMap(f => (tokens[f]?.tokens ?? []).map(t => t.name));
 assert.equal(new Set(names).size, names.length, 'design token names must be unique');
 const color = Object.fromEntries(tokens.color.tokens.map(t => [t.name, t.value]));
 for (const name of ['bg', 'panel', 'ink', 'mute', 'line', 'accent', 'bad', 'ok-ink', 'mid-ink']) {
