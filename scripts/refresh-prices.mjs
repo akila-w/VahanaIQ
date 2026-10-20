@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 // Monthly catalogue price refresh, run by .github/workflows/refresh-prices.yml.
-// Asks the search proxy for the brand-new price of each built-in vehicle, matches
-// the trim by name and rewrites only the `price` values and catalogMeta.priceUpdated
-// in js/catalog.js. Answers that are missing, zero or more than ±25% from the
-// current price are skipped and listed. No npm dependencies (Node 20+).
+// Asks the search proxy's price mode (a Google Search-grounded Gemini lookup) for the
+// brand-new price of each built-in vehicle, matches the trim by name and rewrites only
+// the `price` values and catalogMeta.priceUpdated in js/catalog.js. Answers that are
+// missing, zero, not backed by a web source, marked as estimates, more than 6 months
+// old or more than ±25% from the current price are skipped and listed.
+// No npm dependencies (Node 20+).
 // Requests are paced for the Gemini free tier (5 a minute), so a full run takes about 3 minutes.
 //
 //   node scripts/refresh-prices.mjs [--dry-run] [--report <file>] [--proxy <url>]
@@ -26,6 +28,7 @@ const REQUEST_TIMEOUT_MS = 120000;
 const MAX_ATTEMPTS = 3;             // per vehicle
 const MAX_RETRY_WAIT_MS = 90000;
 const MAX_FAILED_IN_A_ROW = 3;      // stop asking once the proxy is clearly down or out of quota
+const MAX_SOURCE_AGE_MONTHS = 6;    // skip prices published longer ago than this
 // Gearbox words in trim names. The catalogue names no gearbox, so when trims differ only
 // by gearbox the automatic is priced (Akila's decision of 20/10/2026).
 const AUTOMATIC = new Set(["at", "cvt", "ecvt", "amt", "dct", "ivt", "auto", "automatic"]);
@@ -44,7 +47,32 @@ export const fmtPct = x => (x > 0 ? "+" : x < 0 ? "−" : "±") + Math.abs(x * 1
 
 export function buildQuery(v) {
   const route = v.w === "Official" ? "from the official agent" : "grey import";
-  return `${v.name}, ${v.pt}, brand new ${route}: current price in Sri Lanka`;
+  return `${v.name}, ${v.pt}, brand new ${route}`;
+}
+
+// Price-mode answers ({ model_name, trims[], sources[] }) are reshaped like the app's
+// search answers (model_years[].trims[].condition_prices.brand_new) so one matcher
+// handles both. An answer from a proxy without price mode comes back with no sources.
+export function normaliseAnswer(raw) {
+  if (!raw || typeof raw !== "object") return raw;
+  if (!Array.isArray(raw.trims)) return { ...raw, sources: raw.sources || [] };
+  const years = new Map();
+  for (const t of raw.trims) {
+    const year = Number(t.model_year) || 0;
+    if (!years.has(year)) years.set(year, { year, trims: [] });
+    years.get(year).trims.push({
+      trim_name: t.trim_name,
+      condition_prices: { brand_new: t.brand_new_price_lkr },
+      price_basis: t.price_basis,
+      as_of: t.as_of
+    });
+  }
+  return {
+    is_available_in_sri_lanka: raw.available_new_in_sri_lanka,
+    model_name: raw.model_name,
+    model_years: [...years.values()],
+    sources: Array.isArray(raw.sources) ? raw.sources.filter(s => s && /^https?:\/\//.test(s.uri)) : []
+  };
 }
 
 // Picks the trim in the proxy answer whose name best matches the catalogue name.
@@ -54,7 +82,8 @@ export function buildQuery(v) {
 // matches "Alpha (Turbo)" with powertrain "1.0L Turbo MHEV"), and the trim covering
 // most of the catalogue name wins. Gearbox words are allowed, and the automatic wins a tie.
 // Returns { year, trimName, price } or { reason } when nothing fits.
-export function matchTrim(vehicle, answer) {
+export function matchTrim(vehicle, raw) {
+  const answer = normaliseAnswer(raw);
   if (!answer || typeof answer !== "object") return { reason: "empty answer from the proxy" };
   if (answer.is_available_in_sri_lanka === false) return { reason: "proxy says it is not available in Sri Lanka" };
 
@@ -93,7 +122,25 @@ export function matchTrim(vehicle, answer) {
     return { reason: `ambiguous trim match: ${inYear.map(c => c.trim.trim_name).join(", ")}` };
   }
   const { trim } = inYear[0];
-  return { year, trimName: trim.trim_name, price: trim.condition_prices?.brand_new };
+  return { year, trimName: trim.trim_name, price: trim.condition_prices?.brand_new, basis: trim.price_basis, asOf: trim.as_of };
+}
+
+// Checks that a matched price comes from a recent published source.
+// Returns { sources } or { reason }.
+export function vetSource(match, raw, month) {
+  const sources = normaliseAnswer(raw)?.sources || [];
+  if (!sources.length) {
+    return { reason: Array.isArray(raw?.trims)
+      ? "answer not backed by a web source: Gemini cited none"
+      : "answer not backed by a web source: the proxy has no price mode yet (redeploy it)" };
+  }
+  if (match.basis === "estimate") return { reason: "the proxy marked this price as an estimate, not a published price" };
+  const asOf = /^(\d{4})-(\d{2})$/.exec(match.asOf || "");
+  const [y, m] = month.split("-").map(Number);
+  if (asOf && (y * 12 + m) - (Number(asOf[1]) * 12 + Number(asOf[2])) > MAX_SOURCE_AGE_MONTHS) {
+    return { reason: `price published in ${match.asOf}, more than ${MAX_SOURCE_AGE_MONTHS} months before ${month}` };
+  }
+  return { sources };
 }
 
 // Applies the sanity checks to a proposed price. Returns { price, change } or { reason }.
@@ -163,20 +210,29 @@ export function formatDiff(oldSource, newSource) {
   return lines.join("\n");
 }
 
+// "dealer listing, 2026-10: [riyasewana.com](…), [ikman.lk](…)". Links are the pages
+// Gemini cited for the whole answer, not necessarily for this one trim.
+const sourceCell = r => {
+  const label = [r.basis, r.asOf].filter(Boolean).join(", ");
+  const links = (r.sources || []).slice(0, 3)
+    .map(s => `[${cell(oneLine(s.title, 40)).replace(/[[\]]/g, "")}](${s.uri.replace(/[()\s]/g, encodeURIComponent)})`).join(", ");
+  return [label, links].filter(Boolean).join(": ") || "–";
+};
+
 export function renderReport({ month, updated, skipped }) {
   const out = [
     `Monthly refresh of the 12 built-in catalogue prices for ${month}, from the VahanaIQ search proxy.`,
     "",
     "> [!WARNING]",
-    "> These prices are AI estimates (Gemini through the search proxy), not dealer quotes. " +
-      "Check each one against a dealer price list or current listings before merging.",
+    "> These prices are AI estimates, not dealer quotes. Gemini found them with Google Search, but it can " +
+      "misread a page or pick the wrong trim. Check each one against its linked sources before merging.",
     ""
   ];
   if (updated.length) {
     out.push(
-      "| Vehicle | Matched trim | Old price | New price | Change |",
-      "| --- | --- | ---: | ---: | ---: |",
-      ...updated.map(r => `| ${cell(r.name)} | ${cell(r.trim)} | ${fmtLkr(r.old)} | ${fmtLkr(r.new)} | ${fmtPct(r.change)} |`),
+      "| Vehicle | Matched trim | Old price | New price | Change | Source |",
+      "| --- | --- | ---: | ---: | ---: | --- |",
+      ...updated.map(r => `| ${cell(r.name)} | ${cell(r.trim)} | ${fmtLkr(r.old)} | ${fmtLkr(r.new)} | ${fmtPct(r.change)} | ${sourceCell(r)} |`),
       "",
       `New prices are rounded to the nearest LKR ${ROUND_TO.toLocaleString("en-GB")}. ` +
         `\`catalogMeta.priceUpdated\` is set to \`${month}\`, so the footer shows the new month.`
@@ -191,6 +247,8 @@ export function renderReport({ month, updated, skipped }) {
   out.push(
     "",
     `Answers are skipped when the price is missing or zero, when no trim matches the catalogue name, ` +
+      `when no web source backs the answer, when the proxy marks the price as an estimate, ` +
+      `when the price was published more than ${MAX_SOURCE_AGE_MONTHS} months ago, ` +
       `or when the change is more than ±${MAX_CHANGE * 100}%.`
   );
   return out.join("\n") + "\n";
@@ -211,7 +269,7 @@ async function fetchAnswer(proxy, query, delay) {
       const res = await fetch(proxy, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query, mode: "price" }),
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
       });
       if (!res.ok) {
@@ -278,14 +336,18 @@ export async function main(argv = process.argv.slice(2)) {
     }
     failedInARow = 0;
     const match = matchTrim(v, answer);
-    const vetted = match.reason ? match : vetPrice(v.price, match.price);
+    const grounded = match.reason ? match : vetSource(match, answer, month);
+    const vetted = grounded.reason ? grounded : vetPrice(v.price, match.price);
     if (vetted.reason) {
       const reason = match.trimName ? `${match.trimName} (${match.year}): ${vetted.reason}` : vetted.reason;
       skipped.push({ name: v.name, reason });
       console.log(`✗ ${v.name}: ${reason}`);
       continue;
     }
-    updated.push({ name: v.name, trim: `${match.trimName} (${match.year})`, old: v.price, new: vetted.price, change: vetted.change });
+    updated.push({
+      name: v.name, trim: `${match.trimName} (${match.year})`, old: v.price, new: vetted.price, change: vetted.change,
+      basis: match.basis, asOf: match.asOf, sources: grounded.sources
+    });
     console.log(`✓ ${v.name}: ${fmtLkr(v.price)} → ${fmtLkr(vetted.price)} (${fmtPct(vetted.change)})`);
   }
 

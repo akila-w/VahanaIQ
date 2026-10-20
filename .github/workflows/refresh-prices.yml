@@ -48,6 +48,7 @@ jobs:
         run: |
           node test/verify.mjs
           node test/refresh-prices.test.mjs
+          node test/proxy-price-mode.test.mjs
 
       - name: Open or update the pull request
         if: ${{ !inputs.dry_run }}
