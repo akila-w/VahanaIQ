@@ -44,6 +44,13 @@ vahanaiq/
 │   ├── money-input.js    # Rupee inputs with thousands separators
 │   ├── toast.js          # Undo toast
 │   └── config.js         # Cloud proxy and endpoint configuration
+├── scripts/
+│   └── refresh-prices.mjs  # Monthly catalogue price refresh (run by GitHub Actions)
+├── test/
+│   ├── verify.mjs                # App verification suite
+│   └── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
+├── .github/workflows/
+│   └── refresh-prices.yml        # Monthly price refresh pull request
 ├── serverless/
 │   ├── cloudflare-worker.js         # Cloudflare Worker proxy ($0 / 100k req/day)
 │   └── gcp-cloud-function/index.js  # Google Cloud Run / Cloud Function proxy
@@ -69,3 +76,19 @@ From `serverless/gcp-cloud-function/`:
 gcloud run deploy vahanaiq-search --source . --region asia-south1 --allow-unauthenticated --update-env-vars GEMINI_MODEL=gemini-3.6-flash
 ```
 The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. Upstream errors are written to the Cloud Run logs.
+
+## Monthly catalogue price refresh
+`.github/workflows/refresh-prices.yml` runs at 08:00 Sri Lanka time on the 1st of each month, and on demand from the Actions tab (**Run workflow**, with an optional dry run). It runs `scripts/refresh-prices.mjs`, which asks the search proxy for the brand-new price of each of the 12 built-in vehicles and matches the trim by name. Only the `price` values and `catalogMeta.priceUpdated` in `js/catalog.js` are rewritten; every other field and the file's formatting stay as they are. A vehicle is skipped, and its price left alone, if the answer is missing or zero, no trim matches, or the change is more than ±25%.
+
+The workflow never commits to `main`. It pushes a `prices/YYYY-MM` branch and opens a pull request whose description shows the old price, new price and % change for each vehicle, plus the skipped list. **The prices are AI estimates: check them against a dealer price list or current listings before merging.** No pull request is opened if nothing changed.
+
+One-time setup: in the repository's **Settings → Actions → General**, allow GitHub Actions to create pull requests, otherwise `gh pr create` is refused. The proxy URL comes from `config.proxyUrl` in `js/config.js`, or from a `PROXY_URL` repository variable if one is set.
+
+To try it locally without writing anything:
+```bash
+node scripts/refresh-prices.mjs --dry-run
+```
+This calls the live proxy. The tests use a mocked proxy instead:
+```bash
+node test/refresh-prices.test.mjs
+```

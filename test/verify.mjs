@@ -499,6 +499,7 @@ const catalogMod = await import("../js/catalog.js");
 const { baseVehicles } = catalogMod;
 
 mockStorage.clear();
+const catalogPrice = baseVehicles[0].price; // read, not hard-coded, so monthly price refreshes keep this test green
 const initialCars = loadSavedCars(baseVehicles);
 assert.equal(initialCars.length, 12);
 // Simulate inline editing base vehicle #0
@@ -512,7 +513,7 @@ const reloadedCars = loadSavedCars(baseVehicles);
 assert.equal(reloadedCars.length, 12, "Inline-edited base vehicle must update in place on reload without duplicating");
 assert.equal(reloadedCars[0].price, 28900000);
 assert.equal(reloadedCars[0].cond, "Recond");
-assert.equal(baseVehicles[0].price, 30500000, "Original baseVehicles catalog must remain unmutated");
+assert.equal(baseVehicles[0].price, catalogPrice, "Original baseVehicles catalog must remain unmutated");
 console.log("✓ Inline Base Vehicle Edit Persistence PASSED\n");
 console.log("==================================================");
 console.log("ALL 10 VERIFICATION TESTS PASSED SUCCESSFULLY! (100%)");

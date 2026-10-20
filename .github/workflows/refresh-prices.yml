@@ -1,0 +1,78 @@
+# Monthly refresh of the 12 built-in catalogue prices.
+# Asks the search proxy for each vehicle's brand-new price, rewrites only the prices
+# and catalogMeta.priceUpdated in js/catalog.js, and opens a pull request for review.
+# It never commits to main. See "Monthly catalogue price refresh" in README.md.
+name: Refresh catalogue prices
+
+on:
+  schedule:
+    - cron: "30 2 1 * *" # 02:30 UTC (08:00 in Sri Lanka) on the 1st of each month
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: print the diff and report without opening a pull request"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: refresh-prices
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+
+      - name: Ask the proxy for current prices
+        env:
+          # Optional repository variable; otherwise config.proxyUrl in js/config.js is used
+          PROXY_URL: ${{ vars.PROXY_URL }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          node scripts/refresh-prices.mjs $DRY_RUN --report "$RUNNER_TEMP/pr-body.md"
+          cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run the verification suites
+        run: |
+          node test/verify.mjs
+          node test/refresh-prices.test.mjs
+
+      - name: Open or update the pull request
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- js/catalog.js; then
+            echo "js/catalog.js is unchanged; no pull request needed."
+            exit 0
+          fi
+          month=$(node -p 'require("fs").readFileSync("js/catalog.js","utf8").match(/priceUpdated: "(\d{4}-\d{2})"/)[1]')
+          branch="prices/$month"
+          title="Catalogue prices for $month (AI estimates, please check)"
+          printf '\n---\nOpened by the [Refresh catalogue prices](%s/%s/actions/runs/%s) workflow.\n' \
+            "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> "$RUNNER_TEMP/pr-body.md"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add js/catalog.js
+          git commit -m "chore(catalog): refresh vehicle prices for $month"
+          git push --force origin "$branch"
+
+          if [ "$(gh pr view "$branch" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+            gh pr edit "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
+          else
+            gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
+          fi

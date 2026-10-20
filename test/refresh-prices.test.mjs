@@ -1,0 +1,176 @@
+// Tests for scripts/refresh-prices.mjs against a mocked search proxy (no network).
+//   node test/refresh-prices.test.mjs
+
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import http from "node:http";
+import os from "node:os";
+import path from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { fileURLToPath } from "node:url";
+import { matchTrim, vetPrice, rewriteCatalog, verifyRewrite, fmtLkr, fmtPct } from "../scripts/refresh-prices.mjs";
+import { baseVehicles } from "../js/catalog.js";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const SCRIPT = path.join(ROOT, "scripts/refresh-prices.mjs");
+const CATALOG = path.join(ROOT, "js/catalog.js");
+
+console.log("=== REFRESH-PRICES TESTS ===\n");
+
+// Builds a proxy answer in the VEHICLE_RESPONSE_SCHEMA shape
+const answer = (model, trims, year = 2026) => ({
+  is_available_in_sri_lanka: true,
+  model_name: model,
+  wikipedia_slug: model.replace(/ /g, "_"),
+  availability_notes: "",
+  import_route: "Grey Import",
+  model_years: [{
+    year,
+    trims: trims.map(([trim_name, brand_new]) => ({
+      trim_name, powertrain: "", fuel_economy_kml: "", warranty_type: "Grey",
+      condition_prices: { brand_new, recond: 0, used_low: 0, used_med: 0 }
+    }))
+  }]
+});
+const car = name => baseVehicles.find(v => v.name.startsWith(name));
+
+// -------------------------------------------------------------
+console.log("TEST 1: Trim matching");
+let m = matchTrim(car("Toyota Corolla Cross"), answer("Toyota Corolla Cross", [["G", 26000000], ["Z", 31000000]]));
+assert.equal(m.trimName, "Z");
+assert.equal(m.price, 31000000);
+m = matchTrim(car("BYD Sealion 6"), answer("BYD Sealion 6", [["Dynamic", 22000000], ["Premium AWD", 27000000], ["Premium FWD", 25000000]]));
+assert.equal(m.trimName, "Premium AWD", "AWD in the catalogue name must pick the AWD trim");
+m = matchTrim(car("Toyota Raize"), answer("Toyota Raize", [["G Hybrid", 13000000], ["Z Hybrid", 15000000], ["Z", 12500000]]));
+assert.equal(m.trimName, "Z Hybrid");
+m = matchTrim(car("Honda Vezel"), {
+  ...answer("Honda Vezel", [["e:HEV Z", 20000000]], 2025),
+  model_years: [answer("Honda Vezel", [["e:HEV Z", 20000000]], 2025).model_years[0], answer("Honda Vezel", [["e:HEV Z", 21500000]], 2026).model_years[0]]
+});
+assert.deepEqual([m.year, m.price], [2026, 21500000], "The newest model year must win");
+assert.match(matchTrim(car("Honda Vezel"), answer("Honda Vezel", [["e:HEV X", 18000000]])).reason, /no trim matching/);
+assert.match(matchTrim(car("Honda Vezel"), { is_available_in_sri_lanka: false }).reason, /not available/);
+assert.match(matchTrim(car("Honda Vezel"), { is_available_in_sri_lanka: true, model_name: "Honda Vezel", model_years: [] }).reason, /no trims/);
+assert.match(matchTrim(car("Toyota Raize"), answer("Toyota Raize", [["Z Hybrid", 15000000], ["Hybrid Z", 14000000]])).reason, /ambiguous/);
+console.log("✓ Trim matching PASSED\n");
+
+// -------------------------------------------------------------
+console.log("TEST 2: Price checks");
+assert.match(vetPrice(10000000, undefined).reason, /no brand-new price/);
+assert.match(vetPrice(10000000, 0).reason, /no brand-new price/);
+assert.match(vetPrice(10000000, "11000000").reason, /no brand-new price/);
+assert.match(vetPrice(10000000, 12600000).reason, /outside ±25%/);
+assert.match(vetPrice(10000000, 7400000).reason, /outside ±25%/);
+assert.deepEqual(vetPrice(10000000, 12500000), { price: 12500000, change: 0.25 }, "Exactly +25% is allowed");
+assert.equal(vetPrice(10000000, 10234567).price, 10230000, "Prices round to the nearest LKR 10,000");
+console.log("✓ Price checks PASSED\n");
+
+// -------------------------------------------------------------
+console.log("TEST 3: Rewrite touches only prices and priceUpdated");
+const source = fs.readFileSync(CATALOG, "utf8");
+const rewritten = rewriteCatalog(source, [["Honda Vezel e:HEV Z", 21500000], ["Suzuki Wagon R Custom Z", 9100000]], "2026-11");
+const before = source.split("\n");
+const after = rewritten.split("\n");
+assert.equal(after.length, before.length);
+const changed = before.map((l, i) => [l, after[i]]).filter(([a, b]) => a !== b);
+assert.equal(changed.length, 3, "Exactly two vehicle lines and the meta line change");
+for (const [a, b] of changed) {
+  assert.equal(a.replace(/price: \d+|"\d{4}-\d{2}"/g, ""), b.replace(/price: \d+|"\d{4}-\d{2}"/g, ""));
+}
+assert.match(rewritten, /priceUpdated: "2026-11"/);
+assert.match(rewritten, /name: "Honda Vezel e:HEV Z", pt: "1.5L Strong HEV", km: "24-28 km\/l", w: "Grey", price: 21500000,/);
+await verifyRewrite(source, rewritten);
+assert.throws(() => rewriteCatalog(source, [["No Such Car", 1]], "2026-11"), /not found/);
+console.log("✓ Rewrite PASSED\n");
+
+// -------------------------------------------------------------
+console.log("TEST 4: CLI dry run and write against a mocked proxy");
+// One canned answer per catalogue vehicle, keyed by the start of the query. Prices are
+// relative to the current catalogue so the test still passes after a monthly refresh.
+const at = (name, factor) => Math.round(car(name).price * factor / 10000) * 10000;
+const mock = {
+  "Toyota Corolla Cross Z (Adventure)": answer("Toyota Corolla Cross", [["G", at("Toyota Corolla", 0.85)], ["Z", at("Toyota Corolla", 1.023)]]),
+  "BYD Sealion 6 Premium (AWD)": answer("BYD Sealion 6", [["Dynamic", at("BYD Sealion 6", 0.8)], ["Premium AWD", at("BYD Sealion 6", 1)]]),
+  "Honda Vezel e:HEV Z": answer("Honda Vezel", [["e:HEV X", at("Honda Vezel", 0.88)], ["e:HEV Z", at("Honda Vezel", 1.022) + 4321]]),
+  "BYD Sealion 5 Premium": answer("BYD Sealion 5", [["Dynamic", at("BYD Sealion 5", 0.9)], ["Premium", at("BYD Sealion 5", 0.98)]]),
+  "Toyota Yaris Cross Z": answer("Toyota Yaris Cross", [["Z", at("Toyota Yaris", 1.05)]]),
+  "Toyota Urban Cruiser Hyryder V": answer("Toyota Urban Cruiser Hyryder", [["V", at("Toyota Urban Cruiser Hyryder", 0.97)]]),
+  "Toyota Raize Z Hybrid": answer("Toyota Raize", [["Z Hybrid", 0]]),                                          // zero price
+  "Suzuki Swift MZ Hybrid": answer("Suzuki Swift", [["MZ", at("Suzuki Swift", 1.4)]]),                        // +40%
+  "Suzuki Fronx Alpha (Turbo)": answer("Suzuki Fronx", [["Alpha Turbo", at("Suzuki Fronx", 1.01)]]),
+  "Toyota Urban Cruiser Taisor V": null,                                                                       // HTTP 502
+  "Nissan Magnite Tekna Plus": answer("Nissan Magnite", [["Tekna+", at("Nissan Magnite", 1.03)]]),
+  "Suzuki Wagon R Custom Z": { ...answer("Suzuki Wagon R", []), model_years: [] }                              // no trims
+};
+const queries = [];
+const server = http.createServer((req, res) => {
+  let body = "";
+  req.on("data", c => { body += c; });
+  req.on("end", () => {
+    const { query } = JSON.parse(body);
+    queries.push(query);
+    const key = Object.keys(mock).find(k => query.startsWith(k + ","));
+    const reply = key && mock[key];
+    res.writeHead(reply ? 200 : 502, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(reply || { error: "upstream_unavailable", detail: "mock failure" }));
+  });
+});
+await new Promise(r => server.listen(0, "127.0.0.1", r));
+const proxy = `http://127.0.0.1:${server.address().port}`;
+
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "vahanaiq-refresh-test-"));
+const tmpCatalog = path.join(tmp, "catalog.js");
+fs.copyFileSync(CATALOG, tmpCatalog);
+const run = (...extra) => promisify(execFile)(process.execPath, [
+  SCRIPT, "--proxy", proxy, "--catalog", tmpCatalog, "--month", "2026-11", "--delay", "0", ...extra
+]);
+
+try {
+  // Dry run: prints the diff and report, writes nothing
+  const dry = await run("--dry-run", "--report", path.join(tmp, "report.md"));
+  assert.equal(fs.readFileSync(tmpCatalog, "utf8"), source, "Dry run must not write the catalogue");
+  const vezel = car("Honda Vezel");
+  const vezelNew = at("Honda Vezel", 1.022);
+  assert.ok(dry.stdout.includes(`- ${source.split("\n").find(l => l.includes(vezel.name))}`));
+  assert.match(dry.stdout, new RegExp(`\\+ .*name: "Honda Vezel e:HEV Z".*price: ${vezelNew},`), "New price is rounded to LKR 10,000");
+  assert.match(dry.stdout, /\+ export const catalogMeta = \{ priceUpdated: "2026-11" \};/);
+  assert.match(dry.stdout, /Dry run: js\/catalog.js not written\./);
+  assert.equal(queries.length, 13, "12 vehicles plus one retry for the failed request");
+
+  const report = fs.readFileSync(path.join(tmp, "report.md"), "utf8");
+  assert.match(report, /AI estimates/);
+  assert.match(report, /\| Old price \| New price \| Change \|/);
+  assert.ok(report.includes(`| Honda Vezel e:HEV Z | e:HEV Z (2026) | ${fmtLkr(vezel.price)} | ${fmtLkr(vezelNew)} | ${fmtPct((vezelNew - vezel.price) / vezel.price)} |`));
+  assert.match(report, /### Skipped \(4\)/);
+  for (const name of ["Toyota Raize Z Hybrid", "Suzuki Swift MZ Hybrid", "Toyota Urban Cruiser Taisor V", "Suzuki Wagon R Custom Z"]) {
+    assert.match(report, new RegExp(`- \\*\\*${name}\\*\\*`), `${name} must be listed as skipped`);
+  }
+  assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ \(2026\): LKR [\d,]+ is \+4\d\.\d% from LKR [\d,]+, outside ±25%/);
+
+  // Real run on the temporary copy
+  await run();
+  const written = await import(`file://${tmpCatalog}?t=${Date.now()}`);
+  assert.equal(written.catalogMeta.priceUpdated, "2026-11");
+  const unchanged = name => car(name).price;
+  const expected = {
+    "Toyota Corolla Cross Z (Adventure)": at("Toyota Corolla", 1.023), "Honda Vezel e:HEV Z": vezelNew,
+    "Nissan Magnite Tekna Plus": at("Nissan Magnite", 1.03),
+    // skipped vehicles keep their price
+    "Toyota Raize Z Hybrid": unchanged("Toyota Raize"), "Suzuki Swift MZ Hybrid": unchanged("Suzuki Swift"),
+    "Toyota Urban Cruiser Taisor V": unchanged("Toyota Urban Cruiser Taisor"), "Suzuki Wagon R Custom Z": unchanged("Suzuki Wagon R")
+  };
+  written.baseVehicles.forEach((v, i) => {
+    const { price, ...rest } = v;
+    const { price: oldPrice, ...oldRest } = baseVehicles[i];
+    assert.deepEqual(rest, oldRest, `${v.name}: only the price may change`);
+    if (v.name in expected) assert.equal(price, expected[v.name], v.name);
+  });
+  assert.equal(fs.readFileSync(CATALOG, "utf8"), source, "The real js/catalog.js must be untouched");
+} finally {
+  server.close();
+  fs.rmSync(tmp, { recursive: true, force: true });
+}
+console.log("✓ CLI dry run and write PASSED\n");
+
+console.log("ALL REFRESH-PRICES TESTS PASSED");
