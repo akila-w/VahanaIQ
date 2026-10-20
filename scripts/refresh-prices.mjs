@@ -291,6 +291,10 @@ export function retryWait(message, attempt, delay) {
 
 // Quota errors that only clear at midnight Pacific time are not worth retrying
 const isDailyLimit = e => e.quota === "daily" || /per ?day/i.test(e.message);
+// Nor is a model Gemini will not serve, e.g. "models/gemini-2.5-flash is no longer
+// available to new users" (seen on 20/10/2026)
+const isModelUnavailable = e => [401, 403, 404].includes(e.upstreamStatus) ||
+  /no longer available|is not found for API version|not supported for generateContent/i.test(e.message);
 
 async function fetchAnswer(proxy, queries, delay) {
   let lastError;
@@ -307,12 +311,12 @@ async function fetchAnswer(proxy, queries, delay) {
         // Full text kept here: Gemini's "Please retry in Ns" hint comes at the end
         throw Object.assign(
           new Error(oneLine(`HTTP ${res.status}${err.error ? ` ${err.error}` : ""}${err.detail ? `: ${err.detail}` : ""}`, Infinity)),
-          { status: res.status, quota: err.quota });
+          { status: res.status, quota: err.quota, upstreamStatus: err.upstream_status });
       }
       return await res.json();
     } catch (e) {
       lastError = e;
-      if (isDailyLimit(e) || e.status === 400) break;
+      if (isDailyLimit(e) || isModelUnavailable(e) || e.status === 400) break;
       if (attempt < MAX_ATTEMPTS) {
         const wait = retryWait(e.message, attempt, delay);
         console.log(`  … attempt ${attempt} failed (${oneLine(e.message, 120)}); retrying in ${Math.round(wait / 1000)} s`);
@@ -373,6 +377,7 @@ export async function main(argv = process.argv.slice(2)) {
       group.forEach(v => skipped.push({ name: v.name, reason: `proxy request failed (${oneLine(e.message)})` }));
       console.log(`✗ ${group.map(v => v.name).join(", ")}: proxy request failed (${e.message})`);
       if (isDailyLimit(e)) stopReason = "not asked: Gemini's free daily limit is used up (it resets at midnight Pacific time)";
+      else if (isModelUnavailable(e)) stopReason = "not asked: Gemini will not serve the proxy's price model (set PRICE_MODEL on Cloud Run to one it does)";
       else if (e.status === 400) stopReason = "not asked: the proxy rejected the request (is it redeployed with batched price mode?)";
       else if (failedInARow >= MAX_FAILED_IN_A_ROW) stopReason = `not asked, after ${MAX_FAILED_IN_A_ROW} failed requests in a row`;
       continue;

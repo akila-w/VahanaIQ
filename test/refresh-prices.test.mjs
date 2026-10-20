@@ -100,7 +100,7 @@ assert.match(vetSource({ ...m, basis: "estimate" }, taisor, "2026-10").reason, /
 assert.equal(vetSource({ ...m, asOf: "2026-04" }, taisor, "2026-10").reason, undefined, "6 months old is allowed");
 assert.match(vetSource({ ...m, asOf: "2026-03" }, taisor, "2026-10").reason, /published in 2026-03, more than 6 months/);
 assert.match(vetSource({ ...m, asOf: "2025-12" }, taisor, "2026-07").reason, /more than 6 months/, "Year boundaries count correctly");
-const reply = { vehicles: [{ query_index: 2, ...taisor, sources: undefined }], sources: SOURCES, model: "gemini-2.5-flash" };
+const reply = { vehicles: [{ query_index: 2, ...taisor, sources: undefined }], sources: SOURCES, model: "gemini-2.5-flash-lite" };
 assert.deepEqual(answerFor(reply, 2).sources, SOURCES, "Each vehicle gets the reply's cited sources");
 assert.equal(answerFor(reply, 1), null);
 assert.match(matchTrim(car("Toyota Urban Cruiser Taisor"), answerFor(reply, 1)).reason, /no answer for this vehicle/);
@@ -169,7 +169,7 @@ const mock = {
   "Suzuki Wagon R Custom Z": null                                                                                 // left out of the reply
 };
 const requests = [];
-let behaviour = "normal"; // normal | blip (first try of batch 2 fails) | daily | down | old-proxy
+let behaviour = "normal"; // normal | blip (first try of batch 2 fails) | daily | down | old-proxy | model-gone
 const quotaError = (quota, hint) => ({ error: "quota", ...(quota ? { quota } : {}),
   detail: `You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.\n\n* Quota exceeded for metric: free_tier_requests, limit: 5\nPlease retry in ${hint}s.` });
 const server = http.createServer((req, res) => {
@@ -184,6 +184,8 @@ const server = http.createServer((req, res) => {
     const isBatch2 = queries[0].startsWith("Toyota Yaris Cross Z,");
     if (behaviour === "old-proxy") return send(400, { error: "bad_request", detail: "Missing query or image parameter" });
     if (behaviour === "daily") return send(502, quotaError("daily", "40000"));
+    if (behaviour === "model-gone") return send(502, { error: "upstream_unavailable", upstream_status: 404,
+      detail: "This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash." });
     if (behaviour === "down") return send(502, quotaError("minute", "0.01"));
     if (behaviour === "blip" && isBatch2 && requests.filter(q => q[0] === queries[0]).length === 1) {
       return send(502, quotaError(undefined, "0.01")); // per-minute limit, no quota field: retried
@@ -192,7 +194,7 @@ const server = http.createServer((req, res) => {
     const sources = [...new Map(answers.filter(Boolean).flatMap(a => a.sources).map(s => [s.uri, s])).values()];
     send(200, {
       vehicles: answers.map((a, i) => a && { query_index: i + 1, ...a, sources: undefined }).filter(Boolean),
-      sources, search_queries: ["price sri lanka"], model: "gemini-2.5-flash"
+      sources, search_queries: ["price sri lanka"], model: "gemini-2.5-flash-lite"
     });
   });
 });
@@ -214,7 +216,7 @@ try {
   assert.equal(fs.readFileSync(tmpCatalog, "utf8"), source, "Dry run must not write the catalogue");
   assert.equal(requests.length, 4, "3 batches of 4, plus one retry");
   assert.match(dry.stdout, /attempt 1 failed .*; retrying in 1 s/, "The retry hint at the end of a long message is honoured");
-  assert.match(dry.stdout, /\(answered by gemini-2\.5-flash\)/);
+  assert.match(dry.stdout, /\(answered by gemini-2\.5-flash-lite\)/);
   const vezel = car("Honda Vezel");
   const vezelNew = at("Honda Vezel", 1.022);
   assert.ok(dry.stdout.includes(`- ${source.split("\n").find(l => l.includes(vezel.name))}`));
@@ -287,6 +289,14 @@ try {
   assert.equal(requests.length, 1, "A rejected request is never retried");
   assert.match(fs.readFileSync(path.join(tmp, "old.md"), "utf8"), /is it redeployed with batched price mode\?/);
   assert.equal(fs.readFileSync(tmpCatalog, "utf8"), source, "Nothing is written when no vehicle could be asked");
+
+  // Gemini will not serve the price model (run #3, 20/10/2026): one request, no retries, stop
+  behaviour = "model-gone";
+  requests.length = 0;
+  failed = await failedRun("--report", path.join(tmp, "gone.md"));
+  assert.equal(failed?.code, 1);
+  assert.equal(requests.length, 1, "An unavailable model is never retried");
+  assert.match(fs.readFileSync(path.join(tmp, "gone.md"), "utf8"), /Gemini will not serve the proxy's price model \(set PRICE_MODEL/);
 } finally {
   server.close();
   fs.rmSync(tmp, { recursive: true, force: true });

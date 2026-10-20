@@ -115,7 +115,10 @@ const VEHICLE_RESPONSE_SCHEMA = {
 // model's training data, and returns the web sources it used. Several vehicles go in
 // one request to save quota. It runs on its own model, PRICE_MODEL, so the refresh never
 // uses the app's daily free allowance. The app's search is unchanged.
-const PRICE_MODEL = process.env.PRICE_MODEL || 'gemini-2.5-flash';
+// On the free tier, Google Search grounding is only allowed on Gemini 2.x and 2.5 models
+// (AI Studio, 20/10/2026: "Gemini 3 and newer" 0 a day), and gemini-2.5-flash is closed to
+// new users, so the default is gemini-2.5-flash-lite (20 requests a day).
+const PRICE_MODEL = process.env.PRICE_MODEL || 'gemini-2.5-flash-lite';
 const PRICE_BASES = ['dealer price list', 'dealer listing', 'news report', 'estimate'];
 const MAX_PRICE_QUERIES = 12;
 
@@ -229,7 +232,7 @@ functions.http('vehicleSearch', async (req, res) => {
     } catch (e) {
       if (e.status) {
         console.error(`Gemini ${PRICE_MODEL} price lookup failed: HTTP ${e.status}: ${e.message}`);
-        res.status(502).json({ error: errorCode(e.status), detail: e.message, ...(e.quota ? { quota: e.quota } : {}) });
+        res.status(502).json({ error: errorCode(e.status), detail: e.message, upstream_status: e.status, ...(e.quota ? { quota: e.quota } : {}) });
       } else {
         console.error('Price lookup internal error:', e);
         res.status(500).json({ error: 'internal', detail: e.message || 'Internal error' });
