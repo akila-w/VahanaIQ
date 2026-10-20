@@ -26,3 +26,4 @@ jobs:
           node test/proxy-price-mode.test.mjs
           node test/refresh-prices.test.mjs
           node test/tokens.test.mjs
+          node test/calculator.test.mjs
