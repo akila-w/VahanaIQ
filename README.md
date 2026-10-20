@@ -48,7 +48,8 @@ vahanaiq/
 │   └── refresh-prices.mjs  # Monthly catalogue price refresh (run by GitHub Actions)
 ├── test/
 │   ├── verify.mjs                # App verification suite
-│   └── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
+│   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
+│   └── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
 ├── .github/workflows/
 │   └── refresh-prices.yml        # Monthly price refresh pull request
 ├── serverless/
@@ -77,10 +78,12 @@ gcloud run deploy vahanaiq-search --source . --region asia-south1 --allow-unauth
 ```
 The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. Upstream errors are written to the Cloud Run logs.
 
-## Monthly catalogue price refresh
-`.github/workflows/refresh-prices.yml` runs at 08:00 Sri Lanka time on the 1st of each month, and on demand from the Actions tab (**Run workflow**, with an optional dry run). It runs `scripts/refresh-prices.mjs`, which asks the search proxy for the brand-new price of each of the 12 built-in vehicles and matches the trim by name. Only the `price` values and `catalogMeta.priceUpdated` in `js/catalog.js` are rewritten; every other field and the file's formatting stay as they are. A vehicle is skipped, and its price left alone, if the answer is missing or zero, no trim matches, or the change is more than ±25%. Requests are spaced 13 seconds apart to stay within the Gemini free tier (5 requests a minute), so a run takes about 3 minutes. A failed request is retried twice, honouring Gemini's "retry in" hint, and the run stops asking after 3 vehicles fail in a row. When the matching trims differ only by gearbox (for example "V 1.0L Turbo AT" and "V 1.0L Turbo MT"), the automatic is priced.
+The same service has a second, **price mode** (`POST {"mode": "price", "query": "..."}`), used only by the monthly price refresh. It turns on Grounding with Google Search, so Gemini looks up current Sri Lankan prices instead of relying on its training data. It returns `{ model_name, available_new_in_sri_lanka, trims[], sources[], search_queries[] }`, where `sources` are the web pages Gemini cited. Requests without `mode` are handled exactly as before.
 
-The workflow never commits to `main`. It pushes a `prices/YYYY-MM` branch and opens a pull request whose description shows the old price, new price and % change for each vehicle, plus the skipped list. **The prices are AI estimates: check them against a dealer price list or current listings before merging.** No pull request is opened if nothing changed.
+## Monthly catalogue price refresh
+`.github/workflows/refresh-prices.yml` runs at 08:00 Sri Lanka time on the 1st of each month, and on demand from the Actions tab (**Run workflow**, with an optional dry run). It runs `scripts/refresh-prices.mjs`, which asks the search proxy's price mode (a Google Search lookup, see above) for the brand-new price of each of the 12 built-in vehicles and matches the trim by name. Only the `price` values and `catalogMeta.priceUpdated` in `js/catalog.js` are rewritten; every other field and the file's formatting stay as they are. A vehicle is skipped, and its price left alone, if the answer is missing or zero, no trim matches, Gemini cited no web source, the price is marked as an estimate or was published more than 6 months ago, or the change is more than ±25%. Requests are spaced 13 seconds apart to stay within the Gemini free tier (5 requests a minute), so a run takes about 3 minutes. A failed request is retried twice, honouring Gemini's "retry in" hint, and the run stops asking after 3 vehicles fail in a row. When the matching trims differ only by gearbox (for example "V 1.0L Turbo AT" and "V 1.0L Turbo MT"), the automatic is priced.
+
+The workflow never commits to `main`. It pushes a `prices/YYYY-MM` branch and opens a pull request whose description shows the old price, new price, % change and the sources Gemini cited for each vehicle, plus the skipped list. **The prices are AI estimates: check them against the linked sources before merging.** No pull request is opened if nothing changed.
 
 One-time setup: in the repository's **Settings → Actions → General**, allow GitHub Actions to create pull requests, otherwise `gh pr create` is refused. The proxy URL comes from `config.proxyUrl` in `js/config.js`, or from a `PROXY_URL` repository variable if one is set.
 
@@ -88,7 +91,8 @@ To try it locally without writing anything:
 ```bash
 node scripts/refresh-prices.mjs --dry-run
 ```
-This calls the live proxy. The tests use a mocked proxy instead:
+This calls the live proxy. The tests use a mocked proxy and a stubbed Gemini instead:
 ```bash
 node test/refresh-prices.test.mjs
+node test/proxy-price-mode.test.mjs
 ```

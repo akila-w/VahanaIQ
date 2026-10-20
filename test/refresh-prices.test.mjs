@@ -9,7 +9,7 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
-import { matchTrim, vetPrice, rewriteCatalog, verifyRewrite, retryWait, fmtLkr, fmtPct } from "../scripts/refresh-prices.mjs";
+import { matchTrim, vetPrice, vetSource, rewriteCatalog, verifyRewrite, retryWait, fmtLkr, fmtPct } from "../scripts/refresh-prices.mjs";
 import { baseVehicles } from "../js/catalog.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -32,6 +32,19 @@ const answer = (model, trims, year = 2026) => ({
       condition_prices: { brand_new, recond: 0, used_low: 0, used_med: 0 }
     }))
   }]
+});
+// Builds a grounded price-mode answer, as the proxy returns for POST { mode: "price" }
+const SOURCES = [
+  { title: "riyasewana.com", uri: "https://vertexaisearch.cloud.google.com/grounding-api-redirect/abc" },
+  { title: "ikman.lk", uri: "https://vertexaisearch.cloud.google.com/grounding-api-redirect/def" }
+];
+const priceAnswer = (model, trims, { year = 2026, basis = "dealer listing", asOf = "2026-10", sources = SOURCES } = {}) => ({
+  model_name: model,
+  available_new_in_sri_lanka: true,
+  trims: trims.map(([trim_name, brand_new_price_lkr]) => ({ trim_name, model_year: year, brand_new_price_lkr, price_basis: basis, as_of: asOf })),
+  sources,
+  search_queries: ["toyota price sri lanka"],
+  structured: true
 });
 const car = name => baseVehicles.find(v => v.name.startsWith(name));
 
@@ -66,6 +79,21 @@ assert.match(matchTrim(car("Suzuki Fronx"), answer("Suzuki Fronx", [["1.0L Turbo
   "A trim named only by its powertrain must not match");
 assert.match(matchTrim(car("Honda Vezel"), answer("Honda Vezel", [["e:HEV X 1.5L", 18000000]])).reason, /no trim matching/);
 console.log("✓ Trim matching PASSED\n");
+
+// -------------------------------------------------------------
+console.log("TEST 1b: Grounded price-mode answers");
+const taisor = priceAnswer("Toyota Urban Cruiser Taisor", [["V 1.0L Turbo MT", 11500000], ["V 1.0L Turbo AT", 12000000]]);
+m = matchTrim(car("Toyota Urban Cruiser Taisor"), taisor);
+assert.deepEqual([m.trimName, m.year, m.price, m.basis, m.asOf], ["V 1.0L Turbo AT", 2026, 12000000, "dealer listing", "2026-10"]);
+assert.deepEqual(vetSource(m, taisor, "2026-10").sources, SOURCES);
+assert.match(vetSource(m, { ...taisor, sources: [] }, "2026-10").reason, /not backed by a web source: Gemini cited none/);
+assert.match(vetSource(m, answer("Toyota Urban Cruiser Taisor", [["V", 12000000]]), "2026-10").reason, /no price mode yet \(redeploy it\)/,
+  "An answer from a proxy without price mode is never accepted");
+assert.match(vetSource({ ...m, basis: "estimate" }, taisor, "2026-10").reason, /estimate/);
+assert.equal(vetSource({ ...m, asOf: "2026-04" }, taisor, "2026-10").reason, undefined, "6 months old is allowed");
+assert.match(vetSource({ ...m, asOf: "2026-03" }, taisor, "2026-10").reason, /published in 2026-03, more than 6 months/);
+assert.match(vetSource({ ...m, asOf: "2025-12" }, taisor, "2026-07").reason, /more than 6 months/, "Year boundaries count correctly");
+console.log("✓ Grounded price-mode answers PASSED\n");
 
 // -------------------------------------------------------------
 console.log("TEST 2: Price checks");
@@ -110,28 +138,29 @@ console.log("TEST 4: CLI dry run and write against a mocked proxy");
 // relative to the current catalogue so the test still passes after a monthly refresh.
 const at = (name, factor) => Math.round(car(name).price * factor / 10000) * 10000;
 const mock = {
-  "Toyota Corolla Cross Z (Adventure)": answer("Toyota Corolla Cross", [["G", at("Toyota Corolla", 0.85)], ["Z", at("Toyota Corolla", 1.023)]]),
-  "BYD Sealion 6 Premium (AWD)": answer("BYD Sealion 6", [["Dynamic", at("BYD Sealion 6", 0.8)], ["Premium AWD", at("BYD Sealion 6", 1)]]),
-  "Honda Vezel e:HEV Z": answer("Honda Vezel", [["e:HEV X", at("Honda Vezel", 0.88)], ["e:HEV Z", at("Honda Vezel", 1.022) + 4321]]),
-  "BYD Sealion 5 Premium": answer("BYD Sealion 5", [["Dynamic", at("BYD Sealion 5", 0.9)], ["Premium", at("BYD Sealion 5", 0.98)]]),
-  "Toyota Yaris Cross Z": answer("Toyota Yaris Cross", [["Z", at("Toyota Yaris", 1.05)]]),
-  "Toyota Urban Cruiser Hyryder V": answer("Toyota Urban Cruiser Hyryder", [["V", at("Toyota Urban Cruiser Hyryder", 0.97)]]),
-  "Toyota Raize Z Hybrid": answer("Toyota Raize", [["Z Hybrid", 0]]),                                          // zero price
-  "Suzuki Swift MZ Hybrid": answer("Suzuki Swift", [["MZ", at("Suzuki Swift", 1.4)]]),                        // +40%
-  "Suzuki Fronx Alpha (Turbo)": answer("Suzuki Fronx", [["Alpha 1.0L Turbo MHEV", at("Suzuki Fronx", 1.01)]]),
-  "Toyota Urban Cruiser Taisor V": null,                                                                       // HTTP 502
-  "Nissan Magnite Tekna Plus": answer("Nissan Magnite", [["Tekna 1.0 Turbo", at("Nissan Magnite", 0.95)], ["Tekna Plus 1.0 Turbo", at("Nissan Magnite", 1.03)]]),
-  "Suzuki Wagon R Custom Z": { ...answer("Suzuki Wagon R", []), model_years: [] }                              // no trims
+  "Toyota Corolla Cross Z (Adventure)": priceAnswer("Toyota Corolla Cross", [["G", at("Toyota Corolla", 0.85)], ["Z", at("Toyota Corolla", 1.023)]]),
+  "BYD Sealion 6 Premium (AWD)": priceAnswer("BYD Sealion 6", [["Dynamic", at("BYD Sealion 6", 0.8)], ["Premium AWD", at("BYD Sealion 6", 1)]], { basis: "dealer price list" }),
+  "Honda Vezel e:HEV Z": priceAnswer("Honda Vezel", [["e:HEV X", at("Honda Vezel", 0.88)], ["e:HEV Z", at("Honda Vezel", 1.022) + 4321]]),
+  "BYD Sealion 5 Premium": priceAnswer("BYD Sealion 5", [["Premium", at("BYD Sealion 5", 0.98)]], { basis: "estimate" }),       // estimate
+  "Toyota Yaris Cross Z": priceAnswer("Toyota Yaris Cross", [["Z", at("Toyota Yaris", 1.05)]]),
+  "Toyota Urban Cruiser Hyryder V": priceAnswer("Toyota Urban Cruiser Hyryder", [["V", at("Toyota Urban Cruiser Hyryder", 0.97)]], { sources: [] }), // no source
+  "Toyota Raize Z Hybrid": priceAnswer("Toyota Raize", [["Z Hybrid", 0]]),                                       // zero price
+  "Suzuki Swift MZ Hybrid": priceAnswer("Suzuki Swift", [["MZ", at("Suzuki Swift", 1.4)]]),                     // +40%
+  "Suzuki Fronx Alpha (Turbo)": priceAnswer("Suzuki Fronx", [["Alpha 1.0L Turbo MHEV", at("Suzuki Fronx", 1.01)]], { asOf: "2025-12" }), // stale
+  "Toyota Urban Cruiser Taisor V": null,                                                                          // HTTP 502
+  "Nissan Magnite Tekna Plus": priceAnswer("Nissan Magnite", [["Tekna 1.0 Turbo", at("Nissan Magnite", 0.95)], ["Tekna Plus 1.0 Turbo", at("Nissan Magnite", 1.03)]]),
+  "Suzuki Wagon R Custom Z": priceAnswer("Suzuki Wagon R", [])                                                    // no trims
 };
 const queries = [];
 let failEverything = false;
 // Multi-line detail, as Gemini's quota errors have
-const failure = { error: "quota", detail: "You exceeded your current quota.\n\n* Quota exceeded for metric: free_tier_requests, limit: 5" };
+const failure = { error: "quota", detail: "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.\n\n* Quota exceeded for metric: free_tier_requests, limit: 5\nPlease retry in 0.01s." };
 const server = http.createServer((req, res) => {
   let body = "";
   req.on("data", c => { body += c; });
   req.on("end", () => {
-    const { query } = JSON.parse(body);
+    const { query, mode } = JSON.parse(body);
+    assert.equal(mode, "price", "The refresh always asks for the grounded price mode");
     queries.push(query);
     const key = Object.keys(mock).find(k => query.startsWith(k + ","));
     const reply = !failEverything && key && mock[key];
@@ -164,14 +193,20 @@ try {
   const report = fs.readFileSync(path.join(tmp, "report.md"), "utf8");
   assert.match(report, /AI estimates/);
   assert.match(report, /\| Old price \| New price \| Change \|/);
-  assert.ok(report.includes(`| Honda Vezel e:HEV Z | e:HEV Z (2026) | ${fmtLkr(vezel.price)} | ${fmtLkr(vezelNew)} | ${fmtPct((vezelNew - vezel.price) / vezel.price)} |`));
-  assert.match(report, /### Skipped \(4\)/);
+  assert.ok(report.includes(`| Honda Vezel e:HEV Z | e:HEV Z (2026) | ${fmtLkr(vezel.price)} | ${fmtLkr(vezelNew)} | ${fmtPct((vezelNew - vezel.price) / vezel.price)} | ` +
+    `dealer listing, 2026-10: [riyasewana.com](${SOURCES[0].uri}), [ikman.lk](${SOURCES[1].uri}) |`), "Each row links its sources");
+  assert.match(report, /\| BYD Sealion 6 Premium \(AWD\) \|.*\| dealer price list, 2026-10: /);
+  assert.match(report, /### Skipped \(7\)/);
+  assert.match(report, /BYD Sealion 5 Premium\*\*: Premium \(2026\): the proxy marked this price as an estimate/);
+  assert.match(report, /Hyryder V\*\*: V \(2026\): answer not backed by a web source/);
+  assert.match(report, /Fronx Alpha \(Turbo\)\*\*: Alpha 1\.0L Turbo MHEV \(2026\): price published in 2025-12, more than 6 months before 2026-11/);
   for (const name of ["Toyota Raize Z Hybrid", "Suzuki Swift MZ Hybrid", "Toyota Urban Cruiser Taisor V", "Suzuki Wagon R Custom Z"]) {
     assert.match(report, new RegExp(`- \\*\\*${name}\\*\\*`), `${name} must be listed as skipped`);
   }
   const skippedLines = report.split("### Skipped")[1].trim().split("\n").slice(2).filter(Boolean);
-  assert.ok(skippedLines.slice(0, 4).every(l => l.startsWith("- **")), "Each skipped vehicle stays on one line");
-  assert.match(report, /Taisor V\*\*: proxy request failed \(HTTP 502 quota: You exceeded your current quota\. \* Quota exceeded/);
+  assert.ok(skippedLines.slice(0, 7).every(l => l.startsWith("- **")), "Each skipped vehicle stays on one line");
+  assert.match(report, /Taisor V\*\*: proxy request failed \(HTTP 502 quota: You exceeded your current quota, please check/);
+  assert.match(dry.stdout, /attempt 1 failed .*; retrying in 1 s/, "The retry hint at the end of a long message is honoured");
   assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ \(2026\): LKR [\d,]+ is \+4\d\.\d% from LKR [\d,]+, outside ±25%/);
 
   // Real run on the temporary copy
