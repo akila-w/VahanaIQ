@@ -3,13 +3,15 @@
 // Asks the search proxy's price mode (a Google Search-grounded Gemini lookup) for the
 // brand-new price of each built-in vehicle, matches the trim by name and rewrites only
 // the `price` values and catalogMeta.priceUpdated in js/catalog.js. Answers that are
-// missing, zero, not backed by a web source, marked as estimates, more than 6 months
+// missing, zero, not backed by a page Gemini cited, marked as estimates, more than 6 months
 // old or more than ±25% from the current price are skipped and listed.
 // No npm dependencies (Node 20+).
-// Requests are paced for the Gemini free tier (5 a minute), so a full run takes about 3 minutes.
+// Everything stays on the Gemini free tier: vehicles are asked about 4 at a time (3 requests
+// a run) on the proxy's PRICE_MODEL, which the app does not use, and the run stops at once
+// if Gemini's daily free limit is used up.
 //
 //   node scripts/refresh-prices.mjs [--dry-run] [--report <file>] [--proxy <url>]
-//                                   [--catalog <file>] [--month YYYY-MM] [--delay <ms>]
+//                                   [--catalog <file>] [--month YYYY-MM] [--delay <ms>] [--batch <n>]
 //
 // --dry-run prints the diff and the report without writing js/catalog.js.
 // The proxy URL defaults to PROXY_URL, then config.proxyUrl in js/config.js.
@@ -25,9 +27,10 @@ export const MAX_CHANGE = 0.25;     // skip answers more than ±25% from the cur
 const ROUND_TO = 10000;             // new prices are rounded to the nearest LKR 10,000
 const MIN_TRIM_SCORE = 0.5;         // token overlap needed to accept a trim name match
 const REQUEST_TIMEOUT_MS = 120000;
-const MAX_ATTEMPTS = 3;             // per vehicle
+const BATCH_SIZE = 4;               // vehicles per proxy request
+const MAX_ATTEMPTS = 3;             // per request
 const MAX_RETRY_WAIT_MS = 90000;
-const MAX_FAILED_IN_A_ROW = 3;      // stop asking once the proxy is clearly down or out of quota
+const MAX_FAILED_IN_A_ROW = 2;      // stop asking once the proxy is clearly down
 const MAX_SOURCE_AGE_MONTHS = 6;    // skip prices published longer ago than this
 // Gearbox words in trim names. The catalogue names no gearbox, so when trims differ only
 // by gearbox the automatic is priced (Akila's decision of 20/10/2026).
@@ -64,7 +67,8 @@ export function normaliseAnswer(raw) {
       trim_name: t.trim_name,
       condition_prices: { brand_new: t.brand_new_price_lkr },
       price_basis: t.price_basis,
-      as_of: t.as_of
+      as_of: t.as_of,
+      source_site: t.source_site
     });
   }
   return {
@@ -84,7 +88,7 @@ export function normaliseAnswer(raw) {
 // Returns { year, trimName, price } or { reason } when nothing fits.
 export function matchTrim(vehicle, raw) {
   const answer = normaliseAnswer(raw);
-  if (!answer || typeof answer !== "object") return { reason: "empty answer from the proxy" };
+  if (!answer || typeof answer !== "object") return { reason: "no answer for this vehicle from the proxy" };
   if (answer.is_available_in_sri_lanka === false) return { reason: "proxy says it is not available in Sri Lanka" };
 
   const ignore = new Set([...tokens(answer.model_name), tokens(vehicle.name)[0]]);
@@ -122,19 +126,42 @@ export function matchTrim(vehicle, raw) {
     return { reason: `ambiguous trim match: ${inYear.map(c => c.trim.trim_name).join(", ")}` };
   }
   const { trim } = inYear[0];
-  return { year, trimName: trim.trim_name, price: trim.condition_prices?.brand_new, basis: trim.price_basis, asOf: trim.as_of };
+  return {
+    year, trimName: trim.trim_name, price: trim.condition_prices?.brand_new,
+    basis: trim.price_basis, asOf: trim.as_of, site: trim.source_site
+  };
 }
 
-// Checks that a matched price comes from a recent published source.
-// Returns { sources } or { reason }.
+// The answer for the index-th vehicle (1-based) of a batched price-mode reply, carrying the
+// reply's cited sources. null when Gemini left that vehicle out.
+export function answerFor(reply, index) {
+  if (!Array.isArray(reply?.vehicles)) return reply;
+  const v = reply.vehicles.find(x => Number(x?.query_index) === index);
+  return v ? { ...v, sources: reply.sources || [] } : null;
+}
+
+// "https://www.riyasewana.com/x", "Riyasewana" and "m.riyasewana.com" all give "riyasewana"
+const siteKey = s => String(s ?? "").toLowerCase().trim()
+  .replace(/^https?:\/\//, "").split("/")[0].split(".")
+  .filter((part, i, all) => !(i === 0 && all.length > 1 && ["www", "m", "amp"].includes(part)))[0] || "";
+
+// Checks that a matched price comes from a recent published source, and that the site
+// Gemini names for it is one of the pages it actually cited (a batch shares one list).
+// Returns { sources } (the cited pages from that site) or { reason }.
 export function vetSource(match, raw, month) {
-  const sources = normaliseAnswer(raw)?.sources || [];
-  if (!sources.length) {
+  const cited = normaliseAnswer(raw)?.sources || [];
+  if (!cited.length) {
     return { reason: Array.isArray(raw?.trims)
       ? "answer not backed by a web source: Gemini cited none"
       : "answer not backed by a web source: the proxy has no price mode yet (redeploy it)" };
   }
   if (match.basis === "estimate") return { reason: "the proxy marked this price as an estimate, not a published price" };
+  const site = siteKey(match.site);
+  const sources = site ? cited.filter(s => siteKey(s.title) === site || siteKey(s.uri) === site) : [];
+  if (!sources.length) {
+    const titles = [...new Set(cited.map(s => s.title))].slice(0, 4).join(", ");
+    return { reason: `price source ${match.site ? `"${oneLine(match.site, 60)}"` : "not given"} is not among the pages Gemini cited (${oneLine(titles, 120)})` };
+  }
   const asOf = /^(\d{4})-(\d{2})$/.exec(match.asOf || "");
   const [y, m] = month.split("-").map(Number);
   if (asOf && (y * 12 + m) - (Number(asOf[1]) * 12 + Number(asOf[2])) > MAX_SOURCE_AGE_MONTHS) {
@@ -247,7 +274,7 @@ export function renderReport({ month, updated, skipped }) {
   out.push(
     "",
     `Answers are skipped when the price is missing or zero, when no trim matches the catalogue name, ` +
-      `when no web source backs the answer, when the proxy marks the price as an estimate, ` +
+      `when the site given for the price is not among the pages Gemini cited, when the proxy marks the price as an estimate, ` +
       `when the price was published more than ${MAX_SOURCE_AGE_MONTHS} months ago, ` +
       `or when the change is more than ±${MAX_CHANGE * 100}%.`
   );
@@ -262,24 +289,30 @@ export function retryWait(message, attempt, delay) {
   return Math.min(ms, MAX_RETRY_WAIT_MS);
 }
 
-async function fetchAnswer(proxy, query, delay) {
+// Quota errors that only clear at midnight Pacific time are not worth retrying
+const isDailyLimit = e => e.quota === "daily" || /per ?day/i.test(e.message);
+
+async function fetchAnswer(proxy, queries, delay) {
   let lastError;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const res = await fetch(proxy, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, mode: "price" }),
+        body: JSON.stringify({ queries, mode: "price" }),
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         // Full text kept here: Gemini's "Please retry in Ns" hint comes at the end
-        throw new Error(oneLine(`HTTP ${res.status}${err.error ? ` ${err.error}` : ""}${err.detail ? `: ${err.detail}` : ""}`, Infinity));
+        throw Object.assign(
+          new Error(oneLine(`HTTP ${res.status}${err.error ? ` ${err.error}` : ""}${err.detail ? `: ${err.detail}` : ""}`, Infinity)),
+          { status: res.status, quota: err.quota });
       }
       return await res.json();
     } catch (e) {
       lastError = e;
+      if (isDailyLimit(e) || e.status === 400) break;
       if (attempt < MAX_ATTEMPTS) {
         const wait = retryWait(e.message, attempt, delay);
         console.log(`  … attempt ${attempt} failed (${oneLine(e.message, 120)}); retrying in ${Math.round(wait / 1000)} s`);
@@ -299,7 +332,8 @@ export async function main(argv = process.argv.slice(2)) {
       proxy: { type: "string" },
       catalog: { type: "string" },
       month: { type: "string" },
-      delay: { type: "string", default: "13000" } // 5 requests a minute on the Gemini free tier
+      delay: { type: "string", default: "13000" }, // 5 requests a minute on the Gemini free tier
+      batch: { type: "string", default: String(BATCH_SIZE) }
     }
   });
   const catalogPath = path.resolve(opts.catalog || path.join(ROOT, "js/catalog.js"));
@@ -307,6 +341,8 @@ export async function main(argv = process.argv.slice(2)) {
     (await import(pathToFileURL(path.join(ROOT, "js/config.js")).href)).config.proxyUrl;
   const month = opts.month || new Date().toISOString().slice(0, 7);
   const delay = Number(opts.delay);
+  const batchSize = Number(opts.batch);
+  if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 12) throw new Error(`--batch must be 1 to 12, got ${opts.batch}`);
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new Error(`--month must be YYYY-MM, got ${month}`);
 
   const source = fs.readFileSync(catalogPath, "utf8");
@@ -317,38 +353,50 @@ export async function main(argv = process.argv.slice(2)) {
   const skipped = [];
   let failures = 0;
   let failedInARow = 0;
-  for (const [i, v] of baseVehicles.entries()) {
-    if (failedInARow >= MAX_FAILED_IN_A_ROW) {
-      failures++;
-      skipped.push({ name: v.name, reason: `not asked, after ${MAX_FAILED_IN_A_ROW} proxy failures in a row` });
+  let stopReason = null;
+  const batches = [];
+  for (let i = 0; i < baseVehicles.length; i += batchSize) batches.push(baseVehicles.slice(i, i + batchSize));
+
+  for (const [b, group] of batches.entries()) {
+    if (stopReason) {
+      failures += group.length;
+      group.forEach(v => skipped.push({ name: v.name, reason: stopReason }));
       continue;
     }
-    if (i) await sleep(delay);
-    let answer;
+    if (b) await sleep(delay);
+    let reply;
     try {
-      answer = await fetchAnswer(proxy, buildQuery(v), delay);
+      reply = await fetchAnswer(proxy, group.map(buildQuery), delay);
     } catch (e) {
-      failures++;
+      failures += group.length;
       failedInARow++;
-      skipped.push({ name: v.name, reason: `proxy request failed (${oneLine(e.message)})` });
-      console.log(`✗ ${v.name}: proxy request failed (${e.message})`);
+      group.forEach(v => skipped.push({ name: v.name, reason: `proxy request failed (${oneLine(e.message)})` }));
+      console.log(`✗ ${group.map(v => v.name).join(", ")}: proxy request failed (${e.message})`);
+      if (isDailyLimit(e)) stopReason = "not asked: Gemini's free daily limit is used up (it resets at midnight Pacific time)";
+      else if (e.status === 400) stopReason = "not asked: the proxy rejected the request (is it redeployed with batched price mode?)";
+      else if (failedInARow >= MAX_FAILED_IN_A_ROW) stopReason = `not asked, after ${MAX_FAILED_IN_A_ROW} failed requests in a row`;
       continue;
     }
     failedInARow = 0;
-    const match = matchTrim(v, answer);
-    const grounded = match.reason ? match : vetSource(match, answer, month);
-    const vetted = grounded.reason ? grounded : vetPrice(v.price, match.price);
-    if (vetted.reason) {
-      const reason = match.trimName ? `${match.trimName} (${match.year}): ${vetted.reason}` : vetted.reason;
-      skipped.push({ name: v.name, reason });
-      console.log(`✗ ${v.name}: ${reason}`);
-      continue;
+    if (reply?.model) console.log(`  (answered by ${reply.model})`);
+
+    for (const [j, v] of group.entries()) {
+      const answer = answerFor(reply, j + 1);
+      const match = matchTrim(v, answer);
+      const grounded = match.reason ? match : vetSource(match, answer, month);
+      const vetted = grounded.reason ? grounded : vetPrice(v.price, match.price);
+      if (vetted.reason) {
+        const reason = match.trimName ? `${match.trimName} (${match.year}): ${vetted.reason}` : vetted.reason;
+        skipped.push({ name: v.name, reason });
+        console.log(`✗ ${v.name}: ${reason}`);
+        continue;
+      }
+      updated.push({
+        name: v.name, trim: `${match.trimName} (${match.year})`, old: v.price, new: vetted.price, change: vetted.change,
+        basis: match.basis, asOf: match.asOf, sources: grounded.sources
+      });
+      console.log(`✓ ${v.name}: ${fmtLkr(v.price)} → ${fmtLkr(vetted.price)} (${fmtPct(vetted.change)})`);
     }
-    updated.push({
-      name: v.name, trim: `${match.trimName} (${match.year})`, old: v.price, new: vetted.price, change: vetted.change,
-      basis: match.basis, asOf: match.asOf, sources: grounded.sources
-    });
-    console.log(`✓ ${v.name}: ${fmtLkr(v.price)} → ${fmtLkr(vetted.price)} (${fmtPct(vetted.change)})`);
   }
 
   const report = renderReport({ month, updated, skipped });

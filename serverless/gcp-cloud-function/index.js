@@ -110,42 +110,29 @@ const VEHICLE_RESPONSE_SCHEMA = {
 };
 
 // Price mode: a grounded lookup used only by the monthly catalogue refresh
-// (scripts/refresh-prices.mjs), requested with POST { mode: 'price', query }.
+// (scripts/refresh-prices.mjs), requested with POST { mode: 'price', queries: [...] }.
 // It searches Google so prices come from current Sri Lankan sources rather than the
-// model's training data, and returns the web sources it used. The app's search is unchanged.
+// model's training data, and returns the web sources it used. Several vehicles go in
+// one request to save quota. It runs on its own model, PRICE_MODEL, so the refresh never
+// uses the app's daily free allowance. The app's search is unchanged.
+const PRICE_MODEL = process.env.PRICE_MODEL || 'gemini-2.5-flash';
 const PRICE_BASES = ['dealer price list', 'dealer listing', 'news report', 'estimate'];
+const MAX_PRICE_QUERIES = 12;
 
-const PRICE_RESPONSE_SCHEMA = {
-  type: 'OBJECT',
-  properties: {
-    model_name: { type: 'STRING', description: 'Canonical make + model without year' },
-    available_new_in_sri_lanka: { type: 'BOOLEAN' },
-    trims: {
-      type: 'ARRAY',
-      items: {
-        type: 'OBJECT',
-        properties: {
-          trim_name: { type: 'STRING' },
-          model_year: { type: 'INTEGER' },
-          brand_new_price_lkr: { type: 'INTEGER', description: 'Whole rupees, 0 if no current price was found' },
-          price_basis: { type: 'STRING', enum: PRICE_BASES },
-          as_of: { type: 'STRING', description: 'Month the price was published, YYYY-MM' }
-        },
-        required: ['trim_name', 'model_year', 'brand_new_price_lkr', 'price_basis', 'as_of']
-      }
-    }
-  },
-  required: ['model_name', 'available_new_in_sri_lanka', 'trims']
-};
-
-const callGemini = async (apiKey, body) => {
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
+const callGemini = async (apiKey, model, body) => {
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
   const data = await r.json().catch(() => ({}));
   return { ok: r.ok, status: r.status, data, detail: data.error?.message || `HTTP ${r.status}` };
+};
+
+// 'daily' or 'minute' for a quota error, from the QuotaFailure details Gemini sends
+const quotaScope = data => {
+  const ids = (data.error?.details || []).flatMap(d => d.violations || []).map(v => v.quotaId || '').join(' ');
+  return /PerDay/i.test(ids) ? 'daily' : /PerMinute/i.test(ids) ? 'minute' : undefined;
 };
 
 // Reads JSON from a reply that may be wrapped in a ```json fence or surrounded by prose
@@ -156,47 +143,49 @@ const parseJsonText = text => {
   return JSON.parse(text.slice(start, end + 1));
 };
 
-async function priceLookup(apiKey, query) {
+// No response schema: not every model accepts one alongside Google Search, so the
+// JSON shape is given in the prompt and the refresh script checks every field.
+async function priceLookup(apiKey, queries) {
   const today = new Date().toISOString().slice(0, 10);
+  const list = queries.map((q, i) => `${i + 1}. "${q.trim().slice(0, 300)}"`).join('\n');
   const prompt = `You are a Sri Lankan vehicle pricing researcher. Today is ${today}.
-Use Google Search to find the current brand-new price in Sri Lanka, in LKR, of: "${query.trim().slice(0, 300)}".
+Use Google Search to find the current brand-new price in Sri Lanka, in LKR, of each of these vehicles:
+${list}
 Prefer official agent price lists, then dealer or importer listings (for example Riyasewana, ikman, Patpat), then recent news reports.
-Instructions:
-1. Return every trim of this model you found a current brand-new price for, with its model year.
+For each vehicle:
+1. List every trim of that model you found a current brand-new price for, with its model year.
 2. Give brand_new_price_lkr as whole rupees. If a price is given in millions or lakhs, convert it. Use 0 if you found no current price.
 3. Set price_basis to where the price came from: ${PRICE_BASES.map(b => `"${b}"`).join(', ')}. Use "estimate" if it is not taken from a source published in the last 6 months.
 4. Set as_of to the month the source was published, as YYYY-MM.
-5. Do not use prices for reconditioned or used vehicles.
-Return only JSON with model_name, available_new_in_sri_lanka and trims (trim_name, model_year, brand_new_price_lkr, price_basis, as_of).`;
+5. Set source_site to the website the price was taken from, as a domain such as riyasewana.com.
+6. Do not use prices for reconditioned or used vehicles.
+Reply with only a JSON object, no other text, in this shape:
+{"vehicles": [{"query_index": 1, "model_name": "Make Model", "available_new_in_sri_lanka": true, "trims": [{"trim_name": "Grade", "model_year": 2026, "brand_new_price_lkr": 0, "price_basis": "dealer listing", "as_of": "YYYY-MM", "source_site": "example.lk"}]}]}`;
 
-  const base = { contents: [{ parts: [{ text: prompt }] }], tools: [{ google_search: {} }] };
-  let r = await callGemini(apiKey, {
-    ...base,
-    generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: PRICE_RESPONSE_SCHEMA }
+  const r = await callGemini(apiKey, PRICE_MODEL, {
+    contents: [{ parts: [{ text: prompt }] }],
+    tools: [{ google_search: {} }],
+    generationConfig: { temperature: 0 }
   });
-  let structured = true;
-  if (r.status === 400) {
-    // A model that refuses a response schema alongside tools: ask for JSON in the prompt instead
-    console.warn(`Gemini ${MODEL} refused schema with search (${r.detail}); retrying without schema`);
-    r = await callGemini(apiKey, { ...base, generationConfig: { temperature: 0 } });
-    structured = false;
-  }
   if (!r.ok) {
     const err = new Error(r.detail);
     err.status = r.status;
+    err.quota = quotaScope(r.data);
     throw err;
   }
   const candidate = r.data.candidates?.[0];
   const text = (candidate?.content?.parts || []).map(p => p.text || '').join('');
   const answer = parseJsonText(text);
   const meta = candidate?.groundingMetadata || {};
-  answer.sources = (meta.groundingChunks || [])
-    .map(c => c.web)
-    .filter(w => w && w.uri)
-    .map(w => ({ title: w.title || w.uri, uri: w.uri }));
-  answer.search_queries = meta.webSearchQueries || [];
-  answer.structured = structured;
-  return answer;
+  return {
+    vehicles: Array.isArray(answer.vehicles) ? answer.vehicles : [],
+    sources: (meta.groundingChunks || [])
+      .map(c => c.web)
+      .filter(w => w && w.uri)
+      .map(w => ({ title: w.title || w.uri, uri: w.uri })),
+    search_queries: meta.webSearchQueries || [],
+    model: PRICE_MODEL
+  };
 }
 
 functions.http('vehicleSearch', async (req, res) => {
@@ -216,7 +205,7 @@ functions.http('vehicleSearch', async (req, res) => {
   }
 
   const { query, image } = req.body || {};
-  if (!query && !image) {
+  if (!query && !image && req.body?.mode !== 'price') {
     res.status(400).json({ error: 'bad_request', detail: 'Missing query or image parameter' });
     return;
   }
@@ -229,16 +218,18 @@ functions.http('vehicleSearch', async (req, res) => {
   }
 
   if (req.body?.mode === 'price') {
-    if (!query) {
-      res.status(400).json({ error: 'bad_request', detail: 'Price mode needs a query' });
+    const queries = req.body.queries;
+    if (!Array.isArray(queries) || !queries.length || queries.length > MAX_PRICE_QUERIES ||
+        !queries.every(q => typeof q === 'string' && q.trim())) {
+      res.status(400).json({ error: 'bad_request', detail: `Price mode needs queries: 1 to ${MAX_PRICE_QUERIES} vehicle names` });
       return;
     }
     try {
-      res.json(await priceLookup(apiKey, query));
+      res.json(await priceLookup(apiKey, queries));
     } catch (e) {
       if (e.status) {
-        console.error(`Gemini ${MODEL} price lookup failed: HTTP ${e.status}: ${e.message}`);
-        res.status(502).json({ error: errorCode(e.status), detail: e.message });
+        console.error(`Gemini ${PRICE_MODEL} price lookup failed: HTTP ${e.status}: ${e.message}`);
+        res.status(502).json({ error: errorCode(e.status), detail: e.message, ...(e.quota ? { quota: e.quota } : {}) });
       } else {
         console.error('Price lookup internal error:', e);
         res.status(500).json({ error: 'internal', detail: e.message || 'Internal error' });
