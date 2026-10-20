@@ -75,9 +75,9 @@ try {
     { title: "https://vertexaisearch.cloud.google.com/grounding-api-redirect/b", uri: "https://vertexaisearch.cloud.google.com/grounding-api-redirect/b" }
   ], "Web sources come from groundingMetadata; other chunk kinds are ignored");
   assert.deepEqual(res.body.search_queries, grounding.webSearchQueries);
-  assert.equal(res.body.model, "gemini-2.5-flash");
+  assert.equal(res.body.model, "gemini-2.5-flash-lite");
   assert.equal(calls.length, 1, "One Gemini request for the whole batch");
-  assert.match(calls[0].url, /\/models\/gemini-2\.5-flash:generateContent/, "Price mode uses PRICE_MODEL, not the app's model");
+  assert.match(calls[0].url, /\/models\/gemini-2\.5-flash-lite:generateContent/, "Price mode uses PRICE_MODEL, not the app's model");
   const sent = calls[0].body;
   assert.deepEqual(sent.tools, [{ google_search: {} }], "Price mode turns on Google Search");
   assert.equal(sent.generationConfig.responseSchema, undefined, "No response schema, so any model with Google Search works");
@@ -101,6 +101,9 @@ try {
     details: [{ violations: [{ quotaId: "GenerateRequestsPerMinutePerProjectPerModel-FreeTier" }] }] } } }];
   res = await call({ mode: "price", queries });
   assert.equal(res.body.quota, "minute");
+  replies = [{ status: 404, json: { error: { message: "This model models/gemini-2.5-flash is no longer available to new users." } } }];
+  res = await call({ mode: "price", queries });
+  assert.deepEqual([res.statusCode, res.body.upstream_status], [502, 404], "Gemini's own status reaches the refresh script");
   replies = [{ status: 503, json: { error: { message: "This model is currently experiencing high demand." } } }];
   res = await call({ mode: "price", queries });
   assert.deepEqual([res.statusCode, res.body.error, res.body.quota], [502, "upstream_unavailable", undefined]);

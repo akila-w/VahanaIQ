@@ -43,8 +43,11 @@ jobs:
           PROXY_URL: ${{ vars.PROXY_URL }}
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: |
-          node scripts/refresh-prices.mjs $DRY_RUN --report "$RUNNER_TEMP/pr-body.md"
-          cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"
+          # The report goes on the run's summary page even when the refresh fails
+          status=0
+          node scripts/refresh-prices.mjs $DRY_RUN --report "$RUNNER_TEMP/pr-body.md" || status=$?
+          if [ -f "$RUNNER_TEMP/pr-body.md" ]; then cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"; fi
+          exit $status
 
       - name: Run the verification suites
         run: |
