@@ -6,11 +6,14 @@ const STORE_KEY = "vahanaiq_inputs_v1";
 // Field id -> URL parameter and default value
 export const FIELDS = {
   rate: { param: "rate", def: "16" },
+  rateType: { param: "rt", def: "reducing" },
   tenure: { param: "n", def: "84" },
   down: { param: "down", def: "60" },
   income: { param: "inc", def: "" },
   debt: { param: "debt", def: "0" },
   dti: { param: "dti", def: "0.4" },
+  insurance: { param: "ins", def: "" },
+  fees: { param: "fees", def: "" },
   warr: { param: "warr", def: "all" },
   condFilter: { param: "cond", def: "all" },
   maxprice: { param: "max", def: "" },
@@ -25,6 +28,8 @@ const RULES = {
   down: { key: "down", check: v => v === "" || !isFinite(num(v)) ? "Enter a down payment percentage." : "", snap: true },
   income: { key: "income", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Income can't be negative." : "" },
   debt: { key: "debt", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Payments can't be negative." : "" },
+  insurance: { key: "insurance", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Insurance can't be negative." : "" },
+  fees: { key: "fees", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Fees can't be negative." : "" },
   maxprice: { check: v => v !== "" && !isFinite(num(v)) ? "Enter a price in millions." : num(v) < 0 ? "Enter a price of 0 or more." : "" }
 };
 
@@ -40,7 +45,7 @@ function setFieldState(id, message, warn) {
   if (message) {
     hint.textContent = message;
     hint.className = warn ? "hint warn" : "hint";
-  } else if (id === "income" || id === "debt" || id === "maxprice") {
+  } else if (["income", "debt", "insurance", "fees", "maxprice"].includes(id)) {
     hint.textContent = hint.dataset ? hint.dataset.def : hint.textContent;
     hint.className = "hint";
   }
@@ -54,7 +59,7 @@ export function fieldError(id) {
 // Reads the inputs, falling back to the last valid value for any invalid field
 export function readSettings() {
   const s = getSettings();
-  for (const id of ["rate", "tenure", "down", "income", "debt"]) {
+  for (const id of ["rate", "tenure", "down", "income", "debt", "insurance", "fees"]) {
     const el = $(id);
     if (!el) continue;
     const err = fieldError(id);

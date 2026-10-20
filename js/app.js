@@ -1,4 +1,4 @@
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.1";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.8.1";
 import { baseVehicles } from "./catalog.js?v=2.8.1";
 import { initCatalogue } from "./catalogue-browser.js?v=2.8.1";
 import { APP_VERSION } from "./config.js?v=2.8.1";
@@ -72,8 +72,7 @@ const cols = [
   ["actions", "Actions", "actions"]
 ];
 
-const condLabels = { New: "Brand New", Recond: "Reconditioned", Used: "Registered Used" };
-const condLabel = c => condLabels[c] || condLabels.New;
+const condLabel = c => CONDITIONS[c] || CONDITIONS.New;
 
 function summaryHtml(s, f, room) {
   const limit = Math.round(s.dti * 100);
@@ -88,8 +87,8 @@ function summaryHtml(s, f, room) {
     }
     const maxPrice = room / f / (1 - s.down / 100);
     return `<div class="stat"><b>Rs. ${fmt(room)}</b><span>Highest monthly rental at a ${limit}% limit${s.debt ? " after existing payments" : ""}</span></div>
-<div class="stat"><b>Rs. ${fmt(maxPrice)}</b><span>Highest vehicle price you can finance with ${s.down}% down</span></div>
-<div class="stat"><b>Rs. ${fmt(maxPrice * s.down / 100)}</b><span>Cash needed up front for that vehicle</span></div>`;
+<div class="stat"><b>Rs. ${fmt(maxPrice)}</b><span>Highest vehicle price you can finance with ${s.down}% down${s.down < 60 ? " (cars registered over a year only)" : ""}</span></div>
+<div class="stat"><b>Rs. ${fmt(maxPrice * s.down / 100 + (s.fees || 0))}</b><span>Cash needed up front for that vehicle${s.fees ? ", with fees" : ""}</span></div>`;
   }
   if (s.down >= 100) {
     return `<div class="stat"><b>Rs. 0.00</b><span>Monthly rental (100% down payment)</span></div>
@@ -131,7 +130,7 @@ const rowEls = new Map();
 function buildRow(key) {
   const tr = document.createElement("tr");
   tr.dataset.key = key;
-  tr.innerHTML = `<td class="name"><div class="car"><span class="thumb"></span><div><b class="v-name"></b><small class="v-spec"></small><div class="warr"><span class="v-warr"></span><button type="button" class="cond-tag" data-act="cond" data-key="${key}" title="Change condition (Brand New, Reconditioned, Registered Used)"><span class="v-cond"></span> <span class="cycle-icon" aria-hidden="true">⇄</span></button><span class="v-ltv"></span></div></div></div></td>
+  tr.innerHTML = `<td class="name"><div class="car"><span class="thumb"></span><div><b class="v-name"></b><small class="v-spec"></small><div class="warr"><span class="v-warr"></span><button type="button" class="cond-tag" data-act="cond" data-key="${key}" title="Change condition (Brand New, Reconditioned, Registered under a year, Registered Used)"><span class="v-cond"></span> <span class="cycle-icon" aria-hidden="true">⇄</span></button><span class="v-ltv"></span></div></div></div></td>
 <td class="n price-cell" data-label="Price (Rs.)"><span class="price-wrap"><span class="price-val"></span><button type="button" class="icon-btn edit-price" data-act="price" data-key="${key}" title="Edit price">✎</button></span></td>
 <td class="n v-dp" data-label="Down payment (Rs.)"></td>
 <td class="n" data-label="Monthly rental (Rs.)"><b class="v-rent"></b></td>
@@ -171,12 +170,12 @@ function updateRow(tr, r, { s, room, scale, labels }) {
   q(".v-name").textContent = r.name;
   setHtml(q(".v-spec"), [r.pt, r.km].filter(t => t && t !== UNKNOWN_SPEC).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
   q(".v-warr").textContent = r.w === "Official" ? "Official agent" : r.w === "Grey" ? "Grey import" : "Route unconfirmed";
+  const basis = { "user-entered": "Your price", "ai-estimate": "AI estimate: confirm with the seller", "seller-listed": "Seller's asking price" };
   if (r.legacy) q(".v-warr").textContent += " · Saved estimate: verify price";
-  else if (r.priceBasis) q(".v-warr").textContent += r.priceBasis === "user-entered" ? " · Your price" : " · Confirm current quote";
+  else if (r.priceBasis) q(".v-warr").textContent += " · " + (basis[r.priceBasis] || "Confirm current quote");
   q(".v-cond").textContent = cl;
   q(".cond-tag").setAttribute("aria-label", `Change condition, currently ${cl}`);
-  const isUnreg = (r.cond || "New") !== "Used";
-  setHtml(q(".v-ltv"), s.down < DOWN_MIN_UNREG && isUnreg ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least 60% down (current down payment: ${s.down}%)">⚠️ &lt;60% down</span>` : "");
+  setHtml(q(".v-ltv"), r.downRaised ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least ${r.downPct}% down, so this car is calculated at ${r.downPct}% instead of ${s.down}%">${r.downPct}% down (CBSL minimum)</span>` : "");
   setHtml(q(".row-actions"), rowActions(r));
   q(".price-val").textContent = fmt(r.price);
   q(".edit-price").setAttribute("aria-label", `Edit price, ${r.name}`);
@@ -200,22 +199,13 @@ function render() {
 
   $("summary").innerHTML = summaryHtml(s, f, room);
 
-  // Preferential rate hint (only while the rate field is valid)
+  // Rate hint: which kind of rate is in use, and a flat rate's reducing-balance equivalent
   const rateHint = $("rateHint");
   if (rateHint && !fieldError("rate")) {
     rateHint.className = "hint";
-    if (s.income > 200000 && s.rate === 16) {
-      rateHint.innerHTML = `<button type="button" class="hint-btn" id="applyPrefRateBtn">Earning over Rs. 200,000.00? Apply the 15% preferential rate</button>`;
-      $("applyPrefRateBtn").onclick = () => {
-        $("rate").value = "15";
-        render();
-        $("rate").focus();
-      };
-    } else if (s.rate === 15 && s.income > 200000) {
-      rateHint.textContent = "✓ 15% preferential rate applied";
-    } else {
-      rateHint.textContent = "15% may apply if you earn over Rs. 200,000.00";
-    }
+    rateHint.textContent = s.rateType === "flat"
+      ? `${s.rateInput}% flat is about ${s.rate.toFixed(2)}% a year on a reducing balance over ${s.n} months.`
+      : "Reducing-balance rate. Ask the lender which kind they quote.";
   }
 
   // Filters
@@ -361,7 +351,7 @@ function currentState() {
     const el = $(id);
     if (!el || fieldError(id)) continue;
     const v = String(el.value).trim();
-    state[id] = id === "income" || id === "debt" ? (v === "" ? "" : String(num(v))) : v;
+    state[id] = ["income", "debt", "insurance", "fees"].includes(id) ? (v === "" ? "" : String(num(v))) : v;
   }
   return state;
 }
@@ -377,7 +367,7 @@ function applyState(state) {
     const el = $(id);
     if (!el) continue;
     if (el.tagName === "SELECT" && el.options && el.options.length && ![...el.options].some(o => o.value === v)) continue;
-    el.value = (id === "income" || id === "debt" || id === "maxprice") && v !== "" ? formatMoneyText(v, { grouping: id !== "maxprice" }) : v;
+    el.value = ["income", "debt", "insurance", "fees", "maxprice"].includes(id) && v !== "" ? formatMoneyText(v, { grouping: id !== "maxprice" }) : v;
   }
 }
 
@@ -422,7 +412,7 @@ $("resetInputsBtn").addEventListener("click", () => {
   $("rate").focus();
 });
 
-["income", "debt", "mPrice", "aiPriceInput"].forEach(id => attachMoneyInput($(id)));
+["income", "debt", "insurance", "fees", "mPrice", "aiPriceInput"].forEach(id => $(id) && attachMoneyInput($(id)));
 attachMoneyInput($("maxprice"), { grouping: false });
 
 // Stable keys let the table keep focus and rows across re-renders
@@ -484,7 +474,7 @@ $("rows").addEventListener("click", e => {
   } else if (act === "details") {
     openDetails(car, b);
   } else if (act === "cond") {
-    const cycle = { New: "Recond", Recond: "Used", Used: "New" };
+    const cycle = { New: "Recond", Recond: "Recent", Recent: "Used", Used: "New" };
     car.cond = cycle[car.cond || "New"] || "New";
     car.custom = true;
     car.priceBasis = "user-entered";
@@ -562,20 +552,23 @@ function openDetails(car, opener) {
   const { s, rows: [r] } = computeLeaseTable([car], readSettings());
   const limit = Math.round(s.dti * 100);
   const line = (label, value) => `<div><dt>${label}</dt><dd>${value}</dd></div>`;
-  let html = `<p class="detail-sub">${esc(condLabel(car.cond))} · Rs. ${fmt(car.price)} · ${s.rate}% a year over ${s.n} months</p><dl class="detail-list">`;
-  if (s.down >= 100) {
+  let html = `<p class="detail-sub">${esc(condLabel(car.cond))} · Rs. ${fmt(car.price)} · ${esc(rateLabel(s))} over ${s.n} months</p><dl class="detail-list">`;
+  if (r.downPct >= 100) {
     html += line("Paid in cash", `Rs. ${fmt(car.price)}`) + "</dl><p class=\"hint\">With a 100% down payment there's no lease to repay.</p>";
   } else {
-    html += line(`Down payment (${s.down}%)`, `Rs. ${fmt(r.dp)}`) +
+    const extras = s.fees || s.insurance;
+    html += line(`Down payment (${r.downPct}%${r.downRaised ? ", the CBSL minimum for this car" : ""})`, `Rs. ${fmt(r.dp)}`) +
+      (s.fees ? line("Up-front fees", `Rs. ${fmt(s.fees)}`) + line("Cash needed up front", `<b>Rs. ${fmt(r.upfront)}</b>`) : "") +
       line("Amount financed", `Rs. ${fmt(r.loan)}`) +
       line(`Monthly rental × ${s.n}`, `<b>Rs. ${fmt(r.rental)}</b>`) +
+      (s.insurance ? line("Monthly cost with insurance", `Rs. ${fmt(r.monthlyCost)}`) : "") +
       line("Total interest", `Rs. ${fmt(r.interest)}`) +
-      line("Total paid (down payment and rentals)", `Rs. ${fmt(r.total)}`) +
+      line(`Total paid (down payment, rentals${extras ? ", fees and insurance" : ""})`, `Rs. ${fmt(r.total)}`) +
       line(`Net income needed at a ${limit}% limit`, `Rs. ${fmt(r.need)}`) + "</dl>";
     const years = yearlySchedule(r.loan, s.rate, s.n);
     html += `<h3 class="detail-h">Year by year</h3><div class="wrap detail-wrap"><table class="detail-table"><thead><tr><th>Year</th><th class="n">Rentals paid</th><th class="n">Interest</th><th class="n">Principal</th><th class="n">Balance left</th></tr></thead><tbody>${
       years.map(y => `<tr><td>${y.year}${y.months < 12 ? ` (${y.months} months)` : ""}</td><td class="n">${fmt(y.paid)}</td><td class="n">${fmt(y.interest)}</td><td class="n">${fmt(y.principal)}</td><td class="n">${fmt(y.balance)}</td></tr>`).join("")
-    }</tbody></table></div><p class="hint">Rentals use the standard reducing-balance formula with monthly compounding. Insurance, registration and fees are not included.</p>`;
+    }</tbody></table></div><p class="hint">Rentals use the standard reducing-balance formula with monthly compounding${s.rateType === "flat" ? "; the flat rate is converted to its reducing-balance equivalent" : ""}. ${extras ? "Fees and insurance are the amounts you entered." : "Insurance and fees are not included."}</p>`;
   }
   $("detailTitle").textContent = car.name;
   $("detailBody").innerHTML = html;
@@ -927,6 +920,9 @@ $("aiConfirmAddBtn").addEventListener("click", () => {
   const km = $("aiKmInput").value.trim();
   const pt = tData.powertrain || "";
 
+  // Mark where the price came from: the seller's ad, an AI estimate, or the user's own figure
+  const offered = +condOpt?.dataset.p || 0;
+  const priceBasis = price !== offered ? "user-entered" : condOpt?.value === "seller_price" ? "seller-listed" : "ai-estimate";
   normalizeImageToStudio(currentAiImgSrc, procImg => {
     if (!addCars([{
       name: fullName,
@@ -936,7 +932,8 @@ $("aiConfirmAddBtn").addEventListener("click", () => {
       price: price,
       cond: cond,
       img: procImg,
-      custom: true
+      custom: true,
+      priceBasis
     }])) return;
     saveCars(cars);
     render();
@@ -968,7 +965,7 @@ $("aiAddAllTrimsBtn").addEventListener("click", () => {
     km: t.fuel_economy_kml || "",
     w: t.warranty_type || "Grey",
     price: conditionPrice(t, condId, currentAiData?.seller_price_lkr),
-    cond, custom: true
+    cond, custom: true, priceBasis: "ai-estimate"
   }));
   const error = vehicleBatchError(batch);
   if (error) { showVehicleError(error + " Select another condition or add trims individually with a price."); return; }
@@ -1079,7 +1076,7 @@ $("aiAddSelectedBtn").addEventListener("click", () => {
       price: v.price_lkr,
       cond: v.condition || "New",
       img: rawImg,
-      custom: true
+      custom: true, priceBasis: "ai-estimate"
     });
   }
 

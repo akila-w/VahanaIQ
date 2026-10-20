@@ -155,7 +155,7 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
     const price = parseMoneyText($("cataloguePrice").value);
     const name = $("catalogueName").value.trim();
     const cond = $("catalogueCondition").value;
-    if (!name || !validPrice(price) || !["New", "Recond", "Used"].includes(cond)) {
+    if (!name || !validPrice(price) || !["New", "Recond", "Recent", "Used"].includes(cond)) {
       $("catalogueAddError").textContent = "Enter a vehicle name, a price greater than zero and a condition.";
       return;
     }
