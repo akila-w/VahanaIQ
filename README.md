@@ -45,7 +45,9 @@ vahanaiq/
 │   ├── toast.js          # Undo toast
 │   └── config.js         # Cloud proxy and endpoint configuration
 ├── scripts/
-│   └── refresh-prices.mjs  # Monthly catalogue price refresh (run by GitHub Actions)
+│   ├── refresh-prices.mjs        # Applies researched prices to the catalogue, with checks
+│   ├── open-price-pr.sh          # Opens the monthly prices pull request
+│   └── price-research-task.md    # Instructions for the monthly Claude research task
 ├── test/
 │   ├── verify.mjs                # App verification suite
 │   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
@@ -81,17 +83,35 @@ The `GEMINI_API_KEY` environment variable (or secret) must already be set on the
 The same service has a second, **price mode** (`POST {"mode": "price", "queries": ["...", "..."]}`, up to 12 vehicles), used only by the monthly price refresh. It turns on Grounding with Google Search, so Gemini looks up current Sri Lankan prices instead of relying on its training data. It runs on its own model, set with the `PRICE_MODEL` environment variable (`gemini-2.5-flash-lite` by default), whose free daily allowance is separate from the app's. It returns `{ vehicles[], sources[], search_queries[], model }`, where each vehicle lists its trims with price, model year, basis, month and the site the price came from, and `sources` are the web pages Gemini cited. A quota error says whether the daily or per-minute limit was hit (`"quota": "daily"`). Requests without `mode` are handled exactly as before. To use a different model for the refresh, add `PRICE_MODEL=<model>` to `--update-env-vars`. On the free tier it has to be a Gemini 2.x or 2.5 model: AI Studio gives Gemini 3 and newer no free Google Search grounding, and `gemini-2.5-flash` is closed to new users. If Gemini refuses the model, the refresh stops after one request and says so.
 
 ## Monthly catalogue price refresh
-`.github/workflows/refresh-prices.yml` runs at 14:00 Sri Lanka time on the 1st of each month, just after Gemini's free daily limits reset at midnight Pacific time, and on demand from the Actions tab (**Run workflow**, with an optional dry run). It runs `scripts/refresh-prices.mjs`, which asks the search proxy's price mode (a Google Search lookup, see above) for the brand-new price of each of the 12 built-in vehicles and matches the trim by name. Only the `price` values and `catalogMeta.priceUpdated` in `js/catalog.js` are rewritten; every other field and the file's formatting stay as they are. A vehicle is skipped, and its price left alone, if the answer is missing or zero, no trim matches, the site given for the price is not among the pages Gemini cited, the price is marked as an estimate or was published more than 6 months ago, or the change is more than ±25%. To stay within the Gemini free tier, vehicles are asked about 4 at a time, so a run makes 3 requests, spaced 13 seconds apart. A request that fails is retried twice, honouring Gemini's "retry in" hint. If Gemini's daily free limit is used up, the run stops at once; it also stops after 2 failed requests in a row. When the matching trims differ only by gearbox (for example "V 1.0L Turbo AT" and "V 1.0L Turbo MT"), the automatic is priced.
+Once a month, a **Claude scheduled task** ("VahanaIQ price research", in the Claude desktop app on Akila's Mac, on his Claude Pro plan) researches the current brand-new price of the 12 built-in vehicles. It follows [`scripts/price-research-task.md`](scripts/price-research-task.md):
+- It uses only official agents', distributors', dealers' and importers' own price lists, plus reputable news reports. It doesn't use classified marketplaces: ikman's terms forbid copying its content, and Riyasewana and Patpat block automated access.
+- It writes each price, with the page it came from, to a prices file.
+- It runs `scripts/refresh-prices.mjs --from-file <prices.json>`, which applies the checks below.
+- It opens a pull request with `scripts/open-price-pr.sh`.
 
-The workflow never commits to `main`. It pushes a `prices/YYYY-MM` branch and opens a pull request whose description shows the old price, new price, % change and the sources Gemini cited for each vehicle, plus the skipped list. **The prices are AI estimates: check them against the linked sources before merging.** No pull request is opened if nothing changed.
+The task runs while the Claude app is open. If the app is closed when it's due, it runs on the next launch.
 
-One-time setup: in the repository's **Settings → Actions → General**, allow GitHub Actions to create pull requests, otherwise `gh pr create` is refused. The proxy URL comes from `config.proxyUrl` in `js/config.js`, or from a `PROXY_URL` repository variable if one is set.
+`scripts/refresh-prices.mjs` rewrites only the `price` values and `catalogMeta.priceUpdated` in `js/catalog.js`; every other field and the file's formatting stay as they are. A vehicle is skipped, and its price left alone, if:
+- the price is missing or zero
+- no trim matches the catalogue name
+- no source page is given
+- the price is marked as an estimate
+- the price was published more than 6 months ago
+- the change is more than ±25%
 
-To try it locally without writing anything:
+When the matching trims differ only by gearbox (for example "V 1.0L Turbo AT" and "V 1.0L Turbo MT"), the automatic is priced.
+
+Nothing is ever committed to `main`. `scripts/open-price-pr.sh` pushes a `prices/YYYY-MM` branch and opens a pull request. Its description shows the old price, new price, % change and source link for each vehicle, plus the skipped list. **The prices are AI estimates: check them against the linked sources before merging.** No pull request is opened if nothing changed.
+
+To check a prices file locally without writing anything:
 ```bash
-node scripts/refresh-prices.mjs --dry-run
+node scripts/refresh-prices.mjs --from-file prices.json --dry-run
 ```
-This calls the live proxy. The tests use a mocked proxy and a stubbed Gemini instead:
+
+### The GitHub workflow (paused)
+`.github/workflows/refresh-prices.yml` is the earlier route. It asks the search proxy's price mode (a Google Search-grounded Gemini lookup, see above) and opens the same kind of pull request. **Its monthly schedule is paused** (20/10/2026): Gemini 2.5 Flash and 2.5 Flash Lite are closed to new users, and on the free tier Gemini 3 and newer get no Google Search grounding, so there is no free model for the lookup. It can still be run from the Actions tab (**Run workflow**, with an optional dry run). It needs the repository setting **Settings → Actions → General → allow GitHub Actions to create pull requests**. The proxy URL comes from `config.proxyUrl` in `js/config.js`, or from a `PROXY_URL` repository variable.
+
+The tests use a mocked proxy, sample prices files and a stubbed Gemini:
 ```bash
 node test/refresh-prices.test.mjs
 node test/proxy-price-mode.test.mjs

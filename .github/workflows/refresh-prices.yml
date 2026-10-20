@@ -5,10 +5,11 @@
 name: Refresh catalogue prices
 
 on:
-  schedule:
-    # 08:30 UTC (14:00 in Sri Lanka) on the 1st: just after Gemini's free daily limits
-    # reset at midnight Pacific time (07:00 or 08:00 UTC), so a full day's allowance is left
-    - cron: "30 8 1 * *"
+  # Monthly schedule paused (20/10/2026): no free Gemini model on this project can use
+  # Google Search any more, so a scheduled run would only fail. Manual runs still work.
+  # To resume, restore:
+  # schedule:
+  #   - cron: "30 8 1 * *"  # 08:30 UTC (14:00 in Sri Lanka), after the free daily reset
   workflow_dispatch:
     inputs:
       dry_run:
@@ -60,25 +61,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- js/catalog.js; then
-            echo "js/catalog.js is unchanged; no pull request needed."
-            exit 0
-          fi
-          month=$(node -p 'require("fs").readFileSync("js/catalog.js","utf8").match(/priceUpdated: "(\d{4}-\d{2})"/)[1]')
-          branch="prices/$month"
-          title="Catalogue prices for $month (AI estimates, please check)"
           printf '\n---\nOpened by the [Refresh catalogue prices](%s/%s/actions/runs/%s) workflow.\n' \
             "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> "$RUNNER_TEMP/pr-body.md"
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
-          git add js/catalog.js
-          git commit -m "chore(catalog): refresh vehicle prices for $month"
-          git push --force origin "$branch"
-
-          if [ "$(gh pr view "$branch" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
-            gh pr edit "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
-          else
-            gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
-          fi
+          scripts/open-price-pr.sh "$RUNNER_TEMP/pr-body.md"
