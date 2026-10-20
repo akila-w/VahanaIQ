@@ -28,3 +28,4 @@ jobs:
           node test/tokens.test.mjs
           node test/calculator.test.mjs
           node test/account.test.mjs
+          node test/scan-prices.test.mjs

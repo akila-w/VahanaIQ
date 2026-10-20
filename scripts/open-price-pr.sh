@@ -17,7 +17,7 @@ fi
 
 month=$(node -p 'require("fs").readFileSync("js/market-catalogue.js", "utf8").match(/priceUpdated: "(\d{4}-\d{2})"/)[1]')
 branch="prices/$month"
-title="Catalogue prices for $month (AI estimates, please check)"
+title="Catalogue prices for $month (please check)"
 
 # -C: a rerun in the same month replaces that month's branch
 git switch -C "$branch"

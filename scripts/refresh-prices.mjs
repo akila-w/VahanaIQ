@@ -5,12 +5,11 @@
 // a source page, marked as estimates, more than 6 months old or more than ±25% from the
 // current price are skipped and listed.
 // Prices come from one of two places:
-// - --from-file <prices.json>: prices researched by the monthly Claude scheduled task
-//   (scripts/price-research-task.md), each with the page it came from. This is the
-//   monthly route since 20/10/2026.
-// - otherwise the search proxy's price mode (a Google Search-grounded Gemini lookup), run by
-//   .github/workflows/refresh-prices.yml. No free Gemini model on the project can search
-//   Google any more, so this route currently fails.
+// - --from-file <prices.json>: prices read from the sites by scripts/scan-prices.mjs (the
+//   monthly route, run by .github/workflows/refresh-prices.yml), or researched by the Claude
+//   scheduled task (scripts/price-research-task.md), each with the page it came from
+// - otherwise the search proxy's price mode (a Google Search-grounded Gemini lookup). No free
+//   Gemini model on the project can search Google any more, so this route currently fails.
 // No npm dependencies (Node 20+).
 // Eligible priced variants are asked about 4 at a time on the proxy's PRICE_MODEL,
 // which the app does not use, and the run stops at once
@@ -225,14 +224,15 @@ export function vetSource(match, raw, month) {
 }
 
 // Applies the sanity checks to a proposed price. Returns { price, change } or { reason }.
-export function vetPrice(oldPrice, newPrice) {
+// Prices from a prices file are copied from a page, so they stay exact; the proxy's are rounded
+export function vetPrice(oldPrice, newPrice, { exact = false } = {}) {
   if (typeof newPrice !== "number" || !Number.isFinite(newPrice) || newPrice <= 0) {
     return { reason: "no brand-new price in the answer" };
   }
   if (!(typeof oldPrice === "number" && Number.isFinite(oldPrice) && oldPrice > 0)) {
     return { reason: "no baseline price; the first price needs individual review" };
   }
-  const price = Math.round(newPrice / ROUND_TO) * ROUND_TO;
+  const price = exact ? Math.round(newPrice) : Math.round(newPrice / ROUND_TO) * ROUND_TO;
   const change = (price - oldPrice) / oldPrice;
   if (Math.abs(change) > MAX_CHANGE) {
     return { reason: `${fmtLkr(price)} is ${fmtPct(change)} from ${fmtLkr(oldPrice)}, outside ±${MAX_CHANGE * 100}%` };
@@ -308,7 +308,7 @@ const sourceCell = r => {
   return [label, links].filter(Boolean).join(": ") || "–";
 };
 
-export function renderReport({ month, updated, skipped, origin = "from the VahanaIQ search proxy" }) {
+export function renderReport({ month, updated, skipped, origin = "from the VahanaIQ search proxy", exact = false }) {
   const out = [
     `Monthly refresh of eligible built-in catalogue prices for ${month}, ${origin}.`,
     "",
@@ -323,7 +323,7 @@ export function renderReport({ month, updated, skipped, origin = "from the Vahan
       "| --- | --- | ---: | ---: | ---: | --- |",
       ...updated.map(r => `| ${cell(r.name)} | ${cell(r.trim)} | ${fmtLkr(r.old)} | ${fmtLkr(r.new)} | ${fmtPct(r.change)} | ${sourceCell(r)} |`),
       "",
-      `New prices are rounded to the nearest ${fmtLkr(ROUND_TO)}. ` +
+      (exact ? "New prices are as published. " : `New prices are rounded to the nearest ${fmtLkr(ROUND_TO)}. `) +
         `Updated entries retain their own price-check month, publication month and source URL.`
     );
   } else {
@@ -460,7 +460,7 @@ export async function main(argv = process.argv.slice(2)) {
       const answer = answerFor(reply, j + 1);
       const match = matchTrim(v, answer);
       const grounded = match.reason ? match : vetSource(match, answer, month);
-      const vetted = grounded.reason ? grounded : vetPrice(v.price, match.price);
+      const vetted = grounded.reason ? grounded : vetPrice(v.price, match.price, { exact: !!research });
       if (vetted.reason) {
         const reason = match.trimName ? `${match.trimName} (${match.year}): ${vetted.reason}` : vetted.reason;
         skipped.push({ name: v.name, reason });
@@ -475,7 +475,7 @@ export async function main(argv = process.argv.slice(2)) {
     }
   }
 
-  const report = renderReport({ month, updated, skipped, ...(research ? { origin: research.origin } : {}) });
+  const report = renderReport({ month, updated, skipped, ...(research ? { origin: research.origin, exact: true } : {}) });
   if (opts.report) fs.writeFileSync(opts.report, report);
 
   if (eligible.length && failures === eligible.length) {

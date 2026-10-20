@@ -1,15 +1,12 @@
-# Monthly refresh of eligible priced catalogue variants.
-# Asks the search proxy for each vehicle's brand-new price, rewrites only the prices
-# and source/month evidence in js/market-catalogue.js, and opens a pull request for review.
-# It never commits to main. See "Monthly catalogue price refresh" in README.md.
+# Monthly refresh of priced catalogue variants.
+# Reads the sites that publish brand-new prices (scripts/scan-prices.mjs), rewrites only the
+# prices and source/month evidence in js/market-catalogue.js, and opens a pull request for
+# review. It never commits to main. See "Monthly catalogue price refresh" in README.md.
 name: Refresh catalogue prices
 
 on:
-  # Monthly schedule paused (20/10/2026): no free Gemini model on this project can use
-  # Google Search any more, so a scheduled run would only fail. Manual runs still work.
-  # To resume, restore:
-  # schedule:
-  #   - cron: "30 8 1 * *"  # 08:30 UTC (14:00 in Sri Lanka), after the free daily reset
+  schedule:
+    - cron: "30 8 1 * *"  # 08:30 UTC (14:00 in Sri Lanka) on the 1st of each month
   workflow_dispatch:
     inputs:
       dry_run:
@@ -38,17 +35,20 @@ jobs:
         with:
           node-version: 22
 
-      - name: Ask the proxy for current prices
+      - name: Scan the price sites and apply the changes
         env:
-          # Optional repository variable; otherwise config.proxyUrl in js/config.js is used
-          PROXY_URL: ${{ vars.PROXY_URL }}
-          # Must match the proxy's PRICE_TOKEN environment variable
-          PRICE_TOKEN: ${{ secrets.PRICE_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: |
-          # The report goes on the run's summary page even when the refresh fails
+          # The reports go on the run's summary page even when a step fails
           status=0
-          node scripts/refresh-prices.mjs $DRY_RUN --report "$RUNNER_TEMP/pr-body.md" || status=$?
+          node scripts/scan-prices.mjs --out "$RUNNER_TEMP/scan" || status=$?
+          if [ $status -eq 0 ]; then
+            node scripts/refresh-prices.mjs $DRY_RUN --from-file "$RUNNER_TEMP/scan/prices.json" --report "$RUNNER_TEMP/pr-body.md" || status=$?
+          fi
+          if [ -f "$RUNNER_TEMP/scan/report.md" ]; then
+            printf '\n' >> "$RUNNER_TEMP/pr-body.md"
+            cat "$RUNNER_TEMP/scan/report.md" >> "$RUNNER_TEMP/pr-body.md"
+          fi
           if [ -f "$RUNNER_TEMP/pr-body.md" ]; then cat "$RUNNER_TEMP/pr-body.md" >> "$GITHUB_STEP_SUMMARY"; fi
           exit $status
 
@@ -57,7 +57,7 @@ jobs:
           node test/verify.mjs
           node test/catalogue.test.mjs
           node test/refresh-prices.test.mjs
-          node test/proxy-price-mode.test.mjs
+          node test/scan-prices.test.mjs
 
       - name: Open or update the pull request
         if: ${{ !inputs.dry_run }}

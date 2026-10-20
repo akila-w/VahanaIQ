@@ -60,6 +60,8 @@ vahanaiq/
 │   └── config.js         # Cloud proxy, Firebase web config and endpoints
 ├── scripts/
 │   ├── build-tokens.mjs          # Builds css/tokens.css from design-system/tokens.json
+│   ├── scan-prices.mjs           # Reads the price sites and writes a prices file and a review report
+│   ├── price-matches.json        # Which site listing belongs to which catalogue entry
 │   ├── refresh-prices.mjs        # Applies researched prices to the catalogue, with checks
 │   ├── open-price-pr.sh          # Opens the monthly prices pull request
 │   └── price-research-task.md    # Instructions for the monthly Claude research task
@@ -71,7 +73,7 @@ vahanaiq/
 │   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
 │   └── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
 ├── .github/workflows/
-│   └── refresh-prices.yml        # Monthly price refresh pull request
+│   └── refresh-prices.yml        # Monthly price scan and pull request
 ├── serverless/
 │   ├── cloudflare-worker.js         # Cloudflare Worker proxy ($0 / 100k req/day)
 │   └── gcp-cloud-function/index.js  # Google Cloud Run / Cloud Function proxy
@@ -134,13 +136,27 @@ Each person has one document, `users/{uid}`, holding their inputs and comparison
 When `firestore.rules` changes, publish it: Firebase console → Firestore Database → Rules, paste the file, then **Publish**. In Authentication → Settings → Authorised domains, `akila-w.github.io` must be listed (`localhost` is there by default).
 
 ## Monthly catalogue price refresh
-Once a month, a **Claude scheduled task** ("VahanaIQ price research", in the Claude desktop app on Akila's Mac, on his Claude Pro plan) researches eligible priced, brand-new catalogue variants. Entries without a baseline price require individual review before joining automatic refreshes. It follows [`scripts/price-research-task.md`](scripts/price-research-task.md):
-- It uses only official agents', distributors', dealers' and importers' own price lists, plus reputable news reports. It doesn't use classified marketplaces: ikman's terms forbid copying its content, and Riyasewana and Patpat block automated access.
-- It writes each price, with the page it came from, to a prices file.
-- It runs `scripts/refresh-prices.mjs --from-file <prices.json>`, which applies the checks below.
-- It opens a pull request with `scripts/open-price-pr.sh`.
+On the 1st of each month, the **Refresh catalogue prices** GitHub workflow (`.github/workflows/refresh-prices.yml`) runs [`scripts/scan-prices.mjs`](scripts/scan-prices.mjs). It needs no AI and no API key. It reads the few Sri Lankan sites that publish brand-new prices, chosen because their robots.txt allows it:
+- **MG Sri Lanka** (official): prices on the home page
+- **GWM Sri Lanka** (official): "Driveaway from" prices on each vehicle page
+- **Cartivate Motors** (grey importer): stock listings with price and mileage
+- **importcar.lk** (grey importer): a price list, with each car's auction grade, and 0 km stock
 
-The task runs while the Claude app is open. If the app is closed when it's due, it runs on the next launch.
+Nissan Sri Lanka is left out (its robots.txt blocks nearly every bot except Google's), as are classified marketplaces: ikman's terms forbid copying its content, and Riyasewana and Patpat block automated access. Most official agents (Toyota, Suzuki, Kia, Hyundai, BYD and others) publish no prices at all, so their cars stay "price on request".
+
+Only brand-new cars are priced: 0 km on Cartivate, and a "brand new" grade or 0 km on importcar.lk. Auction-grade cars are reconditioned and are never priced as new. [`scripts/price-matches.json`](scripts/price-matches.json) says which listing belongs to which catalogue entry (a site and a title pattern, plus an optional exclusion). The lowest matching brand-new listing wins.
+
+The scan writes a prices file, and `scripts/refresh-prices.mjs --from-file` applies it with the checks below. The pull request's description adds the scan report:
+- prices found for priced entries, with the change and the listing
+- priced entries no longer listed (a grey importer may have sold the car; the price is left as it is)
+- **first prices to review**: entries with no price yet that a rule matched. These are never applied automatically; add them by hand after checking the listing
+- brand-new listings with no catalogue entry, as candidates for new entries
+
+To run it locally (writes `price-scan/`, which git ignores):
+```bash
+node scripts/scan-prices.mjs
+node scripts/refresh-prices.mjs --from-file price-scan/prices.json --dry-run
+```
 
 `scripts/refresh-prices.mjs` matches stable vehicle IDs and updates prices and their source/month evidence in `js/market-catalogue.js`. The frozen legacy snapshot is not refreshed. Personal price edits are stored separately and are never replaced by a catalogue update. A vehicle is skipped, and its price left alone, if:
 - the price is missing or zero
@@ -150,20 +166,24 @@ The task runs while the Claude app is open. If the app is closed when it's due, 
 - the price was published more than 6 months ago
 - the change is more than ±25%
 
-When the matching trims differ only by gearbox (for example "V 1.0L Turbo AT" and "V 1.0L Turbo MT"), the automatic is priced.
+Prices from a prices file are applied exactly as published. When the matching trims differ only by gearbox (for example "V 1.0L Turbo AT" and "V 1.0L Turbo MT"), the automatic is priced.
 
-Nothing is ever committed to `main`. `scripts/open-price-pr.sh` pushes a `prices/YYYY-MM` branch and opens a pull request. Its description shows the old price, new price, % change and source link for each vehicle, plus the skipped list. **The prices are AI estimates: check them against the linked sources before merging.** No pull request is opened if nothing changed.
+Nothing is ever committed to `main`. `scripts/open-price-pr.sh` pushes a `prices/YYYY-MM` branch and opens a pull request. Its description shows the old price, new price, % change and source link for each vehicle, plus the skipped list. Check the changes against the linked pages before merging. No pull request is opened if nothing changed. The workflow needs the repository setting **Settings → Actions → General → allow GitHub Actions to create pull requests**.
+
+### The Claude research task
+[`scripts/price-research-task.md`](scripts/price-research-task.md) describes the earlier monthly Claude scheduled task ("VahanaIQ price research", in the Claude desktop app). It writes the same kind of prices file from official sites and news reports. The scan now covers the sites that publish prices, so the task is only worth running for news of launch prices.
 
 To check a prices file locally without writing anything:
 ```bash
 node scripts/refresh-prices.mjs --from-file prices.json --dry-run
 ```
 
-### The GitHub workflow (paused)
-`.github/workflows/refresh-prices.yml` is the earlier route. It asks the search proxy's price mode (a Google Search-grounded Gemini lookup, see above) and opens the same kind of pull request. **Its monthly schedule is paused** (20/10/2026): Gemini 2.5 Flash and 2.5 Flash Lite are closed to new users, and on the free tier Gemini 3 and newer get no Google Search grounding, so there is no free model for the lookup. It can still be run from the Actions tab (**Run workflow**, with an optional dry run). It needs the repository setting **Settings → Actions → General → allow GitHub Actions to create pull requests**. The proxy URL comes from `config.proxyUrl` in `js/config.js`, or from a `PROXY_URL` repository variable.
+### The proxy's price mode
+`scripts/refresh-prices.mjs` without `--from-file` asks the search proxy's price mode (a Google Search-grounded Gemini lookup, see above). On the free tier no Gemini model can use Google Search any more (20/10/2026), so this route currently fails and the workflow no longer uses it. The proxy URL comes from `config.proxyUrl` in `js/config.js`, or from a `PROXY_URL` repository variable.
 
-The tests use a mocked proxy, sample prices files and a stubbed Gemini:
+The tests use small pages shaped like each site's, a mocked proxy, sample prices files and a stubbed Gemini:
 ```bash
+node test/scan-prices.test.mjs
 node test/refresh-prices.test.mjs
 node test/proxy-price-mode.test.mjs
 node test/catalogue.test.mjs
