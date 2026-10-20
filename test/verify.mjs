@@ -441,8 +441,8 @@ assert(html.includes('aria-label="Search vehicle with Gemini AI or paste adverti
 assert(html.includes('aria-label="Studio photo image URL"'), "index.html must have aria-label on aiImgUrl");
 assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
 assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
-assert(html.includes('js/app.js?v=2.7.1'), "index.html must reference js/app.js?v=2.7.1");
-assert(html.includes('css/style.css?v=2.7.1'), "index.html must reference css/style.css?v=2.7.1");
+assert(html.includes('js/app.js?v=2.8.0'), "index.html must reference js/app.js?v=2.8.0");
+assert(html.includes('css/style.css?v=2.8.0'), "index.html must reference css/style.css?v=2.8.0");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");
 
 // -------------------------------------------------------------
@@ -500,7 +500,8 @@ const { baseVehicles } = catalogMod;
 
 mockStorage.clear();
 const catalogPrice = baseVehicles[0].price; // read, not hard-coded, so monthly price refreshes keep this test green
-const initialCars = loadSavedCars(baseVehicles);
+assert.equal(loadSavedCars(baseVehicles).length, 0, "A new comparison starts empty, independent of catalogue size");
+const initialCars = cloneBaseCars(baseVehicles);
 assert.equal(initialCars.length, 12);
 // Simulate inline editing base vehicle #0
 initialCars[0].price = 28900000;

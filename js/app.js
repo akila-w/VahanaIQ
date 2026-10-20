@@ -1,15 +1,16 @@
-import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.7.1";
-import { baseVehicles, catalogMeta } from "./catalog.js?v=2.7.1";
-import { APP_VERSION } from "./config.js?v=2.7.1";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.7.1";
-import { searchVehicle } from "./gemini.js?v=2.7.1";
-import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.7.1";
-import { clearLegacyKeys, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.7.1";
-import { openModal, closeModal } from "./modal.js?v=2.7.1";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.7.1";
-import { showToast } from "./toast.js?v=2.7.1";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.7.1";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.7.1";
+import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.0";
+import { baseVehicles } from "./catalog.js?v=2.8.0";
+import { initCatalogue } from "./catalogue-browser.js?v=2.8.0";
+import { APP_VERSION } from "./config.js?v=2.8.0";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.8.0";
+import { searchVehicle } from "./gemini.js?v=2.8.0";
+import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.8.0";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.8.0";
+import { openModal, closeModal } from "./modal.js?v=2.8.0";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.8.0";
+import { showToast } from "./toast.js?v=2.8.0";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.8.0";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.8.0";
 
 clearLegacyKeys();
 
@@ -22,6 +23,7 @@ let currentAiData = null;
 let currentAiImgSrc = "";
 let pendingAdImage = null;
 let currentDiscoveredVehicles = [];
+let refreshCatalogue = () => {};
 
 export function formatVehicleTitle(modelName, trimName, year) {
   let m = (modelName || "").trim();
@@ -76,8 +78,8 @@ function summaryHtml(s, f, room) {
   const limit = Math.round(s.dti * 100);
   if (s.income) {
     if (s.down >= 100) {
-      return `<div class="stat"><b>100% Cash</b><span>100% cash purchase — Rs. 0 monthly lease loan</span></div>
-<div class="stat"><b>Rs. 0</b><span>Monthly lease rental commitment</span></div>
+      return `<div class="stat"><b>100% Cash</b><span>100% cash purchase — Rs. 0.00 monthly lease loan</span></div>
+<div class="stat"><b>Rs. 0.00</b><span>Monthly lease rental commitment</span></div>
 <div class="stat"><b>Rs. ${fmt(room)}</b><span>Monthly room available for other commitments</span></div>`;
     }
     if (room <= 0) {
@@ -89,22 +91,18 @@ function summaryHtml(s, f, room) {
 <div class="stat"><b>Rs. ${fmt(maxPrice * s.down / 100)}</b><span>Cash needed up front for that vehicle</span></div>`;
   }
   if (s.down >= 100) {
-    return `<div class="stat"><b>Rs. 0</b><span>Monthly rental (100% down payment)</span></div>
+    return `<div class="stat"><b>Rs. 0.00</b><span>Monthly rental (100% down payment)</span></div>
 <div class="stat"><b>100% Cash</b><span>Zero lease financing needed</span></div>
 <div class="stat"><span>Enter your net monthly income above to evaluate affordability and budget room.</span></div>`;
   }
-  return `<div class="stat"><b>Rs. ${fmt(1e6 * f * (1 - s.down / 100))}</b><span>Monthly rental for every Rs. 1 million of vehicle price</span></div>
-<div class="stat"><b>Rs. ${fmt(1e6 * f * (1 - s.down / 100) / s.dti)}</b><span>Net income needed per Rs. 1 million of price at a ${limit}% limit</span></div>
+  return `<div class="stat"><b>Rs. ${fmt(1e6 * f * (1 - s.down / 100))}</b><span>Monthly rental for every Rs. 1.00 million of vehicle price</span></div>
+<div class="stat"><b>Rs. ${fmt(1e6 * f * (1 - s.down / 100) / s.dti)}</b><span>Net income needed per Rs. 1.00 million of price at a ${limit}% limit</span></div>
 <div class="stat"><span>Enter your net monthly income above to see which vehicles fit and the highest price you can finance.</span></div>`;
 }
 
 function rowActions(r) {
   const name = esc(r.name);
-  if (typeof r._baseId !== "number") {
-    return `<button class="row-btn danger" type="button" data-act="remove" data-key="${r._key}" aria-label="Remove ${name}">Remove</button>`;
-  }
-  return (r.custom ? `<button class="row-btn" type="button" data-act="revert" data-key="${r._key}" aria-label="Reset price and condition, ${name}">Reset</button>` : "") +
-    `<button class="row-btn" type="button" data-act="hide" data-key="${r._key}" aria-label="Hide ${name}">Hide</button>`;
+  return `<button class="row-btn danger" type="button" data-act="remove" data-key="${r._key}" aria-label="Remove ${name}">Remove</button>`;
 }
 
 // Table header is rebuilt only when the sort changes
@@ -166,7 +164,9 @@ function updateRow(tr, r, { s, room, scale, labels }) {
   setThumb(tr, r);
   q(".v-name").textContent = r.name;
   setHtml(q(".v-spec"), [r.pt, r.km].filter(Boolean).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
-  q(".v-warr").textContent = r.w === "Official" ? "Official warranty" : "Grey market";
+  q(".v-warr").textContent = r.w === "Official" ? "Official agent" : r.w === "Grey" ? "Grey import" : "Route unconfirmed";
+  if (r.legacy) q(".v-warr").textContent += " · Saved estimate: verify price";
+  else if (r.priceBasis) q(".v-warr").textContent += r.priceBasis === "user-entered" ? " · Your price" : " · Confirm current quote";
   q(".v-cond").textContent = cl;
   q(".cond-tag").setAttribute("aria-label", `Change condition, currently ${cl}`);
   const isUnreg = (r.cond || "New") !== "Used";
@@ -199,7 +199,7 @@ function render() {
   if (rateHint && !fieldError("rate")) {
     rateHint.className = "hint";
     if (s.income > 200000 && s.rate === 16) {
-      rateHint.innerHTML = `<button type="button" class="hint-btn" id="applyPrefRateBtn">Earning over Rs. 200,000? Apply the 15% preferential rate</button>`;
+      rateHint.innerHTML = `<button type="button" class="hint-btn" id="applyPrefRateBtn">Earning over Rs. 200,000.00? Apply the 15% preferential rate</button>`;
       $("applyPrefRateBtn").onclick = () => {
         $("rate").value = "15";
         render();
@@ -208,7 +208,7 @@ function render() {
     } else if (s.rate === 15 && s.income > 200000) {
       rateHint.textContent = "✓ 15% preferential rate applied";
     } else {
-      rateHint.textContent = "15% may apply if you earn over Rs. 200,000";
+      rateHint.textContent = "15% may apply if you earn over Rs. 200,000.00";
     }
   }
 
@@ -249,7 +249,9 @@ function render() {
   const scale = s.income ? Math.max(room, maxRent) : maxRent;
   const labels = { ok: "Comfortable", mid: "Stretching", bad: "Out of reach", na: "" };
 
-  $("resetCatalogWrap").hidden = !cars.some(c => c.custom);
+  $("resetCatalogWrap").hidden = !cars.length;
+  if ($("browseEmptyBtn")) $("browseEmptyBtn").hidden = cars.some(c => !c.hidden);
+  refreshCatalogue();
 
   const ctx = { s, room, scale, labels };
   const tbody = $("rows");
@@ -268,7 +270,7 @@ function render() {
   for (const k of rowEls.keys()) if (!cars.some(c => c._key === k)) rowEls.delete(k);
 
   if (list.length === 0) {
-    $("empty").textContent = affordVal === "ok" && !s.income
+    $("empty").textContent = !cars.length ? "Your comparison is empty. Browse the catalogue to add a vehicle." : affordVal === "ok" && !s.income
       ? "Enter your net monthly income above to filter vehicles you can afford."
       : "No vehicles match these filters.";
     $("empty").hidden = false;
@@ -310,7 +312,7 @@ function updateBudgetExtras(s, f, room, rows) {
 
   let sentence = "", bar = "";
   if (!s.income) {
-    sentence = `Monthly rental is Rs. ${fmt(1e6 * f * (1 - s.down / 100))} for every Rs. 1 million of price.`;
+    sentence = `Monthly rental is Rs. ${fmt(1e6 * f * (1 - s.down / 100))} for every Rs. 1.00 million of price.`;
   } else if (s.down >= 100) {
     sentence = "100% cash purchase, no lease rental.";
   } else if (room <= 0) {
@@ -319,7 +321,7 @@ function updateBudgetExtras(s, f, room, rows) {
     const maxPrice = room / f / (1 - s.down / 100);
     const ok = rows.filter(r => r.rental <= room).length;
     sentence = `Highest monthly rental Rs. ${fmt(room)}. Highest vehicle price Rs. ${fmt(maxPrice)}. ${ok} of ${rows.length} vehicles fit your budget.`;
-    bar = `Max rental Rs. ${fmt(room)} · Max price Rs. ${(maxPrice / 1e6).toFixed(1)}M`;
+    bar = `Max rental Rs. ${fmt(room)} · Max price Rs. ${fmt(maxPrice)}`;
   }
   budgetBarText = bar;
   $("budgetBar").textContent = bar;
@@ -366,7 +368,7 @@ function applyState(state) {
     const el = $(id);
     if (!el) continue;
     if (el.tagName === "SELECT" && el.options && el.options.length && ![...el.options].some(o => o.value === v)) continue;
-    el.value = (id === "income" || id === "debt") && v !== "" ? formatMoneyText(v) : v;
+    el.value = (id === "income" || id === "debt" || id === "maxprice") && v !== "" ? formatMoneyText(v, { grouping: id !== "maxprice" }) : v;
   }
 }
 
@@ -412,11 +414,12 @@ $("resetInputsBtn").addEventListener("click", () => {
 });
 
 ["income", "debt", "mPrice", "aiPriceInput"].forEach(id => attachMoneyInput($(id)));
+attachMoneyInput($("maxprice"), { grouping: false });
 
 // Stable keys let the table keep focus and rows across re-renders
-let keySeq = 0;
 function assignKey(c) {
-  c._key = typeof c._baseId === "number" ? "b" + c._baseId : "c" + (++keySeq);
+  c.id = c.id || newVehicleId();
+  c._key = "v-" + c.id;
   return c;
 }
 cars.forEach(assignKey);
@@ -469,16 +472,12 @@ $("rows").addEventListener("click", e => {
 
   if (act === "remove") {
     changeWithUndo(idx, `Removed ${car.name}.`, () => { cars.splice(idx, 1); });
-  } else if (act === "hide") {
-    changeWithUndo(idx, `Hid ${car.name}.`, () => { cars[idx] = Object.assign({}, car, { hidden: true, custom: true }); });
-  } else if (act === "revert") {
-    changeWithUndo(idx, `Reset ${car.name} to its original price and condition.`, () => {
-      cars[idx] = Object.assign({}, baseVehicles[car._baseId], { _baseId: car._baseId, _key: car._key, custom: false });
-    });
   } else if (act === "cond") {
     const cycle = { New: "Recond", Recond: "Used", Used: "New" };
     car.cond = cycle[car.cond || "New"] || "New";
     car.custom = true;
+    car.priceBasis = "user-entered";
+    car.priceSourceUrl = null;
     saveCars(cars);
     render();
     focusRowControl(key, "cond");
@@ -510,6 +509,8 @@ function startPriceEdit(btn, car) {
     if (save && newP > 0 && newP !== car.price) {
       car.price = newP;
       car.custom = true;
+      car.priceBasis = "user-entered";
+      car.priceSourceUrl = null;
       saveCars(cars);
     }
     input.remove();
@@ -525,10 +526,9 @@ function startPriceEdit(btn, car) {
 }
 
 $("resetCatalogBtn").addEventListener("click", () => {
-  if (confirm("Reset to the original 12 vehicles? Added vehicles, price and condition changes and hidden vehicles will be reset.")) {
-    try { localStorage.removeItem("sl_lease_custom_cars_v2"); } catch (e) {}
-    cars = cloneBaseCars(baseVehicles);
-    cars.forEach(assignKey);
+  if (confirm("Clear your comparison? You can add vehicles again from the catalogue.")) {
+    cars = [];
+    saveCars(cars);
     rowEls.clear();
     $("rows").replaceChildren();
     render();
@@ -1117,12 +1117,21 @@ if (themeBtn) {
 
 initTheme();
 
-// Footer: version and the month the catalogue prices were checked
+// Footer: catalogue availability and individual prices have separate evidence dates.
 $("appVersion").textContent = APP_VERSION;
-{
-  const [y, m] = catalogMeta.priceUpdated.split("-").map(Number);
-  if (y && m) $("priceAsOf").textContent = `Prices as of ${new Date(y, m - 1, 1).toLocaleDateString("en-GB", { month: "long", year: "numeric" })}`;
-}
+$("priceAsOf").textContent = "Catalogue sources checked 20/10/2026 · confirm prices and stock with the seller";
+
+refreshCatalogue = initCatalogue({
+  isSelected: id => cars.some(c => c.catalogueId === id && !c.hidden),
+  onAdd: vehicle => {
+    if (cars.some(c => c.catalogueId === vehicle.catalogueId && !c.hidden)) return false;
+    if (!addCars([vehicle])) return false;
+    saveCars(cars);
+    render();
+    showToast(`Added ${vehicle.name} to your comparison.`);
+    return true;
+  }
+});
 
 applyState(loadState());
 render();

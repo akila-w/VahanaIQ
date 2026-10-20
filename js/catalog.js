@@ -1,4 +1,5 @@
-// Default 12 Base Vehicles for Sri Lanka (Referencing Local Studio Images)
+// Frozen v2 comparison snapshot for saved-data migration and legacy refresh tests.
+// These estimates are not the current market catalogue. See market-catalogue.js.
 
 // Month the catalogue prices were last checked (YYYY-MM); shown in the footer
 export const catalogMeta = { priceUpdated: "2026-10" };

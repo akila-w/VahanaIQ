@@ -1,6 +1,6 @@
-# Monthly refresh of the 12 built-in catalogue prices.
+# Monthly refresh of eligible priced catalogue variants.
 # Asks the search proxy for each vehicle's brand-new price, rewrites only the prices
-# and catalogMeta.priceUpdated in js/catalog.js, and opens a pull request for review.
+# and source/month evidence in js/market-catalogue.js, and opens a pull request for review.
 # It never commits to main. See "Monthly catalogue price refresh" in README.md.
 name: Refresh catalogue prices
 
@@ -53,6 +53,7 @@ jobs:
       - name: Run the verification suites
         run: |
           node test/verify.mjs
+          node test/catalogue.test.mjs
           node test/refresh-prices.test.mjs
           node test/proxy-price-mode.test.mjs
 

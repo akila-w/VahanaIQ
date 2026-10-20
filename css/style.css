@@ -755,6 +755,25 @@ body.has-budget-bar main {
   }
 }
 
+/* Market catalogue: independent of the selected comparison. */
+.comparison-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+button[hidden] { display: none !important; }
+.catalogue-modal { max-width: 1020px; }
+.catalogue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 16px; gap: 10px; }
+.catalogue-card h3 { font-size: 1rem; line-height: 1.4; margin: 0; }
+.catalogue-card p { margin: 0; }
+.catalogue-card a { color: var(--accent); text-underline-offset: 3px; margin-top: auto; }
+.catalogue-card button { width: 100%; min-height: 44px; }
+.catalogue-category { color: var(--mute); font-size: .8rem; }
+.catalogue-price { font-weight: 700; font-variant-numeric: tabular-nums; }
+.catalogue-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+.catalogue-pagination button { min-height: 44px; }
+#catalogueAddForm > input, #catalogueAddForm > select { margin-bottom: 14px; }
+#catalogueSearch { margin-top: 6px; }
+@media (max-width: 760px) { .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .catalogue-grid { grid-template-columns: minmax(0, 1fr); } .catalogue-modal { padding: 16px; } }
+
 /* Modals and Drawers */
 .modal-bg {
   position: fixed;
