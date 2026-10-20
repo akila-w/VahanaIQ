@@ -6,12 +6,32 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-#themeToggleBtn {
-  font-size: 1.1rem;
-  line-height: 1;
-  padding: 7px 11px;
+/* Theme switch: System, Light and Dark as one segmented control of radio buttons */
+.theme-switch {
+  display: inline-flex;
+  align-self: stretch;
+  margin: 0;
+  padding: var(--space-2);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  gap: var(--space-2);
+}
+.theme-switch label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: var(--space-6) var(--space-8);
+  border-radius: var(--radius-xs);
+  color: var(--mute);
   cursor: pointer;
 }
+.theme-switch input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.theme-switch label:hover { color: var(--ink); }
+.theme-switch label:has(input:checked) { background: var(--accent); color: var(--on-accent); }
+.theme-switch label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 html {
   scroll-padding-top: env(safe-area-inset-top, 0px);
@@ -93,6 +113,7 @@ h1 {
   margin: 0;
   max-width: 70ch;
   font-size: 0.95rem;
+  text-wrap: balance;
 }
 
 .header-actions {
@@ -131,11 +152,13 @@ h2 {
   }
 }
 
+/* Field labels are ink and semibold so they read as titles; hints below the fields stay muted and smaller */
 label {
   display: block;
   font-size: 0.875rem;
-  color: var(--mute);
-  margin-bottom: var(--space-3);
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: var(--space-4);
 }
 
 input, select, textarea {
@@ -146,6 +169,19 @@ input, select, textarea {
   background: var(--bg);
   color: var(--ink);
   font: inherit;
+}
+
+/* Safari draws native selects short and ignores their padding; drawing our own chevron
+   (two gradient triangles in the mute colour) makes them match the inputs in every browser */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--space-40);
+  background-image: linear-gradient(45deg, transparent 50%, var(--mute) 50%), linear-gradient(135deg, var(--mute) 50%, transparent 50%);
+  background-position: calc(100% - var(--space-18)) 50%, calc(100% - var(--space-12)) 50%;
+  background-size: var(--space-6) var(--space-6);
+  background-repeat: no-repeat;
+  cursor: pointer;
 }
 
 input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, th button:focus-visible {
@@ -545,6 +581,7 @@ label.file-btn {
   background: var(--panel);
   color: var(--ink);
   font-size: 0.8125rem;
+  font-weight: 500;
   cursor: pointer;
 }
 
@@ -664,6 +701,7 @@ body.has-budget-bar main {
 
 .foot p {
   max-width: 80ch;
+  text-wrap: pretty;
   margin: 0 0 var(--space-8);
 }
 
@@ -960,6 +998,7 @@ button.cond-tag:hover {
 /* Discovery checklist */
 .discovery-item {
   display: flex;
+  font-weight: 400;
   align-items: center;
   gap: var(--space-12);
   padding: var(--space-8) var(--space-12);
@@ -1032,7 +1071,7 @@ table.detail-table { min-width: 0; display: table; }
 .detail-table td::before { content: none; }
 .detail-table .n { text-align: right; font-variant-numeric: tabular-nums; }
 
-.check-row { display: flex; align-items: center; gap: var(--space-8); color: var(--ink); margin: var(--space-12) 0; font-size: 0.9375rem; }
+.check-row { display: flex; align-items: center; gap: var(--space-8); color: var(--ink); margin: var(--space-12) 0; font-size: 0.9375rem; font-weight: 400; }
 .check-row input { width: auto; }
 .share-modal #shareLink { font-size: 0.8125rem; }
 

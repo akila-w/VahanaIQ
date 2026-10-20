@@ -86,7 +86,7 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
         ${rent ? `<p class="hint catalogue-rent">${rent}</p>` : ""}
         <p class="hint">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${hasPrice(v) && v.priceCheckedMonth ? ` · Price checked ${v.priceCheckedMonth.split("-").reverse().join("/")}` : ""}</p>
         <a href="${esc(safeUrl(link.href))}" target="_blank" rel="noopener noreferrer">${link.text}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>
-        <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In comparison ✓" : "Choose & add"}</button>
+        <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In Comparison ✓" : "Choose & Add"}</button>
       </article>`;
   }
 

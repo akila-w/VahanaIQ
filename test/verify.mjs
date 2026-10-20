@@ -113,7 +113,6 @@ const domElements = {
   resetCatalogWrap: new MockElement("resetCatalogWrap"),
   resetCatalogBtn: new MockElement("resetCatalogBtn", "BUTTON"),
   apiKeyInput: new MockElement("apiKeyInput", "INPUT"),
-  themeToggleBtn: new MockElement("themeToggleBtn", "BUTTON"),
   keyStatus: new MockElement("keyStatus"),
   settingsModal: new MockElement("settingsModal"),
   openSettingsBtn: new MockElement("openSettingsBtn", "BUTTON"),
@@ -433,7 +432,8 @@ assert(html.includes('id="rateHint"'), "index.html must include rateHint element
 assert(html.includes('id="aiDiscoveryBox"'), "index.html must include aiDiscoveryBox element");
 assert(html.includes('id="aiAddAllTrimsBtn"'), "index.html must include aiAddAllTrimsBtn element");
 assert(html.includes('id="aiAdFile"'), "index.html must include aiAdFile input for screenshot upload");
-assert(html.includes('id="themeToggleBtn"'), "index.html must include themeToggleBtn element");
+assert(html.includes('id="themeSwitch"'), "index.html must include the theme switch");
+for (const choice of ["system", "light", "dark"]) assert(html.includes(`name="theme" value="${choice}"`), `theme switch must offer ${choice}`);
 assert(html.includes('apple-touch-icon.png'), "index.html must reference PNG apple-touch-icon");
 assert(html.includes('og-image.png'), "index.html must reference PNG og-image");
 assert(html.includes('terms-grid'), "index.html must use terms-grid layout");

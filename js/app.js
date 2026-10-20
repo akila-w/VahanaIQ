@@ -64,12 +64,12 @@ export function formatVehicleTitle(modelName, trimName, year) {
 const cols = [
   ["name", "Vehicle"],
   ["price", "Price", "n"],
-  ["dp", "Down payment", "n"],
-  ["rental", "Monthly rental", "n"],
-  ["bar", "Share of your budget"],
-  ["interest", "Total interest", "n secondary"],
-  ["total", "Total outlay", "n secondary"],
-  ["need", "Income needed", "n"],
+  ["dp", "Down Payment", "n"],
+  ["rental", "Monthly Rental", "n"],
+  ["bar", "Share of Your Budget"],
+  ["interest", "Total Interest", "n secondary"],
+  ["total", "Total Outlay", "n secondary"],
+  ["need", "Income Needed", "n"],
   ["status", "Status"],
   ["actions", "Actions", "actions"]
 ];
@@ -485,7 +485,7 @@ $("rows").addEventListener("click", e => {
     render();
     focusRowControl(key, "cond");
     // The price was for the old condition, so offer to change it
-    showToast(`${car.name} is now ${condLabel(car.cond)}. Check its price for this condition.`, "Edit price", () => {
+    showToast(`${car.name} is now ${condLabel(car.cond)}. Check its price for this condition.`, "Edit Price", () => {
       const edit = $("rows").querySelector(`[data-key="${key}"][data-act="price"]`);
       if (edit) startPriceEdit(edit, car);
     });
@@ -568,7 +568,7 @@ function openDetails(car, opener) {
       line(`Total paid (down payment, rentals${extras ? ", fees and insurance" : ""})`, `Rs. ${fmt(r.total)}`) +
       line(`Net income needed at a ${limit}% limit`, `Rs. ${fmt(r.need)}`) + "</dl>";
     const years = yearlySchedule(r.loan, s.rate, s.n);
-    html += `<h3 class="detail-h">Year by year</h3><div class="wrap detail-wrap"><table class="detail-table"><thead><tr><th>Year</th><th class="n">Rentals paid</th><th class="n">Interest</th><th class="n">Principal</th><th class="n">Balance left</th></tr></thead><tbody>${
+    html += `<h3 class="detail-h">Year by Year</h3><div class="wrap detail-wrap"><table class="detail-table"><thead><tr><th>Year</th><th class="n">Rentals paid</th><th class="n">Interest</th><th class="n">Principal</th><th class="n">Balance left</th></tr></thead><tbody>${
       years.map(y => `<tr><td>${y.year}${y.months < 12 ? ` (${y.months} months)` : ""}</td><td class="n">${fmt(y.paid)}</td><td class="n">${fmt(y.interest)}</td><td class="n">${fmt(y.principal)}</td><td class="n">${fmt(y.balance)}</td></tr>`).join("")
     }</tbody></table></div><p class="hint">Rentals use the standard reducing-balance formula with monthly compounding${s.rateType === "flat" ? "; the flat rate is converted to its reducing-balance equivalent" : ""}. ${extras ? "Fees and insurance are the amounts you entered." : "Insurance and fees are not included."}</p>`;
   }
@@ -713,7 +713,7 @@ function showSearchUnavailable(error) {
   const message = error?.code === "incomplete_comparison"
     ? "AI did not return a complete comparison. Search again or add each vehicle separately."
     : "AI search isn't available right now. Try again or add the car yourself.";
-  $("aiSearchMsg").innerHTML = `<span class="msg-error">${message}</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter details manually</button>`;
+  $("aiSearchMsg").innerHTML = `<span class="msg-error">${message}</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter Details Manually</button>`;
   $("goManualBtn").addEventListener("click", () => {
     selectTab("manual");
     if (!$("mName").value) $("mName").value = $("aiSearchQuery").value.trim().slice(0, 120);
@@ -986,7 +986,7 @@ function renderDiscoveryChecklist(vehicles) {
   $("aiUnavailBox").hidden = true;
   $("aiResultForm").hidden = true;
   $("aiDiscoveryBox").hidden = false;
-  $("aiDiscoveryTitle").textContent = `${vehicles.length} vehicles match your search`;
+  $("aiDiscoveryTitle").textContent = `${vehicles.length} Vehicles Match Your Search`;
 
   const listContainer = $("aiDiscoveryList");
   listContainer.innerHTML = vehicles.map((v, i) => {
@@ -1027,7 +1027,7 @@ function renderDiscoveryChecklist(vehicles) {
 
 function updateSelectedCount() {
   const checked = document.querySelectorAll(".disc-check:checked").length;
-  $("aiAddSelectedBtn").textContent = `Add selected (${checked}) to comparison`;
+  $("aiAddSelectedBtn").textContent = `Add Selected (${checked}) to Comparison`;
 }
 
 $("aiDiscoveryList").addEventListener("change", e => {
@@ -1134,41 +1134,39 @@ $("mAddBtn").addEventListener("click", () => {
   });
 });
 
-// Theme Switcher (☀️ / 🌙)
-function applyTheme(theme) {
-  if (typeof document !== "undefined" && document.documentElement && typeof document.documentElement.setAttribute === "function") {
-    document.documentElement.setAttribute("data-theme", theme);
+// Theme: System follows the device's light or dark setting (no data-theme, so the CSS media
+// query decides, live); Light or Dark is saved in this browser and set on <html>. The inline
+// script in index.html applies a saved choice before the page paints.
+const THEME_KEY = "vahanaiq_theme";
+const themeMetas = typeof document.querySelectorAll === "function" ? [...document.querySelectorAll('meta[name="theme-color"]')] : [];
+themeMetas.forEach(m => { m.dataset.content = m.content; });
+
+function applyTheme(choice) {
+  const root = document.documentElement;
+  if (root && typeof root.setAttribute === "function") {
+    if (choice === "light" || choice === "dark") root.setAttribute("data-theme", choice);
+    else root.removeAttribute("data-theme");
   }
-  const btn = $("themeToggleBtn");
-  if (btn) {
-    btn.textContent = theme === "dark" ? "☀️" : "🌙";
-    btn.title = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
-    if (typeof btn.setAttribute === "function") {
-      btn.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    }
-  }
+  // The browser's toolbar colour follows a fixed choice too
+  const fixed = themeMetas.find(m => m.media.includes(choice));
+  themeMetas.forEach(m => { m.content = fixed ? fixed.dataset.content : m.dataset.content; });
+  const radio = document.querySelector?.(`input[name="theme"][value="${choice}"]`);
+  if (radio) radio.checked = true;
 }
 
-function initTheme() {
-  let saved = null;
-  try { saved = localStorage.getItem("vahanaiq_theme"); } catch (e) {}
-  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = saved || (prefersDark ? "dark" : "light");
-  applyTheme(theme);
-}
+let savedTheme = null;
+try { savedTheme = localStorage.getItem(THEME_KEY); } catch (e) {}
+applyTheme(savedTheme === "light" || savedTheme === "dark" ? savedTheme : "system");
 
-const themeBtn = $("themeToggleBtn");
-if (themeBtn) {
-  themeBtn.addEventListener("click", () => {
-    const cur = (typeof document !== "undefined" && document.documentElement && typeof document.documentElement.getAttribute === "function" && document.documentElement.getAttribute("data-theme")) || 
-      (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    const next = cur === "dark" ? "light" : "dark";
-    try { localStorage.setItem("vahanaiq_theme", next); } catch (e) {}
-    applyTheme(next);
-  });
-}
-
-initTheme();
+document.addEventListener("change", e => {
+  if (e.target.name !== "theme") return;
+  const choice = e.target.value;
+  try {
+    if (choice === "system") localStorage.removeItem(THEME_KEY);
+    else localStorage.setItem(THEME_KEY, choice);
+  } catch (err) {}
+  applyTheme(choice);
+});
 
 // Footer: catalogue availability and individual prices have separate evidence dates.
 $("appVersion").textContent = APP_VERSION;
@@ -1256,7 +1254,7 @@ if (sharedCars.length) {
     addShared();
     showToast(`Opened a shared comparison with ${word}.`);
   } else {
-    showToast(`This link has ${word}.`, "Add them", addShared);
+    showToast(`This link has ${word}.`, "Add Them", addShared);
   }
 }
 render();
