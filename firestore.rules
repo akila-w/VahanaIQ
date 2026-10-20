@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// VahanaIQ sign-in and sync (js/account.js). Each person has one document, users/{their uid},
+// holding their saved inputs and comparison as a JSON string. Only they can read, write or
+// delete it; everything else is refused.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasAll(["version", "data", "updatedAt"])
+        && request.resource.data.keys().hasOnly(["version", "data", "updatedAt"])
+        && request.resource.data.version == 1
+        && request.resource.data.data is string
+        && request.resource.data.data.size() <= 900000
+        && request.resource.data.updatedAt == request.time;
+    }
+  }
+}

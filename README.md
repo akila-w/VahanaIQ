@@ -22,7 +22,8 @@
 - **Hierarchical Selector:** Multi-tier Model Year and Trim selector with condition grading.
 - **Dynamic LKR Pricing:** Market valuations automatically update as condition or trim changes.
 - **HTML5 Canvas Studio Normaliser:** Automatically centres, scales, and pads any car photo onto an 8:5 pure white plate (`#FFFFFF`) with tyre contact shadow.
-- **Private by default, shareable on request:** Loan terms, income, sort and filters are saved in this browser only. **Share** builds a link with the terms, filters and vehicles; income and existing payments are left out unless you tick the box. The address bar is cleaned after a shared link opens.
+- **Private by default, shareable on request:** Loan terms, income, sort and filters are saved in this browser unless you sign in. **Share** builds a link with the terms, filters and vehicles; income and existing payments are left out unless you tick the box. The address bar is cleaned after a shared link opens.
+- **Optional Google sign-in and sync:** Signing in keeps your inputs and comparison in your account (Firebase), so another device picks them up. Each change is checked against the account's copy first, so an edit made elsewhere is never overwritten without asking. Signing out removes them from the browser, and **Delete my saved data** removes them from the account.
 - **Works offline:** A service worker (`sw.js`) keeps the app's own files, so the calculator opens without a connection. AI search needs one.
 
 ## Folder Structure
@@ -32,6 +33,7 @@ vahanaiq/
 ├── manifest.json         # PWA manifest (192 and 512px PNG icons)
 ├── sw.js                 # Offline support: network first, cached copy when offline
 ├── robots.txt, sitemap.xml
+├── firestore.rules       # Who may read and write synced data (paste into the Firebase console)
 ├── README.md             # Project documentation
 ├── design-system/
 │   └── tokens.json       # Design tokens: colours, type, spacing, radii, shadows (source of truth)
@@ -50,11 +52,12 @@ vahanaiq/
 │   ├── gemini.js         # Proxy search call & response schema
 │   ├── image-fetcher.js  # Zero-touch Wikipedia & Wikimedia photo resolver
 │   ├── storage.js        # Saved vehicles and legacy-key cleanup
+│   ├── account.js        # Google sign-in and sync with Firebase (loaded only when used)
 │   ├── inputs.js         # Input validation, saved inputs and shareable URL
 │   ├── modal.js          # Accessible modal focus handling
 │   ├── money-input.js    # Rupee inputs with thousands separators
 │   ├── toast.js          # Undo toast
-│   └── config.js         # Cloud proxy and endpoint configuration
+│   └── config.js         # Cloud proxy, Firebase web config and endpoints
 ├── scripts/
 │   ├── build-tokens.mjs          # Builds css/tokens.css from design-system/tokens.json
 │   ├── refresh-prices.mjs        # Applies researched prices to the catalogue, with checks
@@ -64,6 +67,7 @@ vahanaiq/
 │   ├── verify.mjs                # App verification suite
 │   ├── tokens.test.mjs           # Design tokens are in sync and the only source of CSS variables
 │   ├── calculator.test.mjs       # Rentals, flat-rate conversion, legal down payments and schedules
+│   ├── account.test.mjs          # Sync decisions, what is uploaded and the Firestore rules' shape
 │   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
 │   └── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
 ├── .github/workflows/
@@ -121,6 +125,13 @@ The proxy protects its free Gemini allowance with three settings (the Cloudflare
 Screenshots must be JPEG, PNG, WebP or GIF and under about 4 MB, and error details sent to the browser are shortened.
 
 The same service has a second, **price mode** (`POST {"mode": "price", "queries": ["...", "..."]}`, up to 12 vehicles), used only by the monthly price refresh. It turns on Grounding with Google Search, so Gemini looks up current Sri Lankan prices instead of relying on its training data. It runs on its own model, set with the `PRICE_MODEL` environment variable (`gemini-2.5-flash-lite` by default), whose free daily allowance is separate from the app's. It returns `{ vehicles[], sources[], search_queries[], model }`, where each vehicle lists its trims with price, model year, basis, month and the site the price came from, and `sources` are the web pages Gemini cited. A quota error says whether the daily or per-minute limit was hit (`"quota": "daily"`). Requests without `mode` are handled exactly as before. To use a different model for the refresh, add `PRICE_MODEL=<model>` to `--update-env-vars`. On the free tier it has to be a Gemini 2.x or 2.5 model: AI Studio gives Gemini 3 and newer no free Google Search grounding, and `gemini-2.5-flash` is closed to new users. If Gemini refuses the model, the refresh stops after one request and says so.
+
+## Google sign-in and sync (Firebase)
+The Firebase project is `vahanaiq-sign-in`, on the free Spark plan and separate from the proxy's Google Cloud project. Its web config in `js/config.js` is public by design; `firestore.rules` is what protects the data. The app loads Firebase 12.19.0 from Google's CDN only when someone opens the account dialog, or on a later visit once they have signed in.
+
+Each person has one document, `users/{uid}`, holding their inputs and comparison as a JSON string. Photos made in the browser are not uploaded.
+
+When `firestore.rules` changes, publish it: Firebase console → Firestore Database → Rules, paste the file, then **Publish**. In Authentication → Settings → Authorised domains, `akila-w.github.io` must be listed (`localhost` is there by default).
 
 ## Monthly catalogue price refresh
 Once a month, a **Claude scheduled task** ("VahanaIQ price research", in the Claude desktop app on Akila's Mac, on his Claude Pro plan) researches eligible priced, brand-new catalogue variants. Entries without a baseline price require individual review before joining automatic refreshes. It follows [`scripts/price-research-task.md`](scripts/price-research-task.md):

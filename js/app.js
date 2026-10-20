@@ -1,17 +1,18 @@
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.9.0";
-import { baseVehicles } from "./catalog.js?v=2.9.0";
-import { initCatalogue } from "./catalogue-browser.js?v=2.9.0";
-import { APP_VERSION } from "./config.js?v=2.9.0";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.9.0";
-import { searchVehicle } from "./gemini.js?v=2.9.0";
-import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.9.0";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.9.0";
-import { openModal, closeModal } from "./modal.js?v=2.9.0";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.9.0";
-import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.9.0";
-import { showToast } from "./toast.js?v=2.9.0";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.9.0";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.9.0";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.10.0";
+import { baseVehicles } from "./catalog.js?v=2.10.0";
+import { initCatalogue } from "./catalogue-browser.js?v=2.10.0";
+import { APP_VERSION } from "./config.js?v=2.10.0";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.10.0";
+import { searchVehicle } from "./gemini.js?v=2.10.0";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.10.0";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.10.0";
+import { openModal, closeModal } from "./modal.js?v=2.10.0";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.10.0";
+import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.10.0";
+import { showToast } from "./toast.js?v=2.10.0";
+import { initAccount } from "./account.js?v=2.10.0";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.10.0";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.10.0";
 
 clearLegacyKeys();
 
@@ -1259,4 +1260,14 @@ if (sharedCars.length) {
   }
 }
 render();
+
+// Signing in syncs these inputs and vehicles with the person's account (see js/account.js)
+initAccount({
+  reload() {
+    cars = loadSavedCars(baseVehicles);
+    cars.forEach(assignKey);
+    applyState(loadState());
+    render();
+  }
+});
 if (invalidSavedCount) showToast("Some saved vehicles had invalid prices and were left out. Add them again with a valid price.");

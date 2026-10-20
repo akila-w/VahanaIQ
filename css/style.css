@@ -706,6 +706,7 @@ body.has-budget-bar main {
 
 /* Market catalogue: independent of the selected comparison. */
 .comparison-tools { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-12); }
+#resetCatalogWrap:not([hidden]) { display: inline-flex; gap: var(--space-16); }
 button[hidden] { display: none !important; }
 .modal.catalogue-modal { max-width: var(--catalogue-modal-max); }
 .catalogue-intro { margin: 0 0 var(--space-12); }
@@ -1062,6 +1063,15 @@ table.detail-table { min-width: 0; display: table; }
 .pimg-ph { width: var(--preview-w); height: 88px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--plate); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--plate-ink); font-size: 0.75rem; gap: var(--space-4); }
 .pimg-ph[hidden] { display: none; }
 .modal-actions { margin-top: var(--space-16); display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: var(--space-8); }
+
+/* Account: sign-in and sync (js/account.js) */
+.account-btn.needs-attention::after { content: ""; width: var(--space-8); height: var(--space-8); border-radius: 50%; background: var(--mid); }
+.account-actions { justify-content: space-between; }
+.sync-conflict { margin-top: var(--space-16); padding: var(--space-12); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); }
+.sync-conflict p { margin: 0 0 var(--space-8); }
+.sync-conflict .modal-actions { margin-top: var(--space-12); }
+button.link-btn.danger { color: var(--bad); }
+button.btn.btn-danger { background: var(--bad); border-color: var(--bad); }
 
 /* Below 1200px the comparison table becomes compact cards, two to a row on tablets;
    the secondary totals move into each vehicle's Details */

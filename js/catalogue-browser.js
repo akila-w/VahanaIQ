@@ -1,11 +1,11 @@
-import { baseVehicles as catalogue } from "./market-catalogue.js?v=2.9.0";
-import { fmt, esc, minDownFor } from "./calculator.js?v=2.9.0";
-import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.9.0";
-import { validPrice } from "./vehicle-validation.js?v=2.9.0";
-import { newVehicleId } from "./storage.js?v=2.9.0";
-import { openModal, closeModal } from "./modal.js?v=2.9.0";
-import { searchCatalogue } from "./catalogue-search.js?v=2.9.0";
-import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.9.0";
+import { baseVehicles as catalogue } from "./market-catalogue.js?v=2.10.0";
+import { fmt, esc, minDownFor } from "./calculator.js?v=2.10.0";
+import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.10.0";
+import { validPrice } from "./vehicle-validation.js?v=2.10.0";
+import { newVehicleId } from "./storage.js?v=2.10.0";
+import { openModal, closeModal } from "./modal.js?v=2.10.0";
+import { searchCatalogue } from "./catalogue-search.js?v=2.10.0";
+import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.10.0";
 
 const displayDate = date => /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? date.split("-").reverse().join("/") : "Date unavailable";
 const routeLabel = v => v.w === "Official" ? "Official agent range" : v.w === "Grey" ? "Importer listing" : "Independent seller listing";

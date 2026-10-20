@@ -441,8 +441,8 @@ assert(html.includes('aria-label="Search vehicle with Gemini AI or paste adverti
 assert(html.includes('<label for="aiImgUrl">'), "index.html must give aiImgUrl a visible label");
 assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
 assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
-assert(html.includes('js/app.js?v=2.9.0'), "index.html must reference js/app.js?v=2.9.0");
-assert(html.includes('css/style.css?v=2.9.0'), "index.html must reference css/style.css?v=2.9.0");
+assert(html.includes('js/app.js?v=2.10.0'), "index.html must reference js/app.js?v=2.10.0");
+assert(html.includes('css/style.css?v=2.10.0'), "index.html must reference css/style.css?v=2.10.0");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");
 
 // -------------------------------------------------------------
