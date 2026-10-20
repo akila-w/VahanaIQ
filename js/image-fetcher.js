@@ -37,7 +37,7 @@ export async function fetchVehicleStudioImage(modelName, wikipediaSlug) {
     try {
       const wikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(slug)}`;
       const res = await fetch(wikiUrl, {
-        headers: { "User-Agent": "VahanaIQ/2.10.0 (https://akila-w.github.io/vahanaiq; vehicle-calculator)" }
+        headers: { "User-Agent": "VahanaIQ/2.10.1 (https://akila-w.github.io/vahanaiq; vehicle-calculator)" }
       });
       if (res.ok) {
         const data = await res.json();

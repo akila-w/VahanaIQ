@@ -113,7 +113,6 @@ h1 {
   margin: 0;
   max-width: 70ch;
   font-size: 0.95rem;
-  text-wrap: balance;
 }
 
 .header-actions {
@@ -699,6 +698,21 @@ body.has-budget-bar main {
   padding-top: var(--space-12);
 }
 
+/* Three short columns use the width on large screens and stack on small ones */
+.foot-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-12) var(--space-20);
+  margin-bottom: var(--space-12);
+}
+
+.foot-h {
+  margin: 0 0 var(--space-4);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .foot p {
   max-width: 80ch;
   text-wrap: pretty;
@@ -1106,6 +1120,8 @@ table.detail-table { min-width: 0; display: table; }
 /* Account: sign-in and sync (js/account.js) */
 .account-btn.needs-attention::after { content: ""; width: var(--space-8); height: var(--space-8); border-radius: 50%; background: var(--mid); }
 .account-actions { justify-content: space-between; }
+.google-sign-in { display: flex; align-items: center; min-height: var(--space-40); margin-top: var(--space-16); color: var(--mute); font-size: 0.875rem; }
+#signInBtn { margin-top: var(--space-16); }
 .sync-conflict { margin-top: var(--space-16); padding: var(--space-12); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--bg); }
 .sync-conflict p { margin: 0 0 var(--space-8); }
 .sync-conflict .modal-actions { margin-top: var(--space-12); }

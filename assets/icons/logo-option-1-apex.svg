@@ -1,34 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
-  <defs>
-    <linearGradient id="apex-grad-left" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0D5C52"/>
-      <stop offset="100%" stop-color="#04433B"/>
-    </linearGradient>
-    <linearGradient id="apex-grad-right" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2DD4BF"/>
-      <stop offset="100%" stop-color="#0F766E"/>
-    </linearGradient>
-    <linearGradient id="apex-spark" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#5EEAD4"/>
-      <stop offset="100%" stop-color="#14B8A6"/>
-    </linearGradient>
-    <filter id="apex-glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0F766E" flood-opacity="0.35"/>
-    </filter>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Full-bleed opaque tile (no rx): Safari and the OS mask the corners, and an opaque
+       perimeter stops Safari adding a white box in dark mode -->
+  <rect width="64" height="64" fill="#0F172A"/>
 
-  <!-- Full-bleed opaque square (no rx; OS & Safari apply native squircle masks) -->
-  <rect width="120" height="120" fill="#0F172A"/>
-
-  <!-- Geometric V Left Wing (Solid Anchor) -->
-  <path d="M26 34 L43 34 L57 82 L42 82 Z" fill="url(#apex-grad-left)"/>
-
-  <!-- Geometric V Right Wing (Dynamic Accelerated Fin) -->
-  <path d="M63 82 L77 82 L94 34 L78 34 L60 72 Z" fill="url(#apex-grad-right)" filter="url(#apex-glow)"/>
-
-  <!-- Negative Space Road / Horizon Notch at base -->
-  <path d="M50 82 L60 52 L70 82 Z" fill="#0F172A" opacity="0.9"/>
-
-  <!-- IQ Precision Spark / Intelligence Core -->
-  <circle cx="94" cy="24" r="6" fill="url(#apex-spark)"/>
+  <!-- Apex monogram, drawn like the app icons and centred: the wings plus the spark span
+       7.3–57 across and 10.4–53.3 down. Flat fills, no glow, so it stays sharp when small -->
+  <path fill="#2DD4BF" d="M7.3 21.3 H18.7 L25.7 45.3 L23.7 53.3 H17.7 Z"/>
+  <path fill="#5EEAD4" d="M41 21.3 H52.7 L41.3 53.3 H36 L32.7 45.3 Z"/>
+  <circle fill="#A7F3D0" cx="52.7" cy="14.7" r="4.3"/>
 </svg>

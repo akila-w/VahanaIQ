@@ -1,24 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
-  <style>
-    /* Option A: 100% Full-Bleed Tile (Linear/Stripe style) */
-    /* Alpha = 1.0 on perimeter short-circuits Safari's automatic white box heuristic */
-    .bg { fill: #0F172A; }
-    .v-left { fill: #0F766E; }
-    .v-right { fill: #2DD4BF; }
-    .v-spark { fill: #5EEAD4; }
+  <!-- Full-bleed opaque tile (no rx): Safari and the OS mask the corners, and an opaque
+       perimeter stops Safari adding a white box in dark mode -->
+  <rect width="64" height="64" fill="#0F172A"/>
 
-    @media (prefers-color-scheme: dark) {
-      .v-left { fill: #14B8A6; }
-      .v-right { fill: #5EEAD4; }
-      .v-spark { fill: #A7F3D0; }
-    }
-  </style>
-
-  <!-- 100% Full-Bleed Opaque Square (No rx/ry; Safari & OS mask corners natively) -->
-  <rect class="bg" width="64" height="64"/>
-
-  <!-- Centred VahanaIQ Apex Monogram with safe zone padding -->
-  <path class="v-left" d="M14 20 H25 L33 52 H22 Z"/>
-  <path class="v-right" d="M37 52 H48 L59 20 H48 L35 46 Z"/>
-  <circle class="v-spark" cx="58" cy="13" r="4.2"/>
+  <!-- Apex monogram, drawn like the app icons and centred: the wings plus the spark span
+       7.3–57 across and 10.4–53.3 down. Flat fills, no glow, so it stays sharp when small -->
+  <path fill="#2DD4BF" d="M7.3 21.3 H18.7 L25.7 45.3 L23.7 53.3 H17.7 Z"/>
+  <path fill="#5EEAD4" d="M41 21.3 H52.7 L41.3 53.3 H36 L32.7 45.3 Z"/>
+  <circle fill="#A7F3D0" cx="52.7" cy="14.7" r="4.3"/>
 </svg>
