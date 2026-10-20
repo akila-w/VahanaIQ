@@ -43,9 +43,15 @@ const MAX_SOURCE_AGE_MONTHS = 6;    // skip prices published longer ago than thi
 // by gearbox the automatic is priced (Akila's decision of 20/10/2026).
 const AUTOMATIC = new Set(["at", "cvt", "ecvt", "amt", "dct", "ivt", "auto", "automatic"]);
 const MANUAL = new Set(["mt", "manual"]);
+// Words sources add that describe the listing, not the grade ("Top Variant – V Hybrid",
+// "Tekna+ 1.0 Litre Turbo"), seen in the first research run on 20/10/2026
+const FILLER = new Set(["top", "variant", "grade", "spec", "litre", "liter", "ltr"]);
+const HYBRID_POWERTRAIN = /\b(hev|mhev|phev|hybrid)\b/i;
 
 // Lower-case words; engine sizes lose their unit so "1.0L", "1.0" and "1.0 L" all read "1 0"
-const tokens = s => String(s ?? "").toLowerCase().replace(/(\d)\s*(l|cc)\b/g, "$1").split(/[^a-z0-9]+/).filter(Boolean);
+// Lower-case words; "+" reads as "plus" ("Tekna+"), and engine sizes lose their unit
+const tokens = s => String(s ?? "").toLowerCase().replace(/\+/g, " plus ")
+  .replace(/(\d)\s*(l|cc)\b/g, "$1").split(/[^a-z0-9]+/).filter(Boolean);
 const oneLine = (s, max = 200) => {
   const t = String(s ?? "").replace(/\s+/g, " ").trim();
   return t.length > max ? t.slice(0, max - 1) + "…" : t;
@@ -102,6 +108,9 @@ export function matchTrim(vehicle, raw) {
   const trimTokens = s => tokens(s).filter(t => !ignore.has(t));
   const want = new Set(trimTokens(vehicle.name).length ? trimTokens(vehicle.name) : tokens(vehicle.name));
   const powertrain = new Set(tokens(vehicle.pt));
+  // "Hybrid" in a trim name only restates a hybrid powertrain, unless the catalogue name
+  // itself says Hybrid (Raize Z Hybrid vs the petrol Raize Z), where it must match
+  if (HYBRID_POWERTRAIN.test(vehicle.pt) && !want.has("hybrid")) powertrain.add("hybrid");
   // Words that only describe the powertrain ("turbo") never count towards a match
   const grade = [...want].filter(t => !powertrain.has(t));
   const scored = new Set(grade.length ? grade : want);
@@ -110,7 +119,9 @@ export function matchTrim(vehicle, raw) {
   for (const my of answer.model_years || []) {
     for (const trim of my.trims || []) {
       const have = new Set(trimTokens(trim.trim_name));
-      if ([...have].some(t => !want.has(t) && !powertrain.has(t) && !AUTOMATIC.has(t) && !MANUAL.has(t))) continue;
+      if ([...have].some(t => !want.has(t) && !powertrain.has(t) && !AUTOMATIC.has(t) && !MANUAL.has(t) && !FILLER.has(t))) continue;
+      // A catalogue hybrid never takes the price of a non-hybrid trim (petrol Raize Z)
+      if (want.has("hybrid") && !tokens(trim.trim_name).some(t => HYBRID_POWERTRAIN.test(t))) continue;
       const named = [...have].filter(t => scored.has(t));
       if (!named.length) continue;
       const score = named.length / scored.size;
