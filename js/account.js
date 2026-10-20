@@ -300,14 +300,14 @@ function renderAccount() {
   const btn = $("accountBtn");
   if (!btn) return;
   const name = user ? (user.displayName || "").trim().split(/\s+/)[0] || "Account" : "";
-  btn.textContent = user ? name : restoring ? "Account" : "Sign in";
+  btn.textContent = user ? name : restoring ? "Account" : "Sign In";
   btn.classList.toggle("needs-attention", !!user && (!!conflict || failed));
   btn.setAttribute("aria-label", user ? `Account: ${user.email || name}. ${statusText()}` : restoring ? "Account" : "Sign in to sync");
 
   $("accountSignedOut").hidden = !!user;
   $("accountSignedIn").hidden = !user;
   $("signInBtn").disabled = !fb;
-  $("signInBtn").textContent = fb ? "Sign in with Google" : "Loading…";
+  $("signInBtn").textContent = fb ? "Sign In with Google" : "Loading…";
   if (!user) return;
   $("accountEmail").textContent = user.email || user.displayName || "your Google account";
   $("syncStatus").textContent = statusText();

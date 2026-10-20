@@ -95,7 +95,7 @@ The product loads no web fonts.
 - **Header H1:** `1.8rem` (28.8px), Weight 800, Letter spacing `-0.02em`; `1.4rem` at 480px and below
 - **Stat values:** `1.35rem` (21.6px), Weight 700, `--accent`, tabular figures
 - **Modal titles:** `1.15rem` (18.4px), Weight 700
-- **Section H2:** `1rem` (16px), Weight 700, sentence case
+- **Section H2:** `1rem` (16px), Weight 700, Title Case
 - **Body Text:** `15px / 1.5`, Weight 400
 - **Input Labels:** `0.875rem` (14px), Weight 400, Colour `--mute`
 - **Hints & Table Headers:** `0.8125rem` (13px). Headers are Weight 600 in `--mute`
@@ -108,6 +108,10 @@ The product loads no web fonts.
 4. **Decimals:** Show rupee amounts with two decimal places (`Rs. 0.00`). Saved and shared values keep the decimals the buyer entered.
 
 ---
+
+## Capitalisation
+- **Title Case** for headings (sections, dialogs, cards, column headers) and for buttons, tabs and link buttons: capitalise each word except *a, an, the, and, but, or, nor, for, of, in, on, at, to, by, with, as, per, vs*, unless it is the first or last word ("Add a Vehicle", "Search with AI", "Loan Terms and Your Income").
+- **Sentence case** for field labels, hints, messages, toasts and body text ("Interest rate (% a year)"). Links inside a sentence follow the sentence.
 
 ## 5. UI Components & Dark Mode Integration
 

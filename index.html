@@ -41,7 +41,7 @@
       <p class="sub">Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.</p>
     </div>
     <div class="header-actions">
-      <button class="btn" id="addVehicleBtn" type="button">Add a vehicle</button>
+      <button class="btn" id="addVehicleBtn" type="button">Add a Vehicle</button>
       <button class="btn-outline" id="printBtn" type="button">Print</button>
       <fieldset class="theme-switch" id="themeSwitch">
         <legend class="sr-only">Theme</legend>
@@ -49,14 +49,14 @@
         <label title="Light"><input type="radio" name="theme" value="light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="sr-only">Light</span></label>
         <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
       </fieldset>
-      <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign in</button>
+      <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign In</button>
     </div>
   </div>
 
   <section class="panel" aria-labelledby="h-terms">
     <div class="panel-head">
-      <h2 id="h-terms">Loan terms and your income</h2>
-      <button class="link-btn" id="resetInputsBtn" type="button">Reset inputs</button>
+      <h2 id="h-terms">Loan Terms and Your Income</h2>
+      <button class="link-btn" id="resetInputsBtn" type="button">Reset Inputs</button>
     </div>
     <div class="grid terms-grid">
       <div class="span-2">
@@ -112,7 +112,7 @@
   </section>
 
   <section class="panel" id="budgetPanel" aria-labelledby="h-sum">
-    <h2 id="h-sum">Your budget</h2>
+    <h2 id="h-sum">Your Budget</h2>
     <div class="summary" id="summary"></div>
     <p class="sr-only" id="budgetLive" role="status"></p>
   </section>
@@ -120,15 +120,15 @@
   <section class="panel" aria-labelledby="h-list">
     <div class="panel-head">
       <h2 id="h-list" tabindex="-1">Vehicles</h2>
-      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add another vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button">Share</button><button class="link-btn" id="resetCatalogBtn" type="button">Clear comparison</button></span></div>
+      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add Another Vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button">Share</button><button class="link-btn" id="resetCatalogBtn" type="button">Clear Comparison</button></span></div>
     </div>
     <div class="empty-state" id="emptyState" hidden>
-      <h3>Start your comparison</h3>
+      <h3>Start Your Comparison</h3>
       <p>Add the cars you're considering to see each one's down payment, monthly rental and whether it fits your budget.</p>
-      <div class="empty-actions"><button class="btn" id="browseEmptyBtn" type="button">Browse the catalogue</button><button class="btn-outline" id="aiEmptyBtn" type="button">✨ Search with AI</button></div>
+      <div class="empty-actions"><button class="btn" id="browseEmptyBtn" type="button">Browse the Catalogue</button><button class="btn-outline" id="aiEmptyBtn" type="button">✨ Search with AI</button></div>
     </div>
     <div id="comparisonBody">
-    <button class="btn-outline filters-toggle" id="filtersToggle" type="button" aria-expanded="false" aria-controls="toolsPanel">Filters &amp; sort <span class="count" id="filtersCount" hidden></span></button>
+    <button class="btn-outline filters-toggle" id="filtersToggle" type="button" aria-expanded="false" aria-controls="toolsPanel">Filters &amp; Sort <span class="count" id="filtersCount" hidden></span></button>
     <div class="tools collapsed" id="toolsPanel">
       <div>
         <label for="sort">Sort by</label>
@@ -210,13 +210,13 @@
 
 <div class="modal-bg" id="catalogueModal" role="dialog" aria-modal="true" aria-labelledby="catalogueTitle" inert>
   <div class="modal catalogue-modal">
-    <div class="modal-header"><h2 id="catalogueTitle">Find your next car</h2><button class="close-btn" id="closeCatalogueBtn" type="button" aria-label="Close catalogue">&times;</button></div>
+    <div class="modal-header"><h2 id="catalogueTitle">Find Your Next Car</h2><button class="close-btn" id="closeCatalogueBtn" type="button" aria-label="Close catalogue">&times;</button></div>
     <p class="catalogue-intro">Cars and SUVs sold in Sri Lanka. Choose one, confirm its price and add it to your comparison.</p>
     <div class="catalogue-search">
       <label for="catalogueSearch">Search make or model</label>
       <input id="catalogueSearch" type="search" placeholder="e.g. Toyota, electric, SUV" autocomplete="off">
     </div>
-    <button class="btn-outline catalogue-filters-toggle" id="catalogueFiltersToggle" type="button" aria-expanded="false" aria-controls="catalogueFilters">Filter and sort <span id="catalogueFiltersCount"></span></button>
+    <button class="btn-outline catalogue-filters-toggle" id="catalogueFiltersToggle" type="button" aria-expanded="false" aria-controls="catalogueFilters">Filter and Sort <span id="catalogueFiltersCount"></span></button>
     <div class="catalogue-filters collapsed" id="catalogueFilters">
       <div><label for="catalogueSort">Sort by</label><select id="catalogueSort"><option value="priced">Prices first</option><option value="price-asc">Price, low to high</option><option value="price-desc">Price, high to low</option><option value="name">Name, A to Z</option></select></div>
       <div><label for="cataloguePriceFilter">Price</label><select id="cataloguePriceFilter"><option value="">Any</option><option value="priced">Published only</option></select></div>
@@ -225,7 +225,7 @@
       <div><label for="catalogueFuel">Fuel</label><select id="catalogueFuel"><option value="">All fuels</option></select></div>
       <div><label for="catalogueRoute">Sold by</label><select id="catalogueRoute"><option value="">Any seller</option><option value="Official">Official agent</option><option value="Grey">Importer</option><option value="Unknown">Independent seller</option></select></div>
     </div>
-    <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear search and filters</button></div>
+    <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear Search and Filters</button></div>
     <p class="hint catalogue-per-million" id="cataloguePerMillion"></p>
     <div id="catalogueResults" class="catalogue-grid"></div>
     <div class="catalogue-pagination"><button class="btn-outline" id="cataloguePrev" type="button">Previous</button><span id="cataloguePage"></span><button class="btn-outline" id="catalogueNext" type="button">Next</button></div>
@@ -236,7 +236,7 @@
 
 <div class="modal-bg" id="catalogueAddModal" role="dialog" aria-modal="true" aria-labelledby="catalogueAddTitle" inert>
   <form class="modal" id="catalogueAddForm" novalidate>
-    <div class="modal-header"><h2 id="catalogueAddTitle">Set up comparison</h2><button class="close-btn" id="closeCatalogueAddBtn" type="button" aria-label="Close vehicle setup">&times;</button></div>
+    <div class="modal-header"><h2 id="catalogueAddTitle">Set Up Comparison</h2><button class="close-btn" id="closeCatalogueAddBtn" type="button" aria-label="Close vehicle setup">&times;</button></div>
     <label for="catalogueName">Vehicle name, trim and year</label>
     <input id="catalogueName" type="text" autocomplete="off" aria-describedby="catalogueNameNote">
     <p class="hint" id="catalogueNameNote">Add the exact trim and year if known. Your calculation uses the price you enter below.</p>
@@ -246,30 +246,30 @@
     <input id="cataloguePrice" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter your quote, e.g. 10,000,000.00" aria-describedby="cataloguePriceNote catalogueAddError">
     <p class="hint" id="cataloguePriceNote"></p>
     <p class="msg-error" id="catalogueAddError" role="alert"></p>
-    <div class="catalogue-pagination"><button class="btn-outline" id="cancelCatalogueAddBtn" type="button">Cancel</button><button class="btn" type="submit">Add to comparison</button></div>
+    <div class="catalogue-pagination"><button class="btn-outline" id="cancelCatalogueAddBtn" type="button">Cancel</button><button class="btn" type="submit">Add to Comparison</button></div>
   </form>
 </div>
 
 <div class="modal-bg" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle" inert>
   <div class="modal share-modal">
-    <div class="modal-header"><h2 id="shareTitle">Share this comparison</h2><button class="close-btn" id="closeShareBtn" type="button" aria-label="Close sharing">&times;</button></div>
+    <div class="modal-header"><h2 id="shareTitle">Share This Comparison</h2><button class="close-btn" id="closeShareBtn" type="button" aria-label="Close sharing">&times;</button></div>
     <p>The link has your loan terms, filters and vehicles. Anyone who opens it sees them.</p>
     <label class="check-row"><input type="checkbox" id="shareIncome"> Include my income and existing payments</label>
     <label for="shareLink">Link</label>
     <input id="shareLink" type="text" readonly>
     <p class="hint" id="shareStatus" role="status"></p>
-    <div class="modal-actions"><button class="btn-outline" id="cancelShareBtn" type="button">Close</button><button class="btn" id="copyShareBtn" type="button">Copy link</button></div>
+    <div class="modal-actions"><button class="btn-outline" id="cancelShareBtn" type="button">Close</button><button class="btn" id="copyShareBtn" type="button">Copy Link</button></div>
   </div>
 </div>
 
 <div class="modal-bg" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="accountTitle" inert>
   <div class="modal account-modal">
-    <div class="modal-header"><h2 id="accountTitle">Your account</h2><button class="close-btn" id="closeAccountBtn" type="button" aria-label="Close account">&times;</button></div>
+    <div class="modal-header"><h2 id="accountTitle">Your Account</h2><button class="close-btn" id="closeAccountBtn" type="button" aria-label="Close account">&times;</button></div>
     <div id="accountSignedOut">
       <p>Sign in with Google to keep your loan terms, income and comparison on every device you use.</p>
       <p class="hint">They're stored with Firebase, Google's database service, where only you can read them. You can delete them at any time. Signing out removes them from this browser; without signing in, they stay in this browser only.</p>
       <p class="hint warn" id="accountError" role="alert" hidden></p>
-      <div class="modal-actions"><button class="btn-outline" id="cancelAccountBtn" type="button">Not now</button><button class="btn" id="signInBtn" type="button" disabled>Loading…</button></div>
+      <div class="modal-actions"><button class="btn-outline" id="cancelAccountBtn" type="button">Not Now</button><button class="btn" id="signInBtn" type="button" disabled>Loading…</button></div>
     </div>
     <div id="accountSignedIn" hidden>
       <p>Signed in as <strong id="accountEmail"></strong></p>
@@ -277,9 +277,9 @@
       <div class="sync-conflict" id="syncConflict" hidden>
         <p><strong>Your account and this browser have different inputs or vehicles.</strong> Choose which to keep; the other is replaced.</p>
         <p class="hint" id="syncConflictCounts"></p>
-        <div class="modal-actions"><button class="btn-outline" id="keepLocalBtn" type="button">Keep this browser's</button><button class="btn" id="useCloudBtn" type="button">Use my account's</button></div>
+        <div class="modal-actions"><button class="btn-outline" id="keepLocalBtn" type="button">Keep This Browser's</button><button class="btn" id="useCloudBtn" type="button">Use My Account's</button></div>
       </div>
-      <div class="modal-actions account-actions"><button class="link-btn danger" id="deleteDataBtn" type="button">Delete my saved data</button><button class="btn-outline" id="signOutBtn" type="button">Sign out</button></div>
+      <div class="modal-actions account-actions"><button class="link-btn danger" id="deleteDataBtn" type="button">Delete My Saved Data</button><button class="btn-outline" id="signOutBtn" type="button">Sign Out</button></div>
       <div class="sync-conflict" id="deleteConfirm" hidden>
         <p>This deletes your saved inputs and vehicles from your account and from this browser. It can't be undone.</p>
         <div class="modal-actions"><button class="btn-outline" id="cancelDeleteBtn" type="button">Cancel</button><button class="btn btn-danger" id="confirmDeleteBtn" type="button">Delete</button></div>
@@ -290,7 +290,7 @@
 
 <div class="modal-bg" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle" inert>
   <div class="modal">
-    <div class="modal-header"><h2 id="detailTitle">Lease details</h2><button class="close-btn" id="closeDetailBtn" type="button" aria-label="Close lease details">&times;</button></div>
+    <div class="modal-header"><h2 id="detailTitle">Lease Details</h2><button class="close-btn" id="closeDetailBtn" type="button" aria-label="Close lease details">&times;</button></div>
     <div id="detailBody"></div>
   </div>
 </div>
@@ -299,13 +299,13 @@
 <div class="modal-bg" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aititle" inert>
   <div class="modal">
     <div class="modal-header">
-      <h2 id="aititle">Add a vehicle</h2>
+      <h2 id="aititle">Add a Vehicle</h2>
       <button class="close-btn" id="closeAiModalBtn" type="button" aria-label="Close">&times;</button>
     </div>
 
     <div class="tabs" role="tablist" aria-label="How to add a vehicle">
       <button class="tab active" id="tabAiBtn" type="button" role="tab" aria-selected="true" aria-controls="paneAi">✨ Search with AI</button>
-      <button class="tab" id="tabManualBtn" type="button" role="tab" aria-selected="false" aria-controls="paneManual" tabindex="-1">Enter manually</button>
+      <button class="tab" id="tabManualBtn" type="button" role="tab" aria-selected="false" aria-controls="paneManual" tabindex="-1">Enter Manually</button>
     </div>
 
     <!-- AI SEARCH PANE -->
@@ -330,13 +330,13 @@
       <!-- DISCOVERY / COMPARATIVE CHECKLIST BOX -->
       <div id="aiDiscoveryBox" hidden>
         <div class="callout callout-info discovery-head">
-          <b id="aiDiscoveryTitle">Vehicles found</b>
-          <button class="link-btn" id="aiToggleSelectAllBtn" type="button">Select all or none</button>
+          <b id="aiDiscoveryTitle">Vehicles Found</b>
+          <button class="link-btn" id="aiToggleSelectAllBtn" type="button">Select All or None</button>
         </div>
         <div id="aiDiscoveryList" class="discovery-list"></div>
         <div class="discovery-actions">
           <button class="btn-outline" id="aiDiscoveryBackBtn" type="button">Back</button>
-          <button class="btn" id="aiAddSelectedBtn" type="button">Add selected to comparison</button>
+          <button class="btn" id="aiAddSelectedBtn" type="button">Add Selected to Comparison</button>
         </div>
       </div>
 
@@ -367,7 +367,7 @@
 
         <div class="grid field-group">
           <div>
-            <label for="aiPriceInput">Price (LKR) <button type="button" class="link-btn" id="aiResetPriceBtn" aria-label="Reset price to the AI estimate">↺ reset</button></label>
+            <label for="aiPriceInput">Price (LKR) <button type="button" class="link-btn" id="aiResetPriceBtn" aria-label="Reset price to the AI estimate">↺ Reset</button></label>
             <input id="aiPriceInput" type="text" inputmode="decimal" autocomplete="off">
           </div>
           <div>
@@ -391,7 +391,7 @@
               <input id="aiImgUrl" class="preview-url" type="url" placeholder="Paste a photo link, or upload one" aria-describedby="aiImgNote">
               <div class="preview-actions">
                 <label class="btn-outline btn-sm file-btn">
-                  📁 Upload photo
+                  📁 Upload Photo
                   <input id="aiImgFile" class="sr-only" type="file" accept="image/*">
                 </label>
                 <span class="hint" id="aiImgNote">Centred on a white 8:5 plate automatically</span>
@@ -402,8 +402,8 @@
 
         <div class="modal-actions">
           <button class="btn-outline" id="aiCancelBtn" type="button">Cancel</button>
-          <button class="btn-outline" id="aiAddAllTrimsBtn" type="button">Add all trims<span id="aiTrimsYearLabel"></span></button>
-          <button class="btn" id="aiConfirmAddBtn" type="button">Add to comparison</button>
+          <button class="btn-outline" id="aiAddAllTrimsBtn" type="button">Add All Trims<span id="aiTrimsYearLabel"></span></button>
+          <button class="btn" id="aiConfirmAddBtn" type="button">Add to Comparison</button>
         </div>
       </div>
     </div>
@@ -423,7 +423,7 @@
       </div>
       <div class="modal-actions">
         <button class="btn-outline" id="mCancelBtn" type="button">Cancel</button>
-        <button class="btn" id="mAddBtn" type="button">Add vehicle</button>
+        <button class="btn" id="mAddBtn" type="button">Add Vehicle</button>
       </div>
       <p class="hint warn" id="mErr" role="alert"></p>
     </div>
