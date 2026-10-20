@@ -1,6 +1,6 @@
 # Monthly catalogue price research
 
-Instructions for the monthly Claude scheduled task "VahanaIQ price research". Each month it finds the current brand-new price of the 12 built-in vehicles in `js/catalog.js` from dealer and agent price lists. It writes them to a prices file with a source link for each one, and lets `scripts/refresh-prices.mjs` apply the usual checks and open a pull request for Akila to review.
+Instructions for the monthly Claude scheduled task "VahanaIQ price research". Each month it finds the current brand-new price of the eligible priced variants in `js/market-catalogue.js` from dealer and agent price lists. It writes them to a prices file with a source link for each one, and lets `scripts/refresh-prices.mjs` apply the usual checks and open a pull request for Akila to review.
 
 Write in British English. Prices are in Sri Lankan rupees (LKR).
 
@@ -22,8 +22,10 @@ Write in British English. Prices are in Sri Lankan rupees (LKR).
 
 The task's prompt has already created a fresh worktree of `origin/main` and set `$WT` to it, and `$WORK` to a scratch folder outside the repository. Run every command from `$WT`.
 
-1. **Read the catalogue.** Open `js/catalog.js`. For each vehicle in `baseVehicles`, note:
-   - `name`: the exact text, used as the key in the prices file
+1. **Read the catalogue.** Open `js/market-catalogue.js`. For each vehicle in `baseVehicles`, note:
+   - `id`: the stable vehicle identifier, used as the key in the prices file
+   - `name`: the exact human-readable label; never use list position as identity
+   - Skip entries with null prices or a condition other than New; first prices need separate individual review
    - `pt`: the powertrain
    - `w`: `"Official"` means the official agent's price; `"Grey"` means a grey-import dealer's price
    - `price`: the current price
@@ -36,7 +38,7 @@ The task's prompt has already created a fresh worktree of `origin/main` and set 
    - the month the price was published (`YYYY-MM`)
    - the page title and URL
 
-3. **Write `$WORK/prices.json`** in this shape. Use the exact catalogue `name`, and include every vehicle, with `"prices": []` when nothing usable was found.
+3. **Write `$WORK/prices.json`** in this shape. Include the exact catalogue `id` and `name`, and include every vehicle, with `"prices": []` when nothing usable was found.
 
    ```json
    {
@@ -44,7 +46,8 @@ The task's prompt has already created a fresh worktree of `origin/main` and set 
      "researched_on": "YYYY-MM-DD",
      "vehicles": [
        {
-         "name": "Toyota Raize Z Hybrid",
+         "id": "copy-the-exact-catalogue-id",
+         "name": "Copy the exact catalogue variant name",
          "model_name": "Toyota Raize",
          "prices": [
            {

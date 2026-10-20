@@ -34,7 +34,9 @@ vahanaiq/
 ├── js/
 │   ├── app.js            # Main application UI and event coordinator
 │   ├── calculator.js     # Actuarial lease formulas, DTI & budget room
-│   ├── catalog.js        # Default 12 Sri Lankan vehicles
+│   ├── catalog.js        # Frozen original 12 estimates, used for legacy migration
+│   ├── market-catalogue.js # Current source-backed model and variant catalogue
+│   ├── catalogue-browser.js # Browse, review a quote and select comparison vehicles
 │   ├── canvas-utils.js   # 8:5 white studio plate image normaliser
 │   ├── gemini.js         # Proxy search call & response schema
 │   ├── image-fetcher.js  # Zero-touch Wikipedia & Wikimedia photo resolver
@@ -67,6 +69,19 @@ vahanaiq/
 ```
 
 ## Running Locally
+For deterministic browser QA without calling Gemini, run `node test/serve-qa-fixtures.mjs` and open `http://127.0.0.1:8765`. Searches containing `compare`, `incomplete compare`, `mixed`, `seller`, `unavailable` or `transient` exercise the corresponding fixtures. This local server overrides the proxy URL only in the response it serves; it does not change the app configuration. `?qa-print` previews the print CSS as screen styles for layout checks; it does not emulate pagination or a physical printer.
+
+The v2.7.1 QA fixes preserve decimal currency amounts (including when saved or shared), reject missing/zero vehicle prices across individual, batch and saved-entry paths, explain incomplete AI comparisons, treat a zero maximum price as a real limit, and hide the budget legend without income. Search retries a transient upstream failure once on the same model and bounds each attempt to 30 seconds. The search proxy templates now require explicit discovery fields; redeploy the proxy to pick up their comparison-prompt changes.
+
+Run the regression suites with:
+```bash
+node test/verify.mjs
+node test/qa-regressions.test.mjs
+node test/proxy-price-mode.test.mjs
+node test/proxy-search.test.mjs
+node test/refresh-prices.test.mjs
+```
+
 To run VahanaIQ locally with full ES module support:
 ```bash
 python3 -m http.server 8000
@@ -83,7 +98,7 @@ The `GEMINI_API_KEY` environment variable (or secret) must already be set on the
 The same service has a second, **price mode** (`POST {"mode": "price", "queries": ["...", "..."]}`, up to 12 vehicles), used only by the monthly price refresh. It turns on Grounding with Google Search, so Gemini looks up current Sri Lankan prices instead of relying on its training data. It runs on its own model, set with the `PRICE_MODEL` environment variable (`gemini-2.5-flash-lite` by default), whose free daily allowance is separate from the app's. It returns `{ vehicles[], sources[], search_queries[], model }`, where each vehicle lists its trims with price, model year, basis, month and the site the price came from, and `sources` are the web pages Gemini cited. A quota error says whether the daily or per-minute limit was hit (`"quota": "daily"`). Requests without `mode` are handled exactly as before. To use a different model for the refresh, add `PRICE_MODEL=<model>` to `--update-env-vars`. On the free tier it has to be a Gemini 2.x or 2.5 model: AI Studio gives Gemini 3 and newer no free Google Search grounding, and `gemini-2.5-flash` is closed to new users. If Gemini refuses the model, the refresh stops after one request and says so.
 
 ## Monthly catalogue price refresh
-Once a month, a **Claude scheduled task** ("VahanaIQ price research", in the Claude desktop app on Akila's Mac, on his Claude Pro plan) researches the current brand-new price of the 12 built-in vehicles. It follows [`scripts/price-research-task.md`](scripts/price-research-task.md):
+Once a month, a **Claude scheduled task** ("VahanaIQ price research", in the Claude desktop app on Akila's Mac, on his Claude Pro plan) researches eligible priced, brand-new catalogue variants. Entries without a baseline price require individual review before joining automatic refreshes. It follows [`scripts/price-research-task.md`](scripts/price-research-task.md):
 - It uses only official agents', distributors', dealers' and importers' own price lists, plus reputable news reports. It doesn't use classified marketplaces: ikman's terms forbid copying its content, and Riyasewana and Patpat block automated access.
 - It writes each price, with the page it came from, to a prices file.
 - It runs `scripts/refresh-prices.mjs --from-file <prices.json>`, which applies the checks below.
@@ -91,7 +106,7 @@ Once a month, a **Claude scheduled task** ("VahanaIQ price research", in the Cla
 
 The task runs while the Claude app is open. If the app is closed when it's due, it runs on the next launch.
 
-`scripts/refresh-prices.mjs` rewrites only the `price` values and `catalogMeta.priceUpdated` in `js/catalog.js`; every other field and the file's formatting stay as they are. A vehicle is skipped, and its price left alone, if:
+`scripts/refresh-prices.mjs` matches stable vehicle IDs and updates prices and their source/month evidence in `js/market-catalogue.js`. The frozen legacy snapshot is not refreshed. Personal price edits are stored separately and are never replaced by a catalogue update. A vehicle is skipped, and its price left alone, if:
 - the price is missing or zero
 - no trim matches the catalogue name
 - no source page is given
@@ -115,4 +130,5 @@ The tests use a mocked proxy, sample prices files and a stubbed Gemini:
 ```bash
 node test/refresh-prices.test.mjs
 node test/proxy-price-mode.test.mjs
+node test/catalogue.test.mjs
 ```

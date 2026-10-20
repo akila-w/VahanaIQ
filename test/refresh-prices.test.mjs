@@ -242,7 +242,7 @@ try {
   assert.ok(dry.stdout.includes(`- ${source.split("\n").find(l => l.includes(vezel.name))}`));
   assert.match(dry.stdout, new RegExp(`\\+ .*name: "Honda Vezel e:HEV Z".*price: ${vezelNew},`), "New price is rounded to LKR 10,000");
   assert.match(dry.stdout, /\+ export const catalogMeta = \{ priceUpdated: "2026-11" \};/);
-  assert.match(dry.stdout, /Dry run: js\/catalog.js not written\./);
+  assert.match(dry.stdout, /Dry run: catalogue not written\./);
 
   const report = fs.readFileSync(path.join(tmp, "report.md"), "utf8");
   assert.match(report, /AI estimates/);
@@ -256,7 +256,7 @@ try {
   assert.match(report, /BYD Sealion 5 Premium\*\*: Premium \(2026\): the proxy marked this price as an estimate/);
   assert.match(report, /Hyryder V\*\*: V \(2026\): price source "carmudi\.lk" is not among the pages Gemini cited/);
   assert.match(report, /Toyota Raize Z Hybrid\*\*: Z Hybrid \(2026\): no brand-new price/);
-  assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ Hybrid \(2026\): LKR [\d,]+ is \+4\d\.\d% from LKR [\d,]+, outside ±25%/);
+  assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ Hybrid \(2026\): LKR [\d,]+\.00 is \+4\d\.\d% from LKR [\d,]+\.00, outside ±25%/);
   assert.match(report, /Fronx Alpha \(Turbo\)\*\*: Alpha 1\.0L Turbo MHEV \(2026\): price published in 2025-12, more than 6 months before 2026-11/);
   assert.match(report, /Suzuki Wagon R Custom Z\*\*: no price given for this vehicle/);
   const skippedLines = report.split("### Skipped")[1].trim().split("\n").slice(2).filter(Boolean);

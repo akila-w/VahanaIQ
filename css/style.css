@@ -392,6 +392,10 @@ th.n {
   font-size: 0.8125rem;
 }
 
+.legend[hidden] {
+  display: none;
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -751,6 +755,25 @@ body.has-budget-bar main {
   }
 }
 
+/* Market catalogue: independent of the selected comparison. */
+.comparison-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+button[hidden] { display: none !important; }
+.catalogue-modal { max-width: 1020px; }
+.catalogue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 16px; gap: 10px; }
+.catalogue-card h3 { font-size: 1rem; line-height: 1.4; margin: 0; }
+.catalogue-card p { margin: 0; }
+.catalogue-card a { color: var(--accent); text-underline-offset: 3px; margin-top: auto; }
+.catalogue-card button { width: 100%; min-height: 44px; }
+.catalogue-category { color: var(--mute); font-size: .8rem; }
+.catalogue-price { font-weight: 700; font-variant-numeric: tabular-nums; }
+.catalogue-pagination { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; }
+.catalogue-pagination button { min-height: 44px; }
+#catalogueAddForm > input, #catalogueAddForm > select { margin-bottom: 14px; }
+#catalogueSearch { margin-top: 6px; }
+@media (max-width: 760px) { .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .catalogue-grid { grid-template-columns: minmax(0, 1fr); } .catalogue-modal { padding: 16px; } }
+
 /* Modals and Drawers */
 .modal-bg {
   position: fixed;
@@ -1100,6 +1123,17 @@ button.cond-tag:hover {
 
 /* Bank Quotation Printout Stylesheet */
 @media print {
+  :root, :root[data-theme] {
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --ink: #0f172a;
+    --mute: #475569;
+    --line: #cbd5e1;
+    --accent: #0f766e;
+    --ok-ink: #047857;
+    --mid-ink: #92400e;
+    --bad: #b91c1c;
+  }
   @page {
     size: A4 portrait;
     margin: 12mm 12mm 12mm 12mm;
@@ -1127,6 +1161,19 @@ button.cond-tag:hover {
 
   button.cond-tag {
     border: 0 !important;
+  }
+
+  /* Sorting controls contain the printed column labels. */
+  th button[data-k] {
+    display: inline !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: inherit !important;
+  }
+
+  .budget-bar, #budgetLive, .filters-toggle {
+    display: none !important;
   }
 
   /* Paper-friendly panels and header */
@@ -1177,6 +1224,7 @@ button.cond-tag:hover {
   }
 
   table {
+    display: table !important;
     min-width: 100% !important;
     width: 100% !important;
     font-size: 8.5pt !important;
@@ -1186,6 +1234,11 @@ button.cond-tag:hover {
   thead {
     display: table-header-group !important;
   }
+
+  tbody { display: table-row-group !important; }
+  tr { display: table-row !important; }
+  th, td { display: table-cell !important; width: auto !important; }
+  td::before { content: none !important; }
 
   th {
     color: #334155 !important;

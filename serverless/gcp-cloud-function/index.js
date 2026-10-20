@@ -101,6 +101,8 @@ const VEHICLE_RESPONSE_SCHEMA = {
   },
   required: [
     'is_available_in_sri_lanka',
+    'is_multi_vehicle',
+    'discovered_vehicles',
     'model_name',
     'wikipedia_slug',
     'availability_notes',
@@ -251,7 +253,8 @@ Instructions:
    - Detect condition as detected_condition ("New", "Recond", or "Used").
 2. If the user asks for a comparative query or budget discovery:
    - Set is_multi_vehicle: true
-   - Populate discovered_vehicles with an array of distinct vehicles matching the query.
+   - Populate discovered_vehicles with an array of at least two distinct vehicles matching the query. Include every requested model; multiple trims of one model must not replace another requested model.
+   - For a single-vehicle query set is_multi_vehicle to false and discovered_vehicles to [].
 3. Availability check:
    - Determine is_available_in_sri_lanka. If false, provide reason and 2-3 popular Sri Lankan alternatives.
 4. If available:
@@ -260,7 +263,9 @@ Instructions:
    - Return import_route ("Official Agent", "Grey Import", or "Registered Fleet").
    - Return model_years array with available trims, powertrains, real-world fuel economy in km/l, warranty type, and condition prices in LKR.`;
 
-  const parts = [{ text: `${systemPrompt}\n\n${promptText}` }];
+  const comparison = req.body?.comparison === true || /\b(?:compar(?:e|ing|ison)|versus|vs\.?|alternatives)\b/i.test(query || '');
+  const comparisonPrompt = comparison ? '\nThis is a comparison request. You must set is_multi_vehicle to true and return every requested model in discovered_vehicles. Do not substitute a single-model result.' : '';
+  const parts = [{ text: `${systemPrompt}\n\n${promptText}${comparisonPrompt}` }];
   if (image && image.data) {
     parts.push({
       inlineData: {
@@ -288,7 +293,7 @@ Instructions:
       const errJson = await geminiRes.json().catch(() => ({}));
       const detail = errJson.error?.message || `HTTP ${geminiRes.status}`;
       console.error(`Gemini ${MODEL} failed: HTTP ${geminiRes.status}: ${detail}`);
-      res.status(502).json({ error: errorCode(geminiRes.status), detail });
+      res.status(502).json({ error: errorCode(geminiRes.status), detail, upstream_status: geminiRes.status });
       return;
     }
 
