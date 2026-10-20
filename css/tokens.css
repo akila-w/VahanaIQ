@@ -1,0 +1,135 @@
+/* VahanaIQ design tokens, generated from design-system/tokens.json by
+   scripts/build-tokens.mjs. Do not edit: change tokens.json and run the script. */
+
+:root {
+  --bg: #f8fafc;
+  --panel: #ffffff;
+  --ink: #0f172a;
+  --mute: #64748b;
+  --line: #e2e8f0;
+  --accent: #0f766e;
+  --accent-bright: #2dd4bf;
+  --ok: #059669;
+  --mid: #d97706;
+  --bad: #dc2626;
+  --bar: #cbd5e1;
+  --on-accent: #ffffff;
+  --badge-bg: #ccfbf1;
+  --badge-ink: #115e59;
+  --ok-ink: #047857;
+  --mid-ink: #92400e;
+  --plate: #ffffff;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --callout-info-bg: rgba(15, 123, 108, 0.1);
+  --callout-info-border: rgba(15, 123, 108, 0.3);
+  --callout-warn-bg: rgba(184, 58, 58, 0.1);
+  --callout-warn-border: rgba(184, 58, 58, 0.3);
+  --badge-official-bg: rgba(15, 123, 108, 0.15);
+  --badge-grey-bg: rgba(183, 121, 31, 0.15);
+  --ltv-warn-bg: rgba(217, 119, 6, 0.15);
+  --selected-bg: rgba(15, 118, 110, 0.05);
+  --mark-tile: #0f172a;
+  --mark-deep: #04433b;
+  --mark-shade: #0d5c52;
+  --mark-teal: #0d9488;
+  --mark-teal-mid: #14b8a6;
+  --mark-spark: #5eead4;
+  --mark-mint: #a7f3d0;
+  --mark-amber: #f59e0b;
+  --mark-tick: #94a3b8;
+  --mark-road: #334155;
+  --shadow-logo: 0 2px 8px rgba(15, 118, 110, 0.25);
+  --shadow-budget-bar: 0 -4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-toast: 0 8px 24px rgba(0, 0, 0, 0.25);
+  --shadow-modal: 0 12px 36px rgba(0, 0, 0, 0.28);
+  --shadow-price-focus: 0 0 0 2px rgba(15, 118, 110, 0.2);
+  --space-2: 2px;
+  --space-3: 3px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --space-20: 20px;
+  --space-40: 40px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-logo: 9px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-pill: 9999px;
+  --radius-circle: 50%;
+  --page-max: 1440px;
+  --modal-max: 680px;
+  --catalogue-modal-max: 1020px;
+  --touch-target: 44px;
+  --brand-logo: 36px;
+  --track-h: 8px;
+  --thumb-w: 112px;
+  --thumb-h: 70px;
+  --thumb-w-sm: 96px;
+  --preview-w: 140px;
+  --discovery-w: 72px;
+  --z-budget-bar: 900;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1120;
+    --panel: #0f172a;
+    --ink: #f1f5f9;
+    --mute: #94a3b8;
+    --line: #1e293b;
+    --accent: #2dd4bf;
+    --accent-bright: #5eead4;
+    --ok: #34d399;
+    --mid: #fbbf24;
+    --bad: #f87171;
+    --bar: #334155;
+    --on-accent: #0f172a;
+    --badge-bg: #134e4a;
+    --badge-ink: #99f6e4;
+    --ok-ink: #34d399;
+    --mid-ink: #fbbf24;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b1120;
+  --panel: #0f172a;
+  --ink: #f1f5f9;
+  --mute: #94a3b8;
+  --line: #1e293b;
+  --accent: #2dd4bf;
+  --accent-bright: #5eead4;
+  --ok: #34d399;
+  --mid: #fbbf24;
+  --bad: #f87171;
+  --bar: #334155;
+  --on-accent: #0f172a;
+  --badge-bg: #134e4a;
+  --badge-ink: #99f6e4;
+  --ok-ink: #34d399;
+  --mid-ink: #fbbf24;
+}
+
+@media print {
+  :root, :root[data-theme] {
+    --bg: #ffffff;
+    --panel: #ffffff;
+    --ink: #0f172a;
+    --mute: #475569;
+    --line: #cbd5e1;
+    --accent: #0f766e;
+    --bad: #b91c1c;
+    --ok-ink: #047857;
+    --mid-ink: #92400e;
+  }
+}
