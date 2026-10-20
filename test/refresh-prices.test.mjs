@@ -79,6 +79,26 @@ assert.equal(m.trimName, "V 1.0L Turbo MT", "The gearbox preference never overri
 assert.match(matchTrim(car("Suzuki Fronx"), answer("Suzuki Fronx", [["1.0L Turbo MHEV", 12500000]])).reason, /no trim matching/,
   "A trim named only by its powertrain must not match");
 assert.match(matchTrim(car("Honda Vezel"), answer("Honda Vezel", [["e:HEV X 1.5L", 18000000]])).reason, /no trim matching/);
+// Trim wording from the first research run (20/10/2026), rejected until filler and hybrid words were allowed
+const research = [
+  ["Toyota Yaris Cross", "Toyota Yaris Cross", "Z Hybrid"],
+  ["Toyota Urban Cruiser Hyryder", "Toyota Urban Cruiser Hyryder", "Top Variant – V Hybrid"],
+  ["Suzuki Wagon R", "Suzuki Wagon R", "Custom Z Hybrid"],
+  ["Nissan Magnite", "Nissan Magnite", "Tekna+ 1.0 Litre Turbo (CVT)"]
+];
+for (const [catalogue, model, trim] of research) {
+  assert.equal(matchTrim(car(catalogue), answer(model, [[trim, 10000000]])).trimName, trim, `"${trim}" matches ${car(catalogue).name}`);
+}
+assert.match(matchTrim(car("Toyota Urban Cruiser Hyryder"), answer("Toyota Urban Cruiser Hyryder", [["Top Variant – G Hybrid", 1]])).reason,
+  /no trim matching/, "Filler words never let a different grade through");
+assert.match(matchTrim(car("Honda Vezel"), answer("Honda Vezel", [["e:HEV X Hybrid", 1]])).reason, /no trim matching/);
+m = matchTrim(car("Toyota Raize"), answer("Toyota Raize", [["Z", 13650000], ["Z Hybrid", 16300000]]));
+assert.deepEqual([m.trimName, m.price], ["Z Hybrid", 16300000], "Hybrid in the catalogue name still has to match");
+m = matchTrim(car("Nissan Magnite"), answer("Nissan Magnite", [["Tekna 1.0 Turbo", 9500000], ["Tekna+ 1.0 Turbo", 9950000]]));
+assert.equal(m.trimName, "Tekna+ 1.0 Turbo", "Tekna+ reads as Tekna Plus");
+assert.match(matchTrim(car("Toyota Raize"), answer("Toyota Raize", [["Z", 13650000]])).reason, /no trim matching/,
+  "A petrol Z alone is never priced as the Z Hybrid");
+assert.equal(matchTrim(car("Toyota Raize"), answer("Toyota Raize", [["Z HEV", 16300000]])).trimName, "Z HEV", "HEV counts as hybrid");
 console.log("✓ Trim matching PASSED\n");
 
 // -------------------------------------------------------------
@@ -161,7 +181,7 @@ const mock = {
   "Toyota Urban Cruiser Hyryder V": priceAnswer("Toyota Urban Cruiser Hyryder", [["V", at("Toyota Urban Cruiser Hyryder", 0.97)]],
     { site: "carmudi.lk", sources: [] }),                                                                          // site not cited
   "Toyota Raize Z Hybrid": priceAnswer("Toyota Raize", [["Z Hybrid", 0]]),                                       // zero price
-  "Suzuki Swift MZ Hybrid": priceAnswer("Suzuki Swift", [["MZ", at("Suzuki Swift", 1.4)]]),                     // +40%
+  "Suzuki Swift MZ Hybrid": priceAnswer("Suzuki Swift", [["MZ Hybrid", at("Suzuki Swift", 1.4)]]),                     // +40%
   "Suzuki Fronx Alpha (Turbo)": priceAnswer("Suzuki Fronx", [["Alpha 1.0L Turbo MHEV", at("Suzuki Fronx", 1.01)]], { asOf: "2025-12" }), // stale
   "Toyota Urban Cruiser Taisor V": priceAnswer("Toyota Urban Cruiser Taisor", [["V 1.0L Turbo MT", at("Toyota Urban Cruiser Taisor", 0.97)],
     ["V 1.0L Turbo AT", at("Toyota Urban Cruiser Taisor", 1.04)]]),                                              // automatic wins
@@ -236,7 +256,7 @@ try {
   assert.match(report, /BYD Sealion 5 Premium\*\*: Premium \(2026\): the proxy marked this price as an estimate/);
   assert.match(report, /Hyryder V\*\*: V \(2026\): price source "carmudi\.lk" is not among the pages Gemini cited/);
   assert.match(report, /Toyota Raize Z Hybrid\*\*: Z Hybrid \(2026\): no brand-new price/);
-  assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ \(2026\): LKR [\d,]+\.00 is \+4\d\.\d% from LKR [\d,]+\.00, outside ±25%/);
+  assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ Hybrid \(2026\): LKR [\d,]+\.00 is \+4\d\.\d% from LKR [\d,]+\.00, outside ±25%/);
   assert.match(report, /Fronx Alpha \(Turbo\)\*\*: Alpha 1\.0L Turbo MHEV \(2026\): price published in 2025-12, more than 6 months before 2026-11/);
   assert.match(report, /Suzuki Wagon R Custom Z\*\*: no price given for this vehicle/);
   const skippedLines = report.split("### Skipped")[1].trim().split("\n").slice(2).filter(Boolean);
