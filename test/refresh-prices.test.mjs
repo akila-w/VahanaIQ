@@ -9,7 +9,7 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
-import { matchTrim, vetPrice, rewriteCatalog, verifyRewrite, fmtLkr, fmtPct } from "../scripts/refresh-prices.mjs";
+import { matchTrim, vetPrice, rewriteCatalog, verifyRewrite, retryWait, fmtLkr, fmtPct } from "../scripts/refresh-prices.mjs";
 import { baseVehicles } from "../js/catalog.js";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -53,6 +53,18 @@ assert.match(matchTrim(car("Honda Vezel"), answer("Honda Vezel", [["e:HEV X", 18
 assert.match(matchTrim(car("Honda Vezel"), { is_available_in_sri_lanka: false }).reason, /not available/);
 assert.match(matchTrim(car("Honda Vezel"), { is_available_in_sri_lanka: true, model_name: "Honda Vezel", model_years: [] }).reason, /no trims/);
 assert.match(matchTrim(car("Toyota Raize"), answer("Toyota Raize", [["Z Hybrid", 15000000], ["Hybrid Z", 14000000]])).reason, /ambiguous/);
+// Trim names from the first live run (20/10/2026), which carry powertrain and gearbox words
+assert.equal(matchTrim(car("Suzuki Fronx"), answer("Suzuki Fronx", [["Alpha 1.0L Turbo MHEV", 12500000]])).trimName, "Alpha 1.0L Turbo MHEV",
+  "Powertrain words in the trim name may come from the catalogue powertrain");
+m = matchTrim(car("Nissan Magnite"), answer("Nissan Magnite", [["Tekna 1.0 Turbo", 9500000], ["Tekna Plus 1.0 Turbo", 10000000]]));
+assert.equal(m.trimName, "Tekna Plus 1.0 Turbo", "1.0 and 1.0L must read the same");
+m = matchTrim(car("Toyota Urban Cruiser Taisor"), answer("Toyota Urban Cruiser Taisor", [["V 1.0L Turbo MT", 11500000], ["V 1.0L Turbo AT", 12000000]]));
+assert.deepEqual([m.trimName, m.price], ["V 1.0L Turbo AT", 12000000], "When trims differ only by gearbox, the automatic is priced");
+m = matchTrim(car("Toyota Urban Cruiser Taisor"), answer("Toyota Urban Cruiser Taisor", [["G 1.0L Turbo AT", 10500000], ["V 1.0L Turbo MT", 11500000]]));
+assert.equal(m.trimName, "V 1.0L Turbo MT", "The gearbox preference never overrides the grade");
+assert.match(matchTrim(car("Suzuki Fronx"), answer("Suzuki Fronx", [["1.0L Turbo MHEV", 12500000]])).reason, /no trim matching/,
+  "A trim named only by its powertrain must not match");
+assert.match(matchTrim(car("Honda Vezel"), answer("Honda Vezel", [["e:HEV X 1.5L", 18000000]])).reason, /no trim matching/);
 console.log("✓ Trim matching PASSED\n");
 
 // -------------------------------------------------------------
@@ -65,6 +77,14 @@ assert.match(vetPrice(10000000, 7400000).reason, /outside ±25%/);
 assert.deepEqual(vetPrice(10000000, 12500000), { price: 12500000, change: 0.25 }, "Exactly +25% is allowed");
 assert.equal(vetPrice(10000000, 10234567).price, 10230000, "Prices round to the nearest LKR 10,000");
 console.log("✓ Price checks PASSED\n");
+
+// -------------------------------------------------------------
+console.log("TEST 2b: Retry timing");
+assert.equal(retryWait("HTTP 502 quota: ... Please retry in 58.713294748s.", 1, 13000), 59714, "Gemini's retry hint is honoured");
+assert.equal(retryWait("HTTP 502 quota: Please retry in 300s.", 1, 13000), 90000, "Waits are capped at 90 s");
+assert.equal(retryWait("HTTP 502 upstream_unavailable: high demand", 1, 13000), 26000);
+assert.equal(retryWait("HTTP 502 upstream_unavailable: high demand", 2, 13000), 52000, "Waits grow with each attempt");
+console.log("✓ Retry timing PASSED\n");
 
 // -------------------------------------------------------------
 console.log("TEST 3: Rewrite touches only prices and priceUpdated");
@@ -98,12 +118,15 @@ const mock = {
   "Toyota Urban Cruiser Hyryder V": answer("Toyota Urban Cruiser Hyryder", [["V", at("Toyota Urban Cruiser Hyryder", 0.97)]]),
   "Toyota Raize Z Hybrid": answer("Toyota Raize", [["Z Hybrid", 0]]),                                          // zero price
   "Suzuki Swift MZ Hybrid": answer("Suzuki Swift", [["MZ", at("Suzuki Swift", 1.4)]]),                        // +40%
-  "Suzuki Fronx Alpha (Turbo)": answer("Suzuki Fronx", [["Alpha Turbo", at("Suzuki Fronx", 1.01)]]),
+  "Suzuki Fronx Alpha (Turbo)": answer("Suzuki Fronx", [["Alpha 1.0L Turbo MHEV", at("Suzuki Fronx", 1.01)]]),
   "Toyota Urban Cruiser Taisor V": null,                                                                       // HTTP 502
-  "Nissan Magnite Tekna Plus": answer("Nissan Magnite", [["Tekna+", at("Nissan Magnite", 1.03)]]),
+  "Nissan Magnite Tekna Plus": answer("Nissan Magnite", [["Tekna 1.0 Turbo", at("Nissan Magnite", 0.95)], ["Tekna Plus 1.0 Turbo", at("Nissan Magnite", 1.03)]]),
   "Suzuki Wagon R Custom Z": { ...answer("Suzuki Wagon R", []), model_years: [] }                              // no trims
 };
 const queries = [];
+let failEverything = false;
+// Multi-line detail, as Gemini's quota errors have
+const failure = { error: "quota", detail: "You exceeded your current quota.\n\n* Quota exceeded for metric: free_tier_requests, limit: 5" };
 const server = http.createServer((req, res) => {
   let body = "";
   req.on("data", c => { body += c; });
@@ -111,9 +134,9 @@ const server = http.createServer((req, res) => {
     const { query } = JSON.parse(body);
     queries.push(query);
     const key = Object.keys(mock).find(k => query.startsWith(k + ","));
-    const reply = key && mock[key];
+    const reply = !failEverything && key && mock[key];
     res.writeHead(reply ? 200 : 502, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(reply || { error: "upstream_unavailable", detail: "mock failure" }));
+    res.end(JSON.stringify(reply || failure));
   });
 });
 await new Promise(r => server.listen(0, "127.0.0.1", r));
@@ -136,7 +159,7 @@ try {
   assert.match(dry.stdout, new RegExp(`\\+ .*name: "Honda Vezel e:HEV Z".*price: ${vezelNew},`), "New price is rounded to LKR 10,000");
   assert.match(dry.stdout, /\+ export const catalogMeta = \{ priceUpdated: "2026-11" \};/);
   assert.match(dry.stdout, /Dry run: js\/catalog.js not written\./);
-  assert.equal(queries.length, 13, "12 vehicles plus one retry for the failed request");
+  assert.equal(queries.length, 14, "12 vehicles plus two retries for the failed request");
 
   const report = fs.readFileSync(path.join(tmp, "report.md"), "utf8");
   assert.match(report, /AI estimates/);
@@ -146,6 +169,9 @@ try {
   for (const name of ["Toyota Raize Z Hybrid", "Suzuki Swift MZ Hybrid", "Toyota Urban Cruiser Taisor V", "Suzuki Wagon R Custom Z"]) {
     assert.match(report, new RegExp(`- \\*\\*${name}\\*\\*`), `${name} must be listed as skipped`);
   }
+  const skippedLines = report.split("### Skipped")[1].trim().split("\n").slice(2).filter(Boolean);
+  assert.ok(skippedLines.slice(0, 4).every(l => l.startsWith("- **")), "Each skipped vehicle stays on one line");
+  assert.match(report, /Taisor V\*\*: proxy request failed \(HTTP 502 quota: You exceeded your current quota\. \* Quota exceeded/);
   assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ \(2026\): LKR [\d,]+ is \+4\d\.\d% from LKR [\d,]+, outside ±25%/);
 
   // Real run on the temporary copy
@@ -167,6 +193,16 @@ try {
     if (v.name in expected) assert.equal(price, expected[v.name], v.name);
   });
   assert.equal(fs.readFileSync(CATALOG, "utf8"), source, "The real js/catalog.js must be untouched");
+
+  // A proxy that fails every time: stop after three vehicles and exit with an error
+  failEverything = true;
+  queries.length = 0;
+  fs.copyFileSync(CATALOG, tmpCatalog);
+  const down = await run("--report", path.join(tmp, "down.md")).then(() => null, e => e);
+  assert.equal(down?.code, 1, "Exit code 1 when every request fails");
+  assert.equal(queries.length, 9, "Three vehicles, three attempts each, then stop");
+  assert.match(fs.readFileSync(path.join(tmp, "down.md"), "utf8"), /not asked, after 3 proxy failures in a row/);
+  assert.equal(fs.readFileSync(tmpCatalog, "utf8"), source, "Nothing is written when the proxy is down");
 } finally {
   server.close();
   fs.rmSync(tmp, { recursive: true, force: true });
