@@ -8,6 +8,10 @@ import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.8.1";
 export const DOWN_MIN = 40;          // lowest down payment any car can have (registered over a year)
 export const DOWN_MIN_UNREG = 60;    // brand new, reconditioned and recently registered cars
 
+// The lowest down payment the Direction allows for a condition. Only "Used" (registered in
+// Sri Lanka for over a year) may go down to 40%; an unknown condition is treated as unregistered.
+export const minDownFor = cond => cond === "Used" ? DOWN_MIN : DOWN_MIN_UNREG;
+
 export const fmt = formatMoneyAmount;
 export const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const num = id => {

@@ -124,6 +124,7 @@
           <option value="all">All vehicles</option>
           <option value="official">Official agent only</option>
           <option value="grey">Grey import only</option>
+          <option value="independent">Independent seller only</option>
         </select>
       </div>
       <div>
@@ -177,13 +178,25 @@
 <div class="modal-bg" id="catalogueModal" role="dialog" aria-modal="true" aria-labelledby="catalogueTitle" inert>
   <div class="modal catalogue-modal">
     <div class="modal-header"><h2 id="catalogueTitle">Find your next car</h2><button class="close-btn" id="closeCatalogueBtn" type="button" aria-label="Close catalogue">&times;</button></div>
-    <p>Passenger cars and SUVs from Sri Lankan agent ranges, seller listings and import services. Select a vehicle, confirm its price and add it to your comparison.</p>
-    <p class="hint" id="catalogueCoverage"></p>
-    <label for="catalogueSearch">Search make or model</label>
-    <input id="catalogueSearch" type="search" placeholder="e.g. Toyota, electric, SUV" autocomplete="off">
-    <p class="hint" id="catalogueCount" role="status" tabindex="-1"></p>
+    <p class="catalogue-intro">Cars and SUVs sold in Sri Lanka. Choose one, confirm its price and add it to your comparison.</p>
+    <div class="catalogue-search">
+      <label for="catalogueSearch">Search make or model</label>
+      <input id="catalogueSearch" type="search" placeholder="e.g. Toyota, electric, SUV" autocomplete="off">
+    </div>
+    <button class="btn-outline catalogue-filters-toggle" id="catalogueFiltersToggle" type="button" aria-expanded="false" aria-controls="catalogueFilters">Filter and sort <span id="catalogueFiltersCount"></span></button>
+    <div class="catalogue-filters collapsed" id="catalogueFilters">
+      <div><label for="catalogueSort">Sort by</label><select id="catalogueSort"><option value="priced">Prices first</option><option value="price-asc">Price, low to high</option><option value="price-desc">Price, high to low</option><option value="name">Name, A to Z</option></select></div>
+      <div><label for="cataloguePriceFilter">Price</label><select id="cataloguePriceFilter"><option value="">Any</option><option value="priced">Published only</option></select></div>
+      <div><label for="catalogueMake">Make</label><select id="catalogueMake"><option value="">All makes</option></select></div>
+      <div><label for="catalogueBody">Body type</label><select id="catalogueBody"><option value="">All body types</option><option value="SUV">SUV</option><option value="Passenger car">Car</option></select></div>
+      <div><label for="catalogueFuel">Fuel</label><select id="catalogueFuel"><option value="">All fuels</option></select></div>
+      <div><label for="catalogueRoute">Sold by</label><select id="catalogueRoute"><option value="">Any seller</option><option value="Official">Official agent</option><option value="Grey">Importer</option><option value="Unknown">Independent seller</option></select></div>
+    </div>
+    <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear search and filters</button></div>
+    <p class="hint catalogue-per-million" id="cataloguePerMillion"></p>
     <div id="catalogueResults" class="catalogue-grid"></div>
     <div class="catalogue-pagination"><button class="btn-outline" id="cataloguePrev" type="button">Previous</button><span id="cataloguePage"></span><button class="btn-outline" id="catalogueNext" type="button">Next</button></div>
+    <p class="hint catalogue-coverage" id="catalogueCoverage"></p>
   </div>
 </div>
 
@@ -194,7 +207,7 @@
     <input id="catalogueName" type="text" autocomplete="off" aria-describedby="catalogueNameNote">
     <p class="hint" id="catalogueNameNote">Add the exact trim and year if known. Your calculation uses the price you enter below.</p>
     <label for="catalogueCondition">Condition</label>
-    <select id="catalogueCondition"><option value="">Choose condition</option><option value="New">Brand new</option><option value="Recond">Reconditioned</option><option value="Used">Registered used (over one year)</option></select>
+    <select id="catalogueCondition"><option value="">Choose condition</option><option value="New">Brand New</option><option value="Recond">Reconditioned</option><option value="Used">Registered Used (over one year)</option></select>
     <label for="cataloguePrice">Vehicle price (LKR)</label>
     <input id="cataloguePrice" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter your quote, e.g. 10,000,000.00" aria-describedby="cataloguePriceNote catalogueAddError">
     <p class="hint" id="cataloguePriceNote"></p>

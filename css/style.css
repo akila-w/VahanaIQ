@@ -296,12 +296,13 @@ th.n {
   border: 1px solid var(--line);
 }
 
-.car .ph {
+/* "No photo" placeholder: always on the white plate, so its ink is fixed across themes */
+.ph {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--mute);
+  color: var(--plate-ink);
   font-size: 0.72rem;
   gap: var(--space-3);
 }
@@ -698,7 +699,22 @@ body.has-budget-bar main {
 /* Market catalogue: independent of the selected comparison. */
 .comparison-tools { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-12); }
 button[hidden] { display: none !important; }
-.catalogue-modal { max-width: 1020px; }
+.modal.catalogue-modal { max-width: var(--catalogue-modal-max); }
+.catalogue-intro { margin: 0 0 var(--space-12); }
+.catalogue-search { margin-bottom: var(--space-12); }
+.catalogue-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-12); margin-bottom: var(--space-12); }
+.catalogue-filters-toggle { display: none !important; margin-bottom: var(--space-12); }
+.catalogue-status { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: var(--space-4) var(--space-12); margin-bottom: var(--space-10); }
+.catalogue-status .hint { margin: 0; }
+.catalogue-photo { aspect-ratio: 8 / 5; background: var(--plate); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.catalogue-photo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.catalogue-photo .ph { height: 100%; }
+.catalogue-photo.is-empty { aspect-ratio: auto; height: 56px; }
+.catalogue-photo.is-empty .ph { flex-direction: row; gap: var(--space-6); }
+.catalogue-per-million { margin: 0 0 var(--space-12); color: var(--ink); }
+.catalogue-price.is-unpriced { color: var(--mute); font-weight: 600; }
+.catalogue-rent { color: var(--ink); }
+.catalogue-coverage { margin-top: var(--space-14); }
 .catalogue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-14); }
 .catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-16); gap: var(--space-10); }
 .catalogue-card h3 { font-size: 1rem; line-height: 1.4; margin: 0; }
@@ -711,7 +727,8 @@ button[hidden] { display: none !important; }
 .catalogue-pagination button { min-height: 44px; }
 #catalogueAddForm > input, #catalogueAddForm > select { margin-bottom: var(--space-14); }
 #catalogueSearch { margin-top: var(--space-6); }
-@media (max-width: 760px) { .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .catalogue-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .catalogue-filters-toggle { display: inline-flex !important; } .catalogue-filters.collapsed { display: none; } }
 @media (max-width: 480px) { .catalogue-grid { grid-template-columns: minmax(0, 1fr); } .catalogue-modal { padding: var(--space-16); } }
 
 /* Modals and Drawers */
@@ -1007,7 +1024,7 @@ button.cond-tag:hover {
 .preview-actions { display: flex; gap: var(--space-8); align-items: center; flex-wrap: wrap; }
 .preview-actions .hint { margin: 0; }
 .ph svg { opacity: var(--opacity-placeholder); }
-.pimg-ph { width: var(--preview-w); height: 88px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--plate); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--mute); font-size: 0.75rem; gap: var(--space-4); }
+.pimg-ph { width: var(--preview-w); height: 88px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--plate); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--plate-ink); font-size: 0.75rem; gap: var(--space-4); }
 .pimg-ph[hidden] { display: none; }
 .modal-actions { margin-top: var(--space-16); display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: var(--space-8); }
 

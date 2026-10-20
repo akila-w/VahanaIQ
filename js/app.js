@@ -1,10 +1,10 @@
-import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.1";
+import { fmt, esc, num, computeLeaseTable, rental, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.1";
 import { baseVehicles } from "./catalog.js?v=2.8.1";
 import { initCatalogue } from "./catalogue-browser.js?v=2.8.1";
 import { APP_VERSION } from "./config.js?v=2.8.1";
 import { normalizeImageToStudio } from "./canvas-utils.js?v=2.8.1";
 import { searchVehicle } from "./gemini.js?v=2.8.1";
-import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.8.1";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.8.1";
 import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.8.1";
 import { openModal, closeModal } from "./modal.js?v=2.8.1";
 import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.8.1";
@@ -72,7 +72,6 @@ const cols = [
 
 const condLabels = { New: "Brand New", Recond: "Reconditioned", Used: "Registered Used" };
 const condLabel = c => condLabels[c] || condLabels.New;
-const NO_PHOTO = '<div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span></div>';
 
 function summaryHtml(s, f, room) {
   const limit = Math.round(s.dti * 100);
@@ -222,6 +221,7 @@ function render() {
     if (r.price > maxP) return false;
     if (wFilter === "official" && r.w !== "Official") return false;
     if (wFilter === "grey" && r.w !== "Grey") return false;
+    if (wFilter === "independent" && (r.w === "Official" || r.w === "Grey")) return false;
     if (cFilter !== "all" && (r.cond || "New") !== cFilter) return false;
     if (affordVal === "ok") {
       if (!s.income) return false;
@@ -1120,6 +1120,7 @@ $("appVersion").textContent = APP_VERSION;
 $("priceAsOf").textContent = "Catalogue sources checked 20/10/2026 · confirm prices and stock with the seller";
 
 refreshCatalogue = initCatalogue({
+  terms: () => { const s = readSettings(); return { f: rental(1, s.rate, s.n), down: s.down }; },
   isSelected: id => cars.some(c => c.catalogueId === id && !c.hidden),
   onAdd: vehicle => {
     if (cars.some(c => c.catalogueId === vehicle.catalogueId && !c.hidden)) return false;

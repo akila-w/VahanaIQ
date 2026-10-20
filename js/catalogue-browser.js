@@ -1,42 +1,111 @@
 import { baseVehicles as catalogue } from "./market-catalogue.js?v=2.8.1";
-import { fmt, esc } from "./calculator.js?v=2.8.1";
+import { fmt, esc, minDownFor } from "./calculator.js?v=2.8.1";
 import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.8.1";
 import { validPrice } from "./vehicle-validation.js?v=2.8.1";
 import { newVehicleId } from "./storage.js?v=2.8.1";
 import { openModal, closeModal } from "./modal.js?v=2.8.1";
 import { searchCatalogue } from "./catalogue-search.js?v=2.8.1";
+import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.8.1";
 
 const displayDate = date => /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? date.split("-").reverse().join("/") : "Date unavailable";
 const routeLabel = v => v.w === "Official" ? "Official agent range" : v.w === "Grey" ? "Importer listing" : "Independent seller listing";
 const availabilityLabel = v => ({ "used-listed": "Used listing: confirm registration age", "import-service": "Past import example: enquire about availability", "brochure-listed": "Local brochure: enquire about availability", "configurator-listed": "Local configurator: enquire about availability" }[v.availability] || "Confirm stock with seller");
 const safeUrl = url => /^https:\/\//.test(url || "") ? url : "";
+const bodyLabel = body => body === "Passenger car" ? "Car" : body;
+const FUELS = { Petrol: "Petrol", Diesel: "Diesel", HEV: "Hybrid", PHEV: "Plug-in hybrid", BEV: "Electric" };
+const UNKNOWN_SPEC = "Specifications to confirm";
+const photoFor = v => v.img || localStudioPhoto(`${v.make} ${v.model}`);
+const hasPrice = v => validPrice(v.price);
+// Published prices first, then conflicting sources, then price on request
+const priceRank = v => hasPrice(v) ? 0 : v.priceBasis === "conflicting" ? 1 : 2;
+const byName = (a, b) => a.make.localeCompare(b.make) || a.name.localeCompare(b.name);
+const SORTS = {
+  priced: (a, b) => priceRank(a) - priceRank(b) || byName(a, b),
+  "price-asc": (a, b) => priceRank(a) - priceRank(b) || (hasPrice(a) ? a.price - b.price : 0) || byName(a, b),
+  "price-desc": (a, b) => priceRank(a) - priceRank(b) || (hasPrice(a) ? b.price - a.price : 0) || byName(a, b),
+  name: byName
+};
+const FILTERS = ["catalogueMake", "catalogueBody", "catalogueFuel", "catalogueRoute", "cataloguePriceFilter"];
 
-export function initCatalogue({ isSelected, onAdd }) {
+function matchesFilters(v, f) {
+  if (f.catalogueMake && v.make !== f.catalogueMake) return false;
+  if (f.catalogueBody && v.body !== f.catalogueBody) return false;
+  if (f.catalogueFuel && (f.catalogueFuel === "unknown" ? v.fuel : v.fuel !== f.catalogueFuel)) return false;
+  if (f.catalogueRoute && v.w !== f.catalogueRoute) return false;
+  if (f.cataloguePriceFilter === "priced" && !hasPrice(v)) return false;
+  return true;
+}
+
+// terms() returns { f, down }: the rental per rupee financed and the chosen down payment (%)
+export function initCatalogue({ isSelected, onAdd, terms }) {
   const $ = id => document.getElementById(id);
   if (!$("openCatalogueBtn")) return () => {}; // Non-browser verification hosts.
   const pageSize = 12;
   let page = 0, pending = null, selection = "";
-  const sorted = [...catalogue].sort((a, b) => a.make.localeCompare(b.make) || a.name.localeCompare(b.name));
 
-  function render() {
-    const matches = searchCatalogue(sorted, $("catalogueSearch").value);
-    page = Math.min(page, Math.max(0, Math.ceil(matches.length / pageSize) - 1));
-    const start = page * pageSize;
-    $("catalogueCount").textContent = matches.length ? `${start + 1}–${Math.min(start + pageSize, matches.length)} of ${matches.length} entries` : "No matching vehicles. Try a make or model name.";
-    $("catalogueResults").innerHTML = matches.slice(start, start + pageSize).map(v => {
-      const selected = isSelected(v.id);
-      const price = validPrice(v.price) ? `${v.priceBasis === "starting" ? "From " : ""}LKR ${fmt(v.price)}` : "Price not published";
-      return `<article class="catalogue-card">
-        <span class="catalogue-category">${esc(v.body)} · ${esc(v.make)}</span>
+  const count = (key, value) => catalogue.filter(v => v[key] === value).length;
+  $("catalogueMake").insertAdjacentHTML("beforeend", [...new Set(catalogue.map(v => v.make))].sort()
+    .map(m => `<option value="${esc(m)}">${esc(m)} (${count("make", m)})</option>`).join(""));
+  $("catalogueFuel").insertAdjacentHTML("beforeend", Object.entries(FUELS).filter(([k]) => count("fuel", k))
+    .map(([k, label]) => `<option value="${k}">${label} (${count("fuel", k)})</option>`).join("") +
+    `<option value="unknown">Not yet confirmed (${catalogue.filter(v => !v.fuel).length})</option>`);
+
+  const filterValues = () => Object.fromEntries(FILTERS.map(id => [id, $(id).value]));
+
+  // Estimated rental for a priced car, at its legal minimum down payment or the chosen one if higher
+  function rentalLine(v, t) {
+    if (!hasPrice(v) || !t || !(t.f > 0)) return "";
+    const down = Math.max(t.down, minDownFor(v.cond));
+    return down < 100 ? `About Rs. ${fmt(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
+  }
+
+  // One line for every car without a price: what each Rs. 1.00 million of quote costs a month
+  function perMillionLine(t) {
+    if (!t || !(t.f > 0)) return "";
+    const down = Math.max(t.down, minDownFor("New"));
+    return down < 100 ? `No price yet? Each Rs. 1.00 million of a brand-new car's quote is about Rs. ${fmt(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
+  }
+
+  function priceText(v) {
+    if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${fmt(v.price)}`;
+    return v.priceBasis === "conflicting" ? "Prices differ between sources" : "Price on request";
+  }
+
+  function card(v, t) {
+    const selected = isSelected(v.id);
+    const photo = photoFor(v);
+    const specs = [v.pt && v.pt !== UNKNOWN_SPEC ? v.pt : "", v.km].filter(Boolean).join(" · ");
+    const link = hasPrice(v) ? { href: v.priceSourceUrl || v.sourceUrl, text: "View price source" } : { href: v.sourceUrl, text: "Ask the seller for a price" };
+    const rent = rentalLine(v, t);
+    return `<article class="catalogue-card">
+        <div class="catalogue-photo${photo ? "" : " is-empty"}">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" width="400" height="250">` : NO_PHOTO}</div>
+        <span class="catalogue-category">${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
         <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>
-        <p class="hint">${esc(v.pt)}${!v.trim ? " · Trim to confirm" : ""}</p>
-        <p class="catalogue-price">${price}</p>
-        <p class="hint">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}</p>
-        <p class="hint">Source checked ${displayDate(v.checkedOn)}${validPrice(v.price) ? ` · Price checked ${(v.priceCheckedMonth || "").split("-").reverse().join("/")}` : ""}</p>
-        <a href="${esc(safeUrl(v.sourceUrl))}" target="_blank" rel="noopener noreferrer">View local source<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>
+        ${specs ? `<p class="hint">${esc(specs)}</p>` : ""}
+        <p class="catalogue-price${hasPrice(v) ? "" : " is-unpriced"}">${priceText(v)}</p>
+        ${rent ? `<p class="hint catalogue-rent">${rent}</p>` : ""}
+        <p class="hint">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${hasPrice(v) && v.priceCheckedMonth ? ` · Price checked ${v.priceCheckedMonth.split("-").reverse().join("/")}` : ""}</p>
+        <a href="${esc(safeUrl(link.href))}" target="_blank" rel="noopener noreferrer">${link.text}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>
         <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In comparison ✓" : "Choose & add"}</button>
       </article>`;
-    }).join("");
+  }
+
+  function render() {
+    const f = filterValues();
+    const active = FILTERS.filter(id => f[id]).length;
+    const matches = searchCatalogue(catalogue, $("catalogueSearch").value).filter(v => matchesFilters(v, f))
+      .sort(SORTS[$("catalogueSort").value] || SORTS.priced);
+    page = Math.min(page, Math.max(0, Math.ceil(matches.length / pageSize) - 1));
+    const start = page * pageSize;
+    const priced = matches.filter(hasPrice).length;
+    $("catalogueCount").textContent = matches.length
+      ? `${start + 1}–${Math.min(start + pageSize, matches.length)} of ${matches.length} vehicles · ${priced} with a published price`
+      : "No matching vehicles. Try another make or model, or clear the filters.";
+    $("catalogueClearFilters").hidden = !active && !$("catalogueSearch").value;
+    $("catalogueFiltersCount").textContent = active ? `(${active})` : "";
+    const t = terms ? terms() : null;
+    $("cataloguePerMillion").textContent = perMillionLine(t);
+    $("catalogueResults").innerHTML = matches.slice(start, start + pageSize).map(v => card(v, t)).join("");
     $("cataloguePrev").disabled = page === 0;
     $("catalogueNext").disabled = start + pageSize >= matches.length;
     $("cataloguePage").textContent = `Page ${page + 1} of ${Math.max(1, Math.ceil(matches.length / pageSize))}`;
@@ -50,6 +119,19 @@ export function initCatalogue({ isSelected, onAdd }) {
   $("browseEmptyBtn").addEventListener("click", () => open($("browseEmptyBtn")));
   $("closeCatalogueBtn").addEventListener("click", () => closeModal($("catalogueModal")));
   $("catalogueSearch").addEventListener("input", () => { page = 0; render(); });
+  for (const id of [...FILTERS, "catalogueSort"]) $(id).addEventListener("change", () => { page = 0; render(); });
+  $("catalogueClearFilters").addEventListener("click", () => {
+    $("catalogueSearch").value = "";
+    for (const id of FILTERS) $(id).value = "";
+    page = 0;
+    render();
+    $("catalogueSearch").focus();
+  });
+  $("catalogueFiltersToggle").addEventListener("click", () => {
+    const open = $("catalogueFiltersToggle").getAttribute("aria-expanded") !== "true";
+    $("catalogueFiltersToggle").setAttribute("aria-expanded", String(open));
+    $("catalogueFilters").classList.toggle("collapsed", !open);
+  });
   for (const [id, delta] of [["cataloguePrev", -1], ["catalogueNext", 1]]) $(id).addEventListener("click", () => { page += delta; render(); $("catalogueCount").focus(); });
 
   $("catalogueResults").addEventListener("click", event => {
@@ -87,7 +169,8 @@ export function initCatalogue({ isSelected, onAdd }) {
     $("h-list").focus();
     render();
   });
-  $("catalogueCoverage").textContent = `${catalogue.length} entries across ${new Set(catalogue.map(v => v.make)).size} makes. Source-backed first release; further brands, trims and used models are still being checked.`;
+  const checked = catalogue.map(v => v.checkedOn).filter(Boolean).sort().pop();
+  $("catalogueCoverage").textContent = `${catalogue.length} vehicles across ${new Set(catalogue.map(v => v.make)).size} makes, sources checked ${displayDate(checked)}. Most Sri Lankan agents don't publish prices, so many cars are price on request: ask the seller and enter your quote. Photos show the model and may differ from the exact trim. Further brands, trims and used models are still being checked.`;
   render();
   return () => {
     const next = catalogue.filter(v => isSelected(v.id)).map(v => v.id).join("|");
