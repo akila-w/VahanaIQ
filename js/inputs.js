@@ -1,5 +1,5 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, DOWN_MIN } from "./calculator.js?v=2.8.0";
+import { num, getSettings, DOWN_MIN } from "./calculator.js?v=2.8.1";
 
 const STORE_KEY = "vahanaiq_inputs_v1";
 

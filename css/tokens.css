@@ -75,7 +75,13 @@
   --thumb-w-sm: 96px;
   --preview-w: 140px;
   --discovery-w: 72px;
+  --opacity-placeholder: 0.55;
+  --opacity-glyph: 0.75;
   --opacity-disabled: 0.6;
+  --duration-fast: 0.15s;
+  --duration-base: 0.2s;
+  --duration-spin: 0.8s;
+  --easing-standard: ease;
   --z-budget-bar: 900;
   --z-modal: 1000;
   --z-toast: 1100;
@@ -133,7 +139,13 @@
     --line: #cbd5e1;
     --accent: #0f766e;
     --bad: #b91c1c;
+    --bar: #e2e8f0;
+    --badge-bg: #f0fdf4;
+    --badge-ink: #0f766e;
     --ok-ink: #047857;
     --mid-ink: #92400e;
+    --print-head-ink: #334155;
+    --print-rule: #e2e8f0;
+    --print-field-bg: #f8fafc;
   }
 }

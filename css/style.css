@@ -1,4 +1,4 @@
-/* Colours, shadows, spacing, radii, sizes and layers come from css/tokens.css, built from design-system/tokens.json. */
+/* Colours, shadows, spacing, radii, sizes, opacity, timings and layers come from css/tokens.css, built from design-system/tokens.json. */
 
 :root {
   box-sizing: border-box;
@@ -396,6 +396,9 @@ th.n {
   background: var(--accent);
 }
 
+.fill.mid { background: var(--mid); }
+.fill.bad { background: var(--bad); }
+
 .mark {
   position: absolute;
   top: -4px;
@@ -523,6 +526,7 @@ button.link-btn:focus-visible, h2[tabindex]:focus-visible {
 }
 
 label.file-btn {
+  margin: 0;
   display: inline-flex;
   align-items: center;
   gap: var(--space-6);
@@ -615,7 +619,7 @@ button.icon-btn:hover {
   background: var(--ink);
   color: var(--panel);
   box-shadow: var(--shadow-toast);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-base) var(--easing-standard);
 }
 
 .toast:empty {
@@ -723,7 +727,7 @@ button[hidden] { display: none !important; }
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.15s ease, visibility 0s linear 0.15s;
+  transition: opacity var(--duration-fast) var(--easing-standard), visibility 0s linear var(--duration-fast);
 }
 
 .modal-bg.open {
@@ -878,7 +882,7 @@ body.modal-open {
   border: 2px solid var(--line);
   border-top-color: var(--accent);
   border-radius: var(--radius-circle);
-  animation: sp 0.8s linear infinite;
+  animation: sp var(--duration-spin) linear infinite;
   margin-right: var(--space-6);
   vertical-align: middle;
 }
@@ -907,7 +911,7 @@ button.cond-tag:hover {
 
 .cycle-icon {
   font-size: 0.75rem;
-  opacity: 0.75;
+  opacity: var(--opacity-glyph);
   margin-left: var(--space-3);
   display: inline-block;
   vertical-align: baseline;
@@ -937,7 +941,7 @@ button.cond-tag:hover {
   border-radius: var(--radius-md);
   background: var(--bg);
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--duration-fast) var(--easing-standard);
 }
 
 .discovery-item:hover {
@@ -978,6 +982,34 @@ button.cond-tag:hover {
   flex-direction: column;
   gap: var(--space-6);
 }
+
+/* AI search and manual entry modal */
+.ai-search-actions > .btn, .ai-search-actions > .file-btn { white-space: nowrap; }
+.callout.attached-ad { display: flex; align-items: center; justify-content: space-between; padding: var(--space-6) var(--space-12); margin-bottom: var(--space-8); }
+.callout.attached-ad[hidden] { display: none; }
+.ai-search-msg { min-height: 18px; margin-bottom: var(--space-8); }
+.callout.discovery-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-10); }
+.discovery-head .link-btn { font-size: 0.82rem; }
+.discovery-list { display: flex; flex-direction: column; gap: var(--space-8); max-height: 45vh; overflow-y: auto; margin-bottom: var(--space-14); }
+.discovery-item input[type="checkbox"] { width: auto; }
+.discovery-body { flex: 1; }
+.discovery-title { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); }
+.discovery-price { color: var(--accent); font-variant-numeric: tabular-nums; }
+.discovery-spec { font-size: 0.78rem; color: var(--mute); }
+.discovery-tags { margin-top: var(--space-2); }
+.discovery-tags .callout-badge, .discovery-tags .cond-tag { font-size: 0.68rem; }
+.discovery-actions { display: flex; justify-content: space-between; align-items: center; gap: var(--space-8); }
+.callout.result-status { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-8); }
+.callout-alt { display: block; margin-top: var(--space-4); }
+.field-group { margin-bottom: var(--space-12); }
+.grid-span-2 { grid-column: span 2; }
+.preview-url { font-size: 0.82rem; margin-bottom: var(--space-6); }
+.preview-actions { display: flex; gap: var(--space-8); align-items: center; flex-wrap: wrap; }
+.preview-actions .hint { margin: 0; }
+.ph svg { opacity: var(--opacity-placeholder); }
+.pimg-ph { width: var(--preview-w); height: 88px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--plate); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--mute); font-size: 0.75rem; gap: var(--space-4); }
+.pimg-ph[hidden] { display: none; }
+.modal-actions { margin-top: var(--space-16); display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: var(--space-8); }
 
 @media (max-width: 1040px) {
   .wrap { overflow: visible; }
@@ -1123,9 +1155,9 @@ button.cond-tag:hover {
   }
 
   .brand-badge {
-    border: 1px solid var(--accent) !important;
-    color: var(--accent) !important;
-    background: #f0fdf4 !important;
+    border: 1px solid var(--badge-ink) !important;
+    color: var(--badge-ink) !important;
+    background: var(--badge-bg) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -1137,7 +1169,7 @@ button.cond-tag:hover {
 
   input, select {
     border: 1px solid var(--line) !important;
-    background: #f8fafc !important;
+    background: var(--print-field-bg) !important;
     color: var(--ink) !important;
     font-size: 9.5pt !important;
     padding: 3pt 6pt !important;
@@ -1166,13 +1198,13 @@ button.cond-tag:hover {
   td::before { content: none !important; }
 
   th {
-    color: #334155 !important;
+    color: var(--print-head-ink) !important;
     border-bottom: 1.5pt solid var(--accent) !important;
     padding: 5pt 3pt !important;
   }
 
   td {
-    border-bottom: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid var(--print-rule) !important;
     padding: 5pt 3pt !important;
   }
 
@@ -1183,7 +1215,7 @@ button.cond-tag:hover {
 
   /* Budget share progress track & fill colors */
   .track {
-    background: #e2e8f0 !important;
+    background: var(--bar) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

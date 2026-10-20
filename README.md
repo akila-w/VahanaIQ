@@ -88,8 +88,8 @@ node test/refresh-prices.test.mjs
 node test/tokens.test.mjs
 ```
 
-### Changing colours, spacing, radii, shadows and sizes
-Edit `design-system/tokens.json`, then run `node scripts/build-tokens.mjs` to regenerate `css/tokens.css`. Don't edit `css/tokens.css` by hand, and don't declare custom properties in `css/style.css`; `test/tokens.test.mjs` checks both. See `docs/brand-guide.md` for the palette and usage rules.
+### Changing colours, spacing, radii, shadows, sizes and timings
+Edit `design-system/tokens.json`, then run `node scripts/build-tokens.mjs` to regenerate `css/tokens.css`. Don't edit `css/tokens.css` by hand, don't declare custom properties in `css/style.css`, and style new markup with a class rather than a `style` attribute; `test/tokens.test.mjs` checks all three. See `docs/brand-guide.md` for the palette and usage rules.
 
 To run VahanaIQ locally with full ES module support:
 ```bash
