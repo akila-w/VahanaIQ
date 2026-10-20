@@ -6,7 +6,9 @@ name: Refresh catalogue prices
 
 on:
   schedule:
-    - cron: "30 2 1 * *" # 02:30 UTC (08:00 in Sri Lanka) on the 1st of each month
+    # 08:30 UTC (14:00 in Sri Lanka) on the 1st: just after Gemini's free daily limits
+    # reset at midnight Pacific time (07:00 or 08:00 UTC), so a full day's allowance is left
+    - cron: "30 8 1 * *"
   workflow_dispatch:
     inputs:
       dry_run:
