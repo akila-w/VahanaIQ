@@ -1134,41 +1134,39 @@ $("mAddBtn").addEventListener("click", () => {
   });
 });
 
-// Theme Switcher (☀️ / 🌙)
-function applyTheme(theme) {
-  if (typeof document !== "undefined" && document.documentElement && typeof document.documentElement.setAttribute === "function") {
-    document.documentElement.setAttribute("data-theme", theme);
+// Theme: System follows the device's light or dark setting (no data-theme, so the CSS media
+// query decides, live); Light or Dark is saved in this browser and set on <html>. The inline
+// script in index.html applies a saved choice before the page paints.
+const THEME_KEY = "vahanaiq_theme";
+const themeMetas = typeof document.querySelectorAll === "function" ? [...document.querySelectorAll('meta[name="theme-color"]')] : [];
+themeMetas.forEach(m => { m.dataset.content = m.content; });
+
+function applyTheme(choice) {
+  const root = document.documentElement;
+  if (root && typeof root.setAttribute === "function") {
+    if (choice === "light" || choice === "dark") root.setAttribute("data-theme", choice);
+    else root.removeAttribute("data-theme");
   }
-  const btn = $("themeToggleBtn");
-  if (btn) {
-    btn.textContent = theme === "dark" ? "☀️" : "🌙";
-    btn.title = theme === "dark" ? "Switch to light theme" : "Switch to dark theme";
-    if (typeof btn.setAttribute === "function") {
-      btn.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    }
-  }
+  // The browser's toolbar colour follows a fixed choice too
+  const fixed = themeMetas.find(m => m.media.includes(choice));
+  themeMetas.forEach(m => { m.content = fixed ? fixed.dataset.content : m.dataset.content; });
+  const radio = document.querySelector?.(`input[name="theme"][value="${choice}"]`);
+  if (radio) radio.checked = true;
 }
 
-function initTheme() {
-  let saved = null;
-  try { saved = localStorage.getItem("vahanaiq_theme"); } catch (e) {}
-  const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const theme = saved || (prefersDark ? "dark" : "light");
-  applyTheme(theme);
-}
+let savedTheme = null;
+try { savedTheme = localStorage.getItem(THEME_KEY); } catch (e) {}
+applyTheme(savedTheme === "light" || savedTheme === "dark" ? savedTheme : "system");
 
-const themeBtn = $("themeToggleBtn");
-if (themeBtn) {
-  themeBtn.addEventListener("click", () => {
-    const cur = (typeof document !== "undefined" && document.documentElement && typeof document.documentElement.getAttribute === "function" && document.documentElement.getAttribute("data-theme")) || 
-      (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    const next = cur === "dark" ? "light" : "dark";
-    try { localStorage.setItem("vahanaiq_theme", next); } catch (e) {}
-    applyTheme(next);
-  });
-}
-
-initTheme();
+document.addEventListener("change", e => {
+  if (e.target.name !== "theme") return;
+  const choice = e.target.value;
+  try {
+    if (choice === "system") localStorage.removeItem(THEME_KEY);
+    else localStorage.setItem(THEME_KEY, choice);
+  } catch (err) {}
+  applyTheme(choice);
+});
 
 // Footer: catalogue availability and individual prices have separate evidence dates.
 $("appVersion").textContent = APP_VERSION;

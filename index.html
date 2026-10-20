@@ -20,6 +20,7 @@
   <link rel="canonical" href="https://akila-w.github.io/vahanaiq/">
   <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
+  <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
   <link rel="stylesheet" href="css/tokens.css?v=2.10.0">
   <link rel="stylesheet" href="css/style.css?v=2.10.0">
   <script type="module" src="js/app.js?v=2.10.0"></script>
@@ -42,7 +43,12 @@
     <div class="header-actions">
       <button class="btn" id="addVehicleBtn" type="button">Add a vehicle</button>
       <button class="btn-outline" id="printBtn" type="button">Print</button>
-      <button class="btn-outline" id="themeToggleBtn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">☀️</button>
+      <fieldset class="theme-switch" id="themeSwitch">
+        <legend class="sr-only">Theme</legend>
+        <label title="System: match this device"><input type="radio" name="theme" value="system" checked><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="sr-only">System</span></label>
+        <label title="Light"><input type="radio" name="theme" value="light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="sr-only">Light</span></label>
+        <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
+      </fieldset>
       <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign in</button>
     </div>
   </div>

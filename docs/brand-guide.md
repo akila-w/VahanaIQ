@@ -133,7 +133,7 @@ Markup carries no inline styles. Every element is styled by a class in `css/styl
 
 The generated themes:
 - **Light** is the default on `:root`.
-- **Dark** applies under `prefers-color-scheme: dark` unless the theme toggle set `data-theme="light"`, and always under `data-theme="dark"`.
+- **Dark** applies under `prefers-color-scheme: dark` unless the theme switch set `data-theme="light"`, and always under `data-theme="dark"`. The switch offers System (no `data-theme`, so the page follows the device live), Light and Dark.
 - **Print** applies under `@media print` whatever the toggle says, giving a white A4 bank quotation.
 
 A token without a dark or print value keeps its light value.
