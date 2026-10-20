@@ -220,7 +220,7 @@ button.hint-btn:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-12);
-  align-items: end;
+  align-items: start;
   margin-bottom: var(--space-12);
 }
 
@@ -280,11 +280,18 @@ th.n {
   align-items: center;
 }
 
-@media (min-width: 1041px) {
+@media (min-width: 1200px) {
   td.name {
-    min-width: 320px;
+    min-width: 280px;
   }
 }
+
+/* Total interest and total outlay stay sortable but show in each vehicle's Details,
+   so the table fits the page at every width */
+th.secondary, td.secondary { display: none; }
+
+td.v-actions { white-space: nowrap; text-align: right; }
+td.v-actions .row-actions { margin-left: 0; }
 
 .car img, .car .ph {
   flex: 0 0 auto;
@@ -296,12 +303,13 @@ th.n {
   border: 1px solid var(--line);
 }
 
-.car .ph {
+/* "No photo" placeholder: always on the white plate, so its ink is fixed across themes */
+.ph {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--mute);
+  color: var(--plate-ink);
   font-size: 0.72rem;
   gap: var(--space-3);
 }
@@ -330,6 +338,7 @@ th.n {
 .legend {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-6) var(--space-18);
   font-size: 0.8125rem;
   color: var(--mute);
@@ -698,7 +707,22 @@ body.has-budget-bar main {
 /* Market catalogue: independent of the selected comparison. */
 .comparison-tools { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-12); }
 button[hidden] { display: none !important; }
-.catalogue-modal { max-width: 1020px; }
+.modal.catalogue-modal { max-width: var(--catalogue-modal-max); }
+.catalogue-intro { margin: 0 0 var(--space-12); }
+.catalogue-search { margin-bottom: var(--space-12); }
+.catalogue-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-12); margin-bottom: var(--space-12); }
+.catalogue-filters-toggle { display: none !important; margin-bottom: var(--space-12); }
+.catalogue-status { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: var(--space-4) var(--space-12); margin-bottom: var(--space-10); }
+.catalogue-status .hint { margin: 0; }
+.catalogue-photo { aspect-ratio: 8 / 5; background: var(--plate); border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.catalogue-photo img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.catalogue-photo .ph { height: 100%; }
+.catalogue-photo.is-empty { aspect-ratio: auto; height: 56px; }
+.catalogue-photo.is-empty .ph { flex-direction: row; gap: var(--space-6); }
+.catalogue-per-million { margin: 0 0 var(--space-12); color: var(--ink); }
+.catalogue-price.is-unpriced { color: var(--mute); font-weight: 600; }
+.catalogue-rent { color: var(--ink); }
+.catalogue-coverage { margin-top: var(--space-14); }
 .catalogue-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-14); }
 .catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-16); gap: var(--space-10); }
 .catalogue-card h3 { font-size: 1rem; line-height: 1.4; margin: 0; }
@@ -711,7 +735,8 @@ button[hidden] { display: none !important; }
 .catalogue-pagination button { min-height: 44px; }
 #catalogueAddForm > input, #catalogueAddForm > select { margin-bottom: var(--space-14); }
 #catalogueSearch { margin-top: var(--space-6); }
-@media (max-width: 760px) { .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .catalogue-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .catalogue-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .catalogue-filters-toggle { display: inline-flex !important; } .catalogue-filters.collapsed { display: none; } }
 @media (max-width: 480px) { .catalogue-grid { grid-template-columns: minmax(0, 1fr); } .catalogue-modal { padding: var(--space-16); } }
 
 /* Modals and Drawers */
@@ -983,6 +1008,33 @@ button.cond-tag:hover {
   gap: var(--space-6);
 }
 
+/* Vehicles: empty state, row actions and lease details */
+.empty-state { border: 1px dashed var(--control-border); border-radius: var(--radius-lg); padding: var(--space-20); text-align: center; }
+.empty-state h3 { margin: 0 0 var(--space-6); font-size: 1rem; }
+.empty-state p { margin: 0 auto var(--space-14); max-width: 52ch; color: var(--mute); }
+.empty-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-8); }
+#comparisonBody[hidden], #emptyState[hidden] { display: none; }
+.row-actions { align-items: center; }
+.catalogue-more { margin: var(--space-14) 0 0; }
+.detail-sub { margin: 0 0 var(--space-12); color: var(--mute); }
+.detail-list { margin: 0; display: grid; gap: var(--space-6); }
+.detail-list div { display: flex; justify-content: space-between; gap: var(--space-12); border-bottom: 1px solid var(--line); padding-bottom: var(--space-6); }
+.detail-list dt { color: var(--mute); }
+.detail-list dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.detail-h { font-size: 1rem; margin: var(--space-18) 0 var(--space-8); }
+.detail-wrap { overflow-x: auto; }
+table.detail-table { min-width: 0; display: table; }
+.detail-table thead { display: table-header-group; }
+.detail-table tbody { display: table-row-group; }
+.detail-table tr { display: table-row; border: 0; padding: 0; background: none; }
+.detail-table th, .detail-table td { display: table-cell; width: auto; padding: var(--space-6) var(--space-8); text-align: left; }
+.detail-table td::before { content: none; }
+.detail-table .n { text-align: right; font-variant-numeric: tabular-nums; }
+
+.check-row { display: flex; align-items: center; gap: var(--space-8); color: var(--ink); margin: var(--space-12) 0; font-size: 0.9375rem; }
+.check-row input { width: auto; }
+.share-modal #shareLink { font-size: 0.8125rem; }
+
 /* AI search and manual entry modal */
 .ai-search-actions > .btn, .ai-search-actions > .file-btn { white-space: nowrap; }
 .callout.attached-ad { display: flex; align-items: center; justify-content: space-between; padding: var(--space-6) var(--space-12); margin-bottom: var(--space-8); }
@@ -1007,11 +1059,13 @@ button.cond-tag:hover {
 .preview-actions { display: flex; gap: var(--space-8); align-items: center; flex-wrap: wrap; }
 .preview-actions .hint { margin: 0; }
 .ph svg { opacity: var(--opacity-placeholder); }
-.pimg-ph { width: var(--preview-w); height: 88px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--plate); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--mute); font-size: 0.75rem; gap: var(--space-4); }
+.pimg-ph { width: var(--preview-w); height: 88px; border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--plate); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--plate-ink); font-size: 0.75rem; gap: var(--space-4); }
 .pimg-ph[hidden] { display: none; }
 .modal-actions { margin-top: var(--space-16); display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: var(--space-8); }
 
-@media (max-width: 1040px) {
+/* Below 1200px the comparison table becomes compact cards, two to a row on tablets;
+   the secondary totals move into each vehicle's Details */
+@media (max-width: 1199px) {
   .wrap { overflow: visible; }
   table { min-width: 0; }
   table, tbody, tr, td { display: block; width: 100%; }
@@ -1048,6 +1102,19 @@ button.cond-tag:hover {
   }
   td.name::before { content: none; }
   td .track { flex: 1; max-width: 60%; }
+  td.secondary { display: none; }
+  #rows tr { margin-bottom: 0; }
+  td.v-actions { justify-content: flex-end; padding-top: var(--space-8); }
+  td.v-actions::before { content: none; }
+}
+
+@media (min-width: 700px) and (max-width: 1199px) {
+  #rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); }
+}
+
+@media (max-width: 699px) {
+  #rows { display: grid; gap: var(--space-12); }
+  td.v-need { display: none; }
 }
 
 @media (max-width: 640px) {
@@ -1195,6 +1262,7 @@ button.cond-tag:hover {
   tbody { display: table-row-group !important; }
   tr { display: table-row !important; }
   th, td { display: table-cell !important; width: auto !important; }
+  th.actions, td.v-actions { display: none !important; }
   td::before { content: none !important; }
 
   th {

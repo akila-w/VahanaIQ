@@ -9,23 +9,29 @@
 🔗 **Live Public App:** [https://akila-w.github.io/vahanaiq/](https://akila-w.github.io/vahanaiq/)
 
 ## Features
-- **CBSL Regulatory Engine:** 60% minimum down payment (40% maximum LTV) for brand new, reconditioned and recently registered cars, 40% minimum for cars registered over a year, an 84-month tenure cap, 40%/50% DTI ceilings, and LTV warnings.
+- **CBSL Regulatory Engine:** 60% minimum down payment (40% maximum LTV) for brand new, reconditioned and recently registered cars and 40% for cars registered over a year, applied to each car automatically; 40%/50% DTI ceilings; terms of up to 84 months (the Direction itself sets no tenure limit).
+- **Flat or reducing rates:** Lessors often quote flat rates. Choose the rate type and a flat rate is converted to its reducing-balance equivalent, so rentals, interest and the yearly schedule are right either way.
+- **Catalogue with photos and filters:** 146 cars and SUVs sold in Sri Lanka, filterable by make, body type, fuel, seller and published price, with priced cars first and an estimated monthly rental on each.
+- **Lease details:** Each vehicle's down payment, amount financed, rental, interest, total paid and a year-by-year balance, plus optional insurance and up-front fees.
 - **Smart Multi-Input AI Extraction:** Analyzes vehicle names, comparative queries, raw classified ad text (Ikman, Riyasewana, Patpat, FB Marketplace), or uploaded/clipboard screenshots of Japanese auction sheets.
 - **Zero-Touch Studio Photos:** Automatically resolves studio car press photos via local catalog, Wikipedia REST API, and Wikimedia Commons, normalising them onto 8:5 pure white studio plates.
 - **One-Click Batch Add & Discovery:** Compare multiple vehicles side-by-side or add all trim levels for any model year in a single click.
-- **Inline Table Editing:** Quick-edit LKR prices inline and cycle conditions (Brand New ⇄ Reconditioned ⇄ Registered Used) with live actuarial recalculation.
+- **Inline Table Editing:** Quick-edit LKR prices inline and cycle conditions (Brand New ⇄ Reconditioned ⇄ Registered under a year ⇄ Registered Used) with live recalculation.
 - **Google Gemini AI search via a serverless proxy:** The browser never holds an API key. The proxy (`serverless/`) calls `gemini-3.6-flash` by default, set with the `GEMINI_MODEL` environment variable. The monthly price refresh uses a separate model, `PRICE_MODEL` (`gemini-2.5-flash-lite` by default), so it never uses the app's daily free allowance. Everything runs on the Gemini free tier.
 - **Sri Lankan Market Availability Gatekeeper:** Validates if searched vehicles are actively traded in Sri Lanka or road-legal (RHD, tax brackets), suggesting local alternatives if not.
 - **Hierarchical Selector:** Multi-tier Model Year and Trim selector with condition grading.
 - **Dynamic LKR Pricing:** Market valuations automatically update as condition or trim changes.
 - **HTML5 Canvas Studio Normaliser:** Automatically centres, scales, and pads any car photo onto an 8:5 pure white plate (`#FFFFFF`) with tyre contact shadow.
-- **Shareable scenarios:** Loan terms, income, sort and filters are saved in the browser and mirrored to the URL, so a link restores the same scenario.
+- **Private by default, shareable on request:** Loan terms, income, sort and filters are saved in this browser only. **Share** builds a link with the terms, filters and vehicles; income and existing payments are left out unless you tick the box. The address bar is cleaned after a shared link opens.
+- **Works offline:** A service worker (`sw.js`) keeps the app's own files, so the calculator opens without a connection. AI search needs one.
 
 ## Folder Structure
 ```
 vahanaiq/
 ├── index.html            # Main web application entry point
-├── manifest.json         # PWA Manifest (multi-size maskable icons)
+├── manifest.json         # PWA manifest (192 and 512px PNG icons)
+├── sw.js                 # Offline support: network first, cached copy when offline
+├── robots.txt, sitemap.xml
 ├── README.md             # Project documentation
 ├── design-system/
 │   └── tokens.json       # Design tokens: colours, type, spacing, radii, shadows (source of truth)
@@ -57,6 +63,7 @@ vahanaiq/
 ├── test/
 │   ├── verify.mjs                # App verification suite
 │   ├── tokens.test.mjs           # Design tokens are in sync and the only source of CSS variables
+│   ├── calculator.test.mjs       # Rentals, flat-rate conversion, legal down payments and schedules
 │   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
 │   └── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
 ├── .github/workflows/
@@ -76,7 +83,7 @@ vahanaiq/
 ## Running Locally
 For deterministic browser QA without calling Gemini, run `node test/serve-qa-fixtures.mjs` and open `http://127.0.0.1:8765`. Searches containing `compare`, `incomplete compare`, `mixed`, `seller`, `unavailable` or `transient` exercise the corresponding fixtures. This local server overrides the proxy URL only in the response it serves; it does not change the app configuration. `?qa-print` previews the print CSS as screen styles for layout checks; it does not emulate pagination or a physical printer.
 
-The v2.7.1 QA fixes preserve decimal currency amounts (including when saved or shared), reject missing/zero vehicle prices across individual, batch and saved-entry paths, explain incomplete AI comparisons, treat a zero maximum price as a real limit, and hide the budget legend without income. Search retries a transient upstream failure once on the same model and bounds each attempt to 30 seconds. The search proxy templates now require explicit discovery fields; redeploy the proxy to pick up their comparison-prompt changes.
+Search retries a transient upstream failure once on the same model and bounds each attempt to 30 seconds. After changing anything in `serverless/`, redeploy the proxy for the live site to pick it up.
 
 Run the regression suites with:
 ```bash
@@ -86,6 +93,7 @@ node test/proxy-price-mode.test.mjs
 node test/proxy-search.test.mjs
 node test/refresh-prices.test.mjs
 node test/tokens.test.mjs
+node test/calculator.test.mjs
 ```
 
 ### Changing colours, spacing, radii, shadows, sizes and timings
@@ -103,6 +111,14 @@ From `serverless/gcp-cloud-function/`:
 gcloud run deploy vahanaiq-search --source . --region asia-south1 --allow-unauthenticated --update-env-vars GEMINI_MODEL=gemini-3.6-flash
 ```
 The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. Upstream errors are written to the Cloud Run logs.
+
+The proxy protects its free Gemini allowance with three settings (the Cloudflare Worker reads the first two as Worker variables):
+
+- `ALLOWED_ORIGINS`: comma-separated sites whose browsers may call it (default `https://akila-w.github.io`). Requests from any other site's pages get 403. Add e.g. `http://localhost:8000` to test against the real proxy locally.
+- `RATE_LIMIT`: requests per client IP per 10 minutes on each instance (default 30). Over the limit, the proxy answers 429 `rate_limited`.
+- `PRICE_TOKEN`: when set, price mode answers only requests with a matching `X-Price-Token` header. Set the same value as the repository secret `PRICE_TOKEN`, which the price workflow and `scripts/refresh-prices.mjs` send.
+
+Screenshots must be JPEG, PNG, WebP or GIF and under about 4 MB, and error details sent to the browser are shortened.
 
 The same service has a second, **price mode** (`POST {"mode": "price", "queries": ["...", "..."]}`, up to 12 vehicles), used only by the monthly price refresh. It turns on Grounding with Google Search, so Gemini looks up current Sri Lankan prices instead of relying on its training data. It runs on its own model, set with the `PRICE_MODEL` environment variable (`gemini-2.5-flash-lite` by default), whose free daily allowance is separate from the app's. It returns `{ vehicles[], sources[], search_queries[], model }`, where each vehicle lists its trims with price, model year, basis, month and the site the price came from, and `sources` are the web pages Gemini cited. A quota error says whether the daily or per-minute limit was hit (`"quota": "daily"`). Requests without `mode` are handled exactly as before. To use a different model for the refresh, add `PRICE_MODEL=<model>` to `--update-env-vars`. On the free tier it has to be a Gemini 2.x or 2.5 model: AI Studio gives Gemini 3 and newer no free Google Search grounding, and `gemini-2.5-flash` is closed to new users. If Gemini refuses the model, the refresh stops after one request and says so.
 

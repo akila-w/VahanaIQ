@@ -6,6 +6,29 @@ const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 // Maps an upstream Gemini HTTP status to a short code the front end can act on.
 const errorCode = status => status === 429 ? 'quota' : status === 400 ? 'bad_request' : 'upstream_unavailable';
 
+// Browsers on other sites may not use this proxy: ALLOWED_ORIGINS is a comma-separated list
+// (default: the GitHub Pages site). Requests without an Origin header (servers, the monthly
+// price script) are allowed but still rate limited.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://akila-w.github.io').split(',').map(o => o.trim()).filter(Boolean);
+// Best-effort limit per client IP on each instance: RATE_LIMIT requests per 10 minutes
+const RATE_LIMIT = Number(process.env.RATE_LIMIT) || 30;
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const hits = new Map();
+// Screenshots: these types only, and at most about 4 MB of image data
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_IMAGE_BASE64 = 5600000;
+// Upstream messages are passed on for the client's retry logic, short and without key-like text
+const safeDetail = text => String(text || '').replace(/key=[^&\s]+/gi, 'key=[removed]').slice(0, 200);
+
+function rateLimited(ip) {
+  const now = Date.now();
+  const recent = (hits.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 5000) hits.delete(hits.keys().next().value);
+  return recent.length > RATE_LIMIT;
+}
+
 const VEHICLE_RESPONSE_SCHEMA = {
   type: 'OBJECT',
   properties: {
@@ -194,10 +217,17 @@ Reply with only a JSON object, no other text, in this shape:
 }
 
 functions.http('vehicleSearch', async (req, res) => {
+  const header = name => (req.headers && (req.headers[name] || (req.get && req.get(name)))) || '';
+  const origin = header('origin');
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    res.status(403).json({ error: 'forbidden', detail: 'This origin may not use the VahanaIQ search proxy' });
+    return;
+  }
   // CORS configuration
-  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Vary', 'Origin');
+  if (origin) res.set('Access-Control-Allow-Origin', origin);
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, X-Price-Token');
 
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
@@ -209,9 +239,23 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
+  const ip = String(header('x-forwarded-for') || req.ip || 'unknown').split(',')[0].trim();
+  if (rateLimited(ip)) {
+    res.status(429).json({ error: 'rate_limited', detail: 'Too many searches. Try again in a few minutes.' });
+    return;
+  }
+
   const { query, image } = req.body || {};
   if (!query && !image && req.body?.mode !== 'price') {
     res.status(400).json({ error: 'bad_request', detail: 'Missing query or image parameter' });
+    return;
+  }
+  if (image && (typeof image.data !== 'string' || !IMAGE_TYPES.includes(image.mimeType || 'image/jpeg'))) {
+    res.status(400).json({ error: 'bad_request', detail: 'Attach a JPEG, PNG, WebP or GIF screenshot' });
+    return;
+  }
+  if (image && image.data.length > MAX_IMAGE_BASE64) {
+    res.status(413).json({ error: 'image_too_large', detail: 'The screenshot is too large; attach one under 4 MB' });
     return;
   }
 
@@ -223,6 +267,11 @@ functions.http('vehicleSearch', async (req, res) => {
   }
 
   if (req.body?.mode === 'price') {
+    // Price mode is for the monthly refresh only: when PRICE_TOKEN is set, callers must send it
+    if (process.env.PRICE_TOKEN && header('x-price-token') !== process.env.PRICE_TOKEN) {
+      res.status(401).json({ error: 'unauthorised', detail: 'Price mode needs the X-Price-Token header' });
+      return;
+    }
     const queries = req.body.queries;
     if (!Array.isArray(queries) || !queries.length || queries.length > MAX_PRICE_QUERIES ||
         !queries.every(q => typeof q === 'string' && q.trim())) {
@@ -234,10 +283,10 @@ functions.http('vehicleSearch', async (req, res) => {
     } catch (e) {
       if (e.status) {
         console.error(`Gemini ${PRICE_MODEL} price lookup failed: HTTP ${e.status}: ${e.message}`);
-        res.status(502).json({ error: errorCode(e.status), detail: e.message, upstream_status: e.status, ...(e.quota ? { quota: e.quota } : {}) });
+        res.status(502).json({ error: errorCode(e.status), detail: safeDetail(e.message), upstream_status: e.status, ...(e.quota ? { quota: e.quota } : {}) });
       } else {
         console.error('Price lookup internal error:', e);
-        res.status(500).json({ error: 'internal', detail: e.message || 'Internal error' });
+        res.status(500).json({ error: 'internal', detail: 'Internal error' });
       }
     }
     return;
@@ -293,7 +342,7 @@ Instructions:
       const errJson = await geminiRes.json().catch(() => ({}));
       const detail = errJson.error?.message || `HTTP ${geminiRes.status}`;
       console.error(`Gemini ${MODEL} failed: HTTP ${geminiRes.status}: ${detail}`);
-      res.status(502).json({ error: errorCode(geminiRes.status), detail, upstream_status: geminiRes.status });
+      res.status(502).json({ error: errorCode(geminiRes.status), detail: safeDetail(detail), upstream_status: geminiRes.status });
       return;
     }
 
@@ -302,6 +351,6 @@ Instructions:
     res.json(JSON.parse(raw));
   } catch (e) {
     console.error('Proxy internal error:', e);
-    res.status(500).json({ error: 'internal', detail: e.message || 'Internal error' });
+    res.status(500).json({ error: 'internal', detail: 'Internal error' });
   }
 });

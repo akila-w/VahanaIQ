@@ -1,6 +1,6 @@
 # Catalogue batch verification — 20/10/2026
 
-Version: v2.8.0. Status: implemented and verified locally; not deployed. Catalogue coverage remains in progress.
+Version: v2.8.0. Status: deployed to GitHub Pages on 20/10/2026 (PR #10 onwards). Catalogue coverage remains in progress. This page records the checks run for that first batch.
 
 ## Data and migration
 

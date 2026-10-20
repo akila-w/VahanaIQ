@@ -13,9 +13,33 @@ const DEFAULT_MODEL = "gemini-3.6-flash";
 // Maps an upstream Gemini HTTP status to a short code the front end can act on.
 const errorCode = status => status === 429 ? "quota" : status === 400 ? "bad_request" : "upstream_unavailable";
 
-const json = (body, status = 200) => new Response(JSON.stringify(body), {
+// Browsers on other sites may not use this proxy: ALLOWED_ORIGINS (a Worker variable) is a
+// comma-separated list, defaulting to the GitHub Pages site. Requests without an Origin header
+// are allowed but still rate limited.
+const DEFAULT_ORIGINS = "https://akila-w.github.io";
+// Best-effort limit per client IP on each isolate: RATE_LIMIT requests per 10 minutes
+const RATE_WINDOW_MS = 10 * 60 * 1000;
+const hits = new Map();
+// Screenshots: these types only, and at most about 4 MB of image data
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_IMAGE_BASE64 = 5600000;
+// Upstream messages are passed on for the client's retry logic, short and without key-like text
+const safeDetail = text => String(text || "").replace(/key=[^&\s]+/gi, "key=[removed]").slice(0, 200);
+
+function rateLimited(ip, limit) {
+  const now = Date.now();
+  const recent = (hits.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
+  recent.push(now);
+  hits.set(ip, recent);
+  if (hits.size > 5000) hits.delete(hits.keys().next().value);
+  return recent.length > limit;
+}
+
+const corsHeaders = origin => origin ? { "Access-Control-Allow-Origin": origin, "Vary": "Origin" } : { "Vary": "Origin" };
+
+const json = (body, status = 200, origin = "") => new Response(JSON.stringify(body), {
   status,
-  headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+  headers: { "Content-Type": "application/json", ...corsHeaders(origin) }
 });
 
 const VEHICLE_RESPONSE_SCHEMA = {
@@ -125,11 +149,17 @@ const VEHICLE_RESPONSE_SCHEMA = {
 
 export default {
   async fetch(request, env) {
+    const allowed = (env.ALLOWED_ORIGINS || DEFAULT_ORIGINS).split(",").map(o => o.trim()).filter(Boolean);
+    const origin = request.headers.get("Origin") || "";
+    if (origin && !allowed.includes(origin)) {
+      return json({ error: "forbidden", detail: "This origin may not use the VahanaIQ search proxy" }, 403);
+    }
+
     // CORS Preflight
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
-          "Access-Control-Allow-Origin": "*",
+          ...corsHeaders(origin),
           "Access-Control-Allow-Methods": "POST, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type",
           "Access-Control-Max-Age": "86400"
@@ -138,20 +168,31 @@ export default {
     }
 
     if (request.method !== "POST") {
-      return json({ error: "bad_request", detail: "Method not allowed" }, 405);
+      return json({ error: "bad_request", detail: "Method not allowed" }, 405, origin);
+    }
+
+    const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (rateLimited(ip, Number(env.RATE_LIMIT) || 30)) {
+      return json({ error: "rate_limited", detail: "Too many searches. Try again in a few minutes." }, 429, origin);
     }
 
     try {
       const body = await request.json();
       const { query, image } = body || {};
       if (!query && !image) {
-        return json({ error: "bad_request", detail: "Missing query or image parameter" }, 400);
+        return json({ error: "bad_request", detail: "Missing query or image parameter" }, 400, origin);
+      }
+      if (image && (typeof image.data !== "string" || !IMAGE_TYPES.includes(image.mimeType || "image/jpeg"))) {
+        return json({ error: "bad_request", detail: "Attach a JPEG, PNG, WebP or GIF screenshot" }, 400, origin);
+      }
+      if (image && image.data.length > MAX_IMAGE_BASE64) {
+        return json({ error: "image_too_large", detail: "The screenshot is too large; attach one under 4 MB" }, 413, origin);
       }
 
       const apiKey = env.GEMINI_API_KEY;
       if (!apiKey) {
         console.error("GEMINI_API_KEY secret is not configured");
-        return json({ error: "internal", detail: "Platform GEMINI_API_KEY secret not configured on proxy" }, 500);
+        return json({ error: "internal", detail: "Platform GEMINI_API_KEY secret not configured on proxy" }, 500, origin);
       }
 
       const systemPrompt = "You are an expert Sri Lankan automotive market analyst and finance assessor. Evaluate vehicles based on actual Sri Lankan road regulations and active market availability (official franchise dealers like AMW, DIMO, John Keells CG, Stafford; Japanese auction grey market imports; or registered local fleet). Return strictly valid JSON conforming to the requested schema.";
@@ -204,23 +245,17 @@ Instructions:
         const errJson = await geminiRes.json().catch(() => ({}));
         const detail = errJson.error?.message || `HTTP ${geminiRes.status}`;
         console.error(`Gemini ${model} failed: HTTP ${geminiRes.status}: ${detail}`);
-        return json({ error: errorCode(geminiRes.status), detail, upstream_status: geminiRes.status }, 502);
+        return json({ error: errorCode(geminiRes.status), detail: safeDetail(detail), upstream_status: geminiRes.status }, 502, origin);
       }
 
       const data = await geminiRes.json();
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       const parsed = JSON.parse(rawText);
 
-      return new Response(JSON.stringify(parsed), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
-        }
-      });
+      return json(parsed, 200, origin);
     } catch (err) {
       console.error("Proxy internal error:", err);
-      return json({ error: "internal", detail: err.message || "Internal server error" }, 500);
+      return json({ error: "internal", detail: "Internal server error" }, 500, origin);
     }
   }
 };
