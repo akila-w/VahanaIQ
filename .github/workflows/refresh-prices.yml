@@ -5,10 +5,11 @@
 name: Refresh catalogue prices
 
 on:
-  schedule:
-    # 08:30 UTC (14:00 in Sri Lanka) on the 1st: just after Gemini's free daily limits
-    # reset at midnight Pacific time (07:00 or 08:00 UTC), so a full day's allowance is left
-    - cron: "30 8 1 * *"
+  # Monthly schedule paused (20/10/2026): no free Gemini model on this project can use
+  # Google Search any more, so a scheduled run would only fail. Manual runs still work.
+  # To resume, restore:
+  # schedule:
+  #   - cron: "30 8 1 * *"  # 08:30 UTC (14:00 in Sri Lanka), after the free daily reset
   workflow_dispatch:
     inputs:
       dry_run:
