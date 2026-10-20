@@ -67,6 +67,19 @@ vahanaiq/
 ```
 
 ## Running Locally
+For deterministic browser QA without calling Gemini, run `node test/serve-qa-fixtures.mjs` and open `http://127.0.0.1:8765`. Searches containing `compare`, `incomplete compare`, `mixed`, `seller`, `unavailable` or `transient` exercise the corresponding fixtures. This local server overrides the proxy URL only in the response it serves; it does not change the app configuration. `?qa-print` previews the print CSS as screen styles for layout checks; it does not emulate pagination or a physical printer.
+
+The v2.7.1 QA fixes preserve decimal currency amounts (including when saved or shared), reject missing/zero vehicle prices across individual, batch and saved-entry paths, explain incomplete AI comparisons, treat a zero maximum price as a real limit, and hide the budget legend without income. Search retries a transient upstream failure once on the same model and bounds each attempt to 30 seconds. The search proxy templates now require explicit discovery fields; redeploy the proxy to pick up their comparison-prompt changes.
+
+Run the regression suites with:
+```bash
+node test/verify.mjs
+node test/qa-regressions.test.mjs
+node test/proxy-price-mode.test.mjs
+node test/proxy-search.test.mjs
+node test/refresh-prices.test.mjs
+```
+
 To run VahanaIQ locally with full ES module support:
 ```bash
 python3 -m http.server 8000

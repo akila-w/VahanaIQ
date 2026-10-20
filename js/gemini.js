@@ -1,5 +1,6 @@
 // Vehicle search through the VahanaIQ proxy, which holds the Gemini key and model choice
-import { getProxyUrl } from "./storage.js?v=2.7.0";
+import { getProxyUrl } from "./storage.js?v=2.7.1";
+import { expectsComparison, validateSearchResponse } from "./vehicle-validation.js?v=2.7.1";
 
 export const VEHICLE_RESPONSE_SCHEMA = {
   type: "OBJECT",
@@ -96,6 +97,8 @@ export const VEHICLE_RESPONSE_SCHEMA = {
   },
   required: [
     "is_available_in_sri_lanka",
+    "is_multi_vehicle",
+    "discovered_vehicles",
     "model_name",
     "wikipedia_slug",
     "availability_notes",
@@ -107,14 +110,28 @@ export const VEHICLE_RESPONSE_SCHEMA = {
 export async function searchVehicle(query, imageObj = null) {
   const proxy = getProxyUrl();
   if (!proxy) throw new Error("No search proxy configured");
-  const res = await fetch(proxy, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, image: imageObj })
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(`${err.error || "http_error"}: ${err.detail || "HTTP " + res.status}`);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30000);
+    try {
+      const res = await fetch(proxy, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, image: imageObj, comparison: expectsComparison(query) }),
+        signal: controller.signal
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const busy = err.error === "upstream_unavailable" &&
+          ([503, 504].includes(err.upstream_status) || /high demand/i.test(err.detail || ""));
+        if (attempt === 0 && busy) continue; // One retry on the same model; never retry a quota error.
+        const error = new Error(`${err.error || "http_error"}: ${err.detail || "HTTP " + res.status}`);
+        error.code = err.error;
+        throw error;
+      }
+      return validateSearchResponse(await res.json(), query);
+    } finally {
+      clearTimeout(timer);
+    }
   }
-  return await res.json();
 }

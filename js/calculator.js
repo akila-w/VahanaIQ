@@ -3,6 +3,8 @@
 // at most 40% financed for unregistered cars and cars registered under a year (60% down),
 // at most 60% financed for cars registered over a year (40% down).
 
+import { parseMoneyText } from "./money-input.js?v=2.7.1";
+
 export const DOWN_MIN = 40;          // lowest down payment any car can have (registered over a year)
 export const DOWN_MIN_UNREG = 60;    // brand new, reconditioned and recently registered cars
 
@@ -13,9 +15,7 @@ export const num = id => {
   const raw = el && typeof el === "object" && "value" in el ? el.value : id;
   if (typeof raw === "number") return isFinite(raw) ? raw : NaN;
   if (raw === null || raw === undefined || raw === "") return NaN;
-  const clean = String(raw).replace(/,/g, "").trim();
-  const v = parseFloat(clean);
-  return isFinite(v) ? v : NaN;
+  return parseMoneyText(raw);
 };
 
 export function rental(loan, rate, n) {

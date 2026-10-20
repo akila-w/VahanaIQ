@@ -1,5 +1,5 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, DOWN_MIN } from "./calculator.js?v=2.7.0";
+import { num, getSettings, DOWN_MIN } from "./calculator.js?v=2.7.1";
 
 const STORE_KEY = "vahanaiq_inputs_v1";
 
@@ -23,8 +23,8 @@ const RULES = {
   rate: { key: "rate", check: v => v === "" ? "Enter an interest rate." : !(num(v) >= 0 && num(v) <= 40) ? "Enter a rate between 0 and 40%." : "" },
   tenure: { key: "n", check: v => v === "" || !isFinite(num(v)) ? "Enter a tenure in months." : "", snap: true },
   down: { key: "down", check: v => v === "" || !isFinite(num(v)) ? "Enter a down payment percentage." : "", snap: true },
-  income: { key: "income", check: v => v !== "" && !isFinite(num(v)) ? "Enter an amount in rupees." : num(v) < 0 ? "Income can't be negative." : "" },
-  debt: { key: "debt", check: v => v !== "" && !isFinite(num(v)) ? "Enter an amount in rupees." : num(v) < 0 ? "Payments can't be negative." : "" },
+  income: { key: "income", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Income can't be negative." : "" },
+  debt: { key: "debt", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Payments can't be negative." : "" },
   maxprice: { check: v => v !== "" && !isFinite(num(v)) ? "Enter a price in millions." : num(v) < 0 ? "Enter a price of 0 or more." : "" }
 };
 

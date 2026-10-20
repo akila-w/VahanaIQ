@@ -1,20 +1,22 @@
-import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.7.0";
-import { baseVehicles, catalogMeta } from "./catalog.js?v=2.7.0";
-import { APP_VERSION } from "./config.js?v=2.7.0";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.7.0";
-import { searchVehicle } from "./gemini.js?v=2.7.0";
-import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.7.0";
-import { clearLegacyKeys, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.7.0";
-import { openModal, closeModal } from "./modal.js?v=2.7.0";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.7.0";
-import { showToast } from "./toast.js?v=2.7.0";
-import { attachMoneyInput } from "./money-input.js?v=2.7.0";
+import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.7.1";
+import { baseVehicles, catalogMeta } from "./catalog.js?v=2.7.1";
+import { APP_VERSION } from "./config.js?v=2.7.1";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.7.1";
+import { searchVehicle } from "./gemini.js?v=2.7.1";
+import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.7.1";
+import { clearLegacyKeys, cloneBaseCars, loadSavedCars, saveCars } from "./storage.js?v=2.7.1";
+import { openModal, closeModal } from "./modal.js?v=2.7.1";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.7.1";
+import { showToast } from "./toast.js?v=2.7.1";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.7.1";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.7.1";
 
 clearLegacyKeys();
 
 const $ = id => document.getElementById(id);
 
-let cars = loadSavedCars(baseVehicles);
+let invalidSavedCount = 0;
+let cars = loadSavedCars(baseVehicles, count => { invalidSavedCount = count; });
 let sortKey = "price", sortDir = -1;
 let currentAiData = null;
 let currentAiImgSrc = "";
@@ -211,7 +213,8 @@ function render() {
   }
 
   // Filters
-  const maxP = num("maxprice") > 0 ? num("maxprice") * 1e6 : Infinity;
+  const maxValue = num("maxprice");
+  const maxP = Number.isFinite(maxValue) && maxValue >= 0 ? maxValue * 1e6 : Infinity;
   const wFilter = $("warr").value;
   const cFilter = $("condFilter").value;
   const affordVal = $("afford").value;
@@ -363,7 +366,7 @@ function applyState(state) {
     const el = $(id);
     if (!el) continue;
     if (el.tagName === "SELECT" && el.options && el.options.length && ![...el.options].some(o => o.value === v)) continue;
-    el.value = (id === "income" || id === "debt") && v !== "" && isFinite(num(v)) ? fmt(num(v)) : v;
+    el.value = (id === "income" || id === "debt") && v !== "" ? formatMoneyText(v) : v;
   }
 }
 
@@ -418,8 +421,16 @@ function assignKey(c) {
 }
 cars.forEach(assignKey);
 
-function addCar(car) {
-  cars.push(assignKey(car));
+function addCars(batch) {
+  const error = vehicleBatchError(batch);
+  if (error) { showVehicleError(error); return false; }
+  cars.push(...batch.map(assignKey));
+  return true;
+}
+
+function showVehicleError(message) {
+  $("aiSearchMsg").textContent = message;
+  $("aiSearchMsg").classList.add("msg-error");
 }
 
 const indexOfKey = key => cars.findIndex(c => c._key === key);
@@ -483,7 +494,7 @@ function startPriceEdit(btn, car) {
   input.type = "text";
   input.className = "inline-price-input";
   input.inputMode = "numeric";
-  input.value = fmt(car.price);
+  input.value = formatMoneyText(String(car.price));
   input.setAttribute("aria-label", `Price for ${car.name}`);
   wrap.hidden = true;
   wrap.after(input);
@@ -617,12 +628,16 @@ $("aiModal").addEventListener("paste", e => {
 
 // Search execution
 $("aiSearchBtn").addEventListener("click", async () => {
+  if ($("aiSearchBtn").disabled) return;
   const query = $("aiSearchQuery").value.trim();
   if (!query && !pendingAdImage) {
     $("aiSearchMsg").textContent = "Please enter a vehicle name, paste an ad, or attach a screenshot.";
     return;
   }
   $("aiSearchMsg").innerHTML = '<span class="spin"></span>Analyzing Sri Lankan market availability, trims, and valuations...';
+  $("aiSearchMsg").classList.remove("msg-error");
+  $("aiSearchBtn").disabled = true;
+  $("paneAi").setAttribute("aria-busy", "true");
   $("aiUnavailBox").hidden = true;
   $("aiResultForm").hidden = true;
   $("aiDiscoveryBox").hidden = true;
@@ -630,16 +645,25 @@ $("aiSearchBtn").addEventListener("click", async () => {
   try {
     const parsed = await searchVehicle(query, pendingAdImage);
     currentAiData = parsed;
-    renderAiResults(parsed);
+    renderAiResults(parsed).catch(error => {
+      console.error("AI result could not be displayed:", error);
+      showSearchUnavailable(error);
+    });
   } catch (e) {
     console.error("AI vehicle search failed:", e);
-    showSearchUnavailable();
+    showSearchUnavailable(e);
+  } finally {
+    $("aiSearchBtn").disabled = false;
+    $("paneAi").removeAttribute("aria-busy");
   }
 });
 
 // Friendly fallback when AI search fails: offer manual entry instead of the raw error
-function showSearchUnavailable() {
-  $("aiSearchMsg").innerHTML = `<span class="msg-error">AI search isn't available right now. You can still add the car yourself.</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter details manually</button>`;
+function showSearchUnavailable(error) {
+  const message = error?.code === "incomplete_comparison"
+    ? "AI did not return a complete comparison. Search again or add each vehicle separately."
+    : "AI search isn't available right now. Try again or add the car yourself.";
+  $("aiSearchMsg").innerHTML = `<span class="msg-error">${message}</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter details manually</button>`;
   $("goManualBtn").addEventListener("click", () => {
     selectTab("manual");
     if (!$("mName").value) $("mName").value = $("aiSearchQuery").value.trim().slice(0, 120);
@@ -649,6 +673,7 @@ function showSearchUnavailable() {
 
 async function renderAiResults(data) {
   $("aiSearchMsg").textContent = "";
+  $("aiSearchMsg").classList.remove("msg-error");
 
   // 1. Multi-vehicle discovery / comparative query
   if (data.is_multi_vehicle && Array.isArray(data.discovered_vehicles) && data.discovered_vehicles.length > 1) {
@@ -695,8 +720,9 @@ async function renderAiResults(data) {
   $("aiImgUrl").value = "";
   try {
     const fetchedImg = await fetchVehicleStudioImage(modelName, wikiSlug);
-    if (fetchedImg) {
+    if (fetchedImg && currentAiData === data) {
       normalizeImageToStudio(fetchedImg, procImg => {
+        if (currentAiData !== data) return;
         setAiImgPreview(procImg || fetchedImg);
         $("aiImgUrl").value = procImg || fetchedImg;
       });
@@ -743,12 +769,6 @@ function updateConditionAndSpecs() {
   $("aiKmInput").value = tData.fuel_economy_kml || "";
   $("aiWarrSelect").value = tData.warranty_type === "Official" ? "Official" : "Grey";
 
-  const condPrices = tData.condition_prices || {};
-  const baseP = condPrices.brand_new || 0;
-  const recondP = condPrices.recond || Math.round(baseP * 0.88);
-  const usedLowP = condPrices.used_low || Math.round(baseP * 0.75);
-  const usedMedP = condPrices.used_med || Math.round(baseP * 0.65);
-
   const options = [];
 
   // If seller price was extracted from classified ad / auction sheet
@@ -765,13 +785,14 @@ function updateConditionAndSpecs() {
   }
 
   options.push(
-    { id: "brand_new", name: "Brand New (Unregistered) - 0 km", price: baseP, c: "New" },
-    { id: "recond", name: "Reconditioned (Grade 4.5+) - Under 25k km", price: recondP, c: "Recond" },
-    { id: "used_low", name: "Registered Used (< 50,000 km)", price: usedLowP, c: "Used" },
-    { id: "used_med", name: "Registered Used (50,000 - 100,000 km)", price: usedMedP, c: "Used" }
+    { id: "brand_new", name: "Brand New (Unregistered) - 0 km", c: "New" },
+    { id: "recond", name: "Reconditioned (Grade 4.5+) - Under 25k km", c: "Recond" },
+    { id: "used_low", name: "Registered Used (< 50,000 km)", c: "Used" },
+    { id: "used_med", name: "Registered Used (50,000 - 100,000 km)", c: "Used" }
   );
-
-  $("aiCondSelect").innerHTML = options.map(o => `<option value="${o.id}" data-p="${o.price}" data-c="${o.c}" ${o.selected ? "selected" : ""}>${o.name} - Rs. ${fmt(o.price)}</option>`).join("");
+  for (const option of options) option.price = conditionPrice(tData, option.id, sellerP);
+  const selected = options.find(o => o.selected && validPrice(o.price)) || options.find(o => validPrice(o.price)) || options[0];
+  $("aiCondSelect").innerHTML = options.map(o => `<option value="${o.id}" data-p="${validPrice(o.price) ? o.price : ""}" data-c="${o.c}" ${o === selected ? "selected" : ""}>${o.name} - ${validPrice(o.price) ? "Rs. " + fmt(o.price) : "Price unavailable — enter a price"}</option>`).join("");
   updateSelectedPrice();
 }
 
@@ -779,6 +800,9 @@ function updateSelectedPrice() {
   const selOpt = $("aiCondSelect").selectedOptions[0];
   const p = +selOpt?.dataset.p || 0;
   $("aiPriceInput").value = p ? fmt(p) : "";
+  $("aiPriceInput").removeAttribute("aria-invalid");
+  $("aiSearchMsg").textContent = "";
+  $("aiSearchMsg").classList.remove("msg-error");
 }
 
 $("aiYearSelect").addEventListener("change", updateTrimDropdown);
@@ -836,7 +860,12 @@ $("aiConfirmAddBtn").addEventListener("click", () => {
   const modelName = currentAiData.model_name || $("aiSearchQuery").value.trim();
   const fullName = formatVehicleTitle(modelName, trimName, yr);
   const price = num($("aiPriceInput").value);
-  if (!(price > 0)) { alert("Please enter a valid price in LKR."); return; }
+  if (!validPrice(price)) {
+    showVehicleError("Enter a valid price greater than zero before adding this vehicle.");
+    $("aiPriceInput").setAttribute("aria-invalid", "true");
+    $("aiPriceInput").focus();
+    return;
+  }
   const condOpt = $("aiCondSelect").selectedOptions[0];
   const cond = condOpt?.dataset.c || "New";
   const w = $("aiWarrSelect").value;
@@ -844,7 +873,7 @@ $("aiConfirmAddBtn").addEventListener("click", () => {
   const pt = tData.powertrain || "";
 
   normalizeImageToStudio(currentAiImgSrc, procImg => {
-    addCar({
+    if (!addCars([{
       name: fullName,
       pt: pt,
       km: km,
@@ -853,7 +882,7 @@ $("aiConfirmAddBtn").addEventListener("click", () => {
       cond: cond,
       img: procImg,
       custom: true
-    });
+    }])) return;
     saveCars(cars);
     render();
     closeAiModal();
@@ -874,27 +903,23 @@ $("aiAddAllTrimsBtn").addEventListener("click", () => {
   const condId = $("aiCondSelect").value;
   const cond = condOpt?.dataset.c || "New";
 
+  if (condId === "seller_price" && trims.length > 1) {
+    showVehicleError("The listed price applies to this vehicle only. Add it individually or select a market condition for all trims.");
+    return;
+  }
+  const batch = trims.map(t => ({
+    name: formatVehicleTitle(modelName, t.trim_name, yr),
+    pt: t.powertrain || "",
+    km: t.fuel_economy_kml || "",
+    w: t.warranty_type || "Grey",
+    price: conditionPrice(t, condId, currentAiData?.seller_price_lkr),
+    cond, custom: true
+  }));
+  const error = vehicleBatchError(batch);
+  if (error) { showVehicleError(error + " Select another condition or add trims individually with a price."); return; }
+
   normalizeImageToStudio(currentAiImgSrc, procImg => {
-    trims.forEach(t => {
-      const fullName = formatVehicleTitle(modelName, t.trim_name, yr);
-      const condPrices = t.condition_prices || {};
-      let p = 0;
-      if (condId === "seller_price") {
-        p = currentAiData?.seller_price_lkr || condPrices.brand_new || 0;
-      } else {
-        p = condPrices[condId] || condPrices.brand_new || 0;
-      }
-      addCar({
-        name: fullName,
-        pt: t.powertrain || "",
-        km: t.fuel_economy_kml || "",
-        w: t.warranty_type || "Grey",
-        price: p,
-        cond: cond,
-        img: procImg,
-        custom: true
-      });
-    });
+    if (!addCars(batch.map(car => ({ ...car, img: procImg })))) return;
     saveCars(cars);
     render();
     closeAiModal();
@@ -971,16 +996,18 @@ $("aiToggleSelectAllBtn").addEventListener("click", () => {
 
 $("aiDiscoveryBackBtn").addEventListener("click", () => {
   $("aiDiscoveryBox").hidden = true;
-  $("aiResultForm").hidden = false;
+  $("aiResultForm").hidden = true;
+  $("aiSearchQuery").focus();
 });
 
 $("aiAddSelectedBtn").addEventListener("click", () => {
   const checks = document.querySelectorAll(".disc-check:checked");
   if (!checks.length) {
-    alert("Please select at least one vehicle to add.");
+    showVehicleError("Select at least one vehicle to add.");
     return;
   }
 
+  const batch = [];
   for (const c of checks) {
     const idx = +c.dataset.idx;
     const v = currentDiscoveredVehicles[idx];
@@ -989,7 +1016,7 @@ $("aiAddSelectedBtn").addEventListener("click", () => {
     const thumbEl = $(`discThumb${idx}`);
     const rawImg = thumbEl?.getAttribute("src") || "";
 
-    addCar({
+    batch.push({
       name: title,
       pt: v.powertrain || "",
       km: v.fuel_economy_kml || "",
@@ -1001,6 +1028,7 @@ $("aiAddSelectedBtn").addEventListener("click", () => {
     });
   }
 
+  if (!addCars(batch)) return;
   saveCars(cars);
   render();
   closeAiModal();
@@ -1027,7 +1055,7 @@ $("mAddBtn").addEventListener("click", () => {
   const name = $("mName").value.trim();
   const price = num($("mPrice").value);
   if (!name) { setManualError("mName", "Enter a vehicle name."); return; }
-  if (!(price > 0)) { setManualError("mPrice", "Enter a price greater than zero."); return; }
+  if (!validPrice(price)) { setManualError("mPrice", "Enter a valid price greater than zero."); return; }
   setManualError(null, "");
   const cond = $("mCond").value;
   const w = $("mWarr").value;
@@ -1035,7 +1063,7 @@ $("mAddBtn").addEventListener("click", () => {
   const rawImg = $("mImgUrl").value.trim();
 
   normalizeImageToStudio(rawImg, procImg => {
-    addCar({
+    if (!addCars([{
       name: name,
       pt: pt,
       km: "",
@@ -1044,7 +1072,7 @@ $("mAddBtn").addEventListener("click", () => {
       cond: cond,
       img: procImg,
       custom: true
-    });
+    }])) return;
     saveCars(cars);
     render();
     $("mName").value = ""; $("mPrice").value = ""; $("mImgUrl").value = "";
@@ -1098,3 +1126,4 @@ $("appVersion").textContent = APP_VERSION;
 
 applyState(loadState());
 render();
+if (invalidSavedCount) showToast("Some saved vehicles had invalid prices and were left out. Add them again with a valid price.");

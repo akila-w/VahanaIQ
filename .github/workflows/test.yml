@@ -1,0 +1,26 @@
+name: Verify VahanaIQ
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Run regression suites without external services
+        run: |
+          node test/verify.mjs
+          node test/qa-regressions.test.mjs
+          node test/proxy-search.test.mjs
+          node test/proxy-price-mode.test.mjs
+          node test/refresh-prices.test.mjs
