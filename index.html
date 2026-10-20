@@ -21,9 +21,9 @@
   <link rel="canonical" href="https://akila-w.github.io/vahanaiq/">
   <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/tokens.css?v=2.8.0">
-  <link rel="stylesheet" href="css/style.css?v=2.8.0">
-  <script type="module" src="js/app.js?v=2.8.0"></script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.8.1">
+  <link rel="stylesheet" href="css/style.css?v=2.8.1">
+  <script type="module" src="js/app.js?v=2.8.1"></script>
 </head>
 <body>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
@@ -165,7 +165,7 @@
       <span id="priceAsOf">Confirm prices and stock with the seller</span>
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
-      <span>VahanaIQ v<span id="appVersion">2.8.0</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.8.1</span></span>
     </p>
   </footer>
 </main>
@@ -221,28 +221,28 @@
       <div class="ai-search-bar">
         <textarea id="aiSearchQuery" rows="3" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." aria-label="Search vehicle with Gemini AI or paste advertisement"></textarea>
         <div class="ai-search-actions">
-          <button class="btn" id="aiSearchBtn" type="button" style="white-space:nowrap">✨ Search</button>
-          <label class="btn-outline btn-sm file-btn" id="aiUploadAdBtn" style="white-space:nowrap;margin:0" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
+          <button class="btn" id="aiSearchBtn" type="button">✨ Search</button>
+          <label class="btn-outline btn-sm file-btn" id="aiUploadAdBtn" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
             📷 Ad / Sheet
             <input id="aiAdFile" class="sr-only" type="file" accept="image/*">
           </label>
         </div>
       </div>
-      <div id="aiAttachedAdBox" class="callout callout-info" style="display:none;align-items:center;justify-content:space-between;padding:6px 12px;margin-bottom:8px">
+      <div id="aiAttachedAdBox" class="callout callout-info attached-ad" hidden>
         <span id="aiAttachedAdLabel">📷 Ad / Auction sheet screenshot attached</span>
-        <button type="button" class="link" id="aiRemoveAdImgBtn" style="font-size:0.8rem">Remove</button>
+        <button type="button" class="link" id="aiRemoveAdImgBtn">Remove</button>
       </div>
       <p class="hint ai-note">Search runs through VahanaIQ's server using Google Gemini. Prices are estimates; check them before relying on them.</p>
-      <div id="aiSearchMsg" class="hint" role="status" aria-live="polite" aria-atomic="true" style="min-height:18px;margin-bottom:8px"></div>
+      <div id="aiSearchMsg" class="hint ai-search-msg" role="status" aria-live="polite" aria-atomic="true"></div>
 
       <!-- DISCOVERY / COMPARATIVE CHECKLIST BOX -->
       <div id="aiDiscoveryBox" hidden>
-        <div class="callout callout-info" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="callout callout-info discovery-head">
           <b id="aiDiscoveryTitle">Discovered Vehicles</b>
-          <button class="link-btn" id="aiToggleSelectAllBtn" type="button" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:600;font-size:0.82rem">Select All / None</button>
+          <button class="link-btn" id="aiToggleSelectAllBtn" type="button">Select All / None</button>
         </div>
-        <div id="aiDiscoveryList" class="discovery-list" style="display:flex;flex-direction:column;gap:8px;max-height:45vh;overflow-y:auto;margin-bottom:14px"></div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div id="aiDiscoveryList" class="discovery-list"></div>
+        <div class="discovery-actions">
           <button class="btn-outline" id="aiDiscoveryBackBtn" type="button">Back</button>
           <button class="btn" id="aiAddSelectedBtn" type="button">Add selected to comparison</button>
         </div>
@@ -253,12 +253,12 @@
 
       <!-- RESULT FORM -->
       <div id="aiResultForm" hidden>
-        <div class="callout callout-info" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div class="callout callout-info result-status">
           <div><b>Sri Lanka Market Status:</b> <span id="aiAvailNotes">Available</span></div>
           <span id="aiRouteBadge" class="callout-badge badge-official">Official</span>
         </div>
 
-        <div class="grid" style="margin-bottom:12px">
+        <div class="grid field-group">
           <div>
             <label for="aiYearSelect">Model Year</label>
             <select id="aiYearSelect"></select>
@@ -273,7 +273,7 @@
           </div>
         </div>
 
-        <div class="grid" style="margin-bottom:12px">
+        <div class="grid field-group">
           <div>
             <label for="aiPriceInput">Price in LKR <button type="button" class="link-btn" id="aiResetPriceBtn" aria-label="Reset price to the AI estimate">↺ reset</button></label>
             <input id="aiPriceInput" type="text" inputmode="decimal" autocomplete="off">
@@ -296,19 +296,19 @@
           <div class="preview-box">
             <img class="pimg" id="aiImgPreview" alt="Preview of the vehicle photo" hidden>
             <div>
-              <input id="aiImgUrl" type="url" placeholder="Studio image URL..." aria-label="Studio photo image URL" style="font-size:0.82rem;margin-bottom:6px">
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <label class="btn-outline btn-sm file-btn" style="margin:0">
+              <input id="aiImgUrl" class="preview-url" type="url" placeholder="Studio image URL..." aria-label="Studio photo image URL">
+              <div class="preview-actions">
+                <label class="btn-outline btn-sm file-btn">
                   📁 Upload photo
                   <input id="aiImgFile" class="sr-only" type="file" accept="image/*">
                 </label>
-                <span class="hint" style="margin:0">Automatically centred on 8:5 white studio plate</span>
+                <span class="hint">Automatically centred on 8:5 white studio plate</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div style="margin-top:16px;display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:8px">
+        <div class="modal-actions">
           <button class="btn-outline" id="aiCancelBtn" type="button">Cancel</button>
           <button class="btn-outline" id="aiAddAllTrimsBtn" type="button">Add all trims for <span id="aiTrimsYearLabel">2024</span></button>
           <button class="btn" id="aiConfirmAddBtn" type="button">Add to comparison</button>
@@ -318,8 +318,8 @@
 
     <!-- QUICK MANUAL PANE -->
     <div id="paneManual" role="tabpanel" aria-labelledby="tabManualBtn" hidden>
-      <div class="grid" style="margin-bottom:12px">
-        <div style="grid-column:span 2"><label for="mName">Vehicle Name &amp; Trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
+      <div class="grid field-group">
+        <div class="grid-span-2"><label for="mName">Vehicle Name &amp; Trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
         <div><label for="mPrice">Price in LKR</label><input id="mPrice" type="text" placeholder="e.g. 18,500,000.00" inputmode="decimal" autocomplete="off"></div>
         <div><label for="mCond">Condition</label><select id="mCond"><option value="New">Brand New</option><option value="Recond">Reconditioned</option><option value="Used">Registered Used</option></select></div>
         <div><label for="mWarr">Warranty</label><select id="mWarr"><option value="Grey">Grey market</option><option value="Official">Official</option></select></div>
@@ -329,7 +329,7 @@
         <label for="mImgUrl">Photo URL (optional)</label>
         <input id="mImgUrl" type="url" placeholder="https://...">
       </div>
-      <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px">
+      <div class="modal-actions">
         <button class="btn-outline" id="mCancelBtn" type="button">Cancel</button>
         <button class="btn" id="mAddBtn" type="button">Add vehicle</button>
       </div>

@@ -112,7 +112,7 @@ The product loads no web fonts.
 ## 5. UI Components & Dark Mode Integration
 
 ### Design Tokens
-[`design-system/tokens.json`](../design-system/tokens.json) is the single source for colours, shadows, spacing, radii, sizes, opacity, layers and the font stack. `scripts/build-tokens.mjs` writes them to `css/tokens.css` as CSS custom properties. `index.html` loads that file before `css/style.css`, which only reads the variables.
+[`design-system/tokens.json`](../design-system/tokens.json) is the single source for colours, shadows, spacing, radii, sizes, opacity, timings, layers and the font stack. `scripts/build-tokens.mjs` writes them to `css/tokens.css` as CSS custom properties. `index.html` loads that file before `css/style.css`, which only reads the variables.
 
 ```bash
 node scripts/build-tokens.mjs           # after editing tokens.json
@@ -123,7 +123,13 @@ Padding, margins and gaps use the spacing scale (`--space-2` to `--space-40`). T
 
 Disabled buttons (`.btn`, `.btn-outline`) drop to `--opacity-disabled` (0.6), show a not-allowed cursor and skip their hover change.
 
-`test/tokens.test.mjs` (run in CI) fails if `css/tokens.css` is stale, if `css/style.css` declares its own custom properties, or if it reads a variable the tokens don't define.
+Motion uses `--duration-fast` (0.15s: modal fade, discovery hover), `--duration-base` (0.2s: toast) and `--duration-spin` (0.8s: spinner), eased with `--easing-standard`. `prefers-reduced-motion: reduce` switches all of it off.
+
+The print quotation's own colours are Print-theme tokens too: `--print-head-ink` for table headers, `--print-rule` for row dividers and `--print-field-bg` for inputs. The brand badge and rental-bar track take their Print values of `--badge-bg`, `--badge-ink` and `--bar`.
+
+Markup carries no inline styles. Every element is styled by a class in `css/style.css`, so a token change reaches it. The only exceptions are values computed at runtime: a rental bar's width and the position of its affordability tick.
+
+`test/tokens.test.mjs` (run in CI) fails if `css/tokens.css` is stale, if `css/style.css` declares its own custom properties, if it reads a variable the tokens don't define, or if `index.html` or `js/` adds an inline style.
 
 The generated themes:
 - **Light** is the default on `:root`.

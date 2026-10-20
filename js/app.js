@@ -1,16 +1,16 @@
-import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.0";
-import { baseVehicles } from "./catalog.js?v=2.8.0";
-import { initCatalogue } from "./catalogue-browser.js?v=2.8.0";
-import { APP_VERSION } from "./config.js?v=2.8.0";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.8.0";
-import { searchVehicle } from "./gemini.js?v=2.8.0";
-import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.8.0";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.8.0";
-import { openModal, closeModal } from "./modal.js?v=2.8.0";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.8.0";
-import { showToast } from "./toast.js?v=2.8.0";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.8.0";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.8.0";
+import { fmt, esc, num, computeLeaseTable, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.1";
+import { baseVehicles } from "./catalog.js?v=2.8.1";
+import { initCatalogue } from "./catalogue-browser.js?v=2.8.1";
+import { APP_VERSION } from "./config.js?v=2.8.1";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.8.1";
+import { searchVehicle } from "./gemini.js?v=2.8.1";
+import { fetchVehicleStudioImage } from "./image-fetcher.js?v=2.8.1";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.8.1";
+import { openModal, closeModal } from "./modal.js?v=2.8.1";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.8.1";
+import { showToast } from "./toast.js?v=2.8.1";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.8.1";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.8.1";
 
 clearLegacyKeys();
 
@@ -72,7 +72,7 @@ const cols = [
 
 const condLabels = { New: "Brand New", Recond: "Reconditioned", Used: "Registered Used" };
 const condLabel = c => condLabels[c] || condLabels.New;
-const NO_PHOTO = '<div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span></div>';
+const NO_PHOTO = '<div class="ph"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span></div>';
 
 function summaryHtml(s, f, room) {
   const limit = Math.round(s.dti * 100);
@@ -177,9 +177,8 @@ function updateRow(tr, r, { s, room, scale, labels }) {
   q(".v-rent").textContent = fmt(r.rental);
 
   const w = Math.min(100, r.rental / scale * 100);
-  const fillCol = r.status === "bad" ? "var(--bad)" : r.status === "mid" ? "var(--mid)" : "var(--accent)";
   setHtml(q(".v-bar"), s.income
-    ? `<div class="track" role="img" aria-label="Rental Rs. ${fmt(r.rental)} against your highest affordable rental of Rs. ${fmt(room)}"><span class="fill" style="width:${w}%;background:${fillCol}"></span><span class="mark" style="left:${Math.min(100, room / scale * 100)}%" title="Your highest affordable rental"></span></div>`
+    ? `<div class="track" role="img" aria-label="Rental Rs. ${fmt(r.rental)} against your highest affordable rental of Rs. ${fmt(room)}"><span class="fill ${r.status}" style="width:${w}%"></span><span class="mark" style="left:${Math.min(100, room / scale * 100)}%" title="Your highest affordable rental"></span></div>`
     : `<span class="na bar-empty">Add income to compare</span>`);
   q(".v-interest").textContent = fmt(r.interest);
   q(".v-total").textContent = fmt(r.total);
@@ -594,7 +593,7 @@ function setAttachedAdImage(file) {
       data: evt.target.result.split(",")[1]
     };
     $("aiAttachedAdLabel").textContent = `📷 ${file.name || "Screenshot"} attached`;
-    $("aiAttachedAdBox").style.display = "flex";
+    $("aiAttachedAdBox").hidden = false;
   };
   reader.readAsDataURL(file);
 }
@@ -607,7 +606,7 @@ $("aiAdFile").addEventListener("change", e => {
 $("aiRemoveAdImgBtn").addEventListener("click", () => {
   pendingAdImage = null;
   $("aiAdFile").value = "";
-  $("aiAttachedAdBox").style.display = "none";
+  $("aiAttachedAdBox").hidden = true;
 });
 
 // Support paste anywhere inside aiModal
@@ -684,7 +683,7 @@ async function renderAiResults(data) {
   // 2. Unavailable in Sri Lanka
   if (!data.is_available_in_sri_lanka) {
     $("aiUnavailBox").hidden = false;
-    $("aiUnavailBox").innerHTML = `<b>⚠️ Not available in Sri Lanka:</b> ${esc(data.reason || "This model is not road-legal or actively imported into Sri Lanka.")}<br><small style="margin-top:4px;display:block"><b>Popular Sri Lankan alternatives:</b> ${esc(Array.isArray(data.alternatives) ? data.alternatives.join(", ") : data.alternatives || "Toyota Corolla Cross, Honda Vezel, BYD Sealion")}</small>`;
+    $("aiUnavailBox").innerHTML = `<b>⚠️ Not available in Sri Lanka:</b> ${esc(data.reason || "This model is not road-legal or actively imported into Sri Lanka.")}<br><small class="callout-alt"><b>Popular Sri Lankan alternatives:</b> ${esc(Array.isArray(data.alternatives) ? data.alternatives.join(", ") : data.alternatives || "Toyota Corolla Cross, Honda Vezel, BYD Sealion")}</small>`;
     $("aiResultForm").hidden = true;
     $("aiDiscoveryBox").hidden = true;
     return;
@@ -822,13 +821,12 @@ function setAiImgPreview(src) {
     if (!existingPh) {
       existingPh = document.createElement("div");
       existingPh.className = "ph pimg-ph";
-      existingPh.style.cssText = "width:140px;height:88px;border-radius:6px;border:1px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mute);font-size:0.75rem;gap:4px";
-      existingPh.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.55"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span>`;
+      existingPh.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="3"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"/><path d="M14 21v-4a2 2 0 0 0-4 0v4"/></svg><span>No photo</span>`;
       preview.parentNode.insertBefore(existingPh, preview);
     }
-    existingPh.style.display = "flex";
+    existingPh.hidden = false;
   } else {
-    if (existingPh) existingPh.style.display = "none";
+    if (existingPh) existingPh.hidden = true;
     preview.hidden = false;
     preview.src = currentAiImgSrc;
   }
@@ -939,17 +937,17 @@ function renderDiscoveryChecklist(vehicles) {
     const title = formatVehicleTitle(v.model_name, v.trim_name, v.year);
     const condLabel = v.condition === "Used" ? "Registered Used" : v.condition === "Recond" ? "Reconditioned" : "Brand New";
     return `<label class="discovery-item selected" data-i="${i}">
-      <input type="checkbox" class="disc-check" data-idx="${i}" checked style="width:auto">
+      <input type="checkbox" class="disc-check" data-idx="${i}" checked>
       <img class="discovery-thumb" id="discThumb${i}" alt="${esc(title)}" hidden>
-      <div style="flex:1">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+      <div class="discovery-body">
+        <div class="discovery-title">
           <b>${esc(title)}</b>
-          <b style="color:var(--accent);font-variant-numeric:tabular-nums">Rs. ${fmt(v.price_lkr)}</b>
+          <b class="discovery-price">Rs. ${fmt(v.price_lkr)}</b>
         </div>
-        <div style="font-size:0.78rem;color:var(--mute)">${esc(v.powertrain || "")}${v.fuel_economy_kml ? " · " + esc(v.fuel_economy_kml) : ""}</div>
-        <div style="margin-top:2px">
-          <span class="callout-badge ${v.warranty_type === "Official" ? "badge-official" : "badge-grey"}" style="font-size:0.68rem">${v.warranty_type || "Grey"}</span>
-          <span class="cond-tag" style="font-size:0.68rem">${condLabel}</span>
+        <div class="discovery-spec">${esc(v.powertrain || "")}${v.fuel_economy_kml ? " · " + esc(v.fuel_economy_kml) : ""}</div>
+        <div class="discovery-tags">
+          <span class="callout-badge ${v.warranty_type === "Official" ? "badge-official" : "badge-grey"}">${v.warranty_type || "Grey"}</span>
+          <span class="cond-tag">${condLabel}</span>
         </div>
       </div>
     </label>`;
