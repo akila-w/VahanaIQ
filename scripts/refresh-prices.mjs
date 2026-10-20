@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Monthly catalogue price refresh. Gets the brand-new price of each built-in vehicle,
-// matches the trim by name and rewrites only the `price` values and
-// catalogMeta.priceUpdated in js/catalog.js. Answers that are missing, zero, not backed by
+// matches research by stable ID and updates prices and source/month evidence in
+// js/market-catalogue.js. Answers that are missing, zero, not backed by
 // a source page, marked as estimates, more than 6 months old or more than ±25% from the
 // current price are skipped and listed.
 // Prices come from one of two places:
@@ -12,15 +12,15 @@
 //   .github/workflows/refresh-prices.yml. No free Gemini model on the project can search
 //   Google any more, so this route currently fails.
 // No npm dependencies (Node 20+).
-// Everything stays on the Gemini free tier: vehicles are asked about 4 at a time (3 requests
-// a run) on the proxy's PRICE_MODEL, which the app does not use, and the run stops at once
+// Eligible priced variants are asked about 4 at a time on the proxy's PRICE_MODEL,
+// which the app does not use, and the run stops at once
 // if Gemini's daily free limit is used up.
 //
 //   node scripts/refresh-prices.mjs [--dry-run] [--report <file>] [--from-file <prices.json>]
 //                                   [--proxy <url>] [--catalog <file>] [--month YYYY-MM]
 //                                   [--delay <ms>] [--batch <n>]
 //
-// --dry-run prints the diff and the report without writing js/catalog.js.
+// --dry-run prints the diff and report without writing the catalogue.
 // The proxy URL defaults to PROXY_URL, then config.proxyUrl in js/config.js.
 
 import fs from "node:fs";
@@ -52,7 +52,7 @@ const oneLine = (s, max = 200) => {
 };
 const cell = s => String(s).replace(/\|/g, "\\|");
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-export const fmtLkr = n => "LKR " + Math.round(n).toLocaleString("en-GB");
+export const fmtLkr = n => "LKR " + n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const fmtPct = x => (x > 0 ? "+" : x < 0 ? "−" : "±") + Math.abs(x * 100).toFixed(1) + "%";
 
 export function buildQuery(v) {
@@ -157,7 +157,7 @@ export function readResearch(file, vehicles) {
   const host = url => { try { return new URL(url).hostname; } catch { return ""; } };
   const replyVehicles = [];
   for (const entry of data.vehicles) {
-    const index = vehicles.findIndex(v => v.name === entry?.name);
+    const index = vehicles.findIndex(v => entry?.id ? v.id === entry.id : v.name === entry?.name);
     if (index < 0) {
       console.warn(`! ${file}: "${entry?.name}" is not a catalogue vehicle name; ignored`);
       continue;
@@ -205,6 +205,8 @@ export function vetSource(match, raw, month) {
   }
   const asOf = /^(\d{4})-(\d{2})$/.exec(match.asOf || "");
   const [y, m] = month.split("-").map(Number);
+  if (!asOf || Number(asOf[2]) < 1 || Number(asOf[2]) > 12) return { reason: "price publication month is missing or invalid" };
+  if ((Number(asOf[1]) * 12 + Number(asOf[2])) > y * 12 + m) return { reason: "price publication month is in the future" };
   if (asOf && (y * 12 + m) - (Number(asOf[1]) * 12 + Number(asOf[2])) > MAX_SOURCE_AGE_MONTHS) {
     return { reason: `price published in ${match.asOf}, more than ${MAX_SOURCE_AGE_MONTHS} months before ${month}` };
   }
@@ -215,6 +217,9 @@ export function vetSource(match, raw, month) {
 export function vetPrice(oldPrice, newPrice) {
   if (typeof newPrice !== "number" || !Number.isFinite(newPrice) || newPrice <= 0) {
     return { reason: "no brand-new price in the answer" };
+  }
+  if (!(typeof oldPrice === "number" && Number.isFinite(oldPrice) && oldPrice > 0)) {
+    return { reason: "no baseline price; the first price needs individual review" };
   }
   const price = Math.round(newPrice / ROUND_TO) * ROUND_TO;
   const change = (price - oldPrice) / oldPrice;
@@ -228,13 +233,18 @@ export function vetPrice(oldPrice, newPrice) {
 // leaving every other character of the file as it was.
 export function rewriteCatalog(source, prices, month) {
   let out = source;
-  for (const [name, price] of prices) {
-    const start = out.indexOf(`name: ${JSON.stringify(name)}`);
+  for (const [name, price, evidence] of prices) {
+    const byId = out.indexOf(`id: ${JSON.stringify(name)}`);
+    const start = byId >= 0 ? byId : out.indexOf(`name: ${JSON.stringify(name)}`);
     if (start < 0) throw new Error(`Vehicle not found in catalogue source: ${name}`);
     const end = out.indexOf("}", start);
     const row = out.slice(start, end);
-    if ((row.match(/\bprice: \d+/g) || []).length !== 1) throw new Error(`Expected one price for ${name}`);
-    out = out.slice(0, start) + row.replace(/\bprice: \d+/, `price: ${price}`) + out.slice(end);
+    if ((row.match(/\bprice: (?:null|\d+(?:\.\d+)?)/g) || []).length !== 1) throw new Error(`Expected one price for ${name}`);
+    let next = row.replace(/\bprice: (?:null|\d+(?:\.\d+)?)/, `price: ${price}`);
+    if (evidence) for (const key of ["priceCheckedMonth", "pricePublishedMonth", "priceSourceUrl"]) {
+      next = next.replace(new RegExp(`\\b${key}: (?:null|"[^"]*")`), `${key}: ${JSON.stringify(evidence[key] ?? null)}`);
+    }
+    out = out.slice(0, start) + next + out.slice(end);
   }
   const meta = /(priceUpdated: ")\d{4}-\d{2}(")/;
   if (!meta.test(out)) throw new Error("catalogMeta.priceUpdated not found in catalogue source");
@@ -258,9 +268,9 @@ export async function verifyRewrite(oldSource, newSource) {
       const w = after.baseVehicles[i];
       const keys = new Set([...Object.keys(v), ...Object.keys(w)]);
       for (const k of keys) {
-        if (k !== "price" && v[k] !== w[k]) throw new Error(`Field ${k} of ${v.name} changed`);
+        if (!["price", "priceCheckedMonth", "pricePublishedMonth", "priceSourceUrl"].includes(k) && JSON.stringify(v[k]) !== JSON.stringify(w[k])) throw new Error(`Field ${k} of ${v.name} changed`);
       }
-      if (!Number.isInteger(w.price) || w.price <= 0) throw new Error(`Invalid price for ${v.name}`);
+      if (!(v.price === null && w.price === null) && (!Number.isFinite(w.price) || w.price <= 0)) throw new Error(`Invalid price for ${v.name}`);
     });
     if (!/^\d{4}-\d{2}$/.test(after.catalogMeta?.priceUpdated)) throw new Error("Invalid catalogMeta.priceUpdated");
   } finally {
@@ -289,7 +299,7 @@ const sourceCell = r => {
 
 export function renderReport({ month, updated, skipped, origin = "from the VahanaIQ search proxy" }) {
   const out = [
-    `Monthly refresh of the 12 built-in catalogue prices for ${month}, ${origin}.`,
+    `Monthly refresh of eligible built-in catalogue prices for ${month}, ${origin}.`,
     "",
     "> [!WARNING]",
     "> These prices are AI estimates, not dealer quotes. An AI model found them on the web, but it can " +
@@ -302,11 +312,11 @@ export function renderReport({ month, updated, skipped, origin = "from the Vahan
       "| --- | --- | ---: | ---: | ---: | --- |",
       ...updated.map(r => `| ${cell(r.name)} | ${cell(r.trim)} | ${fmtLkr(r.old)} | ${fmtLkr(r.new)} | ${fmtPct(r.change)} | ${sourceCell(r)} |`),
       "",
-      `New prices are rounded to the nearest LKR ${ROUND_TO.toLocaleString("en-GB")}. ` +
-        `\`catalogMeta.priceUpdated\` is set to \`${month}\`, so the footer shows the new month.`
+      `New prices are rounded to the nearest ${fmtLkr(ROUND_TO)}. ` +
+        `Updated entries retain their own price-check month, publication month and source URL.`
     );
   } else {
-    out.push("No vehicle passed the checks, so `js/catalog.js` was left unchanged.");
+    out.push("No vehicle passed the checks, so the catalogue file was left unchanged.");
   }
   out.push("", `### Skipped (${skipped.length})`, "");
   out.push(...(skipped.length
@@ -382,7 +392,7 @@ export async function main(argv = process.argv.slice(2)) {
       batch: { type: "string", default: String(BATCH_SIZE) }
     }
   });
-  const catalogPath = path.resolve(opts.catalog || path.join(ROOT, "js/catalog.js"));
+  const catalogPath = path.resolve(opts.catalog || path.join(ROOT, "js/market-catalogue.js"));
   const fromFile = opts["from-file"] && path.resolve(opts["from-file"]);
   const proxy = fromFile ? null : opts.proxy || process.env.PROXY_URL ||
     (await import(pathToFileURL(path.join(ROOT, "js/config.js")).href)).config.proxyUrl;
@@ -395,16 +405,20 @@ export async function main(argv = process.argv.slice(2)) {
   const source = fs.readFileSync(catalogPath, "utf8");
   const { baseVehicles } = await importCatalog(catalogPath);
   console.log(`Refreshing ${baseVehicles.length} catalogue prices for ${month} from ${fromFile || proxy}${opts["dry-run"] ? " (dry run)" : ""}\n`);
-  const research = fromFile ? readResearch(fromFile, baseVehicles) : null;
-
   const updated = [];
   const skipped = [];
+  const eligible = baseVehicles.filter(v => {
+    const reason = v.price === null ? "no baseline price; first price needs individual review" : v.cond && v.cond !== "New" ? "not a brand-new catalogue entry" : "";
+    if (reason) skipped.push({ name: v.name, reason });
+    return !reason;
+  });
+  const research = fromFile ? readResearch(fromFile, eligible) : null;
   let failures = 0;
   let failedInARow = 0;
   let stopReason = null;
   const batches = [];
-  const size = research ? baseVehicles.length : batchSize; // a prices file answers for every vehicle at once
-  for (let i = 0; i < baseVehicles.length; i += size) batches.push(baseVehicles.slice(i, i + size));
+  const size = research ? Math.max(1, eligible.length) : batchSize;
+  for (let i = 0; i < eligible.length; i += size) batches.push(eligible.slice(i, i + size));
 
   for (const [b, group] of batches.entries()) {
     if (stopReason) {
@@ -442,7 +456,7 @@ export async function main(argv = process.argv.slice(2)) {
         continue;
       }
       updated.push({
-        name: v.name, trim: `${match.trimName} (${match.year})`, old: v.price, new: vetted.price, change: vetted.change,
+        id: v.id, name: v.name, trim: `${match.trimName} (${match.year})`, old: v.price, new: vetted.price, change: vetted.change,
         basis: match.basis, asOf: match.asOf, sources: grounded.sources
       });
       console.log(`✓ ${v.name}: ${fmtLkr(v.price)} → ${fmtLkr(vetted.price)} (${fmtPct(vetted.change)})`);
@@ -452,21 +466,21 @@ export async function main(argv = process.argv.slice(2)) {
   const report = renderReport({ month, updated, skipped, ...(research ? { origin: research.origin } : {}) });
   if (opts.report) fs.writeFileSync(opts.report, report);
 
-  if (failures === baseVehicles.length) {
-    console.error("\nEvery proxy request failed; js/catalog.js left unchanged.");
+  if (eligible.length && failures === eligible.length) {
+    console.error("\nEvery proxy request failed; catalogue left unchanged.");
     return 1;
   }
   if (!updated.length) {
-    console.log("\nNo vehicle passed the checks; js/catalog.js left unchanged.\n\n" + report);
+    console.log("\nNo vehicle passed the checks; catalogue left unchanged.\n\n" + report);
     return 0;
   }
 
-  const next = rewriteCatalog(source, updated.map(r => [r.name, r.new]), month);
+  const next = rewriteCatalog(source, updated.map(r => [r.id || r.name, r.new, { priceCheckedMonth: month, pricePublishedMonth: r.asOf || null, priceSourceUrl: r.sources?.[0]?.uri || null }]), month);
   await verifyRewrite(source, next);
   console.log(`\n--- ${path.relative(ROOT, catalogPath)}\n+++ ${path.relative(ROOT, catalogPath)} (refreshed)\n${formatDiff(source, next)}\n`);
   console.log(report);
   if (opts["dry-run"]) {
-    console.log("Dry run: js/catalog.js not written.");
+    console.log("Dry run: catalogue not written.");
   } else {
     fs.writeFileSync(catalogPath, next);
     console.log(`Wrote ${path.relative(ROOT, catalogPath)}.`);

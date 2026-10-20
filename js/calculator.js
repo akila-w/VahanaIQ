@@ -3,12 +3,12 @@
 // at most 40% financed for unregistered cars and cars registered under a year (60% down),
 // at most 60% financed for cars registered over a year (40% down).
 
-import { parseMoneyText } from "./money-input.js?v=2.7.1";
+import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.8.0";
 
 export const DOWN_MIN = 40;          // lowest down payment any car can have (registered over a year)
 export const DOWN_MIN_UNREG = 60;    // brand new, reconditioned and recently registered cars
 
-export const fmt = n => (Math.round(n) || 0).toLocaleString("en-LK"); // "|| 0" turns -0 into 0
+export const fmt = formatMoneyAmount;
 export const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const num = id => {
   const el = typeof id === "string" ? document.getElementById(id) : id;

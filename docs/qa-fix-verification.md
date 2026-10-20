@@ -31,3 +31,8 @@ The print CSS was applied as screen styles through the fixture server's `?qa-pri
 ## Release boundary
 
 This is a source/local verification, not a claim that production already runs v2.7.1. Merging publishes the frontend through GitHub Pages. Redeploy the Cloud Run proxy from `serverless/gcp-cloud-function` to use its stronger comparison prompt and required discovery fields. The frontend also rejects incomplete comparisons against the existing proxy. Upstream model availability remains an external dependency.
+## Currency presentation follow-up — 20/10/2026
+
+The user requested two decimal places for all prices and currency amounts. The shared currency formatter now retains cents and pads whole amounts with `.00`; summaries, table cells, AI prices and print use it. Money inputs are formatted on initialisation, restoration and blur while preserving unfinished decimals during typing. The maximum-price filter also displays two decimal places. Calculations retain full precision.
+
+All five maintained automated suites pass; `qa-regressions.test.mjs` now has 95 assertions. Local browser checks confirmed `250000.5` becomes `250,000.50`, the maximum-price filter becomes `12.50`, both restore after the existing autosave completes and the page reloads, and every rendered currency table cell has two decimal places. Browser screenshot: `qa/2026-10-20/fixes/currency-two-decimals.jpg`. No production deployment is claimed for this follow-up.

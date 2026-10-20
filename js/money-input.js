@@ -1,5 +1,9 @@
 // Rupee inputs: plain text with a numeric keypad, thousands separators added as you type
 const MAX_DIGITS = 15;
+const moneyFormatter = new Intl.NumberFormat("en-LK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+// Round only for presentation; calculations and saved amounts retain their precision.
+export const formatMoneyAmount = value => moneyFormatter.format(Math.abs(value) < 0.005 ? 0 : (value || 0));
 
 // Keep decimals and reject ambiguous input instead of silently changing its value.
 export function parseMoneyText(text) {
@@ -9,22 +13,31 @@ export function parseMoneyText(text) {
   return Number.isFinite(value) && Math.abs(value) < 10 ** MAX_DIGITS ? value : NaN;
 }
 
-export function formatMoneyText(text) {
+export function formatMoneyText(text, { editing = false, grouping = true } = {}) {
   const raw = String(text ?? "");
-  if (!Number.isFinite(parseMoneyText(raw))) return raw;
+  const value = parseMoneyText(raw);
+  if (!Number.isFinite(value)) return raw;
+  if (!editing) {
+    const formatted = formatMoneyAmount(value);
+    return grouping ? formatted : formatted.replace(/,/g, "");
+  }
   const clean = raw.trim().replace(/^(?:LKR|Rs\.?|₨)\s*/i, "").replace(/,/g, "");
   const [whole, fraction] = clean.split(".");
-  const formatted = (clean.startsWith("-") ? "-" : "") + Number(whole.replace(/^-/, "") || "0").toLocaleString("en-LK");
+  const formatted = (clean.startsWith("-") ? "-" : "") + Number(whole.replace(/^-/, "") || "0").toLocaleString("en-LK", { useGrouping: grouping });
   return fraction === undefined ? formatted : formatted + "." + fraction;
 }
 
-export function attachMoneyInput(el) {
+export function attachMoneyInput(el, { grouping = true } = {}) {
   if (!el || !el.addEventListener) return;
+  const finishEditing = () => { el.value = formatMoneyText(el.value, { grouping }); };
+  finishEditing();
+  el.addEventListener("blur", finishEditing);
   el.addEventListener("input", () => {
     const value = el.value;
     const caret = el.selectionStart == null ? value.length : el.selectionStart;
     const digitsBefore = value.slice(0, caret).replace(/\D/g, "").length;
-    const formatted = formatMoneyText(value);
+    // Do not pad cents mid-keystroke: the user must be able to enter "250000.5".
+    const formatted = formatMoneyText(value, { editing: true, grouping });
     if (formatted === value) return;
     el.value = formatted;
     // Put the caret back after the same number of digits

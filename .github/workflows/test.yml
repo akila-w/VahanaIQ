@@ -21,6 +21,7 @@ jobs:
         run: |
           node test/verify.mjs
           node test/qa-regressions.test.mjs
+          node test/catalogue.test.mjs
           node test/proxy-search.test.mjs
           node test/proxy-price-mode.test.mjs
           node test/refresh-prices.test.mjs
