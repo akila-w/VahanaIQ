@@ -126,7 +126,7 @@ const mock = {
 const queries = [];
 let failEverything = false;
 // Multi-line detail, as Gemini's quota errors have
-const failure = { error: "quota", detail: "You exceeded your current quota.\n\n* Quota exceeded for metric: free_tier_requests, limit: 5" };
+const failure = { error: "quota", detail: "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits.\n\n* Quota exceeded for metric: free_tier_requests, limit: 5\nPlease retry in 0.01s." };
 const server = http.createServer((req, res) => {
   let body = "";
   req.on("data", c => { body += c; });
@@ -171,7 +171,8 @@ try {
   }
   const skippedLines = report.split("### Skipped")[1].trim().split("\n").slice(2).filter(Boolean);
   assert.ok(skippedLines.slice(0, 4).every(l => l.startsWith("- **")), "Each skipped vehicle stays on one line");
-  assert.match(report, /Taisor V\*\*: proxy request failed \(HTTP 502 quota: You exceeded your current quota\. \* Quota exceeded/);
+  assert.match(report, /Taisor V\*\*: proxy request failed \(HTTP 502 quota: You exceeded your current quota, please check/);
+  assert.match(dry.stdout, /attempt 1 failed .*; retrying in 1 s/, "The retry hint at the end of a long message is honoured");
   assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ \(2026\): LKR [\d,]+ is \+4\d\.\d% from LKR [\d,]+, outside ±25%/);
 
   // Real run on the temporary copy

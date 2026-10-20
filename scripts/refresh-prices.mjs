@@ -216,7 +216,8 @@ async function fetchAnswer(proxy, query, delay) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(oneLine(`HTTP ${res.status}${err.error ? ` ${err.error}` : ""}${err.detail ? `: ${err.detail}` : ""}`));
+        // Full text kept here: Gemini's "Please retry in Ns" hint comes at the end
+        throw new Error(oneLine(`HTTP ${res.status}${err.error ? ` ${err.error}` : ""}${err.detail ? `: ${err.detail}` : ""}`, Infinity));
       }
       return await res.json();
     } catch (e) {
@@ -271,7 +272,7 @@ export async function main(argv = process.argv.slice(2)) {
     } catch (e) {
       failures++;
       failedInARow++;
-      skipped.push({ name: v.name, reason: `proxy request failed (${e.message})` });
+      skipped.push({ name: v.name, reason: `proxy request failed (${oneLine(e.message)})` });
       console.log(`✗ ${v.name}: proxy request failed (${e.message})`);
       continue;
     }
