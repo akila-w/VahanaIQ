@@ -4,6 +4,7 @@
 // the trim by name and rewrites only the `price` values and catalogMeta.priceUpdated
 // in js/catalog.js. Answers that are missing, zero or more than ±25% from the
 // current price are skipped and listed. No npm dependencies (Node 20+).
+// Requests are paced for the Gemini free tier (5 a minute), so a full run takes about 3 minutes.
 //
 //   node scripts/refresh-prices.mjs [--dry-run] [--report <file>] [--proxy <url>]
 //                                   [--catalog <file>] [--month YYYY-MM] [--delay <ms>]
@@ -22,8 +23,21 @@ export const MAX_CHANGE = 0.25;     // skip answers more than ±25% from the cur
 const ROUND_TO = 10000;             // new prices are rounded to the nearest LKR 10,000
 const MIN_TRIM_SCORE = 0.5;         // token overlap needed to accept a trim name match
 const REQUEST_TIMEOUT_MS = 120000;
+const MAX_ATTEMPTS = 3;             // per vehicle
+const MAX_RETRY_WAIT_MS = 90000;
+const MAX_FAILED_IN_A_ROW = 3;      // stop asking once the proxy is clearly down or out of quota
+// Gearbox words in trim names. The catalogue names no gearbox, so when trims differ only
+// by gearbox the automatic is priced (Akila's decision of 20/10/2026).
+const AUTOMATIC = new Set(["at", "cvt", "ecvt", "amt", "dct", "ivt", "auto", "automatic"]);
+const MANUAL = new Set(["mt", "manual"]);
 
-const tokens = s => String(s ?? "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+// Lower-case words; engine sizes lose their unit so "1.0L", "1.0" and "1.0 L" all read "1 0"
+const tokens = s => String(s ?? "").toLowerCase().replace(/(\d)\s*(l|cc)\b/g, "$1").split(/[^a-z0-9]+/).filter(Boolean);
+const oneLine = (s, max = 200) => {
+  const t = String(s ?? "").replace(/\s+/g, " ").trim();
+  return t.length > max ? t.slice(0, max - 1) + "…" : t;
+};
+const cell = s => String(s).replace(/\|/g, "\\|");
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 export const fmtLkr = n => "LKR " + Math.round(n).toLocaleString("en-GB");
 export const fmtPct = x => (x > 0 ? "+" : x < 0 ? "−" : "±") + Math.abs(x * 100).toFixed(1) + "%";
@@ -35,8 +49,10 @@ export function buildQuery(v) {
 
 // Picks the trim in the proxy answer whose name best matches the catalogue name.
 // Make and model words are ignored, so "Toyota Corolla Cross Z (Adventure)" is matched
-// on "z adventure". Every word of the trim name must appear in the catalogue name
-// (so "e:HEV X" never matches "e:HEV Z"), and the trim covering most of it wins.
+// on "z adventure". Every word of the trim name must appear in the catalogue name or
+// its powertrain (so "e:HEV X" never matches "e:HEV Z", while "Alpha 1.0L Turbo MHEV"
+// matches "Alpha (Turbo)" with powertrain "1.0L Turbo MHEV"), and the trim covering
+// most of the catalogue name wins. Gearbox words are allowed, and the automatic wins a tie.
 // Returns { year, trimName, price } or { reason } when nothing fits.
 export function matchTrim(vehicle, answer) {
   if (!answer || typeof answer !== "object") return { reason: "empty answer from the proxy" };
@@ -45,14 +61,19 @@ export function matchTrim(vehicle, answer) {
   const ignore = new Set([...tokens(answer.model_name), tokens(vehicle.name)[0]]);
   const trimTokens = s => tokens(s).filter(t => !ignore.has(t));
   const want = new Set(trimTokens(vehicle.name).length ? trimTokens(vehicle.name) : tokens(vehicle.name));
+  const powertrain = new Set(tokens(vehicle.pt));
+  // Words that only describe the powertrain ("turbo") never count towards a match
+  const grade = [...want].filter(t => !powertrain.has(t));
+  const scored = new Set(grade.length ? grade : want);
 
   const candidates = [];
   for (const my of answer.model_years || []) {
     for (const trim of my.trims || []) {
       const have = new Set(trimTokens(trim.trim_name));
-      if (!have.size || [...have].some(t => !want.has(t))) continue;
-      const shared = [...want].filter(t => have.has(t)).length;
-      const score = shared / new Set([...want, ...have]).size;
+      if ([...have].some(t => !want.has(t) && !powertrain.has(t) && !AUTOMATIC.has(t) && !MANUAL.has(t))) continue;
+      const named = [...have].filter(t => scored.has(t));
+      if (!named.length) continue;
+      const score = named.length / scored.size;
       candidates.push({ year: Number(my.year) || 0, trim, score });
     }
   }
@@ -61,11 +82,13 @@ export function matchTrim(vehicle, answer) {
 
   const best = Math.max(0, ...candidates.map(c => c.score));
   if (best < MIN_TRIM_SCORE) {
-    return { reason: `no trim matching the catalogue name (answer had: ${[...new Set(offered)].slice(0, 5).join(", ")})` };
+    return { reason: `no trim matching the catalogue name (answer had: ${oneLine([...new Set(offered)].slice(0, 5).join(", "))})` };
   }
   const top = candidates.filter(c => c.score === best);
   const year = Math.max(...top.map(c => c.year));
-  const inYear = top.filter(c => c.year === year);
+  let inYear = top.filter(c => c.year === year);
+  const automatic = inYear.filter(c => tokens(c.trim.trim_name).some(t => AUTOMATIC.has(t)));
+  if (automatic.length && automatic.length < inYear.length) inYear = automatic;
   if (new Set(inYear.map(c => c.trim.condition_prices?.brand_new)).size > 1) {
     return { reason: `ambiguous trim match: ${inYear.map(c => c.trim.trim_name).join(", ")}` };
   }
@@ -153,7 +176,7 @@ export function renderReport({ month, updated, skipped }) {
     out.push(
       "| Vehicle | Matched trim | Old price | New price | Change |",
       "| --- | --- | ---: | ---: | ---: |",
-      ...updated.map(r => `| ${r.name} | ${r.trim} | ${fmtLkr(r.old)} | ${fmtLkr(r.new)} | ${fmtPct(r.change)} |`),
+      ...updated.map(r => `| ${cell(r.name)} | ${cell(r.trim)} | ${fmtLkr(r.old)} | ${fmtLkr(r.new)} | ${fmtPct(r.change)} |`),
       "",
       `New prices are rounded to the nearest LKR ${ROUND_TO.toLocaleString("en-GB")}. ` +
         `\`catalogMeta.priceUpdated\` is set to \`${month}\`, so the footer shows the new month.`
@@ -163,7 +186,7 @@ export function renderReport({ month, updated, skipped }) {
   }
   out.push("", `### Skipped (${skipped.length})`, "");
   out.push(...(skipped.length
-    ? skipped.map(s => `- **${s.name}**: ${s.reason}. Price left as it was.`)
+    ? skipped.map(s => `- **${s.name}**: ${oneLine(s.reason, 300)}. Price left as it was.`)
     : ["None."]));
   out.push(
     "",
@@ -173,9 +196,17 @@ export function renderReport({ month, updated, skipped }) {
   return out.join("\n") + "\n";
 }
 
-async function fetchAnswer(proxy, query, retryDelay) {
+// How long to wait before retrying. Gemini quota errors say "Please retry in 58.7s",
+// which is honoured; otherwise the wait grows with each attempt. Capped at 90 seconds.
+export function retryWait(message, attempt, delay) {
+  const hint = /retry in ([\d.]+)\s*s/i.exec(message || "");
+  const ms = hint ? Math.ceil(Number(hint[1]) * 1000) + 1000 : delay * 2 * attempt;
+  return Math.min(ms, MAX_RETRY_WAIT_MS);
+}
+
+async function fetchAnswer(proxy, query, delay) {
   let lastError;
-  for (let attempt = 1; attempt <= 2; attempt++) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
     try {
       const res = await fetch(proxy, {
         method: "POST",
@@ -185,12 +216,16 @@ async function fetchAnswer(proxy, query, retryDelay) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(`HTTP ${res.status}${err.error ? ` ${err.error}` : ""}${err.detail ? `: ${err.detail}` : ""}`);
+        throw new Error(oneLine(`HTTP ${res.status}${err.error ? ` ${err.error}` : ""}${err.detail ? `: ${err.detail}` : ""}`));
       }
       return await res.json();
     } catch (e) {
       lastError = e;
-      if (attempt === 1) await sleep(retryDelay);
+      if (attempt < MAX_ATTEMPTS) {
+        const wait = retryWait(e.message, attempt, delay);
+        console.log(`  … attempt ${attempt} failed (${oneLine(e.message, 120)}); retrying in ${Math.round(wait / 1000)} s`);
+        await sleep(wait);
+      }
     }
   }
   throw lastError;
@@ -205,7 +240,7 @@ export async function main(argv = process.argv.slice(2)) {
       proxy: { type: "string" },
       catalog: { type: "string" },
       month: { type: "string" },
-      delay: { type: "string", default: "2000" }
+      delay: { type: "string", default: "13000" } // 5 requests a minute on the Gemini free tier
     }
   });
   const catalogPath = path.resolve(opts.catalog || path.join(ROOT, "js/catalog.js"));
@@ -222,17 +257,25 @@ export async function main(argv = process.argv.slice(2)) {
   const updated = [];
   const skipped = [];
   let failures = 0;
+  let failedInARow = 0;
   for (const [i, v] of baseVehicles.entries()) {
+    if (failedInARow >= MAX_FAILED_IN_A_ROW) {
+      failures++;
+      skipped.push({ name: v.name, reason: `not asked, after ${MAX_FAILED_IN_A_ROW} proxy failures in a row` });
+      continue;
+    }
     if (i) await sleep(delay);
     let answer;
     try {
       answer = await fetchAnswer(proxy, buildQuery(v), delay);
     } catch (e) {
       failures++;
+      failedInARow++;
       skipped.push({ name: v.name, reason: `proxy request failed (${e.message})` });
       console.log(`✗ ${v.name}: proxy request failed (${e.message})`);
       continue;
     }
+    failedInARow = 0;
     const match = matchTrim(v, answer);
     const vetted = match.reason ? match : vetPrice(v.price, match.price);
     if (vetted.reason) {
