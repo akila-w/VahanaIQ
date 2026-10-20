@@ -27,6 +27,28 @@ export function rental(loan, rate, n) {
   return i === 0 ? loan / n : (loan * i) / (1 - Math.pow(1 + i, -n));
 }
 
+// Year-by-year totals of a reducing-balance loan: rentals paid, interest, principal and the
+// balance left at the end of each year (the last year may be shorter than 12 months)
+export function yearlySchedule(loan, rate, n) {
+  const i = rate / 100 / 12;
+  const pay = rental(loan, rate, n);
+  const years = [];
+  let balance = loan;
+  for (let m = 1; m <= n; m++) {
+    const interest = balance * i;
+    const principal = Math.min(balance, pay - interest);
+    balance = Math.max(0, balance - principal);
+    if ((m - 1) % 12 === 0) years.push({ year: years.length + 1, months: 0, paid: 0, interest: 0, principal: 0, balance: 0 });
+    const y = years[years.length - 1];
+    y.months += 1;
+    y.paid += pay;
+    y.interest += interest;
+    y.principal += principal;
+    y.balance = balance;
+  }
+  return years;
+}
+
 export function getSettings() {
   let rate = num("rate");
   if (!(rate >= 0)) rate = 16;

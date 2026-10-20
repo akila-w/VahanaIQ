@@ -115,7 +115,7 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
     render();
     openModal($("catalogueModal"), opener, $("catalogueSearch"));
   };
-  $("openCatalogueBtn").addEventListener("click", () => open($("openCatalogueBtn")));
+  for (const id of ["addVehicleBtn", "openCatalogueBtn"]) if ($(id)) $(id).addEventListener("click", () => open($(id)));
   $("browseEmptyBtn").addEventListener("click", () => open($("browseEmptyBtn")));
   $("closeCatalogueBtn").addEventListener("click", () => closeModal($("catalogueModal")));
   $("catalogueSearch").addEventListener("input", () => { page = 0; render(); });

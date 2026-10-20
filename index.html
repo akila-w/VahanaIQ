@@ -41,7 +41,8 @@
       <p class="sub">Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Tenure capped at 84 months.</p>
     </div>
     <div class="header-actions">
-      <button class="btn" id="openAiModalBtn" type="button">✨ Search &amp; Add Car (AI)</button>
+      <button class="btn" id="addVehicleBtn" type="button">Add a vehicle</button>
+      <button class="btn-outline" id="printBtn" type="button">Print</button>
       <button class="btn-outline" id="themeToggleBtn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">☀️</button>
     </div>
   </div>
@@ -96,8 +97,14 @@
   <section class="panel" aria-labelledby="h-list">
     <div class="panel-head">
       <h2 id="h-list" tabindex="-1">Vehicles</h2>
-      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button">Browse catalogue</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="resetCatalogBtn" type="button">Clear comparison</button></span></div>
+      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add another vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="resetCatalogBtn" type="button">Clear comparison</button></span></div>
     </div>
+    <div class="empty-state" id="emptyState" hidden>
+      <h3>Start your comparison</h3>
+      <p>Add the cars you're considering to see each one's down payment, monthly rental and whether it fits your budget.</p>
+      <div class="empty-actions"><button class="btn" id="browseEmptyBtn" type="button">Browse the catalogue</button><button class="btn-outline" id="aiEmptyBtn" type="button">✨ Search with AI</button></div>
+    </div>
+    <div id="comparisonBody">
     <button class="btn-outline filters-toggle" id="filtersToggle" type="button" aria-expanded="false" aria-controls="toolsPanel">Filters &amp; sort <span class="count" id="filtersCount" hidden></span></button>
     <div class="tools collapsed" id="toolsPanel">
       <div>
@@ -106,6 +113,8 @@
           <option value="" hidden>Column order</option>
           <option value="price|-1">Price, high to low</option>
           <option value="price|1">Price, low to high</option>
+          <option value="dp|1">Down payment, low to high</option>
+          <option value="dp|-1">Down payment, high to low</option>
           <option value="rental|1">Monthly rental, low to high</option>
           <option value="rental|-1">Monthly rental, high to low</option>
           <option value="interest|1">Total interest, low to high</option>
@@ -145,7 +154,7 @@
         <label for="afford">Show</label>
         <select id="afford">
           <option value="all">All vehicles</option>
-          <option value="ok">Only those I can afford</option>
+          <option value="ok" id="affordOption">Only those within my limit</option>
         </select>
       </div>
     </div>
@@ -157,7 +166,7 @@
       </table>
     </div>
     <p class="hint" id="empty" hidden>No vehicles match these filters.</p>
-    <button class="btn-outline" id="browseEmptyBtn" type="button">Choose a car or SUV</button>
+    </div>
   </section>
 
   <footer class="foot">
@@ -196,6 +205,7 @@
     <p class="hint catalogue-per-million" id="cataloguePerMillion"></p>
     <div id="catalogueResults" class="catalogue-grid"></div>
     <div class="catalogue-pagination"><button class="btn-outline" id="cataloguePrev" type="button">Previous</button><span id="cataloguePage"></span><button class="btn-outline" id="catalogueNext" type="button">Next</button></div>
+    <p class="catalogue-more">Can't find your car? <button class="link-btn" id="openAiModalBtn" type="button">Search with AI</button> or <button class="link-btn" id="openManualBtn" type="button">enter it yourself</button>.</p>
     <p class="hint catalogue-coverage" id="catalogueCoverage"></p>
   </div>
 </div>
@@ -216,11 +226,18 @@
   </form>
 </div>
 
+<div class="modal-bg" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle" inert>
+  <div class="modal">
+    <div class="modal-header"><h2 id="detailTitle">Lease details</h2><button class="close-btn" id="closeDetailBtn" type="button" aria-label="Close lease details">&times;</button></div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
 <!-- AI SEARCH & ADD VEHICLE MODAL -->
 <div class="modal-bg" id="aiModal" role="dialog" aria-modal="true" aria-labelledby="aititle" inert>
   <div class="modal">
     <div class="modal-header">
-      <h2 id="aititle">Add vehicle to calculator</h2>
+      <h2 id="aititle">Add a vehicle</h2>
       <button class="close-btn" id="closeAiModalBtn" type="button" aria-label="Close">&times;</button>
     </div>
 
@@ -251,8 +268,8 @@
       <!-- DISCOVERY / COMPARATIVE CHECKLIST BOX -->
       <div id="aiDiscoveryBox" hidden>
         <div class="callout callout-info discovery-head">
-          <b id="aiDiscoveryTitle">Discovered Vehicles</b>
-          <button class="link-btn" id="aiToggleSelectAllBtn" type="button">Select All / None</button>
+          <b id="aiDiscoveryTitle">Vehicles found</b>
+          <button class="link-btn" id="aiToggleSelectAllBtn" type="button">Select all or none</button>
         </div>
         <div id="aiDiscoveryList" class="discovery-list"></div>
         <div class="discovery-actions">
@@ -267,55 +284,55 @@
       <!-- RESULT FORM -->
       <div id="aiResultForm" hidden>
         <div class="callout callout-info result-status">
-          <div><b>Sri Lanka Market Status:</b> <span id="aiAvailNotes">Available</span></div>
+          <div><b>Sri Lankan market:</b> <span id="aiAvailNotes">Available</span></div>
           <span id="aiRouteBadge" class="callout-badge badge-official">Official</span>
         </div>
 
         <div class="grid field-group">
           <div>
-            <label for="aiYearSelect">Model Year</label>
+            <label for="aiYearSelect">Model year</label>
             <select id="aiYearSelect"></select>
           </div>
           <div>
-            <label for="aiTrimSelect">Trim Level</label>
+            <label for="aiTrimSelect">Trim</label>
             <select id="aiTrimSelect"></select>
           </div>
           <div>
-            <label for="aiCondSelect">Condition in Sri Lanka</label>
+            <label for="aiCondSelect">Condition and price</label>
             <select id="aiCondSelect"></select>
           </div>
         </div>
 
         <div class="grid field-group">
           <div>
-            <label for="aiPriceInput">Price in LKR <button type="button" class="link-btn" id="aiResetPriceBtn" aria-label="Reset price to the AI estimate">↺ reset</button></label>
+            <label for="aiPriceInput">Price (LKR) <button type="button" class="link-btn" id="aiResetPriceBtn" aria-label="Reset price to the AI estimate">↺ reset</button></label>
             <input id="aiPriceInput" type="text" inputmode="decimal" autocomplete="off">
           </div>
           <div>
-            <label for="aiWarrSelect">Warranty</label>
+            <label for="aiWarrSelect">Import route</label>
             <select id="aiWarrSelect">
-              <option value="Official">Official warranty</option>
-              <option value="Grey">Grey market</option>
+              <option value="Official">Official agent</option>
+              <option value="Grey">Grey import</option>
             </select>
           </div>
           <div>
-            <label for="aiKmInput">Fuel Economy (km/l)</label>
+            <label for="aiKmInput">Fuel economy (km/l)</label>
             <input id="aiKmInput" type="text" placeholder="e.g. 24-28 km/l">
           </div>
         </div>
 
         <div>
-          <label>Vehicle Studio Photo (Front 3/4 view on white plate)</label>
+          <label for="aiImgUrl">Photo</label>
           <div class="preview-box">
             <img class="pimg" id="aiImgPreview" alt="Preview of the vehicle photo" hidden>
             <div>
-              <input id="aiImgUrl" class="preview-url" type="url" placeholder="Studio image URL..." aria-label="Studio photo image URL">
+              <input id="aiImgUrl" class="preview-url" type="url" placeholder="Paste a photo link, or upload one" aria-describedby="aiImgNote">
               <div class="preview-actions">
                 <label class="btn-outline btn-sm file-btn">
                   📁 Upload photo
                   <input id="aiImgFile" class="sr-only" type="file" accept="image/*">
                 </label>
-                <span class="hint">Automatically centred on 8:5 white studio plate</span>
+                <span class="hint" id="aiImgNote">Centred on a white 8:5 plate automatically</span>
               </div>
             </div>
           </div>
@@ -323,7 +340,7 @@
 
         <div class="modal-actions">
           <button class="btn-outline" id="aiCancelBtn" type="button">Cancel</button>
-          <button class="btn-outline" id="aiAddAllTrimsBtn" type="button">Add all trims for <span id="aiTrimsYearLabel">2024</span></button>
+          <button class="btn-outline" id="aiAddAllTrimsBtn" type="button">Add all trims<span id="aiTrimsYearLabel"></span></button>
           <button class="btn" id="aiConfirmAddBtn" type="button">Add to comparison</button>
         </div>
       </div>
@@ -332,11 +349,11 @@
     <!-- QUICK MANUAL PANE -->
     <div id="paneManual" role="tabpanel" aria-labelledby="tabManualBtn" hidden>
       <div class="grid field-group">
-        <div class="grid-span-2"><label for="mName">Vehicle Name &amp; Trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
-        <div><label for="mPrice">Price in LKR</label><input id="mPrice" type="text" placeholder="e.g. 18,500,000.00" inputmode="decimal" autocomplete="off"></div>
+        <div class="grid-span-2"><label for="mName">Vehicle name and trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
+        <div><label for="mPrice">Price (LKR)</label><input id="mPrice" type="text" placeholder="e.g. 18,500,000.00" inputmode="decimal" autocomplete="off"></div>
         <div><label for="mCond">Condition</label><select id="mCond"><option value="New">Brand New</option><option value="Recond">Reconditioned</option><option value="Used">Registered Used</option></select></div>
-        <div><label for="mWarr">Warranty</label><select id="mWarr"><option value="Grey">Grey market</option><option value="Official">Official</option></select></div>
-        <div><label for="mPt">Powertrain / Fuel</label><input id="mPt" type="text" placeholder="e.g. 2.0L Petrol"></div>
+        <div><label for="mWarr">Warranty</label><select id="mWarr"><option value="Grey">Grey import</option><option value="Official">Official agent</option></select></div>
+        <div><label for="mPt">Powertrain or fuel</label><input id="mPt" type="text" placeholder="e.g. 2.0L Petrol"></div>
       </div>
       <div>
         <label for="mImgUrl">Photo URL (optional)</label>

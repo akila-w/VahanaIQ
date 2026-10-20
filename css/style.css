@@ -220,7 +220,7 @@ button.hint-btn:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-12);
-  align-items: end;
+  align-items: start;
   margin-bottom: var(--space-12);
 }
 
@@ -280,11 +280,18 @@ th.n {
   align-items: center;
 }
 
-@media (min-width: 1041px) {
+@media (min-width: 1200px) {
   td.name {
-    min-width: 320px;
+    min-width: 280px;
   }
 }
+
+/* Total interest and total outlay stay sortable but show in each vehicle's Details,
+   so the table fits the page at every width */
+th.secondary, td.secondary { display: none; }
+
+td.v-actions { white-space: nowrap; text-align: right; }
+td.v-actions .row-actions { margin-left: 0; }
 
 .car img, .car .ph {
   flex: 0 0 auto;
@@ -331,6 +338,7 @@ th.n {
 .legend {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-6) var(--space-18);
   font-size: 0.8125rem;
   color: var(--mute);
@@ -1000,6 +1008,29 @@ button.cond-tag:hover {
   gap: var(--space-6);
 }
 
+/* Vehicles: empty state, row actions and lease details */
+.empty-state { border: 1px dashed var(--control-border); border-radius: var(--radius-lg); padding: var(--space-20); text-align: center; }
+.empty-state h3 { margin: 0 0 var(--space-6); font-size: 1rem; }
+.empty-state p { margin: 0 auto var(--space-14); max-width: 52ch; color: var(--mute); }
+.empty-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-8); }
+#comparisonBody[hidden], #emptyState[hidden] { display: none; }
+.row-actions { align-items: center; }
+.catalogue-more { margin: var(--space-14) 0 0; }
+.detail-sub { margin: 0 0 var(--space-12); color: var(--mute); }
+.detail-list { margin: 0; display: grid; gap: var(--space-6); }
+.detail-list div { display: flex; justify-content: space-between; gap: var(--space-12); border-bottom: 1px solid var(--line); padding-bottom: var(--space-6); }
+.detail-list dt { color: var(--mute); }
+.detail-list dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.detail-h { font-size: 1rem; margin: var(--space-18) 0 var(--space-8); }
+.detail-wrap { overflow-x: auto; }
+table.detail-table { min-width: 0; display: table; }
+.detail-table thead { display: table-header-group; }
+.detail-table tbody { display: table-row-group; }
+.detail-table tr { display: table-row; border: 0; padding: 0; background: none; }
+.detail-table th, .detail-table td { display: table-cell; width: auto; padding: var(--space-6) var(--space-8); text-align: left; }
+.detail-table td::before { content: none; }
+.detail-table .n { text-align: right; font-variant-numeric: tabular-nums; }
+
 /* AI search and manual entry modal */
 .ai-search-actions > .btn, .ai-search-actions > .file-btn { white-space: nowrap; }
 .callout.attached-ad { display: flex; align-items: center; justify-content: space-between; padding: var(--space-6) var(--space-12); margin-bottom: var(--space-8); }
@@ -1028,7 +1059,9 @@ button.cond-tag:hover {
 .pimg-ph[hidden] { display: none; }
 .modal-actions { margin-top: var(--space-16); display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: var(--space-8); }
 
-@media (max-width: 1040px) {
+/* Below 1200px the comparison table becomes compact cards, two to a row on tablets;
+   the secondary totals move into each vehicle's Details */
+@media (max-width: 1199px) {
   .wrap { overflow: visible; }
   table { min-width: 0; }
   table, tbody, tr, td { display: block; width: 100%; }
@@ -1065,6 +1098,19 @@ button.cond-tag:hover {
   }
   td.name::before { content: none; }
   td .track { flex: 1; max-width: 60%; }
+  td.secondary { display: none; }
+  #rows tr { margin-bottom: 0; }
+  td.v-actions { justify-content: flex-end; padding-top: var(--space-8); }
+  td.v-actions::before { content: none; }
+}
+
+@media (min-width: 700px) and (max-width: 1199px) {
+  #rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); }
+}
+
+@media (max-width: 699px) {
+  #rows { display: grid; gap: var(--space-12); }
+  td.v-need { display: none; }
 }
 
 @media (max-width: 640px) {
@@ -1212,6 +1258,7 @@ button.cond-tag:hover {
   tbody { display: table-row-group !important; }
   tr { display: table-row !important; }
   th, td { display: table-cell !important; width: auto !important; }
+  th.actions, td.v-actions { display: none !important; }
   td::before { content: none !important; }
 
   th {

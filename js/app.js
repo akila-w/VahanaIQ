@@ -1,4 +1,4 @@
-import { fmt, esc, num, computeLeaseTable, rental, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.1";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, DOWN_MIN_UNREG } from "./calculator.js?v=2.8.1";
 import { baseVehicles } from "./catalog.js?v=2.8.1";
 import { initCatalogue } from "./catalogue-browser.js?v=2.8.1";
 import { APP_VERSION } from "./config.js?v=2.8.1";
@@ -62,12 +62,14 @@ export function formatVehicleTitle(modelName, trimName, year) {
 const cols = [
   ["name", "Vehicle"],
   ["price", "Price", "n"],
+  ["dp", "Down payment", "n"],
   ["rental", "Monthly rental", "n"],
   ["bar", "Share of your budget"],
-  ["interest", "Total interest", "n"],
-  ["total", "Total outlay", "n"],
+  ["interest", "Total interest", "n secondary"],
+  ["total", "Total outlay", "n secondary"],
   ["need", "Income needed", "n"],
-  ["status", "Status"]
+  ["status", "Status"],
+  ["actions", "Actions", "actions"]
 ];
 
 const condLabels = { New: "Brand New", Recond: "Reconditioned", Used: "Registered Used" };
@@ -101,8 +103,10 @@ function summaryHtml(s, f, room) {
 
 function rowActions(r) {
   const name = esc(r.name);
-  return `<button class="row-btn danger" type="button" data-act="remove" data-key="${r._key}" aria-label="Remove ${name}">Remove</button>`;
+  return `<button class="row-btn" type="button" data-act="details" data-key="${r._key}" aria-label="Lease details, ${name}">Details</button><button class="link" type="button" data-act="remove" data-key="${r._key}" aria-label="Remove ${name}">Remove</button>`;
 }
+
+const UNKNOWN_SPEC = "Specifications to confirm";
 
 // Table header is rebuilt only when the sort changes
 let headSig = "";
@@ -111,11 +115,12 @@ function renderHead() {
   if (sig === headSig) return;
   headSig = sig;
   $("head").innerHTML = cols.map(c => {
-    const sortable = c[0] !== "status" && c[0] !== "bar";
+    const sortable = !["status", "bar", "actions"].includes(c[0]);
     const k = c[0];
     const cur = k === sortKey ? (sortDir === -1 ? "descending" : "ascending") : "none";
     const arrow = k === sortKey ? (sortDir === -1 ? " ▾" : " ▴") : "";
-    return `<th class="${c[2] || ""}" aria-sort="${cur}">${sortable ? `<button type="button" data-k="${k}">${c[1]}${arrow}</button>` : c[1]}</th>`;
+    const label = k === "actions" ? `<span class="sr-only">${c[1]}</span>` : c[1];
+    return `<th class="${c[2] || ""}"${sortable ? ` aria-sort="${cur}"` : ""}>${sortable ? `<button type="button" data-k="${k}">${c[1]}${arrow}</button>` : label}</th>`;
   }).join("");
 }
 
@@ -126,14 +131,16 @@ const rowEls = new Map();
 function buildRow(key) {
   const tr = document.createElement("tr");
   tr.dataset.key = key;
-  tr.innerHTML = `<td class="name"><div class="car"><span class="thumb"></span><div><b class="v-name"></b><small class="v-spec"></small><div class="warr"><span class="v-warr"></span><button type="button" class="cond-tag" data-act="cond" data-key="${key}" title="Change condition (Brand New, Reconditioned, Registered Used)"><span class="v-cond"></span> <span class="cycle-icon" aria-hidden="true">⇄</span></button><span class="v-ltv"></span><span class="row-actions"></span></div></div></div></td>
+  tr.innerHTML = `<td class="name"><div class="car"><span class="thumb"></span><div><b class="v-name"></b><small class="v-spec"></small><div class="warr"><span class="v-warr"></span><button type="button" class="cond-tag" data-act="cond" data-key="${key}" title="Change condition (Brand New, Reconditioned, Registered Used)"><span class="v-cond"></span> <span class="cycle-icon" aria-hidden="true">⇄</span></button><span class="v-ltv"></span></div></div></div></td>
 <td class="n price-cell" data-label="Price (Rs.)"><span class="price-wrap"><span class="price-val"></span><button type="button" class="icon-btn edit-price" data-act="price" data-key="${key}" title="Edit price">✎</button></span></td>
+<td class="n v-dp" data-label="Down payment (Rs.)"></td>
 <td class="n" data-label="Monthly rental (Rs.)"><b class="v-rent"></b></td>
 <td class="v-bar" data-label="Share of your budget"></td>
-<td class="n v-interest" data-label="Total interest (Rs.)"></td>
-<td class="n v-total" data-label="Total outlay (Rs.)"></td>
+<td class="n v-interest secondary" data-label="Total interest (Rs.)"></td>
+<td class="n v-total secondary" data-label="Total outlay (Rs.)"></td>
 <td class="n v-need" data-label="Income needed (Rs.)"></td>
-<td class="v-status" data-label="Status"></td>`;
+<td class="v-status" data-label="Status"></td>
+<td class="v-actions"><span class="row-actions"></span></td>`;
   return tr;
 }
 
@@ -162,7 +169,7 @@ function updateRow(tr, r, { s, room, scale, labels }) {
   const cl = condLabel(r.cond);
   setThumb(tr, r);
   q(".v-name").textContent = r.name;
-  setHtml(q(".v-spec"), [r.pt, r.km].filter(Boolean).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
+  setHtml(q(".v-spec"), [r.pt, r.km].filter(t => t && t !== UNKNOWN_SPEC).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
   q(".v-warr").textContent = r.w === "Official" ? "Official agent" : r.w === "Grey" ? "Grey import" : "Route unconfirmed";
   if (r.legacy) q(".v-warr").textContent += " · Saved estimate: verify price";
   else if (r.priceBasis) q(".v-warr").textContent += r.priceBasis === "user-entered" ? " · Your price" : " · Confirm current quote";
@@ -174,6 +181,7 @@ function updateRow(tr, r, { s, room, scale, labels }) {
   q(".price-val").textContent = fmt(r.price);
   q(".edit-price").setAttribute("aria-label", `Edit price, ${r.name}`);
   q(".v-rent").textContent = fmt(r.rental);
+  q(".v-dp").textContent = fmt(r.dp);
 
   const w = Math.min(100, r.rental / scale * 100);
   setHtml(q(".v-bar"), s.income
@@ -248,8 +256,12 @@ function render() {
   const scale = s.income ? Math.max(room, maxRent) : maxRent;
   const labels = { ok: "Comfortable", mid: "Stretching", bad: "Out of reach", na: "" };
 
+  const hasCars = cars.some(c => !c.hidden);
   $("resetCatalogWrap").hidden = !cars.length;
-  if ($("browseEmptyBtn")) $("browseEmptyBtn").hidden = cars.some(c => !c.hidden);
+  if ($("emptyState")) $("emptyState").hidden = hasCars;
+  if ($("comparisonBody")) $("comparisonBody").hidden = !hasCars;
+  if ($("openCatalogueBtn")) $("openCatalogueBtn").hidden = !hasCars;
+  if ($("affordOption")) $("affordOption").textContent = `Only those within my ${Math.round(s.dti * 100)}% limit`;
   refreshCatalogue();
 
   const ctx = { s, room, scale, labels };
@@ -269,7 +281,7 @@ function render() {
   for (const k of rowEls.keys()) if (!cars.some(c => c._key === k)) rowEls.delete(k);
 
   if (list.length === 0) {
-    $("empty").textContent = !cars.length ? "Your comparison is empty. Browse the catalogue to add a vehicle." : affordVal === "ok" && !s.income
+    $("empty").textContent = affordVal === "ok" && !s.income
       ? "Enter your net monthly income above to filter vehicles you can afford."
       : "No vehicles match these filters.";
     $("empty").hidden = false;
@@ -303,10 +315,8 @@ function updateBudgetExtras(s, f, room, rows) {
   const legend = $("budgetLegend");
   legend.hidden = !s.income;
   if (s.income) {
-    legend.innerHTML = `<span><span class="legend-tick" aria-hidden="true"></span>Tick: your highest affordable rental (${limit}% of income${s.debt ? ", after existing payments" : ""})</span>
-<span><span class="tag ok">Comfortable</span> rental plus existing payments up to 40% of income</span>
-<span><span class="tag mid">Stretching</span> over 40%, up to 50%</span>
-<span><span class="tag bad">Out of reach</span> over 50%</span>`;
+    legend.innerHTML = `<span><span class="legend-tick" aria-hidden="true"></span>Your limit: ${limit}% of income${s.debt ? " after existing payments" : ""}</span>
+<span>Rental plus existing payments: <span class="tag ok">Comfortable</span> up to 40% · <span class="tag mid">Stretching</span> 40–50% · <span class="tag bad">Out of reach</span> over 50%</span>`;
   }
 
   let sentence = "", bar = "";
@@ -471,6 +481,8 @@ $("rows").addEventListener("click", e => {
 
   if (act === "remove") {
     changeWithUndo(idx, `Removed ${car.name}.`, () => { cars.splice(idx, 1); });
+  } else if (act === "details") {
+    openDetails(car, b);
   } else if (act === "cond") {
     const cycle = { New: "Recond", Recond: "Used", Used: "New" };
     car.cond = cycle[car.cond || "New"] || "New";
@@ -480,6 +492,11 @@ $("rows").addEventListener("click", e => {
     saveCars(cars);
     render();
     focusRowControl(key, "cond");
+    // The price was for the old condition, so offer to change it
+    showToast(`${car.name} is now ${condLabel(car.cond)}. Check its price for this condition.`, "Edit price", () => {
+      const edit = $("rows").querySelector(`[data-key="${key}"][data-act="price"]`);
+      if (edit) startPriceEdit(edit, car);
+    });
   } else if (act === "price") {
     startPriceEdit(b, car);
   }
@@ -525,23 +542,62 @@ function startPriceEdit(btn, car) {
 }
 
 $("resetCatalogBtn").addEventListener("click", () => {
-  if (confirm("Clear your comparison? You can add vehicles again from the catalogue.")) {
-    cars = [];
+  const before = cars;
+  cars = [];
+  saveCars(cars);
+  rowEls.clear();
+  $("rows").replaceChildren();
+  render();
+  const undoBtn = showToast(`Cleared ${before.length === 1 ? "1 vehicle" : before.length + " vehicles"} from your comparison.`, "Undo", () => {
+    cars = before;
     saveCars(cars);
-    rowEls.clear();
-    $("rows").replaceChildren();
     render();
     $("h-list").focus();
-  }
+  }, () => $("h-list").focus());
+  if (undoBtn) undoBtn.focus(); else $("h-list").focus();
 });
+
+// Lease details: the numbers behind one row, and the balance year by year
+function openDetails(car, opener) {
+  const { s, rows: [r] } = computeLeaseTable([car], readSettings());
+  const limit = Math.round(s.dti * 100);
+  const line = (label, value) => `<div><dt>${label}</dt><dd>${value}</dd></div>`;
+  let html = `<p class="detail-sub">${esc(condLabel(car.cond))} · Rs. ${fmt(car.price)} · ${s.rate}% a year over ${s.n} months</p><dl class="detail-list">`;
+  if (s.down >= 100) {
+    html += line("Paid in cash", `Rs. ${fmt(car.price)}`) + "</dl><p class=\"hint\">With a 100% down payment there's no lease to repay.</p>";
+  } else {
+    html += line(`Down payment (${s.down}%)`, `Rs. ${fmt(r.dp)}`) +
+      line("Amount financed", `Rs. ${fmt(r.loan)}`) +
+      line(`Monthly rental × ${s.n}`, `<b>Rs. ${fmt(r.rental)}</b>`) +
+      line("Total interest", `Rs. ${fmt(r.interest)}`) +
+      line("Total paid (down payment and rentals)", `Rs. ${fmt(r.total)}`) +
+      line(`Net income needed at a ${limit}% limit`, `Rs. ${fmt(r.need)}`) + "</dl>";
+    const years = yearlySchedule(r.loan, s.rate, s.n);
+    html += `<h3 class="detail-h">Year by year</h3><div class="wrap detail-wrap"><table class="detail-table"><thead><tr><th>Year</th><th class="n">Rentals paid</th><th class="n">Interest</th><th class="n">Principal</th><th class="n">Balance left</th></tr></thead><tbody>${
+      years.map(y => `<tr><td>${y.year}${y.months < 12 ? ` (${y.months} months)` : ""}</td><td class="n">${fmt(y.paid)}</td><td class="n">${fmt(y.interest)}</td><td class="n">${fmt(y.principal)}</td><td class="n">${fmt(y.balance)}</td></tr>`).join("")
+    }</tbody></table></div><p class="hint">Rentals use the standard reducing-balance formula with monthly compounding. Insurance, registration and fees are not included.</p>`;
+  }
+  $("detailTitle").textContent = car.name;
+  $("detailBody").innerHTML = html;
+  openModal($("detailModal"), opener, $("closeDetailBtn"));
+}
+if ($("closeDetailBtn")) $("closeDetailBtn").addEventListener("click", () => closeModal($("detailModal")));
 
 // AI Search Modal UI
 const closeAiModal = () => closeModal($("aiModal"));
 
-$("openAiModalBtn").addEventListener("click", () => {
+// AI search and manual entry open from the catalogue's "Can't find your car?" line and the
+// empty state; focus returns to the main "Add a vehicle" button once the catalogue has closed
+function openAddFlow(tab, opener) {
+  if ($("catalogueModal") && $("catalogueModal").classList.contains("open")) closeModal($("catalogueModal"));
   $("aiSearchMsg").textContent = "";
-  openModal($("aiModal"), $("openAiModalBtn"), $("aiSearchQuery"));
-});
+  selectTab(tab);
+  openModal($("aiModal"), opener, $(tab === "ai" ? "aiSearchQuery" : "mName"));
+}
+$("openAiModalBtn").addEventListener("click", () => openAddFlow("ai", $("addVehicleBtn") || $("openAiModalBtn")));
+if ($("openManualBtn")) $("openManualBtn").addEventListener("click", () => openAddFlow("manual", $("addVehicleBtn")));
+if ($("aiEmptyBtn")) $("aiEmptyBtn").addEventListener("click", () => openAddFlow("ai", $("aiEmptyBtn")));
+if ($("printBtn")) $("printBtn").addEventListener("click", () => window.print());
 
 $("closeAiModalBtn").addEventListener("click", closeAiModal);
 $("aiCancelBtn").addEventListener("click", closeAiModal);
@@ -633,7 +689,7 @@ $("aiSearchBtn").addEventListener("click", async () => {
     $("aiSearchMsg").textContent = "Please enter a vehicle name, paste an ad, or attach a screenshot.";
     return;
   }
-  $("aiSearchMsg").innerHTML = '<span class="spin"></span>Analyzing Sri Lankan market availability, trims, and valuations...';
+  $("aiSearchMsg").innerHTML = '<span class="spin"></span>Checking Sri Lankan availability, trims and prices…';
   $("aiSearchMsg").classList.remove("msg-error");
   $("aiSearchBtn").disabled = true;
   $("paneAi").setAttribute("aria-busy", "true");
@@ -701,7 +757,7 @@ async function renderAiResults(data) {
 
   const years = data.model_years || [];
   if (!years.length) {
-    $("aiYearSelect").innerHTML = '<option value="2024">2024</option>';
+    $("aiYearSelect").innerHTML = '<option value="">Year not given</option>';
   } else {
     $("aiYearSelect").innerHTML = years.map(y => {
       const yVal = typeof y === "object" ? y.year : y;
@@ -723,7 +779,8 @@ async function renderAiResults(data) {
       normalizeImageToStudio(fetchedImg, procImg => {
         if (currentAiData !== data) return;
         setAiImgPreview(procImg || fetchedImg);
-        $("aiImgUrl").value = procImg || fetchedImg;
+        // Show where the photo came from, never the processed image data
+        $("aiImgUrl").value = /^https?:\/\//.test(fetchedImg) ? fetchedImg : "";
       });
     }
   } catch (e) {
@@ -734,7 +791,7 @@ async function renderAiResults(data) {
 function updateAllTrimsYearLabel() {
   const yr = $("aiYearSelect").value;
   const label = $("aiTrimsYearLabel");
-  if (label) label.textContent = yr;
+  if (label) label.textContent = yr ? `for ${yr}` : "";
 }
 
 function getSelectedYearData() {
@@ -749,7 +806,7 @@ function updateTrimDropdown() {
   const yData = getSelectedYearData();
   const trims = yData?.trims || [];
   if (!trims.length) {
-    $("aiTrimSelect").innerHTML = '<option value="0">Standard Trim</option>';
+    $("aiTrimSelect").innerHTML = '<option value="0">Standard trim</option>';
   } else {
     $("aiTrimSelect").innerHTML = trims.map((t, i) => `<option value="${i}">${esc(t.trim_name || "Trim " + (i + 1))}</option>`).join("");
   }
@@ -776,7 +833,7 @@ function updateConditionAndSpecs() {
     const detCond = currentAiData?.detected_condition || "Used";
     options.push({
       id: "seller_price",
-      name: `Listed / Seller Asking Price (from Ad)`,
+      name: "Seller's asking price (from the ad)",
       price: sellerP,
       c: detCond,
       selected: true
@@ -784,14 +841,14 @@ function updateConditionAndSpecs() {
   }
 
   options.push(
-    { id: "brand_new", name: "Brand New (Unregistered) - 0 km", c: "New" },
-    { id: "recond", name: "Reconditioned (Grade 4.5+) - Under 25k km", c: "Recond" },
-    { id: "used_low", name: "Registered Used (< 50,000 km)", c: "Used" },
-    { id: "used_med", name: "Registered Used (50,000 - 100,000 km)", c: "Used" }
+    { id: "brand_new", name: "Brand New (unregistered, 0 km)", c: "New" },
+    { id: "recond", name: "Reconditioned (grade 4.5+, under 25,000 km)", c: "Recond" },
+    { id: "used_low", name: "Registered Used (under 50,000 km)", c: "Used" },
+    { id: "used_med", name: "Registered Used (50,000–100,000 km)", c: "Used" }
   );
   for (const option of options) option.price = conditionPrice(tData, option.id, sellerP);
   const selected = options.find(o => o.selected && validPrice(o.price)) || options.find(o => validPrice(o.price)) || options[0];
-  $("aiCondSelect").innerHTML = options.map(o => `<option value="${o.id}" data-p="${validPrice(o.price) ? o.price : ""}" data-c="${o.c}" ${o === selected ? "selected" : ""}>${o.name} - ${validPrice(o.price) ? "Rs. " + fmt(o.price) : "Price unavailable — enter a price"}</option>`).join("");
+  $("aiCondSelect").innerHTML = options.map(o => `<option value="${o.id}" data-p="${validPrice(o.price) ? o.price : ""}" data-c="${o.c}" ${o === selected ? "selected" : ""}>${o.name}: ${validPrice(o.price) ? "Rs. " + fmt(o.price) : "no price, enter one"}</option>`).join("");
   updateSelectedPrice();
 }
 
@@ -930,7 +987,7 @@ function renderDiscoveryChecklist(vehicles) {
   $("aiUnavailBox").hidden = true;
   $("aiResultForm").hidden = true;
   $("aiDiscoveryBox").hidden = false;
-  $("aiDiscoveryTitle").textContent = `Discovered ${vehicles.length} Vehicles Matching Your Query`;
+  $("aiDiscoveryTitle").textContent = `${vehicles.length} vehicles match your search`;
 
   const listContainer = $("aiDiscoveryList");
   listContainer.innerHTML = vehicles.map((v, i) => {
@@ -1094,7 +1151,8 @@ function applyTheme(theme) {
 }
 
 function initTheme() {
-  const saved = typeof localStorage !== "undefined" ? localStorage.getItem("vahanaiq_theme") : null;
+  let saved = null;
+  try { saved = localStorage.getItem("vahanaiq_theme"); } catch (e) {}
   const prefersDark = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   const theme = saved || (prefersDark ? "dark" : "light");
   applyTheme(theme);
@@ -1106,9 +1164,7 @@ if (themeBtn) {
     const cur = (typeof document !== "undefined" && document.documentElement && typeof document.documentElement.getAttribute === "function" && document.documentElement.getAttribute("data-theme")) || 
       (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
     const next = cur === "dark" ? "light" : "dark";
-    if (typeof localStorage !== "undefined") {
-      localStorage.setItem("vahanaiq_theme", next);
-    }
+    try { localStorage.setItem("vahanaiq_theme", next); } catch (e) {}
     applyTheme(next);
   });
 }

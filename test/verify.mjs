@@ -438,7 +438,7 @@ assert(html.includes('apple-touch-icon.png'), "index.html must reference PNG app
 assert(html.includes('og-image.png'), "index.html must reference PNG og-image");
 assert(html.includes('terms-grid'), "index.html must use terms-grid layout");
 assert(html.includes('aria-label="Search vehicle with Gemini AI or paste advertisement"'), "index.html must have aria-label on aiSearchQuery");
-assert(html.includes('aria-label="Studio photo image URL"'), "index.html must have aria-label on aiImgUrl");
+assert(html.includes('<label for="aiImgUrl">'), "index.html must give aiImgUrl a visible label");
 assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
 assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
 assert(html.includes('js/app.js?v=2.8.1'), "index.html must reference js/app.js?v=2.8.1");
