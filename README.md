@@ -27,10 +27,13 @@ vahanaiq/
 ├── index.html            # Main web application entry point
 ├── manifest.json         # PWA Manifest (multi-size maskable icons)
 ├── README.md             # Project documentation
+├── design-system/
+│   └── tokens.json       # Design tokens: colours, type, spacing, radii, shadows (source of truth)
 ├── docs/
 │   └── brand-guide.md    # Brand identity, design system & typography specs
 ├── css/
-│   └── style.css         # Modern responsive styles & dark/light theme
+│   ├── tokens.css        # Generated from design-system/tokens.json (do not edit)
+│   └── style.css         # Responsive styles, reading the token variables
 ├── js/
 │   ├── app.js            # Main application UI and event coordinator
 │   ├── calculator.js     # Actuarial lease formulas, DTI & budget room
@@ -47,11 +50,13 @@ vahanaiq/
 │   ├── toast.js          # Undo toast
 │   └── config.js         # Cloud proxy and endpoint configuration
 ├── scripts/
+│   ├── build-tokens.mjs          # Builds css/tokens.css from design-system/tokens.json
 │   ├── refresh-prices.mjs        # Applies researched prices to the catalogue, with checks
 │   ├── open-price-pr.sh          # Opens the monthly prices pull request
 │   └── price-research-task.md    # Instructions for the monthly Claude research task
 ├── test/
 │   ├── verify.mjs                # App verification suite
+│   ├── tokens.test.mjs           # Design tokens are in sync and the only source of CSS variables
 │   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
 │   └── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
 ├── .github/workflows/
@@ -80,7 +85,11 @@ node test/qa-regressions.test.mjs
 node test/proxy-price-mode.test.mjs
 node test/proxy-search.test.mjs
 node test/refresh-prices.test.mjs
+node test/tokens.test.mjs
 ```
+
+### Changing colours, spacing, radii, shadows and sizes
+Edit `design-system/tokens.json`, then run `node scripts/build-tokens.mjs` to regenerate `css/tokens.css`. Don't edit `css/tokens.css` by hand, and don't declare custom properties in `css/style.css`; `test/tokens.test.mjs` checks both. See `docs/brand-guide.md` for the palette and usage rules.
 
 To run VahanaIQ locally with full ES module support:
 ```bash
