@@ -8,8 +8,7 @@
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#0f766e">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261019-optA" sizes="any">
-  <link rel="apple-touch-icon" href="https://akila-w.github.io/vahanaiq/assets/icons/apple-touch-icon.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="https://akila-w.github.io/vahanaiq/assets/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <meta property="og:title" content="VahanaIQ — Sri Lanka Vehicle Lease Calculator">
   <meta property="og:description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.">
   <meta property="og:image" content="https://akila-w.github.io/vahanaiq/assets/icons/og-image.png">
@@ -21,9 +20,9 @@
   <link rel="canonical" href="https://akila-w.github.io/vahanaiq/">
   <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/tokens.css?v=2.8.1">
-  <link rel="stylesheet" href="css/style.css?v=2.8.1">
-  <script type="module" src="js/app.js?v=2.8.1"></script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.9.0">
+  <link rel="stylesheet" href="css/style.css?v=2.9.0">
+  <script type="module" src="js/app.js?v=2.9.0"></script>
 </head>
 <body>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
@@ -114,7 +113,7 @@
   <section class="panel" aria-labelledby="h-list">
     <div class="panel-head">
       <h2 id="h-list" tabindex="-1">Vehicles</h2>
-      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add another vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="resetCatalogBtn" type="button">Clear comparison</button></span></div>
+      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add another vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button">Share</button><button class="link-btn" id="resetCatalogBtn" type="button">Clear comparison</button></span></div>
     </div>
     <div class="empty-state" id="emptyState" hidden>
       <h3>Start your comparison</h3>
@@ -193,7 +192,7 @@
       <span id="priceAsOf">Confirm prices and stock with the seller</span>
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
-      <span>VahanaIQ v<span id="appVersion">2.8.1</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.9.0</span></span>
     </p>
   </footer>
 </main>
@@ -242,6 +241,18 @@
     <p class="msg-error" id="catalogueAddError" role="alert"></p>
     <div class="catalogue-pagination"><button class="btn-outline" id="cancelCatalogueAddBtn" type="button">Cancel</button><button class="btn" type="submit">Add to comparison</button></div>
   </form>
+</div>
+
+<div class="modal-bg" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle" inert>
+  <div class="modal share-modal">
+    <div class="modal-header"><h2 id="shareTitle">Share this comparison</h2><button class="close-btn" id="closeShareBtn" type="button" aria-label="Close sharing">&times;</button></div>
+    <p>The link has your loan terms, filters and vehicles. Anyone who opens it sees them.</p>
+    <label class="check-row"><input type="checkbox" id="shareIncome"> Include my income and existing payments</label>
+    <label for="shareLink">Link</label>
+    <input id="shareLink" type="text" readonly>
+    <p class="hint" id="shareStatus" role="status"></p>
+    <div class="modal-actions"><button class="btn-outline" id="cancelShareBtn" type="button">Close</button><button class="btn" id="copyShareBtn" type="button">Copy link</button></div>
+  </div>
 </div>
 
 <div class="modal-bg" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle" inert>

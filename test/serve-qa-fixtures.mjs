@@ -14,7 +14,7 @@ const discovered = () => [
   { model_name: 'Toyota Yaris Cross', year: 2024, trim_name: 'Z', powertrain: '1.5L Hybrid', condition: 'New', warranty_type: 'Grey', price_lkr: 18000000 },
   { model_name: 'Honda Vezel', year: 2024, trim_name: 'Z', powertrain: '1.5L Hybrid', condition: 'Used', warranty_type: 'Grey', price_lkr: 14000000 }
 ];
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon' };
+const types = { '.html': 'text/html', '.txt': 'text/plain', '.xml': 'application/xml', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon' };
 http.createServer(async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   const pathname = new URL(req.url, 'http://localhost').pathname;
@@ -33,13 +33,14 @@ http.createServer(async (req, res) => {
   }
   try {
     const relative = pathname === '/' ? 'index.html' : decodeURIComponent(pathname).replace(/^\//, '');
-    if (!/^(?:index\.html|manifest\.json|favicon\.ico|(?:js|css|assets)\/)/.test(relative)) throw new Error('Not served');
+    if (!/^(?:index\.html|manifest\.json|favicon\.ico|sw\.js|robots\.txt|sitemap\.xml|(?:js|css|assets)\/)/.test(relative)) throw new Error('Not served');
     const target = path.resolve(root, relative);
     if (!target.startsWith(root + path.sep)) throw new Error('Outside root');
     let data = await fs.readFile(target);
     if (relative === 'index.html' && new URL(req.url, 'http://localhost').searchParams.has('qa-print')) {
-      const css = await fs.readFile(path.join(root, 'css/style.css'), 'utf8');
-      const printRules = css.slice(css.indexOf('@media print {')).replace('@media print {', '@media all {');
+      // The print palette lives in tokens.css and the print layout in style.css
+      const printBlock = css => css.slice(css.indexOf('@media print {')).replace('@media print {', '@media all {');
+      const printRules = printBlock(await fs.readFile(path.join(root, 'css/tokens.css'), 'utf8')) + printBlock(await fs.readFile(path.join(root, 'css/style.css'), 'utf8'));
       data = Buffer.from(data.toString().replace('</head>', `<style>${printRules}</style></head>`));
     }
     if (relative === 'js/config.js') data = Buffer.from(data.toString().replace(/proxyUrl:\s*"[^"]*"/, `proxyUrl: "http://127.0.0.1:${port}/__proxy"`));

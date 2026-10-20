@@ -364,7 +364,8 @@ async function fetchAnswer(proxy, queries, delay) {
     try {
       const res = await fetch(proxy, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // The proxy only answers price mode with its PRICE_TOKEN, when one is set
+        headers: { "Content-Type": "application/json", ...(process.env.PRICE_TOKEN ? { "X-Price-Token": process.env.PRICE_TOKEN } : {}) },
         body: JSON.stringify({ queries, mode: "price" }),
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
       });

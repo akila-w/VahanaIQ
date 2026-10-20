@@ -1,16 +1,17 @@
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.8.1";
-import { baseVehicles } from "./catalog.js?v=2.8.1";
-import { initCatalogue } from "./catalogue-browser.js?v=2.8.1";
-import { APP_VERSION } from "./config.js?v=2.8.1";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.8.1";
-import { searchVehicle } from "./gemini.js?v=2.8.1";
-import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.8.1";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.8.1";
-import { openModal, closeModal } from "./modal.js?v=2.8.1";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState } from "./inputs.js?v=2.8.1";
-import { showToast } from "./toast.js?v=2.8.1";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.8.1";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.8.1";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.9.0";
+import { baseVehicles } from "./catalog.js?v=2.9.0";
+import { initCatalogue } from "./catalogue-browser.js?v=2.9.0";
+import { APP_VERSION } from "./config.js?v=2.9.0";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.9.0";
+import { searchVehicle } from "./gemini.js?v=2.9.0";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.9.0";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.9.0";
+import { openModal, closeModal } from "./modal.js?v=2.9.0";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.9.0";
+import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.9.0";
+import { showToast } from "./toast.js?v=2.9.0";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.9.0";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.9.0";
 
 clearLegacyKeys();
 
@@ -1185,6 +1186,77 @@ refreshCatalogue = initCatalogue({
   }
 });
 
+// --- Sharing: a link carries inputs and vehicles (catalogue cars by ID, others in full);
+// income and existing payments only when the person ticks the box
+
+function shareableCars() {
+  return cars.filter(c => !c.hidden).map(c => c.catalogueId
+    ? { c: c.catalogueId, p: c.price, k: c.cond }
+    : { n: c.name, p: c.price, k: c.cond, w: c.w, t: c.pt || "", ...( /^https:\/\//.test(c.img || "") ? { i: c.img } : {}) });
+}
+
+function carFromShare(item) {
+  if (!item || typeof item !== "object" || !validPrice(+item.p)) return null;
+  const cond = ["New", "Recond", "Recent", "Used"].includes(item.k) ? item.k : "New";
+  const entry = item.c && marketCatalogue.find(v => v.id === item.c);
+  if (entry) {
+    const published = +item.p === entry.price && cond === entry.cond;
+    return { ...entry, id: newVehicleId(), catalogueId: entry.id, price: +item.p, cond, custom: true,
+      priceBasis: published ? entry.priceBasis : "user-entered", priceSourceUrl: published ? entry.priceSourceUrl : null };
+  }
+  if (typeof item.n !== "string" || !item.n.trim()) return null;
+  return { id: newVehicleId(), name: item.n.trim().slice(0, 120), price: +item.p, cond, w: item.w === "Official" ? "Official" : item.w === "Grey" ? "Grey" : "Unknown",
+    pt: String(item.t || "").slice(0, 80), km: "", img: /^https:\/\//.test(item.i || "") ? item.i : "", custom: true, priceBasis: "user-entered" };
+}
+
+function updateShareLink() {
+  $("shareLink").value = buildShareLink(currentState(), shareableCars(), $("shareIncome").checked);
+  $("shareStatus").textContent = "";
+}
+
+if ($("shareBtn")) {
+  $("shareBtn").addEventListener("click", () => {
+    $("shareIncome").checked = false;
+    updateShareLink();
+    openModal($("shareModal"), $("shareBtn"), $("copyShareBtn"));
+  });
+  $("shareIncome").addEventListener("change", updateShareLink);
+  for (const id of ["closeShareBtn", "cancelShareBtn"]) $(id).addEventListener("click", () => closeModal($("shareModal")));
+  $("copyShareBtn").addEventListener("click", async () => {
+    const link = $("shareLink").value;
+    try {
+      await navigator.clipboard.writeText(link);
+      $("shareStatus").textContent = "Link copied.";
+    } catch (e) {
+      $("shareLink").select();
+      $("shareStatus").textContent = "Select the link above and copy it.";
+    }
+  });
+}
+
+// Offline support (see sw.js); browsers without service workers simply skip it
+if (typeof navigator !== "undefined" && "serviceWorker" in navigator && window.location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(e => console.warn("Offline support unavailable:", e));
+}
+
 applyState(loadState());
+
+// A shared link's vehicles: loaded when the comparison is empty, otherwise offered
+const sharedCars = sharedCarsFromUrl().map(carFromShare).filter(Boolean);
+cleanUrl();
+if (sharedCars.length) {
+  const word = sharedCars.length === 1 ? "1 vehicle" : `${sharedCars.length} vehicles`;
+  const addShared = () => {
+    const fresh = sharedCars.filter(n => !cars.some(c => (n.catalogueId && c.catalogueId === n.catalogueId) || (c.name === n.name && c.price === n.price)));
+    if (fresh.length && addCars(fresh)) saveCars(cars);
+    render();
+  };
+  if (!cars.some(c => !c.hidden)) {
+    addShared();
+    showToast(`Opened a shared comparison with ${word}.`);
+  } else {
+    showToast(`This link has ${word}.`, "Add them", addShared);
+  }
+}
 render();
 if (invalidSavedCount) showToast("Some saved vehicles had invalid prices and were left out. Add them again with a valid price.");

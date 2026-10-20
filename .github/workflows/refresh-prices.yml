@@ -42,6 +42,8 @@ jobs:
         env:
           # Optional repository variable; otherwise config.proxyUrl in js/config.js is used
           PROXY_URL: ${{ vars.PROXY_URL }}
+          # Must match the proxy's PRICE_TOKEN environment variable
+          PRICE_TOKEN: ${{ secrets.PRICE_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
         run: |
           # The report goes on the run's summary page even when the refresh fails

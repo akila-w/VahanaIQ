@@ -129,7 +129,27 @@ try {
   assert.match(calls[0].url, /\/models\/gemini-3\.6-flash:generateContent/, "Search mode keeps the app's model");
   assert.ok(calls[0].body.generationConfig.responseSchema.properties.model_years, "Search mode keeps VEHICLE_RESPONSE_SCHEMA");
   console.log("✓ Search mode unchanged PASSED\n");
+
+  // -------------------------------------------------------------
+  console.log("TEST 5: Price mode needs PRICE_TOKEN once it is set");
+  process.env.PRICE_TOKEN = "monthly-secret";
+  const withHeaders = async (body, headers) => {
+    const res = { statusCode: 200, body: undefined, set() {}, status(c) { this.statusCode = c; return this; }, json(b) { this.body = b; }, send(b) { this.body = b; } };
+    await handler({ method: "POST", body, headers }, res);
+    return res;
+  };
+  calls.length = 0;
+  res = await withHeaders({ mode: "price", queries }, {});
+  assert.deepEqual([res.statusCode, res.body.error, calls.length], [401, "unauthorised", 0], "No token, no Gemini call");
+  res = await withHeaders({ mode: "price", queries }, { "x-price-token": "wrong" });
+  assert.equal(res.statusCode, 401);
+  replies = [geminiReply(JSON.stringify(priceJson), grounding)];
+  res = await withHeaders({ mode: "price", queries }, { "x-price-token": "monthly-secret" });
+  assert.equal(res.statusCode, 200, "The right token gets an answer");
+  delete process.env.PRICE_TOKEN;
+  console.log("✓ Price token PASSED\n");
 } finally {
+  delete process.env.PRICE_TOKEN;
   globalThis.fetch = realFetch;
   console.error = quiet;
   fs.rmSync(tmp, { recursive: true, force: true });

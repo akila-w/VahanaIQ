@@ -1031,6 +1031,10 @@ table.detail-table { min-width: 0; display: table; }
 .detail-table td::before { content: none; }
 .detail-table .n { text-align: right; font-variant-numeric: tabular-nums; }
 
+.check-row { display: flex; align-items: center; gap: var(--space-8); color: var(--ink); margin: var(--space-12) 0; font-size: 0.9375rem; }
+.check-row input { width: auto; }
+.share-modal #shareLink { font-size: 0.8125rem; }
+
 /* AI search and manual entry modal */
 .ai-search-actions > .btn, .ai-search-actions > .file-btn { white-space: nowrap; }
 .callout.attached-ad { display: flex; align-items: center; justify-content: space-between; padding: var(--space-6) var(--space-12); margin-bottom: var(--space-8); }
