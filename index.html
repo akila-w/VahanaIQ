@@ -20,9 +20,9 @@
   <link rel="canonical" href="https://akila-w.github.io/vahanaiq/">
   <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/tokens.css?v=2.9.0">
-  <link rel="stylesheet" href="css/style.css?v=2.9.0">
-  <script type="module" src="js/app.js?v=2.9.0"></script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.10.0">
+  <link rel="stylesheet" href="css/style.css?v=2.10.0">
+  <script type="module" src="js/app.js?v=2.10.0"></script>
 </head>
 <body>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
@@ -43,6 +43,7 @@
       <button class="btn" id="addVehicleBtn" type="button">Add a vehicle</button>
       <button class="btn-outline" id="printBtn" type="button">Print</button>
       <button class="btn-outline" id="themeToggleBtn" type="button" aria-label="Toggle light or dark theme" title="Toggle theme">☀️</button>
+      <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign in</button>
     </div>
   </div>
 
@@ -192,7 +193,7 @@
       <span id="priceAsOf">Confirm prices and stock with the seller</span>
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
-      <span>VahanaIQ v<span id="appVersion">2.9.0</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.10.0</span></span>
     </p>
   </footer>
 </main>
@@ -252,6 +253,32 @@
     <input id="shareLink" type="text" readonly>
     <p class="hint" id="shareStatus" role="status"></p>
     <div class="modal-actions"><button class="btn-outline" id="cancelShareBtn" type="button">Close</button><button class="btn" id="copyShareBtn" type="button">Copy link</button></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="accountTitle" inert>
+  <div class="modal account-modal">
+    <div class="modal-header"><h2 id="accountTitle">Your account</h2><button class="close-btn" id="closeAccountBtn" type="button" aria-label="Close account">&times;</button></div>
+    <div id="accountSignedOut">
+      <p>Sign in with Google to keep your loan terms, income and comparison on every device you use.</p>
+      <p class="hint">They're stored with Firebase, Google's database service, where only you can read them. You can delete them at any time. Signing out removes them from this browser; without signing in, they stay in this browser only.</p>
+      <p class="hint warn" id="accountError" role="alert" hidden></p>
+      <div class="modal-actions"><button class="btn-outline" id="cancelAccountBtn" type="button">Not now</button><button class="btn" id="signInBtn" type="button" disabled>Loading…</button></div>
+    </div>
+    <div id="accountSignedIn" hidden>
+      <p>Signed in as <strong id="accountEmail"></strong></p>
+      <p class="hint" id="syncStatus" role="status"></p>
+      <div class="sync-conflict" id="syncConflict" hidden>
+        <p><strong>Your account and this browser have different inputs or vehicles.</strong> Choose which to keep; the other is replaced.</p>
+        <p class="hint" id="syncConflictCounts"></p>
+        <div class="modal-actions"><button class="btn-outline" id="keepLocalBtn" type="button">Keep this browser's</button><button class="btn" id="useCloudBtn" type="button">Use my account's</button></div>
+      </div>
+      <div class="modal-actions account-actions"><button class="link-btn danger" id="deleteDataBtn" type="button">Delete my saved data</button><button class="btn-outline" id="signOutBtn" type="button">Sign out</button></div>
+      <div class="sync-conflict" id="deleteConfirm" hidden>
+        <p>This deletes your saved inputs and vehicles from your account and from this browser. It can't be undone.</p>
+        <div class="modal-actions"><button class="btn-outline" id="cancelDeleteBtn" type="button">Cancel</button><button class="btn btn-danger" id="confirmDeleteBtn" type="button">Delete</button></div>
+      </div>
+    </div>
   </div>
 </div>
 

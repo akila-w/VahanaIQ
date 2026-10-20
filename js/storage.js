@@ -1,8 +1,14 @@
 // Storage helpers
-import { config } from "./config.js?v=2.9.0";
-import { vehicleBatchError } from "./vehicle-validation.js?v=2.9.0";
+import { config } from "./config.js?v=2.10.0";
+import { vehicleBatchError } from "./vehicle-validation.js?v=2.10.0";
 
 export const getProxyUrl = () => config.proxyUrl || "";
+
+// Tells the account sync (js/account.js) that this browser's saved inputs or vehicles changed
+export const SAVED_EVENT = "vahanaiq:saved";
+export function notifySaved() {
+  try { window.dispatchEvent(new Event(SAVED_EVENT)); } catch (e) {}
+}
 
 // Earlier versions stored a personal Gemini key, a proxy override and a cached model name.
 // None of these are used any more, so remove them from the browser.
@@ -85,6 +91,7 @@ export function saveCars(cars) {
       return record;
     });
     localStorage.setItem(COMPARISON_KEY, JSON.stringify({ version: 3, cars: records }));
+    notifySaved();
     return true;
   } catch (e) {
     console.error("Failed to save comparison", e);

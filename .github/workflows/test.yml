@@ -27,3 +27,4 @@ jobs:
           node test/refresh-prices.test.mjs
           node test/tokens.test.mjs
           node test/calculator.test.mjs
+          node test/account.test.mjs

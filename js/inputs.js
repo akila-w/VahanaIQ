@@ -1,7 +1,8 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.9.0";
+import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.10.0";
+import { notifySaved } from "./storage.js?v=2.10.0";
 
-const STORE_KEY = "vahanaiq_inputs_v1";
+export const STORE_KEY = "vahanaiq_inputs_v1";
 
 // Field id -> URL parameter and default value
 export const FIELDS = {
@@ -108,8 +109,9 @@ export function snapField(id) {
 export const clearSnapNote = id => { delete snapNotes[id]; };
 
 // --- Persistence: a shared link's values win over this browser's saved values, which win
-// over the defaults. Inputs are saved in this browser only; the address bar is cleaned after
-// a shared link is read, so income never stays in the URL or browser history.
+// over the defaults. Inputs are saved in this browser; the address bar is cleaned after
+// a shared link is read, so income never stays in the URL or browser history. When the person
+// signs in, js/account.js keeps a copy with their account too.
 
 // Fields left out of a shared link unless the person chooses to include them
 export const PRIVATE_FIELDS = ["income", "debt"];
@@ -174,6 +176,7 @@ export function saveState(state) {
       if (state[id] !== undefined && String(state[id]) !== f.def) diff[id] = String(state[id]);
     }
     try { localStorage.setItem(STORE_KEY, JSON.stringify(diff)); } catch (e) {}
+    notifySaved();
   }, 400);
 }
 
