@@ -135,6 +135,7 @@ assert.match(vetPrice(10000000, 12600000).reason, /outside ±25%/);
 assert.match(vetPrice(10000000, 7400000).reason, /outside ±25%/);
 assert.deepEqual(vetPrice(10000000, 12500000), { price: 12500000, change: 0.25 }, "Exactly +25% is allowed");
 assert.equal(vetPrice(10000000, 10234567).price, 10230000, "Prices round to the nearest LKR 10,000");
+assert.equal(vetPrice(10000000, 10234567, { exact: true }).price, 10234567, "Prices from a prices file stay exact");
 console.log("✓ Price checks PASSED\n");
 
 // -------------------------------------------------------------
