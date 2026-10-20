@@ -93,7 +93,7 @@ assert.deepEqual(vetSource({ ...m, site: "https://www.ikman.lk/en/ad/x" }, taiso
 assert.match(vetSource({ ...m, site: "carmudi.lk" }, taisor, "2026-10").reason,
   /price source "carmudi\.lk" is not among the pages Gemini cited \(riyasewana\.com, ikman\.lk\)/);
 assert.match(vetSource({ ...m, site: undefined }, taisor, "2026-10").reason, /price source not given/);
-assert.match(vetSource(m, { ...taisor, sources: [] }, "2026-10").reason, /not backed by a web source: Gemini cited none/);
+assert.match(vetSource(m, { ...taisor, sources: [] }, "2026-10").reason, /not backed by a web source: no source page given/);
 assert.match(vetSource(m, answer("Toyota Urban Cruiser Taisor", [["V", 12000000]]), "2026-10").reason, /no price mode yet \(redeploy it\)/,
   "An answer from a proxy without price mode is never accepted");
 assert.match(vetSource({ ...m, basis: "estimate" }, taisor, "2026-10").reason, /estimate/);
@@ -103,7 +103,7 @@ assert.match(vetSource({ ...m, asOf: "2025-12" }, taisor, "2026-07").reason, /mo
 const reply = { vehicles: [{ query_index: 2, ...taisor, sources: undefined }], sources: SOURCES, model: "gemini-2.5-flash-lite" };
 assert.deepEqual(answerFor(reply, 2).sources, SOURCES, "Each vehicle gets the reply's cited sources");
 assert.equal(answerFor(reply, 1), null);
-assert.match(matchTrim(car("Toyota Urban Cruiser Taisor"), answerFor(reply, 1)).reason, /no answer for this vehicle/);
+assert.match(matchTrim(car("Toyota Urban Cruiser Taisor"), answerFor(reply, 1)).reason, /no price given for this vehicle/);
 console.log("✓ Grounded price-mode answers PASSED\n");
 
 // -------------------------------------------------------------
@@ -238,7 +238,7 @@ try {
   assert.match(report, /Toyota Raize Z Hybrid\*\*: Z Hybrid \(2026\): no brand-new price/);
   assert.match(report, /Suzuki Swift MZ Hybrid\*\*: MZ \(2026\): LKR [\d,]+ is \+4\d\.\d% from LKR [\d,]+, outside ±25%/);
   assert.match(report, /Fronx Alpha \(Turbo\)\*\*: Alpha 1\.0L Turbo MHEV \(2026\): price published in 2025-12, more than 6 months before 2026-11/);
-  assert.match(report, /Suzuki Wagon R Custom Z\*\*: no answer for this vehicle from the proxy/);
+  assert.match(report, /Suzuki Wagon R Custom Z\*\*: no price given for this vehicle/);
   const skippedLines = report.split("### Skipped")[1].trim().split("\n").slice(2).filter(Boolean);
   assert.ok(skippedLines.slice(0, 6).every(l => l.startsWith("- **")), "Each skipped vehicle stays on one line");
 
@@ -302,5 +302,72 @@ try {
   fs.rmSync(tmp, { recursive: true, force: true });
 }
 console.log("✓ CLI dry run and write PASSED\n");
+
+// -------------------------------------------------------------
+console.log("TEST 5: Prices researched by the monthly Claude task (--from-file)");
+{
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "vahanaiq-research-test-"));
+  const catalogCopy = path.join(dir, "catalog.js");
+  fs.copyFileSync(CATALOG, catalogCopy);
+  const at2 = (name, factor) => Math.round(car(name).price * factor / 10000) * 10000;
+  const p = (trim_name, price, extra = {}) => ({
+    trim_name, model_year: 2026, brand_new_price_lkr: price, price_basis: "dealer price list", as_of: "2026-10",
+    source_title: "Example Motors price list", source_url: "https://www.example-motors.lk/prices?id=1", ...extra
+  });
+  const research = {
+    researched_by: "Claude (monthly scheduled task)",
+    researched_on: "2026-11-01",
+    vehicles: [
+      { name: "Toyota Corolla Cross Z (Adventure)", model_name: "Toyota Corolla Cross", prices: [p("Z", at2("Toyota Corolla", 1.02))] },
+      { name: "BYD Sealion 6 Premium (AWD)", model_name: "BYD Sealion 6", prices: [p("Premium AWD", at2("BYD Sealion 6", 1.01), { price_basis: "estimate" })] },
+      { name: "Honda Vezel e:HEV Z", model_name: "Honda Vezel", prices: [p("e:HEV Z", at2("Honda Vezel", 1.01), { as_of: "2025-12" })] },
+      { name: "Toyota Raize Z Hybrid", model_name: "Toyota Raize", prices: [p("Z Hybrid", at2("Toyota Raize", 1.01), { source_url: undefined })] },
+      { name: "Suzuki Swift MZ Hybrid", model_name: "Suzuki Swift", prices: [p("MZ Hybrid", at2("Suzuki Swift", 1.4))] },
+      { name: "Toyota Urban Cruiser Taisor V", model_name: "Toyota Urban Cruiser Taisor", prices: [
+        p("V 1.0L Turbo MT", at2("Toyota Urban Cruiser Taisor", 0.98)),
+        p("V 1.0L Turbo AT", at2("Toyota Urban Cruiser Taisor", 1.03), { source_title: "Other Motors", source_url: "https://othermotors.lk/taisor" })] },
+      { name: "Suzuki Wagon R Custom Z", model_name: "Suzuki Wagon R", prices: [] },
+      { name: "Toyota Aqua G", model_name: "Toyota Aqua", prices: [p("G", 9000000)] } // not in the catalogue
+    ]
+  };
+  const file = path.join(dir, "prices.json");
+  fs.writeFileSync(file, JSON.stringify(research));
+  const runFile = (...extra) => promisify(execFile)(process.execPath, [
+    SCRIPT, "--from-file", file, "--catalog", catalogCopy, "--month", "2026-11", "--delay", "0", ...extra
+  ]);
+  try {
+    // No proxy is given or contacted: the prices file answers for every vehicle
+    const dry = await runFile("--dry-run", "--report", path.join(dir, "report.md"));
+    assert.match(dry.stderr, /"Toyota Aqua G" is not a catalogue vehicle name; ignored/);
+    assert.equal(fs.readFileSync(catalogCopy, "utf8"), source, "Dry run must not write the catalogue");
+    const report = fs.readFileSync(path.join(dir, "report.md"), "utf8");
+    assert.match(report, /for 2026-11, researched by Claude \(monthly scheduled task\) on 01\/11\/2026\./);
+    assert.match(report, /AI estimates/);
+    assert.match(report, /\| Toyota Corolla Cross Z \(Adventure\) \| Z \(2026\) \|.*\| dealer price list, 2026-10: \[Example Motors price list\]\(https:\/\/www\.example-motors\.lk\/prices\?id=1\) \|/,
+      "Each row links its own source page");
+    assert.match(report, /\| Toyota Urban Cruiser Taisor V \| V 1\.0L Turbo AT \(2026\) \|.*\[Other Motors\]\(https:\/\/othermotors\.lk\/taisor\) \|/,
+      "The automatic is priced, linked to its own source only");
+    assert.match(report, /### Skipped \(10\)/);
+    assert.match(report, /BYD Sealion 6 Premium \(AWD\)\*\*: .*estimate/);
+    assert.match(report, /Honda Vezel e:HEV Z\*\*: .*published in 2025-12, more than 6 months/);
+    assert.match(report, /Toyota Raize Z Hybrid\*\*: .*no source page given/);
+    assert.match(report, /Suzuki Swift MZ Hybrid\*\*: .*outside ±25%/);
+    assert.match(report, /Suzuki Wagon R Custom Z\*\*: no trims in the answer/);
+    assert.match(report, /Nissan Magnite Tekna Plus\*\*: no price given for this vehicle/, "A vehicle missing from the file is skipped");
+
+    await runFile();
+    const written = await import(`file://${catalogCopy}?t=${Date.now()}`);
+    assert.equal(written.catalogMeta.priceUpdated, "2026-11");
+    written.baseVehicles.forEach((v, i) => {
+      const expected = { "Toyota Corolla Cross Z (Adventure)": at2("Toyota Corolla", 1.02),
+        "Toyota Urban Cruiser Taisor V": at2("Toyota Urban Cruiser Taisor", 1.03) }[v.name] ?? baseVehicles[i].price;
+      assert.equal(v.price, expected, v.name);
+    });
+    assert.equal(fs.readFileSync(CATALOG, "utf8"), source, "The real js/catalog.js must be untouched");
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+console.log("✓ Researched prices PASSED\n");
 
 console.log("ALL REFRESH-PRICES TESTS PASSED");

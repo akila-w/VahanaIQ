@@ -61,25 +61,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- js/catalog.js; then
-            echo "js/catalog.js is unchanged; no pull request needed."
-            exit 0
-          fi
-          month=$(node -p 'require("fs").readFileSync("js/catalog.js","utf8").match(/priceUpdated: "(\d{4}-\d{2})"/)[1]')
-          branch="prices/$month"
-          title="Catalogue prices for $month (AI estimates, please check)"
           printf '\n---\nOpened by the [Refresh catalogue prices](%s/%s/actions/runs/%s) workflow.\n' \
             "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> "$RUNNER_TEMP/pr-body.md"
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git switch -c "$branch"
-          git add js/catalog.js
-          git commit -m "chore(catalog): refresh vehicle prices for $month"
-          git push --force origin "$branch"
-
-          if [ "$(gh pr view "$branch" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
-            gh pr edit "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
-          else
-            gh pr create --base main --head "$branch" --title "$title" --body-file "$RUNNER_TEMP/pr-body.md"
-          fi
+          scripts/open-price-pr.sh "$RUNNER_TEMP/pr-body.md"

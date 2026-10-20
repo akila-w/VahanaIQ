@@ -1,17 +1,24 @@
 #!/usr/bin/env node
-// Monthly catalogue price refresh, run by .github/workflows/refresh-prices.yml.
-// Asks the search proxy's price mode (a Google Search-grounded Gemini lookup) for the
-// brand-new price of each built-in vehicle, matches the trim by name and rewrites only
-// the `price` values and catalogMeta.priceUpdated in js/catalog.js. Answers that are
-// missing, zero, not backed by a page Gemini cited, marked as estimates, more than 6 months
-// old or more than ±25% from the current price are skipped and listed.
+// Monthly catalogue price refresh. Gets the brand-new price of each built-in vehicle,
+// matches the trim by name and rewrites only the `price` values and
+// catalogMeta.priceUpdated in js/catalog.js. Answers that are missing, zero, not backed by
+// a source page, marked as estimates, more than 6 months old or more than ±25% from the
+// current price are skipped and listed.
+// Prices come from one of two places:
+// - --from-file <prices.json>: prices researched by the monthly Claude scheduled task
+//   (scripts/price-research-task.md), each with the page it came from. This is the
+//   monthly route since 20/10/2026.
+// - otherwise the search proxy's price mode (a Google Search-grounded Gemini lookup), run by
+//   .github/workflows/refresh-prices.yml. No free Gemini model on the project can search
+//   Google any more, so this route currently fails.
 // No npm dependencies (Node 20+).
 // Everything stays on the Gemini free tier: vehicles are asked about 4 at a time (3 requests
 // a run) on the proxy's PRICE_MODEL, which the app does not use, and the run stops at once
 // if Gemini's daily free limit is used up.
 //
-//   node scripts/refresh-prices.mjs [--dry-run] [--report <file>] [--proxy <url>]
-//                                   [--catalog <file>] [--month YYYY-MM] [--delay <ms>] [--batch <n>]
+//   node scripts/refresh-prices.mjs [--dry-run] [--report <file>] [--from-file <prices.json>]
+//                                   [--proxy <url>] [--catalog <file>] [--month YYYY-MM]
+//                                   [--delay <ms>] [--batch <n>]
 //
 // --dry-run prints the diff and the report without writing js/catalog.js.
 // The proxy URL defaults to PROXY_URL, then config.proxyUrl in js/config.js.
@@ -88,7 +95,7 @@ export function normaliseAnswer(raw) {
 // Returns { year, trimName, price } or { reason } when nothing fits.
 export function matchTrim(vehicle, raw) {
   const answer = normaliseAnswer(raw);
-  if (!answer || typeof answer !== "object") return { reason: "no answer for this vehicle from the proxy" };
+  if (!answer || typeof answer !== "object") return { reason: "no price given for this vehicle" };
   if (answer.is_available_in_sri_lanka === false) return { reason: "proxy says it is not available in Sri Lanka" };
 
   const ignore = new Set([...tokens(answer.model_name), tokens(vehicle.name)[0]]);
@@ -137,7 +144,41 @@ export function matchTrim(vehicle, raw) {
 export function answerFor(reply, index) {
   if (!Array.isArray(reply?.vehicles)) return reply;
   const v = reply.vehicles.find(x => Number(x?.query_index) === index);
-  return v ? { ...v, sources: reply.sources || [] } : null;
+  return v ? { ...v, sources: v.sources || reply.sources || [] } : null;
+}
+
+// Reads a prices file from the research task and shapes it like one batched price-mode
+// reply covering the whole catalogue, each vehicle carrying its own source pages:
+// { researched_by, researched_on: "YYYY-MM-DD", vehicles: [{ name, model_name, prices: [
+//   { trim_name, model_year, brand_new_price_lkr, price_basis, as_of, source_title, source_url }] }] }
+export function readResearch(file, vehicles) {
+  const data = JSON.parse(fs.readFileSync(file, "utf8"));
+  if (!Array.isArray(data?.vehicles)) throw new Error(`${file}: expected a "vehicles" list`);
+  const host = url => { try { return new URL(url).hostname; } catch { return ""; } };
+  const replyVehicles = [];
+  for (const entry of data.vehicles) {
+    const index = vehicles.findIndex(v => v.name === entry?.name);
+    if (index < 0) {
+      console.warn(`! ${file}: "${entry?.name}" is not a catalogue vehicle name; ignored`);
+      continue;
+    }
+    const prices = (Array.isArray(entry.prices) ? entry.prices : []).filter(p => p && typeof p === "object");
+    replyVehicles.push({
+      query_index: index + 1,
+      model_name: entry.model_name,
+      available_new_in_sri_lanka: true,
+      trims: prices.map(p => ({
+        trim_name: p.trim_name, model_year: p.model_year, brand_new_price_lkr: p.brand_new_price_lkr,
+        price_basis: p.price_basis, as_of: p.as_of, source_site: host(p.source_url)
+      })),
+      sources: prices.filter(p => host(p.source_url)).map(p => ({ title: p.source_title || host(p.source_url), uri: p.source_url }))
+    });
+  }
+  return {
+    reply: { vehicles: replyVehicles, sources: [] },
+    origin: `researched by ${oneLine(data.researched_by || "the research task", 80)}` +
+      (/^\d{4}-\d{2}-\d{2}$/.test(data.researched_on || "") ? ` on ${data.researched_on.split("-").reverse().join("/")}` : "")
+  };
 }
 
 // "https://www.riyasewana.com/x", "Riyasewana" and "m.riyasewana.com" all give "riyasewana"
@@ -152,7 +193,7 @@ export function vetSource(match, raw, month) {
   const cited = normaliseAnswer(raw)?.sources || [];
   if (!cited.length) {
     return { reason: Array.isArray(raw?.trims)
-      ? "answer not backed by a web source: Gemini cited none"
+      ? "answer not backed by a web source: no source page given"
       : "answer not backed by a web source: the proxy has no price mode yet (redeploy it)" };
   }
   if (match.basis === "estimate") return { reason: "the proxy marked this price as an estimate, not a published price" };
@@ -246,12 +287,12 @@ const sourceCell = r => {
   return [label, links].filter(Boolean).join(": ") || "–";
 };
 
-export function renderReport({ month, updated, skipped }) {
+export function renderReport({ month, updated, skipped, origin = "from the VahanaIQ search proxy" }) {
   const out = [
-    `Monthly refresh of the 12 built-in catalogue prices for ${month}, from the VahanaIQ search proxy.`,
+    `Monthly refresh of the 12 built-in catalogue prices for ${month}, ${origin}.`,
     "",
     "> [!WARNING]",
-    "> These prices are AI estimates, not dealer quotes. Gemini found them with Google Search, but it can " +
+    "> These prices are AI estimates, not dealer quotes. An AI model found them on the web, but it can " +
       "misread a page or pick the wrong trim. Check each one against its linked sources before merging.",
     ""
   ];
@@ -333,6 +374,7 @@ export async function main(argv = process.argv.slice(2)) {
     options: {
       "dry-run": { type: "boolean", default: false },
       report: { type: "string" },
+      "from-file": { type: "string" },
       proxy: { type: "string" },
       catalog: { type: "string" },
       month: { type: "string" },
@@ -341,7 +383,8 @@ export async function main(argv = process.argv.slice(2)) {
     }
   });
   const catalogPath = path.resolve(opts.catalog || path.join(ROOT, "js/catalog.js"));
-  const proxy = opts.proxy || process.env.PROXY_URL ||
+  const fromFile = opts["from-file"] && path.resolve(opts["from-file"]);
+  const proxy = fromFile ? null : opts.proxy || process.env.PROXY_URL ||
     (await import(pathToFileURL(path.join(ROOT, "js/config.js")).href)).config.proxyUrl;
   const month = opts.month || new Date().toISOString().slice(0, 7);
   const delay = Number(opts.delay);
@@ -351,7 +394,8 @@ export async function main(argv = process.argv.slice(2)) {
 
   const source = fs.readFileSync(catalogPath, "utf8");
   const { baseVehicles } = await importCatalog(catalogPath);
-  console.log(`Refreshing ${baseVehicles.length} catalogue prices for ${month} from ${proxy}${opts["dry-run"] ? " (dry run)" : ""}\n`);
+  console.log(`Refreshing ${baseVehicles.length} catalogue prices for ${month} from ${fromFile || proxy}${opts["dry-run"] ? " (dry run)" : ""}\n`);
+  const research = fromFile ? readResearch(fromFile, baseVehicles) : null;
 
   const updated = [];
   const skipped = [];
@@ -359,7 +403,8 @@ export async function main(argv = process.argv.slice(2)) {
   let failedInARow = 0;
   let stopReason = null;
   const batches = [];
-  for (let i = 0; i < baseVehicles.length; i += batchSize) batches.push(baseVehicles.slice(i, i + batchSize));
+  const size = research ? baseVehicles.length : batchSize; // a prices file answers for every vehicle at once
+  for (let i = 0; i < baseVehicles.length; i += size) batches.push(baseVehicles.slice(i, i + size));
 
   for (const [b, group] of batches.entries()) {
     if (stopReason) {
@@ -370,7 +415,7 @@ export async function main(argv = process.argv.slice(2)) {
     if (b) await sleep(delay);
     let reply;
     try {
-      reply = await fetchAnswer(proxy, group.map(buildQuery), delay);
+      reply = research ? research.reply : await fetchAnswer(proxy, group.map(buildQuery), delay);
     } catch (e) {
       failures += group.length;
       failedInARow++;
@@ -404,7 +449,7 @@ export async function main(argv = process.argv.slice(2)) {
     }
   }
 
-  const report = renderReport({ month, updated, skipped });
+  const report = renderReport({ month, updated, skipped, ...(research ? { origin: research.origin } : {}) });
   if (opts.report) fs.writeFileSync(opts.report, report);
 
   if (failures === baseVehicles.length) {
