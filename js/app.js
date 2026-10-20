@@ -1,18 +1,18 @@
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.10.0";
-import { baseVehicles } from "./catalog.js?v=2.10.0";
-import { initCatalogue } from "./catalogue-browser.js?v=2.10.0";
-import { APP_VERSION } from "./config.js?v=2.10.0";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.10.0";
-import { searchVehicle } from "./gemini.js?v=2.10.0";
-import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.10.0";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.10.0";
-import { openModal, closeModal } from "./modal.js?v=2.10.0";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.10.0";
-import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.10.0";
-import { showToast } from "./toast.js?v=2.10.0";
-import { initAccount } from "./account.js?v=2.10.0";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.10.0";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.10.0";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.10.1";
+import { baseVehicles } from "./catalog.js?v=2.10.1";
+import { initCatalogue } from "./catalogue-browser.js?v=2.10.1";
+import { APP_VERSION } from "./config.js?v=2.10.1";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.10.1";
+import { searchVehicle } from "./gemini.js?v=2.10.1";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.10.1";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.10.1";
+import { openModal, closeModal } from "./modal.js?v=2.10.1";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.10.1";
+import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.10.1";
+import { showToast } from "./toast.js?v=2.10.1";
+import { initAccount } from "./account.js?v=2.10.1";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.10.1";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.10.1";
 
 clearLegacyKeys();
 
@@ -1170,7 +1170,7 @@ document.addEventListener("change", e => {
 
 // Footer: catalogue availability and individual prices have separate evidence dates.
 $("appVersion").textContent = APP_VERSION;
-$("priceAsOf").textContent = "Catalogue sources checked 20/10/2026 · confirm prices and stock with the seller";
+$("priceAsOf").textContent = "Catalogue sources were checked on 20/10/2026. Confirm prices and stock with the seller.";
 
 refreshCatalogue = initCatalogue({
   terms: () => { const s = readSettings(); return { f: rental(1, s.rate, s.n), down: s.down }; },

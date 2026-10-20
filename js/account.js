@@ -5,11 +5,11 @@
 // owner read, change or delete it. Before every write the account's copy is read and compared
 // with the copy both sides last agreed on, so a change made on another device is never
 // overwritten without asking.
-import { firebaseConfig, FIREBASE_SDK } from "./config.js?v=2.10.0";
-import { openModal, closeModal, isOpen } from "./modal.js?v=2.10.0";
-import { showToast } from "./toast.js?v=2.10.0";
-import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.10.0";
-import { STORE_KEY } from "./inputs.js?v=2.10.0";
+import { firebaseConfig, FIREBASE_SDK, GOOGLE_CLIENT_ID, GOOGLE_SIGN_IN_SRC } from "./config.js?v=2.10.1";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.10.1";
+import { showToast } from "./toast.js?v=2.10.1";
+import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.10.1";
+import { STORE_KEY } from "./inputs.js?v=2.10.1";
 
 const SIGNED_IN_KEY = "vahanaiq_account_v1"; // set while signed in, so the next visit restores the session
 const AGREED_KEY = "vahanaiq_synced_v1"; // fingerprint of the copy this browser and the account last agreed on
@@ -96,7 +96,9 @@ function loadFirebase() {
     import(`${FIREBASE_SDK}/firebase-firestore-lite.js`)
   ]).then(([app, A, F]) => {
     const firebaseApp = app.initializeApp(firebaseConfig);
-    fb = { A, F, auth: A.getAuth(firebaseApp), db: F.getFirestore(firebaseApp) };
+    // No pop-up helper up front: sign-in normally comes from Google's button (signInWithCredential)
+    const auth = A.initializeAuth(firebaseApp, { persistence: [A.indexedDBLocalPersistence, A.browserLocalPersistence] });
+    fb = { A, F, auth, db: F.getFirestore(firebaseApp) };
     A.onAuthStateChanged(fb.auth, onUser);
     return fb;
   }).catch(e => {
@@ -222,11 +224,71 @@ function setError(message) {
   $("accountError").hidden = !message;
 }
 
+// Google's sign-in button, loaded with the dialog. Its callback gets an ID token, and Firebase
+// signs in with it; no Firebase pop-up is involved, so Safari's storage rules don't get in the way.
+let gsi = null;
+function loadGoogleButton() {
+  gsi = gsi || new Promise((resolve, reject) => {
+    if (window.google?.accounts?.id) { resolve(window.google.accounts.id); return; }
+    const script = document.createElement("script");
+    script.src = GOOGLE_SIGN_IN_SRC;
+    script.async = true;
+    script.onload = () => window.google?.accounts?.id ? resolve(window.google.accounts.id) : reject(new Error("Google sign-in unavailable"));
+    script.onerror = () => reject(new Error("Couldn't load Google sign-in"));
+    document.head.appendChild(script);
+  }).then(id => {
+    id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential, ux_mode: "popup", context: "signin" });
+    return id;
+  }).catch(e => {
+    gsi = null;
+    throw e;
+  });
+  return gsi;
+}
+
+async function onGoogleCredential(response) {
+  setError("");
+  try {
+    const f = await loadFirebase();
+    await f.A.signInWithCredential(f.auth, f.A.GoogleAuthProvider.credential(response.credential));
+  } catch (e) {
+    setError(signInMessage(e));
+  }
+}
+
+const darkTheme = () => {
+  const set = document.documentElement.getAttribute("data-theme");
+  return set ? set === "dark" : !!window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+};
+
+function showPopupFallback() {
+  $("googleSignIn").textContent = "";
+  $("signInBtn").hidden = false;
+}
+
+// When Google refuses this site's address it leaves a placeholder and never shows its real
+// button (an iframe), so after a few seconds without one, the Firebase pop-up button is offered
+const GOOGLE_BUTTON_WAIT = 5000;
+let fallbackTimer = null;
+
+function renderGoogleButton() {
+  clearTimeout(fallbackTimer);
+  loadGoogleButton().then(id => {
+    const box = $("googleSignIn");
+    box.textContent = "";
+    $("signInBtn").hidden = true;
+    id.renderButton(box, { type: "standard", theme: darkTheme() ? "filled_black" : "outline", size: "large", text: "signin_with", shape: "rectangular", logo_alignment: "left" });
+    fallbackTimer = setTimeout(() => {
+      if (![...box.querySelectorAll("iframe")].some(f => f.getBoundingClientRect().height > 0)) showPopupFallback();
+    }, GOOGLE_BUTTON_WAIT);
+  }, showPopupFallback);
+}
+
 function signIn() {
   if (!fb) return;
   setError("");
   // The popup opens straight from the click (Firebase is already loaded), so browsers allow it
-  fb.A.signInWithPopup(fb.auth, new fb.A.GoogleAuthProvider()).catch(e => setError(signInMessage(e)));
+  fb.A.signInWithPopup(fb.auth, new fb.A.GoogleAuthProvider(), fb.A.browserPopupRedirectResolver).catch(e => setError(signInMessage(e)));
 }
 
 // Signing out takes the account's inputs and vehicles out of this browser, unless some changes
@@ -241,6 +303,7 @@ async function signOutHere(message, { flush = true, clear = "if-synced" } = {}) 
   store.remove(SIGNED_IN_KEY);
   store.remove(AGREED_KEY);
   if (fb) await fb.A.signOut(fb.auth).catch(() => {});
+  window.google?.accounts?.id?.disableAutoSelect?.();
   user = null;
   if (isOpen($("accountModal"))) closeModal($("accountModal"));
   renderAccount();
@@ -321,6 +384,7 @@ function openAccount() {
   }
   setError("");
   $("deleteConfirm").hidden = true;
+  if (!user) renderGoogleButton();
   renderAccount();
   if (!isOpen($("accountModal"))) openModal($("accountModal"), $("accountBtn"));
 }

@@ -1,6 +1,7 @@
 // Accessible modal handling: inert background, focus trap, scroll lock and focus return
 const stack = [];
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+// iframe: Google's sign-in button is rendered in one
+const FOCUSABLE = 'a[href], iframe, button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const background = () => [...document.body.children].filter(el => !el.classList.contains("modal-bg") && el.tagName !== "SCRIPT");
 

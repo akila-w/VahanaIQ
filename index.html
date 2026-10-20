@@ -7,7 +7,7 @@
   <meta name="description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.">
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#0f766e">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261019-optA" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <meta property="og:title" content="VahanaIQ — Sri Lanka Vehicle Lease Calculator">
   <meta property="og:description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.">
@@ -21,9 +21,9 @@
   <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
   <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
-  <link rel="stylesheet" href="css/tokens.css?v=2.10.0">
-  <link rel="stylesheet" href="css/style.css?v=2.10.0">
-  <script type="module" src="js/app.js?v=2.10.0"></script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.10.1">
+  <link rel="stylesheet" href="css/style.css?v=2.10.1">
+  <script type="module" src="js/app.js?v=2.10.1"></script>
 </head>
 <body>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
@@ -33,12 +33,12 @@
     <div>
       <div class="brand-row">
         <h1>
-          <img src="assets/icons/logo-option-1-apex.svg" alt="" class="brand-logo" width="36" height="36">
+          <img src="assets/icons/logo-option-1-apex.svg?v=20261020" alt="" class="brand-logo" width="36" height="36">
           <span>Vahana<span class="brand-iq">IQ</span></span>
         </h1>
         <span class="brand-badge"><span aria-hidden="true">CBSL 2026</span><span class="sr-only">Down-payment rules follow CBSL Directions No. 01 of 2026</span></span>
       </div>
-      <p class="sub">Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.</p>
+      <p class="sub">Smart vehicle lease and affordability discovery for Sri Lanka.</p>
     </div>
     <div class="header-actions">
       <button class="btn" id="addVehicleBtn" type="button">Add a Vehicle</button>
@@ -194,12 +194,24 @@
   </section>
 
   <footer class="foot">
-    <p>Rentals use the standard reducing-balance formula with monthly compounding; a flat rate is converted to its reducing-balance equivalent. Fuel, servicing and early settlement charges are not included, and insurance and fees only when you enter them. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1): lenders apply the limit to their own valuation of the car (the agent's confirmed value, the customs or dealer invoice, or a professional valuer's report), so your down payment can differ. This is not financial advice.</p>
+    <div class="foot-cols">
+      <section aria-labelledby="footRentals">
+        <h2 class="foot-h" id="footRentals">How Rentals Are Worked Out</h2>
+        <p>Rentals use the standard reducing-balance formula with monthly compounding; a flat rate is converted to its reducing-balance equivalent. Insurance and fees are included only when you enter them; fuel, servicing and early settlement charges are not.</p>
+      </section>
+      <section aria-labelledby="footDown">
+        <h2 class="foot-h" id="footDown">Down Payments</h2>
+        <p>Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Lenders apply the limit to their own valuation of the car (the agent's confirmed value, the customs or dealer invoice, or a professional valuer's report), so your down payment can differ.</p>
+      </section>
+      <section aria-labelledby="footPrices">
+        <h2 class="foot-h" id="footPrices">Prices and Advice</h2>
+        <p><span id="priceAsOf">Confirm prices and stock with the seller.</span> This is not financial advice.</p>
+      </section>
+    </div>
     <p class="foot-meta">
-      <span id="priceAsOf">Confirm prices and stock with the seller</span>
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
-      <span>VahanaIQ v<span id="appVersion">2.10.0</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.10.1</span></span>
     </p>
   </footer>
 </main>
@@ -268,8 +280,10 @@
     <div id="accountSignedOut">
       <p>Sign in with Google to keep your loan terms, income and comparison on every device you use.</p>
       <p class="hint">They're stored with Firebase, Google's database service, where only you can read them. You can delete them at any time. Signing out removes them from this browser; without signing in, they stay in this browser only.</p>
+      <div class="google-sign-in" id="googleSignIn">Loading Google sign-in…</div>
+      <button class="btn" id="signInBtn" type="button" hidden disabled>Loading…</button>
       <p class="hint warn" id="accountError" role="alert" hidden></p>
-      <div class="modal-actions"><button class="btn-outline" id="cancelAccountBtn" type="button">Not Now</button><button class="btn" id="signInBtn" type="button" disabled>Loading…</button></div>
+      <div class="modal-actions"><button class="btn-outline" id="cancelAccountBtn" type="button">Not Now</button></div>
     </div>
     <div id="accountSignedIn" hidden>
       <p>Signed in as <strong id="accountEmail"></strong></p>
