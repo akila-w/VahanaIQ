@@ -6,6 +6,7 @@ import { newVehicleId } from "./storage.js?v=2.10.1";
 import { openModal, closeModal } from "./modal.js?v=2.10.1";
 import { searchCatalogue } from "./catalogue-search.js?v=2.10.1";
 import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.10.1";
+import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.10.1";
 
 const displayDate = date => /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? date.split("-").reverse().join("/") : "Date unavailable";
 const routeLabel = v => v.w === "Official" ? "Official agent range" : v.w === "Grey" ? "Importer listing" : "Independent seller listing";
@@ -14,7 +15,7 @@ const safeUrl = url => /^https:\/\//.test(url || "") ? url : "";
 const bodyLabel = body => body === "Passenger car" ? "Car" : body;
 const FUELS = { Petrol: "Petrol", Diesel: "Diesel", HEV: "Hybrid", PHEV: "Plug-in hybrid", BEV: "Electric" };
 const UNKNOWN_SPEC = "Specifications to confirm";
-const photoFor = v => v.img || localStudioPhoto(`${v.make} ${v.model}`);
+const photoFor = v => v.img || localStudioPhoto(`${v.make} ${v.model}`) || photoForModel(v);
 const hasPrice = v => validPrice(v.price);
 // Published prices first, then conflicting sources, then price on request
 const priceRank = v => hasPrice(v) ? 0 : v.priceBasis === "conflicting" ? 1 : 2;
@@ -74,11 +75,12 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
   function card(v, t) {
     const selected = isSelected(v.id);
     const photo = photoFor(v);
+    const credit = creditFor(v);
     const specs = [v.pt && v.pt !== UNKNOWN_SPEC ? v.pt : "", v.km].filter(Boolean).join(" · ");
     const link = hasPrice(v) ? { href: v.priceSourceUrl || v.sourceUrl, text: "View price source" } : { href: v.sourceUrl, text: "Ask the seller for a price" };
     const rent = rentalLine(v, t);
     return `<article class="catalogue-card">
-        <div class="catalogue-photo${photo ? "" : " is-empty"}">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" width="400" height="250">` : NO_PHOTO}</div>
+        <div class="catalogue-photo${photo ? "" : " is-empty"}">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" width="400" height="250">${credit ? `<div class="photo-byline">${formatCreditHtml(credit)}</div>` : ""}` : NO_PHOTO}</div>
         <span class="catalogue-category">${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
         <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>
         ${specs ? `<p class="hint">${esc(specs)}</p>` : ""}
@@ -161,6 +163,7 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
     }
     const published = price === pending.price && cond === pending.cond;
     const vehicle = { ...pending, id: newVehicleId(), catalogueId: pending.id, name, price, cond,
+      img: photoFor(pending),
       custom: true, legacy: false, priceBasis: published ? pending.priceBasis : "user-entered",
       priceSourceUrl: published ? pending.priceSourceUrl : null, priceCheckedMonth: published ? pending.priceCheckedMonth : null };
     if (!onAdd(vehicle)) return;

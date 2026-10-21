@@ -211,6 +211,7 @@
     <p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
+      <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
       <span>VahanaIQ v<span id="appVersion">2.10.1</span></span>
     </p>
   </footer>
@@ -442,6 +443,17 @@
       <p class="hint warn" id="mErr" role="alert"></p>
     </div>
 
+  </div>
+</div>
+
+<div class="modal-bg" id="photoCreditsModal" role="dialog" aria-modal="true" aria-labelledby="photoCreditsTitle" inert>
+  <div class="modal photo-credits-modal">
+    <div class="modal-header">
+      <h2 id="photoCreditsTitle">Vehicle Photo Credits</h2>
+      <button class="close-btn" id="closePhotoCreditsBtn" type="button" aria-label="Close photo credits">&times;</button>
+    </div>
+    <p class="credits-intro">Vehicle catalogue photos are sourced from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> under open licences. Each photograph is credited to its author below.</p>
+    <div class="credits-list" id="photoCreditsList"></div>
   </div>
 </div>
 
