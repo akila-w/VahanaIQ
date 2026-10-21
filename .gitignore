@@ -21,3 +21,6 @@ Thumbs.db
 
 # Local output of scripts/scan-prices.mjs
 price-scan/
+
+# QA review evidence and test captures
+qa/

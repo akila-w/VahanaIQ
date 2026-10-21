@@ -13,6 +13,7 @@ import { showToast } from "./toast.js?v=2.10.1";
 import { initAccount } from "./account.js?v=2.10.1";
 import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.10.1";
 import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.10.1";
+import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.10.1";
 
 clearLegacyKeys();
 
@@ -554,7 +555,13 @@ function openDetails(car, opener) {
   const { s, rows: [r] } = computeLeaseTable([car], readSettings());
   const limit = Math.round(s.dti * 100);
   const line = (label, value) => `<div><dt>${label}</dt><dd>${value}</dd></div>`;
-  let html = `<p class="detail-sub">${esc(condLabel(car.cond))} · Rs. ${fmt(car.price)} · ${esc(rateLabel(s))} over ${s.n} months</p><dl class="detail-list">`;
+  const photo = car.img || photoForModel(car);
+  const credit = creditFor(car);
+  let html = "";
+  if (photo) {
+    html += `<div class="detail-photo"><img src="${esc(photo)}" alt="${esc(car.name || "Vehicle")}" loading="lazy">${credit ? `<div class="photo-byline" title="${esc(`Photo: ${credit.author}, ${credit.licence}`)}">${formatCreditHtml(credit)}</div>` : ""}</div>`;
+  }
+  html += `<p class="detail-sub">${esc(condLabel(car.cond))} · Rs. ${fmt(car.price)} · ${esc(rateLabel(s))} over ${s.n} months</p><dl class="detail-list">`;
   if (r.downPct >= 100) {
     html += line("Paid in cash", `Rs. ${fmt(car.price)}`) + "</dl><p class=\"hint\">With a 100% down payment there's no lease to repay.</p>";
   } else {
@@ -577,6 +584,29 @@ function openDetails(car, opener) {
   openModal($("detailModal"), opener, $("closeDetailBtn"));
 }
 if ($("closeDetailBtn")) $("closeDetailBtn").addEventListener("click", () => closeModal($("detailModal")));
+
+function renderPhotoCredits() {
+  const list = $("photoCreditsList");
+  if (!list || list._rendered) return;
+  const entries = Object.entries(PHOTO_CREDITS).sort(([a], [b]) => a.localeCompare(b));
+  list.innerHTML = entries.map(([model, credit]) => `
+    <div class="credit-row">
+      <span class="credit-model">${esc(model)}</span>
+      <span class="credit-info">${formatCreditHtml(credit)}</span>
+    </div>
+  `).join("");
+  list._rendered = true;
+}
+
+if ($("openPhotoCreditsBtn")) {
+  $("openPhotoCreditsBtn").addEventListener("click", () => {
+    renderPhotoCredits();
+    openModal($("photoCreditsModal"), $("openPhotoCreditsBtn"), $("closePhotoCreditsBtn"));
+  });
+}
+if ($("closePhotoCreditsBtn")) {
+  $("closePhotoCreditsBtn").addEventListener("click", () => closeModal($("photoCreditsModal")));
+}
 
 // AI Search Modal UI
 const closeAiModal = () => closeModal($("aiModal"));
@@ -861,8 +891,15 @@ $("aiTrimSelect").addEventListener("change", updateConditionAndSpecs);
 $("aiCondSelect").addEventListener("change", updateSelectedPrice);
 $("aiResetPriceBtn").addEventListener("click", updateSelectedPrice);
 
+function isValidImageUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  const s = url.trim();
+  return /^https:\/\//i.test(s) || /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(s);
+}
+
 function setAiImgPreview(src) {
-  currentAiImgSrc = (src && src.trim() && src !== window.location.href) ? src.trim() : "";
+  const trimmed = (src && typeof src === "string") ? src.trim() : "";
+  currentAiImgSrc = (trimmed && trimmed !== window.location.href && isValidImageUrl(trimmed)) ? trimmed : "";
   const preview = $("aiImgPreview");
   const previewBox = preview.closest(".preview-box");
   let existingPh = previewBox.querySelector(".pimg-ph");

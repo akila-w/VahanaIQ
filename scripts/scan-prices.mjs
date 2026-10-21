@@ -36,14 +36,25 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // --- Page text helpers
 
-const decode = s => s
-  .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
-  .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCodePoint(parseInt(n, 16)))
-  .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#039;|&apos;/g, "'")
-  .replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+const ENTITIES = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  "#039": "'",
+  nbsp: " "
+};
+
+const decode = s => String(s ?? "").replace(/&(?:#(\d+)|#x([0-9a-f]+)|([a-z0-9#]+));/gi, (match, dec, hex, named) => {
+  if (dec) return String.fromCodePoint(Number(dec));
+  if (hex) return String.fromCodePoint(parseInt(hex, 16));
+  const lower = named.toLowerCase();
+  return ENTITIES[lower] !== undefined ? ENTITIES[lower] : match;
+});
 
 export const textOf = html => decode(String(html)
-  .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<svg[\s\S]*?<\/svg>/gi, " ")
+  .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*[^>]*>|<style\b[^>]*>[\s\S]*?<\/style\s*[^>]*>|<svg\b[^>]*>[\s\S]*?<\/svg\s*[^>]*>/gi, " ")
   .replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
 
 const lkr = s => Number(String(s).replace(/[^\d]/g, ""));
@@ -226,7 +237,7 @@ export function buildPricesFile(matches, date) {
 
 const fmt = n => "LKR " + n.toLocaleString("en-GB");
 const pct = (a, b) => { const x = (b - a) / a; return (x > 0 ? "+" : x < 0 ? "−" : "±") + Math.abs(x * 100).toFixed(1) + "%"; };
-const cell = s => String(s ?? "").replace(/\|/g, "\\|");
+const cell = s => String(s ?? "").replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
 const link = l => `[${cell(l.title)}](${l.url})`;
 
 export function renderScanReport({ date, matches, unmatched, catalogue, errors, rules }) {

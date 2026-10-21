@@ -8,6 +8,7 @@ import { loadSavedCars, saveCars, LEGACY_BASE_IDS, COMPARISON_KEY } from '../js/
 import { searchCatalogue } from '../js/catalogue-search.js';
 import { vehicleBatchError } from '../js/vehicle-validation.js';
 import { readResearch, rewriteCatalog, verifyRewrite, vetPrice } from '../scripts/refresh-prices.mjs';
+import { PHOTO_CREDITS, creditFor, photoForModel, formatCreditHtml } from '../js/photo-credits.js';
 
 globalThis.localStorage = {
   data: new Map(), getItem(k) { return this.data.get(k) ?? null; },
@@ -80,4 +81,34 @@ try {
   const research = readResearch(file, [...catalogue].reverse());
   assert.equal(research.reply.vehicles[0].query_index, [...catalogue].reverse().findIndex(v => v.id === priced.id) + 1, 'Refresh must match stable ID even after a rename and reorder');
 } finally { fs.rmSync(temp, { recursive: true, force: true }); }
-console.log(`Catalogue: ${catalogue.length} entries; migration, selection, source contracts, unknown prices and stable-ID refresh checks passed`);
+
+// Photo credits registry & attribution tests
+const creditEntries = Object.entries(PHOTO_CREDITS);
+assert.ok(creditEntries.length >= 120, `Expected at least 120 photo credits, got ${creditEntries.length}`);
+for (const [key, c] of creditEntries) {
+  assert.ok(typeof key === 'string' && key.length > 0, 'Credit key must be non-empty');
+  assert.match(c.img, /^https:\/\//, `${key}: img must be an https URL`);
+  assert.ok(typeof c.author === 'string' && c.author.trim().length > 0, `${key}: author must be non-empty`);
+  assert.ok(!c.licence.toUpperCase().includes('-NC'), `${key}: licence must not prohibit commercial reuse (-NC)`);
+  assert.ok(!c.licence.toUpperCase().includes('NONCOMMERCIAL'), `${key}: licence must not be non-commercial`);
+  assert.match(c.licence, /^(CC0(\s+1\.0)?|Public domain|CC BY(\s+[2-4]\.0)?|CC BY-SA(\s+[2-4]\.0)?)$/, `${key}: licence must be strictly CC0, Public domain, CC BY, or CC BY-SA`);
+  assert.match(c.licenceUrl, /^https?:\/\//, `${key}: licenceUrl must be a valid URL`);
+  assert.match(c.sourceUrl, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/, `${key}: sourceUrl must be a Wikimedia Commons File URL`);
+}
+
+// creditFor and photoForModel lookup tests
+const yarisCredit = creditFor('Toyota Yaris Cross');
+assert.ok(yarisCredit, 'Must find credit for Toyota Yaris Cross');
+assert.equal(creditFor({ make: 'Toyota', model: 'Yaris Cross' }), yarisCredit, 'Object lookup must match string lookup');
+assert.equal(photoForModel('Toyota Yaris Cross'), yarisCredit.img);
+assert.equal(creditFor('Nonexistent Supercar 9000'), null, 'Unknown vehicle must return null');
+assert.equal(photoForModel('Nonexistent Supercar 9000'), '', 'Unknown vehicle must return empty photo string');
+
+// formatCreditHtml tests
+const creditHtml = formatCreditHtml(yarisCredit);
+assert.match(creditHtml, /^<span class="photo-credit">Photo: <a href="https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
+assert.match(creditHtml, /rel="noopener noreferrer">/);
+assert.equal(formatCreditHtml(null), '');
+assert.equal(formatCreditHtml({}), '');
+
+console.log(`Catalogue: ${catalogue.length} entries; photo credits: ${creditEntries.length} verified; migration, selection, source contracts, unknown prices and stable-ID refresh checks passed`);
