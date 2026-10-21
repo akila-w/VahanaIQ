@@ -89,7 +89,9 @@ for (const [key, c] of creditEntries) {
   assert.ok(typeof key === 'string' && key.length > 0, 'Credit key must be non-empty');
   assert.match(c.img, /^https:\/\//, `${key}: img must be an https URL`);
   assert.ok(typeof c.author === 'string' && c.author.trim().length > 0, `${key}: author must be non-empty`);
-  assert.match(c.licence, /^(CC0|CC BY|CC BY-SA|Public domain)/, `${key}: licence must be CC0, CC BY, CC BY-SA, or Public domain`);
+  assert.ok(!c.licence.toUpperCase().includes('-NC'), `${key}: licence must not prohibit commercial reuse (-NC)`);
+  assert.ok(!c.licence.toUpperCase().includes('NONCOMMERCIAL'), `${key}: licence must not be non-commercial`);
+  assert.match(c.licence, /^(CC0(\s+1\.0)?|Public domain|CC BY(\s+[2-4]\.0)?|CC BY-SA(\s+[2-4]\.0)?)$/, `${key}: licence must be strictly CC0, Public domain, CC BY, or CC BY-SA`);
   assert.match(c.licenceUrl, /^https?:\/\//, `${key}: licenceUrl must be a valid URL`);
   assert.match(c.sourceUrl, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/, `${key}: sourceUrl must be a Wikimedia Commons File URL`);
 }

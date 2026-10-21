@@ -16,6 +16,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export const CURATED_MODELS = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 
+// Commercial open-licence validation rule: CC0, Public Domain, CC BY, CC BY-SA (excluding NC/ND)
+export const ALLOWED_LICENCE_REGEX = /^(CC0(\s+1\.0)?|Public domain|CC BY(\s+[2-4]\.0)?|CC BY-SA(\s+[2-4]\.0)?)$/i;
+
+export function isCommercialLicence(licence) {
+  if (!licence || typeof licence !== "string") return false;
+  const upper = licence.toUpperCase();
+  if (upper.includes("-NC") || upper.includes("NONCOMMERCIAL") || upper.includes("-ND")) return false;
+  return ALLOWED_LICENCE_REGEX.test(licence.trim());
+}
+
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, c => ({
     "&": "&amp;",
@@ -125,12 +135,14 @@ export function generateReviewHtml(entries) {
     const filePageUrl = safeUrl(e.filePage || e.commons_file_page);
     const matchClass = e.match.startsWith("exact") ? "exact" : (e.match.startsWith("twin") ? "twin" : "other");
     const matchLabel = escapeHtml(e.match);
+    const isCommercial = isCommercialLicence(e.license || e.licence);
 
     return `
     <article class="card" data-make="${escapeHtml(make)}" id="${id}">
       <div class="img-wrap">
         ${hasThumb ? `<img src="${thumbSrc}" alt="${model}" loading="lazy" />` : `<div class="no-thumb"><span>No free asset yet (null record)</span></div>`}
         <span class="badge badge-${matchClass}">${matchLabel}</span>
+        ${hasThumb && !isCommercial ? `<span class="badge badge-warn">Non-Commercial</span>` : ""}
         <span class="make-tag">${escapeHtml(make)}</span>
       </div>
       <div class="content">
@@ -146,7 +158,7 @@ export function generateReviewHtml(entries) {
         <div class="actions">
           ${filePageUrl ? `<a href="${filePageUrl}" target="_blank" rel="noopener" class="btn btn-secondary">Wikimedia Page ↗</a>` : `<span class="unavail-txt">Unindexed</span>`}
           <label class="approve-label">
-            <input type="checkbox" class="approval-check" data-model="${model}" ${hasThumb ? "checked" : "disabled"} />
+            <input type="checkbox" class="approval-check" data-model="${model}" ${hasThumb && isCommercial ? "checked" : "disabled"} />
             <span>Approve</span>
           </label>
         </div>
