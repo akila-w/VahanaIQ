@@ -16,6 +16,41 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 export const CURATED_MODELS = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
 
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[c]));
+}
+
+function safeUrl(url) {
+  return typeof url === "string" && /^https?:\/\//.test(url) ? url : "";
+}
+
+function parseArtistName(raw) {
+  if (typeof raw !== "string" || !raw.trim()) return "Wikimedia Contributor";
+  // Extract anchor text if Wikimedia Commons formatted as HTML link
+  const linkMatch = />([^<>]+)<\/a>/i.exec(raw);
+  if (linkMatch && linkMatch[1].trim()) return linkMatch[1].trim();
+  // Safe extraction without multi-character regex replacement:
+  const parts = raw.split("<");
+  const extracted = [];
+  for (const part of parts) {
+    const closeIdx = part.indexOf(">");
+    if (closeIdx === -1) {
+      if (part.trim()) extracted.push(part.trim());
+    } else {
+      const rest = part.slice(closeIdx + 1).trim();
+      if (rest) extracted.push(rest);
+    }
+  }
+  const result = extracted.join(" ").trim();
+  return result || "Wikimedia Contributor";
+}
+
 // Helper to query Wikimedia API for imageinfo
 export async function queryFileInfo(title) {
   if (!title) return null;
@@ -32,12 +67,12 @@ export async function queryFileInfo(title) {
     if (!info) return null;
     return {
       title: page.title,
-      thumbUrl: info.thumburl,
-      origUrl: info.url,
-      filePage: info.descriptionurl,
-      artist: info.extmetadata?.Artist?.value?.replace(/<[^>]+>/g, "").trim() || "Wikimedia Contributor",
-      license: info.extmetadata?.LicenseShortName?.value || "Creative Commons",
-      licenseUrl: info.extmetadata?.LicenseUrl?.value || "https://creativecommons.org/"
+      thumbUrl: safeUrl(info.thumburl),
+      origUrl: safeUrl(info.url),
+      filePage: safeUrl(info.descriptionurl),
+      artist: parseArtistName(info.extmetadata?.Artist?.value),
+      license: String(info.extmetadata?.LicenseShortName?.value || "Creative Commons"),
+      licenseUrl: safeUrl(info.extmetadata?.LicenseUrl?.value) || "https://creativecommons.org/"
     };
   } catch (e) {
     return null;
@@ -78,28 +113,40 @@ export function generateReviewHtml(entries) {
 
   const cards = entries.map(e => {
     const make = getMake(e.model);
-    const hasThumb = Boolean(e.thumbUrl);
+    const hasThumb = Boolean(e.thumbUrl && safeUrl(e.thumbUrl));
+    const thumbSrc = hasThumb ? safeUrl(e.thumbUrl) : "";
+    const model = escapeHtml(e.model);
+    const id = e.model.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const notes = escapeHtml(e.notes);
+    const view = escapeHtml(e.view);
+    const licenceLabel = escapeHtml(e.license || e.licence || "None");
+    const licenceUrl = safeUrl(e.licenseUrl);
+    const photographer = escapeHtml(e.artist || e.author || "Unknown");
+    const filePageUrl = safeUrl(e.filePage || e.commons_file_page);
+    const matchClass = e.match.startsWith("exact") ? "exact" : (e.match.startsWith("twin") ? "twin" : "other");
+    const matchLabel = escapeHtml(e.match);
+
     return `
-    <article class="card" data-make="${make}" id="${e.model.toLowerCase().replace(/[^a-z0-9]+/g, "-")}">
+    <article class="card" data-make="${escapeHtml(make)}" id="${id}">
       <div class="img-wrap">
-        ${hasThumb ? `<img src="${e.thumbUrl}" alt="${e.model}" loading="lazy" />` : `<div class="no-thumb"><span>No free asset yet (null record)</span></div>`}
-        <span class="badge badge-${e.match.startsWith("exact") ? "exact" : (e.match.startsWith("twin") ? "twin" : "other")}">${e.match}</span>
-        <span class="make-tag">${make}</span>
+        ${hasThumb ? `<img src="${thumbSrc}" alt="${model}" loading="lazy" />` : `<div class="no-thumb"><span>No free asset yet (null record)</span></div>`}
+        <span class="badge badge-${matchClass}">${matchLabel}</span>
+        <span class="make-tag">${escapeHtml(make)}</span>
       </div>
       <div class="content">
         <div class="title-row">
-          <h3>${e.model}</h3>
+          <h3>${model}</h3>
         </div>
-        <p class="notes">${e.notes}</p>
+        <p class="notes">${notes}</p>
         <dl class="meta">
-          <div><dt>Perspective</dt><dd>${e.view}</dd></div>
-          <div><dt>Licence</dt><dd>${e.licenseUrl ? `<a href="${e.licenseUrl}" target="_blank" rel="noopener">${e.license || e.licence}</a>` : (e.license || e.licence || "None")}</dd></div>
-          <div class="full"><dt>Photographer / Source</dt><dd>${e.artist || e.author || "Unknown"}</dd></div>
+          <div><dt>Perspective</dt><dd>${view}</dd></div>
+          <div><dt>Licence</dt><dd>${licenceUrl ? `<a href="${licenceUrl}" target="_blank" rel="noopener">${licenceLabel}</a>` : licenceLabel}</dd></div>
+          <div class="full"><dt>Photographer / Source</dt><dd>${photographer}</dd></div>
         </dl>
         <div class="actions">
-          ${e.filePage || e.commons_file_page ? `<a href="${e.filePage || e.commons_file_page}" target="_blank" rel="noopener" class="btn btn-secondary">Wikimedia Page ↗</a>` : `<span class="unavail-txt">Unindexed</span>`}
+          ${filePageUrl ? `<a href="${filePageUrl}" target="_blank" rel="noopener" class="btn btn-secondary">Wikimedia Page ↗</a>` : `<span class="unavail-txt">Unindexed</span>`}
           <label class="approve-label">
-            <input type="checkbox" class="approval-check" data-model="${e.model}" ${hasThumb ? "checked" : "disabled"} />
+            <input type="checkbox" class="approval-check" data-model="${model}" ${hasThumb ? "checked" : "disabled"} />
             <span>Approve</span>
           </label>
         </div>
