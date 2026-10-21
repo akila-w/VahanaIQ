@@ -55,7 +55,7 @@ const oneLine = (s, max = 200) => {
   const t = String(s ?? "").replace(/\s+/g, " ").trim();
   return t.length > max ? t.slice(0, max - 1) + "…" : t;
 };
-const cell = s => String(s).replace(/\|/g, "\\|");
+const cell = s => String(s ?? "").replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 export const fmtLkr = n => "LKR " + n.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const fmtPct = x => (x > 0 ? "+" : x < 0 ? "−" : "±") + Math.abs(x * 100).toFixed(1) + "%";

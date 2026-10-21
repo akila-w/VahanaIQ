@@ -891,8 +891,15 @@ $("aiTrimSelect").addEventListener("change", updateConditionAndSpecs);
 $("aiCondSelect").addEventListener("change", updateSelectedPrice);
 $("aiResetPriceBtn").addEventListener("click", updateSelectedPrice);
 
+function isValidImageUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  const s = url.trim();
+  return /^https:\/\//i.test(s) || /^data:image\/(png|jpeg|jpg|webp|gif);base64,/i.test(s);
+}
+
 function setAiImgPreview(src) {
-  currentAiImgSrc = (src && src.trim() && src !== window.location.href) ? src.trim() : "";
+  const trimmed = (src && typeof src === "string") ? src.trim() : "";
+  currentAiImgSrc = (trimmed && trimmed !== window.location.href && isValidImageUrl(trimmed)) ? trimmed : "";
   const preview = $("aiImgPreview");
   const previewBox = preview.closest(".preview-box");
   let existingPh = previewBox.querySelector(".pimg-ph");
