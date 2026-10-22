@@ -14,6 +14,10 @@ Thumbs.db
 *.swo
 *~
 
+# Agent working trees. These are scratch checkouts, not project files.
+.claude/
+.codex/
+
 # Local environment & secrets
 .env
 .env*.local

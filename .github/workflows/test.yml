@@ -33,3 +33,5 @@ jobs:
           node test/catalogue-data.test.mjs
           node test/scan-prices.test.mjs
           node test/savings-bulk.test.mjs
+      - name: Check the repository keeps only published assets
+        run: node scripts/prune-thumbnails.mjs --check

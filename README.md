@@ -39,6 +39,8 @@ vahanaiq/
 ├── _config.yml           # Which folders GitHub Pages must NOT publish (see Deploying)
 ├── firestore.rules       # Who may read and write synced data (paste into the Firebase console)
 ├── README.md             # Project documentation
+├── LICENSE               # MIT for the original code; third-party material is excluded
+├── SECURITY.md           # How to report a vulnerability, and what is intentional
 ├── data/                 # Published catalogue records (catalogue.json, identity.json)
 ├── design-system/
 │   └── tokens.json       # Design tokens: colours, type, spacing, radii, shadows (source of truth)
@@ -70,6 +72,7 @@ vahanaiq/
 ├── scripts/
 │   ├── build-tokens.mjs          # Builds css/tokens.css from design-system/tokens.json
 │   ├── smoke-deploy.mjs          # Checks the live site really is this release
+│   ├── prune-thumbnails.mjs      # Keeps the review thumbnails to the ones the site uses
 │   ├── scan-prices.mjs           # Reads the price sites and writes a prices file and a review report
 │   ├── price-matches.json        # Which site listing belongs to which catalogue entry
 │   ├── refresh-prices.mjs        # Applies researched prices to the catalogue, with checks
@@ -147,6 +150,34 @@ page and asset returns 200 and that `docs/`, `test/`, `scripts/`, `README.md` an
 are **not** published. `.github/workflows/smoke-deploy.yml` runs the same check on every push, so a
 successful-but-stale deployment (which is how the site sat on v2.10.1 while the checkout was
 v2.11.3) fails the build instead of passing quietly.
+
+## Repository size and working artefacts
+
+Only what the site serves is committed: the pages, CSS, JS, the two published image folders
+(`assets/images/curated-catalogue` and the referenced subset of `assets/images/review-thumbnails`)
+and the catalogue records in `data/`. That is roughly 40 MB of images plus the code.
+
+The catalogue build inputs and the review libraries are deliberately **not** committed — they are
+well over a gigabyte in total (`assets/images/review-catalogue` 743 MB,
+`assets/images/catalogue-rebuild-originals` 499 MB, `assets/images/catalogue` 178 MB,
+`assets/images/official-candidates` 18 MB, `docs/catalogue-rebuild/sources` 35 MB of scraped
+publisher pages). They are listed in `.gitignore` and in `_config.yml`, so they are neither pushed
+nor published. Keep them on disk: the build scripts read them.
+
+`assets/images/review-thumbnails` holds only the 140 covers that `js/official-photo-data.js`
+references. The library is generated for every candidate (2,614 files), so after regenerating it
+run:
+
+```bash
+node scripts/prune-thumbnails.mjs            # delete the unreferenced files
+node scripts/prune-thumbnails.mjs --check    # report only; fails if any reappear (also run in CI)
+```
+
+Agent tools used to leave checkpoint refs (`refs/cline/checkpoints/…`, `refs/codex/turn-diffs/…`)
+holding snapshots of untracked files. That accounted for ~1.3 GB of the object store, and
+`.git` was 1.34 GB. Every path under those refs also existed on disk, so nothing unique was in
+them; deleting the refs and running `git gc --prune=now` brought `.git` to ~99 MB. Do not
+recreate them, and never add one back "just in case" — it re-inflates the repository.
 
 ## Deploying the search proxy (Cloud Run)
 From `serverless/gcp-cloud-function/`:
