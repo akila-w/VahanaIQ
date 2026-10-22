@@ -5,6 +5,7 @@ export function vehicleBatchError(vehicles) {
   if (!Array.isArray(vehicles) || !vehicles.length) return "Select at least one vehicle to add.";
   for (const vehicle of vehicles) {
     if (!vehicle || typeof vehicle.name !== "string" || !vehicle.name.trim()) return "Enter a vehicle name.";
+    if (vehicle.name.trim().length > 200) return "Keep vehicle names to 200 characters or fewer.";
     if (!validPrice(vehicle.price)) return `Enter a valid price greater than zero for ${vehicle.name}. No vehicles were added.`;
   }
   return "";

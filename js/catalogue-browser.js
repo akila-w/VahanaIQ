@@ -1,24 +1,27 @@
-import { baseVehicles as catalogue } from "./market-catalogue.js?v=2.10.1";
-import { fmt, esc, minDownFor } from "./calculator.js?v=2.10.1";
-import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.10.1";
-import { validPrice } from "./vehicle-validation.js?v=2.10.1";
-import { newVehicleId } from "./storage.js?v=2.10.1";
-import { openModal, closeModal } from "./modal.js?v=2.10.1";
-import { searchCatalogue } from "./catalogue-search.js?v=2.10.1";
-import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.10.1";
-import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.10.1";
+import { formatDate as displayDate } from "./dates.js?v=2.11.3";
+import { baseVehicles as catalogue } from "./market-catalogue.js?v=2.11.3";
+import { fmt, esc, minDownFor } from "./calculator.js?v=2.11.3";
+import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.11.3";
+import { validPrice } from "./vehicle-validation.js?v=2.11.3";
+import { newVehicleId } from "./storage.js?v=2.11.3";
+import { openModal, closeModal } from "./modal.js?v=2.11.3";
+import { searchCatalogue } from "./catalogue-search.js?v=2.11.3";
+import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.11.3";
+import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.11.3";
+import { identity } from "./identity-data.js?v=2.11.3";
+import { prepareBulkSelection } from "./bulk-selection.js?v=2.11.3";
 
-const displayDate = date => /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? date.split("-").reverse().join("/") : "Date unavailable";
 const routeLabel = v => v.w === "Official" ? "Official agent range" : v.w === "Grey" ? "Importer listing" : "Independent seller listing";
 const availabilityLabel = v => ({ "used-listed": "Used listing: confirm registration age", "import-service": "Past import example: enquire about availability", "brochure-listed": "Local brochure: enquire about availability", "configurator-listed": "Local configurator: enquire about availability" }[v.availability] || "Confirm stock with seller");
 const safeUrl = url => /^https:\/\//.test(url || "") ? url : "";
 const bodyLabel = body => body === "Passenger car" ? "Car" : body;
 const FUELS = { Petrol: "Petrol", Diesel: "Diesel", HEV: "Hybrid", PHEV: "Plug-in hybrid", BEV: "Electric" };
 const UNKNOWN_SPEC = "Specifications to confirm";
-const photoFor = v => v.img || localStudioPhoto(`${v.make} ${v.model}`) || photoForModel(v);
+const photoFor = v => photoForModel(v);
 const hasPrice = v => validPrice(v.price);
+const publishedPrice = v => hasPrice(v) && ['published', 'starting'].includes(v.priceBasis);
 // Published prices first, then conflicting sources, then price on request
-const priceRank = v => hasPrice(v) ? 0 : v.priceBasis === "conflicting" ? 1 : 2;
+const priceRank = v => publishedPrice(v) ? 0 : hasPrice(v) && v.priceBasis !== "conflicting" ? 1 : 2;
 const byName = (a, b) => a.make.localeCompare(b.make) || a.name.localeCompare(b.name);
 const SORTS = {
   priced: (a, b) => priceRank(a) - priceRank(b) || byName(a, b),
@@ -26,19 +29,19 @@ const SORTS = {
   "price-desc": (a, b) => priceRank(a) - priceRank(b) || (hasPrice(a) ? b.price - a.price : 0) || byName(a, b),
   name: byName
 };
-const FILTERS = ["catalogueMake", "catalogueBody", "catalogueFuel", "catalogueRoute", "cataloguePriceFilter"];
+const FILTERS = ["catalogueMake", "catalogueBody", "catalogueFuel", "catalogueRoute", "cataloguePriceFilter", "catalogueAffordability"];
 
 function matchesFilters(v, f) {
   if (f.catalogueMake && v.make !== f.catalogueMake) return false;
   if (f.catalogueBody && v.body !== f.catalogueBody) return false;
   if (f.catalogueFuel && (f.catalogueFuel === "unknown" ? v.fuel : v.fuel !== f.catalogueFuel)) return false;
   if (f.catalogueRoute && v.w !== f.catalogueRoute) return false;
-  if (f.cataloguePriceFilter === "priced" && !hasPrice(v)) return false;
+  if (f.cataloguePriceFilter === "priced" && !publishedPrice(v)) return false;
   return true;
 }
 
 // terms() returns { f, down }: the rental per rupee financed and the chosen down payment (%)
-export function initCatalogue({ isSelected, onAdd, terms }) {
+export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   const $ = id => document.getElementById(id);
   if (!$("openCatalogueBtn")) return () => {}; // Non-browser verification hosts.
   const pageSize = 12;
@@ -55,8 +58,8 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
 
   // Estimated rental for a priced car, at its legal minimum down payment or the chosen one if higher
   function rentalLine(v, t) {
-    if (!hasPrice(v) || !t || !(t.f > 0)) return "";
-    const down = Math.max(t.down, minDownFor(v.cond));
+    if (!hasPrice(v) || v.priceBasis === 'conflicting' || !t || !(t.f > 0)) return "";
+    const down = Math.max(t.down, minDownFor(v.cond, v.financeClass, v.firstRegisteredOn));
     return down < 100 ? `About Rs. ${fmt(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
   }
 
@@ -68,6 +71,8 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
   }
 
   function priceText(v) {
+    if (v.priceBasis === 'conflicting') return 'Price needs confirmation';
+    if (hasPrice(v) && !publishedPrice(v)) return `Unverified estimate · LKR ${fmt(v.price)}`;
     if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${fmt(v.price)}`;
     return v.priceBasis === "conflicting" ? "Prices differ between sources" : "Price on request";
   }
@@ -75,42 +80,80 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
   function card(v, t) {
     const selected = isSelected(v.id);
     const photo = photoFor(v);
-    const credit = creditFor(v);
+    const candidateCredit = creditFor(v);
+    const credit = candidateCredit?.img === photo ? candidateCredit : null;
     const specs = [v.pt && v.pt !== UNKNOWN_SPEC ? v.pt : "", v.km].filter(Boolean).join(" · ");
-    const link = hasPrice(v) ? { href: v.priceSourceUrl || v.sourceUrl, text: "View price source" } : { href: v.sourceUrl, text: "Ask the seller for a price" };
+    const pills = [v.trim, v.power, v.drivetrain, v.seats ? `${v.seats} seats` : "", v.groundClearance ? `${v.groundClearance} clearance` : ""].filter(Boolean);
+    const detailRows = [
+      ["Trim", v.trim],
+      ["Output", [v.power, v.torque].filter(Boolean).join(" · ")],
+      ["Drive & Gearbox", [v.transmission, v.drivetrain].filter(Boolean).join(" · ")],
+      ["Dimensions", v.dimensions],
+      ["Safety", v.safety],
+      ["Features", v.features],
+      ["Warranty", v.warranty]
+    ].filter(([, val]) => val);
+    const link = hasPrice(v) ? { href: v.priceSourceUrl || v.sourceUrl, text: "View Price Source" } : { href: v.sourceUrl, text: "Request a Price" };
     const rent = rentalLine(v, t);
     return `<article class="catalogue-card">
-        <div class="catalogue-photo${photo ? "" : " is-empty"}">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" width="400" height="250">${credit ? `<div class="photo-byline">${formatCreditHtml(credit)}</div>` : ""}` : NO_PHOTO}</div>
-        <span class="catalogue-category">${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
-        <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>
+        <div class="catalogue-photo${photo ? "" : " is-empty"}">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" width="400" height="250">` : NO_PHOTO}</div>
+        <span class="catalogue-category">${identity.brands[v.make] ? `<img class="brand-mark" src="${esc(identity.brands[v.make].localPath.replace("../", ""))}" alt="">` : ""}${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
+        <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>${identity.models[`${v.make} ${v.model}`] ? `<img class="model-mark" src="${esc(identity.models[`${v.make} ${v.model}`].localPath.replace("../", ""))}" alt="">` : ""}
         ${specs ? `<p class="hint">${esc(specs)}</p>` : ""}
+        ${pills.length ? `<div class="catalogue-spec-pills">${pills.map(p => `<span class="spec-pill">${esc(p)}</span>`).join("")}</div>` : ""}
         <p class="catalogue-price${hasPrice(v) ? "" : " is-unpriced"}">${priceText(v)}</p>
         ${rent ? `<p class="hint catalogue-rent">${rent}</p>` : ""}
-        <p class="hint">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${hasPrice(v) && v.priceCheckedMonth ? ` · Price checked ${v.priceCheckedMonth.split("-").reverse().join("/")}` : ""}</p>
-        <a href="${esc(safeUrl(link.href))}" target="_blank" rel="noopener noreferrer">${link.text}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>
+        ${detailRows.length ? `<details class="catalogue-spec-details"><summary>Specifications &amp; trim details</summary><dl class="catalogue-spec-grid">${detailRows.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join("")}</dl></details>` : ""}
+        <p class="hint">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${v.priceVerifiedOn ? ` · Verified ${displayDate(v.priceVerifiedOn)}` : ""}</p>
+        <div class="source-links"><a href="${esc(safeUrl(link.href))}" target="_blank" rel="noopener noreferrer">${link.text}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>${credit ? formatCreditHtml(credit) : ""}</div>
         <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In Comparison ✓" : "Choose & Add"}</button>
       </article>`;
   }
 
   function render() {
     const f = filterValues();
+    const t = terms ? terms() : null;
     const active = FILTERS.filter(id => f[id]).length;
-    const matches = searchCatalogue(catalogue, $("catalogueSearch").value).filter(v => matchesFilters(v, f))
+    const matches = searchCatalogue(catalogue, $("catalogueSearch").value).filter(v => matchesFilters(v, f) && fitsBudget(v, f, t))
       .sort(SORTS[$("catalogueSort").value] || SORTS.priced);
     page = Math.min(page, Math.max(0, Math.ceil(matches.length / pageSize) - 1));
     const start = page * pageSize;
-    const priced = matches.filter(hasPrice).length;
+    const priced = matches.filter(v => hasPrice(v) && ['published', 'starting'].includes(v.priceBasis)).length;
     $("catalogueCount").textContent = matches.length
       ? `${start + 1}–${Math.min(start + pageSize, matches.length)} of ${matches.length} vehicles · ${priced} with a published price`
       : "No matching vehicles. Try another make or model, or clear the filters.";
     $("catalogueClearFilters").hidden = !active && !$("catalogueSearch").value;
     $("catalogueFiltersCount").textContent = active ? `(${active})` : "";
-    const t = terms ? terms() : null;
-    $("cataloguePerMillion").textContent = perMillionLine(t);
+    $("cataloguePerMillion").textContent = f.catalogueAffordability === 'within' && !t?.income ? 'Enter your net income and loan terms above to filter by monthly budget.' : f.catalogueAffordability === 'within' ? `Using your income, existing payments, insurance, ${t.down}% down and current loan terms. Source-backed prices only; starting prices may increase. Deposit savings are checked in the planner.` : priced ? '' : perMillionLine(t);
     $("catalogueResults").innerHTML = matches.slice(start, start + pageSize).map(v => card(v, t)).join("");
     $("cataloguePrev").disabled = page === 0;
     $("catalogueNext").disabled = start + pageSize >= matches.length;
     $("cataloguePage").textContent = `Page ${page + 1} of ${Math.max(1, Math.ceil(matches.length / pageSize))}`;
+    for (const [id, scope] of [["catalogueAddAll", catalogue], ["catalogueAddSearch", searchCatalogue(catalogue, $("catalogueSearch").value)], ["catalogueAddFiltered", matches]]) {
+      const b = $(id); if (!b) continue;
+      const pending = scope.filter(v => !isSelected(v.id));
+      const { eligible } = prepareBulkSelection(pending);
+      b.disabled = !eligible.length || (id === 'catalogueAddSearch' && !$("catalogueSearch").value.trim());
+      b.querySelector('.bulk-count').textContent = eligible.length;
+    }
+  }
+
+  for (const id of ['catalogueAddAll', 'catalogueAddSearch', 'catalogueAddFiltered']) if ($(id)) $(id).addEventListener('click', () => {
+    const searched = searchCatalogue(catalogue, $("catalogueSearch").value);
+    const scope = id === 'catalogueAddAll' ? catalogue : id === 'catalogueAddSearch' ? searched : searched.filter(v => matchesFilters(v, filterValues()) && fitsBudget(v, filterValues(), terms?.()));
+    const { eligible, skipped } = prepareBulkSelection(scope, catalogue.filter(v => isSelected(v.id)).map(v => v.id));
+    if (!eligible.length || !onAddBatch) return;
+    const batch = eligible.map(v => ({ ...v, id: newVehicleId(), catalogueId: v.id, cond: v.cond || 'New', conditionAssumed: !v.cond, img: photoFor(v), custom: true, legacy: false }));
+    if (!onAddBatch(batch, skipped.length)) return;
+    closeModal($("catalogueModal"));
+    $("h-list").focus(); render();
+  });
+
+  function fitsBudget(v, f, t) {
+    if (f.catalogueAffordability !== 'within') return true;
+    if (!t?.income || !publishedPrice(v) || v.priceBasis === 'conflicting' || t.room < 0) return false;
+    const down = Math.max(t.down, minDownFor(v.cond, v.financeClass, v.firstRegisteredOn));
+    return v.price * (1 - down / 100) * t.f <= t.room;
   }
 
   const open = opener => {
@@ -144,13 +187,14 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
     $("catalogueAddTitle").textContent = `Compare ${pending.name}`;
     $("catalogueName").value = pending.name + (pending.year ? ` (${pending.year})` : "");
     $("catalogueCondition").value = pending.cond || "";
-    $("cataloguePrice").value = validPrice(pending.price) ? formatMoneyText(String(pending.price)) : "";
-    $("cataloguePriceNote").textContent = pending.priceBasis === "conflicting" ? "The source shows multiple prices for this variant. Enter a confirmed price." : validPrice(pending.price) ? "Published asking/starting price, checked " + displayDate(pending.checkedOn) + ". Confirm the exact specification and current quote." : "No verified price is published here. Enter your quote to calculate a lease.";
+    $("cataloguePrice").value = validPrice(pending.price) && pending.priceBasis !== 'conflicting' ? formatMoneyText(String(pending.price)) : "";
+    $("cataloguePriceNote").textContent = pending.priceBasis === "conflicting" ? "The source does not establish a reliable price for this variant. Enter a confirmed quote." : publishedPrice(pending) ? "Source-backed asking/starting amount, checked " + displayDate(pending.priceVerifiedOn || pending.checkedOn) + ". Confirm the exact specification and current quote." : validPrice(pending.price) ? "Unverified catalogue estimate. Replace it with a seller quote before relying on the calculation." : "No verified price is published here. Enter your quote to calculate a lease.";
     $("catalogueAddError").textContent = "";
     openModal($("catalogueAddModal"), button, $("cataloguePrice"));
   });
   for (const id of ["closeCatalogueAddBtn", "cancelCatalogueAddBtn"]) $(id).addEventListener("click", () => closeModal($("catalogueAddModal")));
   attachMoneyInput($("cataloguePrice"));
+  window.addEventListener("vahanaiq:copy-reset", () => { pending = null; });
   $("catalogueAddForm").addEventListener("submit", event => {
     event.preventDefault();
     if (!pending) return;
@@ -173,7 +217,7 @@ export function initCatalogue({ isSelected, onAdd, terms }) {
     render();
   });
   const checked = catalogue.map(v => v.checkedOn).filter(Boolean).sort().pop();
-  $("catalogueCoverage").textContent = `${catalogue.length} vehicles across ${new Set(catalogue.map(v => v.make)).size} makes, sources checked ${displayDate(checked)}. Most Sri Lankan agents don't publish prices, so many cars are price on request: ask the seller and enter your quote. Photos show the model and may differ from the exact trim. Further brands, trims and used models are still being checked.`;
+  $("catalogueCoverage").textContent = `${catalogue.length} vehicles across ${new Set(catalogue.map(v => v.make)).size} makes, sources checked ${displayDate(checked)}. Published prices and unverified estimates are labelled separately. Ask the seller for a current quote. Photos may differ from the exact trim. Pickup/van registration classes and lender valuations need confirmation. Further brands, trims and used models are still being checked.`;
   render();
   return () => {
     const next = catalogue.filter(v => isSelected(v.id)).map(v => v.id).join("|");

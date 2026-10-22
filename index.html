@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>VahanaIQ — Sri Lanka Vehicle Lease Calculator</title>
   <meta name="description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.">
-  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#0f766e">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#103e36">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1a16">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <meta property="og:title" content="VahanaIQ — Sri Lanka Vehicle Lease Calculator">
@@ -21,58 +21,72 @@
   <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
   <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
-  <link rel="stylesheet" href="css/tokens.css?v=2.10.1">
-  <link rel="stylesheet" href="css/style.css?v=2.10.1">
-  <script type="module" src="js/app.js?v=2.10.1"></script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.11.3">
+  <link rel="stylesheet" href="css/style.css?v=2.11.3">
+  <script type="module" src="js/app.js?v=2.11.3"></script>
 </head>
 <body>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
+<header class="site-header">
+  <a class="brand" href="index.html">
+    <img src="assets/icons/logo-option-1-apex.svg?v=20261020" alt="" class="brand-logo" width="34" height="34">
+    <span>Vahana<span class="brand-iq">IQ</span></span>
+  </a>
+  <nav aria-label="Main">
+    <a href="index.html" aria-current="page">Calculator</a>
+    <a href="catalogue.html">Catalogue</a>
+  </nav>
+  <div class="header-actions">
+    <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
+    <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
+    <fieldset class="theme-switch" id="themeSwitch">
+      <legend class="sr-only">Theme</legend>
+      <label title="System: match this device"><input type="radio" name="theme" value="system" checked><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="sr-only">System</span></label>
+      <label title="Light"><input type="radio" name="theme" value="light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="sr-only">Light</span></label>
+      <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
+    </fieldset>
+    <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign In</button>
+  </div>
+</header>
+
 <main>
 
-  <div class="header-bar">
+  <section class="hero">
     <div>
-      <div class="brand-row">
-        <h1>
-          <img src="assets/icons/logo-option-1-apex.svg?v=20261020" alt="" class="brand-logo" width="36" height="36">
-          <span>Vahana<span class="brand-iq">IQ</span></span>
-        </h1>
-        <span class="brand-badge"><span aria-hidden="true">CBSL 2026</span><span class="sr-only">Down-payment rules follow CBSL Directions No. 01 of 2026</span></span>
+      <p class="eyebrow">Sri Lanka Vehicle Finance</p>
+      <h1>Know your<br>monthly rental.</h1>
+      <p class="intro">Set your terms, add the cars you are considering, and see what you can genuinely afford — before you walk into a showroom.</p>
+    </div>
+    <div class="hero-aside">
+      <span class="edition"><span aria-hidden="true">CBSL Directions 2026</span><span class="sr-only">Down-payment rules follow CBSL Directions No. 01 of 2026</span></span>
+      <div class="metrics">
+        <div><strong>60%</strong><span>Minimum down payment</span></div>
+        <div><strong>84</strong><span>Maximum term, months</span></div>
+        <div><strong>50%</strong><span>Debt-to-income ceiling</span></div>
       </div>
-      <p class="sub">Smart vehicle lease and affordability discovery for Sri Lanka.</p>
     </div>
-    <div class="header-actions">
-      <button class="btn" id="addVehicleBtn" type="button">Add a Vehicle</button>
-      <button class="btn-outline" id="printBtn" type="button">Print</button>
-      <fieldset class="theme-switch" id="themeSwitch">
-        <legend class="sr-only">Theme</legend>
-        <label title="System: match this device"><input type="radio" name="theme" value="system" checked><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="sr-only">System</span></label>
-        <label title="Light"><input type="radio" name="theme" value="light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="sr-only">Light</span></label>
-        <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
-      </fieldset>
-      <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign In</button>
-    </div>
-  </div>
+  </section>
 
-  <section class="panel" aria-labelledby="h-terms">
+  <nav class="page-nav" aria-label="Main sections"><a href="#budgetPanel"><span class="glyph glyph-wallet" aria-hidden="true"></span> Budget</a><a href="#comparisonPanel"><span class="glyph glyph-car" aria-hidden="true"></span> Compare</a><a href="#savingsPanel"><span class="glyph glyph-target" aria-hidden="true"></span> Save</a></nav><section class="panel terms-panel" aria-labelledby="h-terms">
     <div class="panel-head">
-      <h2 id="h-terms">Loan Terms and Your Income</h2>
+      <div><p class="eyebrow">Loan Terms</p><h2 id="h-terms">Loan Terms and Your Income</h2></div><button class="btn-outline mobile-only" id="toggleTerms" type="button" aria-expanded="false" aria-controls="loanTermsGrid">Edit</button>
       <button class="link-btn" id="resetInputsBtn" type="button">Reset Inputs</button>
     </div>
-    <div class="grid terms-grid">
+    <p class="compact-terms mobile-only" id="compactTerms"></p><div class="grid terms-grid mobile-collapsed" id="loanTermsGrid">
       <div class="span-2">
-        <label for="rateType">Rate type</label>
+        <label for="rateType">Rate Type</label>
         <select id="rateType" aria-describedby="rateHint">
           <option value="reducing">Reducing balance (effective)</option>
           <option value="flat">Flat rate</option>
         </select>
       </div>
       <div>
-        <label for="rate">Interest rate (% a year)</label>
+        <label for="rate">Interest Rate (% a Year)</label>
         <input id="rate" type="number" min="0" max="40" step="0.1" value="16" inputmode="decimal" aria-describedby="rateHint">
         <div class="hint" id="rateHint">Reducing-balance rate. Ask the lender which kind they quote.</div>
       </div>
       <div>
-        <label for="tenure">Tenure (months)</label>
+        <label for="tenure">Tenure (Months)</label>
         <input id="tenure" type="number" min="6" max="84" step="1" value="84" inputmode="numeric" aria-describedby="tenureHint">
         <div class="hint" id="tenureHint">Maximum 84</div>
       </div>
@@ -82,29 +96,29 @@
         <div class="hint" id="downHint">Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%, so they're calculated at 60% below that.</div>
       </div>
       <div class="span-2">
-        <label for="income">Net monthly income (Rs.)</label>
+        <label for="income">Net Monthly Income (Rs.)</label>
         <input id="income" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="incomeHint">
         <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
       </div>
       <div class="span-2">
-        <label for="debt">Existing monthly loan and card payments (Rs.)</label>
+        <label for="debt">Existing Monthly Loan and Card Payments (Rs.)</label>
         <input id="debt" type="text" value="0.00" inputmode="decimal" autocomplete="off" aria-describedby="debtHint">
         <div class="hint" id="debtHint">Total per month; 0.00 if none</div>
       </div>
       <div class="span-2">
-        <label for="dti">Debt-to-income limit</label>
+        <label for="dti">Debt-to-Income Limit</label>
         <select id="dti">
-          <option value="0.4">40% (comfortable)</option>
-          <option value="0.5">50% (absolute maximum)</option>
+          <option value="0.4">40% of income</option>
+          <option value="0.5">50% (higher budget limit)</option>
         </select>
       </div>
       <div class="span-2">
-        <label for="insurance">Insurance per year (Rs.)</label>
+        <label for="insurance">Insurance per Year (Rs.)</label>
         <input id="insurance" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="insuranceHint">
         <div class="hint" id="insuranceHint">Comprehensive cover is required on a lease</div>
       </div>
       <div class="span-2">
-        <label for="fees">Up-front fees (Rs.)</label>
+        <label for="fees">Up-front Fees (Rs.)</label>
         <input id="fees" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="feesHint">
         <div class="hint" id="feesHint">Registration, documentation and similar charges</div>
       </div>
@@ -112,26 +126,27 @@
   </section>
 
   <section class="panel" id="budgetPanel" aria-labelledby="h-sum">
-    <h2 id="h-sum">Your Budget</h2>
+    <div class="panel-head"><div><p class="eyebrow">Affordability</p><h2 id="h-sum">Your Budget</h2></div></div>
     <div class="summary" id="summary"></div>
     <p class="sr-only" id="budgetLive" role="status"></p>
   </section>
 
-  <section class="panel" aria-labelledby="h-list">
+  <section class="panel" id="comparisonPanel" aria-labelledby="h-list">
     <div class="panel-head">
-      <h2 id="h-list" tabindex="-1">Vehicles</h2>
-      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add Another Vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button">Share</button><button class="link-btn" id="resetCatalogBtn" type="button">Clear Comparison</button></span></div>
+      <div><p class="eyebrow">Comparison</p><h2 id="h-list" tabindex="-1">Vehicles</h2></div>
+      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add Another Vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button"><span class="glyph glyph-share-2" aria-hidden="true"></span> Share</button><button class="link-btn" id="resetCatalogBtn" type="button"><span class="glyph glyph-trash-2" aria-hidden="true"></span> Remove All Vehicles</button></span></div>
     </div>
     <div class="empty-state" id="emptyState" hidden>
       <h3>Start Your Comparison</h3>
       <p>Add the cars you're considering to see each one's down payment, monthly rental and whether it fits your budget.</p>
-      <div class="empty-actions"><button class="btn" id="browseEmptyBtn" type="button">Browse the Catalogue</button><button class="btn-outline" id="aiEmptyBtn" type="button">✨ Search with AI</button></div>
+      <div class="empty-actions"><button class="btn" id="browseEmptyBtn" type="button">Browse the Catalogue</button><button class="btn-outline" id="aiEmptyBtn" type="button"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search with AI</button></div>
     </div>
-    <div id="comparisonBody">
+    <div id="comparisonBody"><p id="comparisonCount" class="hint" role="status"></p>
+    <details class="calculation-basis"><summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> Using Your Inputs</summary><p class="hint" id="calculationBasis"></p></details>
     <button class="btn-outline filters-toggle" id="filtersToggle" type="button" aria-expanded="false" aria-controls="toolsPanel">Filters &amp; Sort <span class="count" id="filtersCount" hidden></span></button>
     <div class="tools collapsed" id="toolsPanel">
       <div>
-        <label for="sort">Sort by</label>
+        <label for="sort">Sort By</label>
         <select id="sort">
           <option value="" hidden>Column order</option>
           <option value="price|-1">Price, high to low</option>
@@ -151,7 +166,7 @@
         </select>
       </div>
       <div>
-        <label for="warr">Import route</label>
+        <label for="warr">Import Route</label>
         <select id="warr">
           <option value="all">All vehicles</option>
           <option value="official">Official agent only</option>
@@ -170,7 +185,7 @@
         </select>
       </div>
       <div>
-        <label for="maxprice">Maximum price (Rs. million)</label>
+        <label for="maxprice">Maximum Price (Rs. Million)</label>
         <input id="maxprice" type="number" min="0" step="0.01" placeholder="No limit" inputmode="decimal" aria-describedby="maxpriceHint">
         <div class="hint" id="maxpriceHint">Leave empty for no limit</div>
       </div>
@@ -189,8 +204,20 @@
         <tbody id="rows"></tbody>
       </table>
     </div>
-    <p class="hint" id="empty" hidden>No vehicles match these filters.</p>
+    <button class="btn-outline show-more" id="showMoreVehicles" type="button" hidden>Show 24 More Vehicles</button><p class="hint" id="empty" hidden>No vehicles match these filters.</p>
     </div>
+  </section>
+
+  <section class="panel savings-panel" id="savingsPanel" aria-labelledby="h-savings">
+    <div class="panel-head"><div><p class="eyebrow">Target</p><h2 id="h-savings"><span class="glyph glyph-piggy-bank" aria-hidden="true"></span> Savings Planner</h2></div><span class="tag">Plan Your Deposit</span></div>
+    <div class="planner-layout"><div class="planner-inputs">
+      <label for="plannerVehicle">Your Goal Vehicle</label><select id="plannerVehicle"><option value="">Choose a vehicle</option></select>
+      <div class="planner-pair"><div><label for="plannerGoal">Save Towards</label><select id="plannerGoal"><option value="deposit">Deposit + upfront costs</option><option value="cash">Full cash purchase</option></select></div><div><label for="plannerSaved">Already Saved (LKR)</label><input id="plannerSaved" type="text" value="0.00" inputmode="decimal"></div></div>
+      <label for="plannerMode">Monthly Saving</label><select id="plannerMode"><option value="percent">Percentage of net income</option><option value="fixed">Fixed LKR amount</option></select>
+      <div class="planner-pair"><div id="plannerPercentWrap"><label for="plannerPercent">Income Saved (%)</label><input id="plannerPercent" type="number" min="0" max="100" step="1" value="20" inputmode="decimal"></div><div id="plannerMonthlyWrap" hidden><label for="plannerMonthly">Save per Month (LKR)</label><input id="plannerMonthly" type="text" inputmode="decimal"></div><div><label for="plannerDate">Target Date (Optional)</label><div class="date-entry"><input id="plannerDate" type="text" inputmode="numeric" placeholder="DD-MM-YYYY" autocomplete="off" aria-describedby="plannerDateFormat"><button id="plannerCalendar" class="btn-outline" type="button" aria-label="Choose target date"><span class="glyph glyph-calendar" aria-hidden="true"></span></button></div><span id="plannerDateFormat" class="hint">DD-MM-YYYY</span></div></div>
+      <p class="hint">Uses your income, down payment, fees and insurance above. Monthly contributions start one month from today.</p>
+      <details class="planner-saved"><summary><span class="glyph glyph-bookmark" aria-hidden="true"></span> Saved Goals</summary><label for="plannerName">Goal Name</label><input id="plannerName" type="text" maxlength="80" placeholder="My next car"><button class="btn-outline" id="plannerSave" type="button"><span class="glyph glyph-save" aria-hidden="true"></span> Save This Goal</button><label for="plannerScenarios">Load a Goal</label><select id="plannerScenarios"><option value="">Saved goals</option></select><button class="link-btn" id="plannerDelete" type="button">Remove Saved Goal</button></details>
+    </div><div id="plannerResult" class="planner-result" aria-live="polite"></div></div>
   </section>
 
   <footer class="foot">
@@ -208,11 +235,11 @@
         <p><span id="priceAsOf">Confirm prices and stock with the seller.</span> This is not financial advice.</p>
       </section>
     </div>
-    <p class="foot-meta">
+    <nav class="site-links" aria-label="Information"><a href="about.html">About</a><a href="catalogue.html">Catalogue</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a></nav><p class="copyright">© 2026 Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
       <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
-      <span>VahanaIQ v<span id="appVersion">2.10.1</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.11.3</span></span>
     </p>
   </footer>
 </main>
@@ -224,25 +251,25 @@
 <div class="modal-bg" id="catalogueModal" role="dialog" aria-modal="true" aria-labelledby="catalogueTitle" inert>
   <div class="modal catalogue-modal">
     <div class="modal-header"><h2 id="catalogueTitle">Find Your Next Car</h2><button class="close-btn" id="closeCatalogueBtn" type="button" aria-label="Close catalogue">&times;</button></div>
-    <p class="catalogue-intro">Cars and SUVs sold in Sri Lanka. Choose one, confirm its price and add it to your comparison.</p>
+    <p class="catalogue-intro">Compare passenger vehicles and pickups in Sri Lanka.</p>
     <div class="catalogue-search">
-      <label for="catalogueSearch">Search make or model</label>
+      <label for="catalogueSearch">Search Make or Model</label>
       <input id="catalogueSearch" type="search" placeholder="e.g. Toyota, electric, SUV" autocomplete="off">
     </div>
     <button class="btn-outline catalogue-filters-toggle" id="catalogueFiltersToggle" type="button" aria-expanded="false" aria-controls="catalogueFilters">Filter and Sort <span id="catalogueFiltersCount"></span></button>
     <div class="catalogue-filters collapsed" id="catalogueFilters">
-      <div><label for="catalogueSort">Sort by</label><select id="catalogueSort"><option value="priced">Prices first</option><option value="price-asc">Price, low to high</option><option value="price-desc">Price, high to low</option><option value="name">Name, A to Z</option></select></div>
-      <div><label for="cataloguePriceFilter">Price</label><select id="cataloguePriceFilter"><option value="">Any</option><option value="priced">Published only</option></select></div>
+      <div><label for="catalogueSort">Sort By</label><select id="catalogueSort"><option value="priced">Prices first</option><option value="price-asc">Price, low to high</option><option value="price-desc">Price, high to low</option><option value="name">Name, A to Z</option></select></div>
+      <div><label for="cataloguePriceFilter">Price</label><select id="cataloguePriceFilter"><option value="">Any</option><option value="priced">Published only</option></select></div><div><label for="catalogueAffordability">Monthly Budget</label><select id="catalogueAffordability"><option value="">All vehicles</option><option value="within">Within my monthly budget</option></select></div>
       <div><label for="catalogueMake">Make</label><select id="catalogueMake"><option value="">All makes</option></select></div>
-      <div><label for="catalogueBody">Body type</label><select id="catalogueBody"><option value="">All body types</option><option value="SUV">SUV</option><option value="Passenger car">Car</option></select></div>
+      <div><label for="catalogueBody">Body Type</label><select id="catalogueBody"><option value="">All body types</option><option value="SUV">SUV</option><option value="Passenger car">Car</option><option value="MPV">MPV</option><option value="Passenger van">Passenger van</option><option value="Minibus">Minibus</option><option value="Pickup">Pickup</option></select></div>
       <div><label for="catalogueFuel">Fuel</label><select id="catalogueFuel"><option value="">All fuels</option></select></div>
-      <div><label for="catalogueRoute">Sold by</label><select id="catalogueRoute"><option value="">Any seller</option><option value="Official">Official agent</option><option value="Grey">Importer</option><option value="Unknown">Independent seller</option></select></div>
+      <div><label for="catalogueRoute">Sold By</label><select id="catalogueRoute"><option value="">Any seller</option><option value="Official">Official agent</option><option value="Grey">Importer</option><option value="Unknown">Independent seller</option></select></div>
     </div>
     <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear Search and Filters</button></div>
     <p class="hint catalogue-per-million" id="cataloguePerMillion"></p>
-    <div id="catalogueResults" class="catalogue-grid"></div>
+    <div class="bulk-actions" aria-label="Add multiple vehicles"><button class="btn-outline" id="catalogueAddAll" type="button" aria-label="Add all catalogue vehicles with usable prices"><span class="glyph glyph-layers" aria-hidden="true"></span>All <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddSearch" type="button" aria-label="Add all vehicles found by the search"><span class="glyph glyph-search" aria-hidden="true"></span>Search <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddFiltered" type="button" aria-label="Add all vehicles matching the filters"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span>Filtered <span class="bulk-count"></span></button></div><details class="bulk-hint"><summary>How Bulk Add Works</summary><p class="hint">Adds matches across every page and skips existing selections. Unverified amounts stay labelled; missing or conflicting prices need a quote.</p></details><div id="catalogueResults" class="catalogue-grid"></div>
     <div class="catalogue-pagination"><button class="btn-outline" id="cataloguePrev" type="button">Previous</button><span id="cataloguePage"></span><button class="btn-outline" id="catalogueNext" type="button">Next</button></div>
-    <p class="catalogue-more">Can't find your car? <button class="link-btn" id="openAiModalBtn" type="button">Search with AI</button> or <button class="link-btn" id="openManualBtn" type="button">enter it yourself</button>.</p>
+    <p class="catalogue-more">Can't find your car? <button class="link-btn" id="openAiModalBtn" type="button"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search with AI</button> or <button class="link-btn" id="openManualBtn" type="button">Enter It Yourself</button>.</p>
     <p class="hint catalogue-coverage" id="catalogueCoverage"></p>
   </div>
 </div>
@@ -250,13 +277,13 @@
 <div class="modal-bg" id="catalogueAddModal" role="dialog" aria-modal="true" aria-labelledby="catalogueAddTitle" inert>
   <form class="modal" id="catalogueAddForm" novalidate>
     <div class="modal-header"><h2 id="catalogueAddTitle">Set Up Comparison</h2><button class="close-btn" id="closeCatalogueAddBtn" type="button" aria-label="Close vehicle setup">&times;</button></div>
-    <label for="catalogueName">Vehicle name, trim and year</label>
-    <input id="catalogueName" type="text" autocomplete="off" aria-describedby="catalogueNameNote">
+    <label for="catalogueName">Vehicle Name, Trim and Year</label>
+    <input id="catalogueName" type="text" maxlength="200" required autocomplete="off" aria-describedby="catalogueNameNote">
     <p class="hint" id="catalogueNameNote">Add the exact trim and year if known. Your calculation uses the price you enter below.</p>
     <label for="catalogueCondition">Condition</label>
     <select id="catalogueCondition"><option value="">Choose condition</option><option value="New">Brand New</option><option value="Recond">Reconditioned</option><option value="Recent">Registered under a year</option><option value="Used">Registered Used (over a year)</option></select>
-    <label for="cataloguePrice">Vehicle price (LKR)</label>
-    <input id="cataloguePrice" type="text" inputmode="decimal" autocomplete="off" placeholder="Enter your quote, e.g. 10,000,000.00" aria-describedby="cataloguePriceNote catalogueAddError">
+    <label for="cataloguePrice">Vehicle Price (LKR)</label>
+    <input id="cataloguePrice" type="text" required inputmode="decimal" autocomplete="off" placeholder="Enter your quote, e.g. 10,000,000.00" aria-describedby="cataloguePriceNote catalogueAddError">
     <p class="hint" id="cataloguePriceNote"></p>
     <p class="msg-error" id="catalogueAddError" role="alert"></p>
     <div class="catalogue-pagination"><button class="btn-outline" id="cancelCatalogueAddBtn" type="button">Cancel</button><button class="btn" type="submit">Add to Comparison</button></div>
@@ -267,7 +294,7 @@
   <div class="modal share-modal">
     <div class="modal-header"><h2 id="shareTitle">Share This Comparison</h2><button class="close-btn" id="closeShareBtn" type="button" aria-label="Close sharing">&times;</button></div>
     <p>The link has your loan terms, filters and vehicles. Anyone who opens it sees them.</p>
-    <label class="check-row"><input type="checkbox" id="shareIncome"> Include my income and existing payments</label>
+    <label class="check-row"><input type="checkbox" id="shareIncome"> Include My Income and Existing Payments</label>
     <label for="shareLink">Link</label>
     <input id="shareLink" type="text" readonly>
     <p class="hint" id="shareStatus" role="status"></p>
@@ -319,7 +346,7 @@
     </div>
 
     <div class="tabs" role="tablist" aria-label="How to add a vehicle">
-      <button class="tab active" id="tabAiBtn" type="button" role="tab" aria-selected="true" aria-controls="paneAi">✨ Search with AI</button>
+      <button class="tab active" id="tabAiBtn" type="button" role="tab" aria-selected="true" aria-controls="paneAi"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search with AI</button>
       <button class="tab" id="tabManualBtn" type="button" role="tab" aria-selected="false" aria-controls="paneManual" tabindex="-1">Enter Manually</button>
     </div>
 
@@ -328,7 +355,7 @@
       <div class="ai-search-bar">
         <textarea id="aiSearchQuery" rows="3" placeholder="Vehicle name, comparative query, listing URL, or paste classified ad text (Ikman / Riyasewana / FB Marketplace)..." aria-label="Search vehicle with Gemini AI or paste advertisement"></textarea>
         <div class="ai-search-actions">
-          <button class="btn" id="aiSearchBtn" type="button">✨ Search</button>
+          <button class="btn" id="aiSearchBtn" type="button"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search</button>
           <label class="btn-outline btn-sm file-btn" id="aiUploadAdBtn" title="Upload screenshot of Ikman, Riyasewana ad or Japanese Auction Sheet">
             📷 Ad / Sheet
             <input id="aiAdFile" class="sr-only" type="file" accept="image/*">
@@ -367,7 +394,7 @@
 
         <div class="grid field-group">
           <div>
-            <label for="aiYearSelect">Model year</label>
+            <label for="aiYearSelect">Model Year</label>
             <select id="aiYearSelect"></select>
           </div>
           <div>
@@ -375,7 +402,7 @@
             <select id="aiTrimSelect"></select>
           </div>
           <div>
-            <label for="aiCondSelect">Condition and price</label>
+            <label for="aiCondSelect">Condition and Price</label>
             <select id="aiCondSelect"></select>
           </div>
         </div>
@@ -386,14 +413,14 @@
             <input id="aiPriceInput" type="text" inputmode="decimal" autocomplete="off">
           </div>
           <div>
-            <label for="aiWarrSelect">Import route</label>
+            <label for="aiWarrSelect">Import Route</label>
             <select id="aiWarrSelect">
               <option value="Official">Official agent</option>
               <option value="Grey">Grey import</option>
             </select>
           </div>
           <div>
-            <label for="aiKmInput">Fuel economy (km/l)</label>
+            <label for="aiKmInput">Fuel Economy (km/l)</label>
             <input id="aiKmInput" type="text" placeholder="e.g. 24-28 km/l">
           </div>
         </div>
@@ -403,13 +430,13 @@
           <div class="preview-box">
             <img class="pimg" id="aiImgPreview" alt="Preview of the vehicle photo" hidden>
             <div>
-              <input id="aiImgUrl" class="preview-url" type="url" placeholder="Paste a photo link, or upload one" aria-describedby="aiImgNote">
+              <input id="aiImgUrl" class="preview-url" type="url" readonly placeholder="Official source shown when available" aria-describedby="aiImgNote">
               <div class="preview-actions">
-                <label class="btn-outline btn-sm file-btn">
-                  📁 Upload Photo
-                  <input id="aiImgFile" class="sr-only" type="file" accept="image/*">
+                <label class="btn-outline btn-sm file-btn" hidden>
+                  Upload Photo
+                  <input id="aiImgFile" class="sr-only" type="file" disabled accept="image/*">
                 </label>
-                <span class="hint" id="aiImgNote">Centred on a white 8:5 plate automatically</span>
+                <span class="hint" id="aiImgNote">Official photos only · 8:5 frames</span>
               </div>
             </div>
           </div>
@@ -426,15 +453,15 @@
     <!-- QUICK MANUAL PANE -->
     <div id="paneManual" role="tabpanel" aria-labelledby="tabManualBtn" hidden>
       <div class="grid field-group">
-        <div class="grid-span-2"><label for="mName">Vehicle name and trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
+        <div class="grid-span-2"><label for="mName">Vehicle Name and Trim</label><input id="mName" type="text" placeholder="e.g. Mazda CX-30 2.0L SkyActiv-G"></div>
         <div><label for="mPrice">Price (LKR)</label><input id="mPrice" type="text" placeholder="e.g. 18,500,000.00" inputmode="decimal" autocomplete="off"></div>
         <div><label for="mCond">Condition</label><select id="mCond"><option value="New">Brand New</option><option value="Recond">Reconditioned</option><option value="Recent">Registered under a year</option><option value="Used">Registered Used (over a year)</option></select></div>
         <div><label for="mWarr">Warranty</label><select id="mWarr"><option value="Grey">Grey import</option><option value="Official">Official agent</option></select></div>
-        <div><label for="mPt">Powertrain or fuel</label><input id="mPt" type="text" placeholder="e.g. 2.0L Petrol"></div>
+        <div><label for="mPt">Powertrain or Fuel</label><input id="mPt" type="text" placeholder="e.g. 2.0L Petrol"></div>
       </div>
       <div>
-        <label for="mImgUrl">Photo URL (optional)</label>
-        <input id="mImgUrl" type="url" placeholder="https://...">
+        <label for="mImgUrl">Vehicle Photo</label>
+        <input id="mImgUrl" type="url" readonly placeholder="Official photo matched automatically when available">
       </div>
       <div class="modal-actions">
         <button class="btn-outline" id="mCancelBtn" type="button">Cancel</button>
@@ -452,7 +479,7 @@
       <h2 id="photoCreditsTitle">Vehicle Photo Credits</h2>
       <button class="close-btn" id="closePhotoCreditsBtn" type="button" aria-label="Close photo credits">&times;</button>
     </div>
-    <p class="credits-intro">Vehicle catalogue photos are sourced from <a href="https://commons.wikimedia.org" target="_blank" rel="noopener">Wikimedia Commons</a> under open licences. Each photograph is credited to its author below.</p>
+    <p class="credits-intro">Vehicle photos come from official manufacturers or authorised distributors. Source links are retained below; rights belong to the respective owners. Photos are representative and may show a different generation, grade or market. All display frames use 8:5 proportions.</p>
     <div class="credits-list" id="photoCreditsList"></div>
   </div>
 </div>

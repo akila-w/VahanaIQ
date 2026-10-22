@@ -1,6 +1,6 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.10.1";
-import { notifySaved } from "./storage.js?v=2.10.1";
+import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.11.3";
+import { notifySaved } from "./storage.js?v=2.11.3";
 
 export const STORE_KEY = "vahanaiq_inputs_v1";
 
@@ -26,7 +26,7 @@ export const FIELDS = {
 const RULES = {
   rate: { key: "rateInput", check: v => v === "" ? "Enter an interest rate." : !(num(v) >= 0 && num(v) <= 40) ? "Enter a rate between 0 and 40%." : "" },
   tenure: { key: "n", check: v => v === "" || !isFinite(num(v)) ? "Enter a tenure in months." : "", snap: true },
-  down: { key: "down", check: v => v === "" || !isFinite(num(v)) ? "Enter a down payment percentage." : "", snap: true },
+  down: { key: "down", check: v => v === "" || !isFinite(num(v)) ? "Enter a down payment percentage." : num(v) < (Number($("down")?.min) || 40) || num(v) > 100 ? `Enter a down payment from ${Number($("down")?.min) || 40}% to 100%. New and recent passenger vehicles require at least 60% down (at most 40% financed).` : "", snap: true },
   income: { key: "income", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Income can't be negative." : "" },
   debt: { key: "debt", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Payments can't be negative." : "" },
   insurance: { key: "insurance", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Insurance can't be negative." : "" },
@@ -66,7 +66,7 @@ export function readSettings() {
     const err = fieldError(id);
     const key = RULES[id].key;
     if (err) {
-      if (id in lastValid) s[key] = lastValid[id];
+      if (id in lastValid) s[key] = id === "down" ? Math.max(Number(el.min) || DOWN_MIN, lastValid[id]) : lastValid[id];
       if (el.setAttribute) el.setAttribute("aria-invalid", "true");
       setFieldState(id, err, true);
     } else {
@@ -95,11 +95,12 @@ export function snapField(id) {
   const hint = hintFor(id);
   const raw = String(el.value).trim();
   if (fieldError(id)) {
-    if (id in lastValid) el.value = String(lastValid[id]);
-    delete snapNotes[id];
+    if (id in lastValid) el.value = String(id === "down" ? Math.max(Number(el.min) || DOWN_MIN, lastValid[id]) : lastValid[id]);
+    else if (id === "down") el.value = String(Number(el.min) || 60);
+    snapNotes[id] = "Invalid entry replaced with the last valid value within the current limits.";
     return;
   }
-  const used = id === "tenure" ? Math.min(84, Math.max(6, Math.round(num(raw)))) : Math.min(100, Math.max(DOWN_MIN, num(raw)));
+  const used = id === "tenure" ? Math.min(84, Math.max(6, Math.round(num(raw)))) : Math.min(100, Math.max(Number(el.min) || DOWN_MIN, DOWN_MIN, num(raw)));
   if (used !== num(raw)) {
     snapNotes[id] = hint && hint.className.includes("warn") ? hint.textContent : (id === "tenure" ? "Set to the nearest allowed tenure" : "Set to the nearest allowed down payment");
     el.value = String(used);

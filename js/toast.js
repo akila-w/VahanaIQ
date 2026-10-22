@@ -1,6 +1,6 @@
 // Undo toast: one polite live region, about 6 seconds, paused while hovered or focused
 const DURATION = 6000;
-let el = null, timer = null, onTimeout = null;
+let el = null, timer = null, onTimeout = null, generation = 0;
 
 // The live region (#toast) is in the page from the start so screen readers announce its updates
 function ensure() {
@@ -31,6 +31,7 @@ function hide(expired) {
 
 // Shows "message [actionLabel]". afterHide() runs if focus was in the toast when it closes.
 export function showToast(message, actionLabel, onAction, afterHide) {
+  const token = ++generation;
   const t = ensure();
   t.textContent = "";
   const span = document.createElement("span");
@@ -43,10 +44,13 @@ export function showToast(message, actionLabel, onAction, afterHide) {
     btn.type = "button";
     btn.className = "btn-outline btn-sm";
     btn.textContent = actionLabel;
-    btn.addEventListener("click", () => { onTimeout = null; hide(false); onAction(); });
+    btn.addEventListener("click", () => { if (token !== generation) return; onTimeout = null; hide(false); onAction(); });
     t.appendChild(btn);
   }
   t.classList.add("show");
   start();
   return btn;
 }
+
+// Cancel retained actions before replacing an account-owned copy.
+export function clearToast() { generation++; onTimeout = null; hide(false); }

@@ -3,7 +3,7 @@
 // at most 40% financed for unregistered cars and cars registered under a year (60% down),
 // at most 60% financed for cars registered over a year (40% down).
 
-import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.10.1";
+import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.11.3";
 
 export const DOWN_MIN = 40;          // lowest down payment any car can have (registered over a year)
 export const DOWN_MIN_UNREG = 60;    // brand new, reconditioned and recently registered cars
@@ -14,7 +14,17 @@ export const CONDITIONS = { New: "Brand New", Recond: "Reconditioned", Recent: "
 
 // The lowest down payment the Direction allows for a condition. Only "Used" (registered in
 // Sri Lanka for over a year) may go down to 40%; an unknown condition is treated as unregistered.
-export const minDownFor = cond => cond === "Used" ? DOWN_MIN : DOWN_MIN_UNREG;
+export function minDownFor(cond, financeClass, firstRegisteredOn, today = new Date()) {
+  if (financeClass === "commercial") return DOWN_MIN;
+  if (firstRegisteredOn !== undefined && firstRegisteredOn !== null && firstRegisteredOn !== '') {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(firstRegisteredOn)) return DOWN_MIN_UNREG;
+    const first = new Date(firstRegisteredOn + 'T12:00:00');
+    if (!Number.isFinite(first.getTime()) || first.toISOString().slice(0, 10) !== firstRegisteredOn) return DOWN_MIN_UNREG;
+    const anniversary = new Date(first); anniversary.setFullYear(first.getFullYear() + 1);
+    return cond === "Used" && new Date(today.getFullYear(), today.getMonth(), today.getDate()) > new Date(anniversary.getFullYear(), anniversary.getMonth(), anniversary.getDate()) ? DOWN_MIN : DOWN_MIN_UNREG;
+  }
+  return cond === "Used" ? DOWN_MIN : DOWN_MIN_UNREG;
+}
 
 export const fmt = formatMoneyAmount;
 export const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -83,7 +93,8 @@ export function getSettings() {
   n = Math.min(84, Math.max(6, Math.round(n)));
   
   const downLow = isFinite(rawDown) && rawDown < DOWN_MIN;
-  down = Math.min(100, Math.max(DOWN_MIN, down));
+  const inputMinimum = Number(document.getElementById("down")?.min) || DOWN_MIN;
+  down = Math.min(100, Math.max(inputMinimum, DOWN_MIN, down));
 
   const tenureHint = document.getElementById("tenureHint");
   const downHint = document.getElementById("downHint");
@@ -109,7 +120,7 @@ export function getSettings() {
       downHint.textContent = "Below 60%, only cars registered over a year qualify. Others are calculated at 60%.";
       downHint.className = "hint";
     } else {
-      downHint.textContent = "Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%, so they're calculated at 60% below that.";
+      downHint.textContent = inputMinimum >= 60 ? "Minimum 60% for new and recent passenger vehicles. A larger deposit reduces the amount financed." : "Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%, so they're calculated at 60% below that.";
       downHint.className = "hint";
     }
   }
@@ -141,21 +152,21 @@ export function computeLeaseTable(cars, settings = getSettings()) {
   const rows = cars.map((c, idx) => {
     let loan, dp, rent, interest, total, need;
     // Each car is calculated at its legal minimum down payment, or the chosen one if higher
-    const downPct = s.down >= 100 ? 100 : Math.max(s.down, minDownFor(c.cond));
+    const downPct = s.down >= 100 ? 100 : Math.max(s.down, minDownFor(c.cond, c.financeClass, c.firstRegisteredOn));
     if (downPct >= 100) {
       loan = 0;
       dp = c.price;
       rent = 0;
       interest = 0;
       total = c.price;
-      need = s.debt / s.dti;
+      need = (s.debt + insurance / 12) / s.dti;
     } else {
       loan = c.price * (1 - downPct / 100);
       dp = c.price - loan;
       rent = loan * f;
       interest = rent * s.n - loan;
       total = dp + rent * s.n;
-      need = (rent + s.debt) / s.dti;
+      need = (rent + s.debt + insurance / 12) / s.dti;
     }
     // Optional costs: up-front fees and comprehensive insurance over the term
     const upfront = dp + fees;
@@ -163,12 +174,12 @@ export function computeLeaseTable(cars, settings = getSettings()) {
     total += fees + insurance * s.n / 12;
     let status = "na";
     if (s.income) {
-      const load = (rent + s.debt) / s.income;
-      status = load <= 0.4 ? "ok" : load <= 0.5 ? "mid" : "bad";
+      const load = (monthlyCost + s.debt) / s.income;
+      status = load <= s.dti ? "ok" : "bad";
     }
     return Object.assign({}, c, { _idx: idx, loan, dp, downPct, downRaised: downPct > s.down, upfront, monthlyCost, rental: rent, interest, total, need, status });
   });
 
-  const room = s.income ? Math.max(0, s.income * s.dti - s.debt) : 0;
+  const room = s.income ? Math.max(0, s.income * s.dti - s.debt - insurance / 12) : 0;
   return { s, f, rows, room };
 }

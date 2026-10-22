@@ -5,11 +5,12 @@
 // owner read, change or delete it. Before every write the account's copy is read and compared
 // with the copy both sides last agreed on, so a change made on another device is never
 // overwritten without asking.
-import { firebaseConfig, FIREBASE_SDK, GOOGLE_CLIENT_ID, GOOGLE_SIGN_IN_SRC } from "./config.js?v=2.10.1";
-import { openModal, closeModal, isOpen } from "./modal.js?v=2.10.1";
-import { showToast } from "./toast.js?v=2.10.1";
-import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.10.1";
-import { STORE_KEY } from "./inputs.js?v=2.10.1";
+import { firebaseConfig, FIREBASE_SDK, GOOGLE_CLIENT_ID, GOOGLE_SIGN_IN_SRC } from "./config.js?v=2.11.3";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.3";
+import { showToast } from "./toast.js?v=2.11.3";
+import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.11.3";
+import { STORE_KEY } from "./inputs.js?v=2.11.3";
+import { PLANNER_KEY, cleanPlanner } from "./planner-store.js?v=2.11.3";
 
 const SIGNED_IN_KEY = "vahanaiq_account_v1"; // set while signed in, so the next visit restores the session
 const AGREED_KEY = "vahanaiq_synced_v1"; // fingerprint of the copy this browser and the account last agreed on
@@ -27,24 +28,27 @@ const store = {
 
 // The copy kept in the account. Photos made in this browser (data: URLs) stay on this device:
 // they are large, and the person can add them again.
-export function cloudCopy(inputs, comparison) {
+export function cloudCopy(inputs, comparison, planner = null) {
   const cars = Array.isArray(comparison?.cars) ? comparison.cars.filter(c => c && typeof c === "object") : [];
-  return {
+  const copy = {
     inputs: inputs && typeof inputs === "object" && !Array.isArray(inputs) ? inputs : {},
     cars: cars.map(c => /^data:/i.test(c.img || "") ? { ...c, img: "" } : c)
   };
+  const clean = cleanPlanner(planner);
+  if (clean) copy.planner = clean;
+  return copy;
 }
 
 export function parseCloud(data) {
   try {
     const parsed = JSON.parse(data?.data);
-    return cloudCopy(parsed?.inputs, { cars: parsed?.cars });
+    return cloudCopy(parsed?.inputs, { cars: parsed?.cars }, parsed?.planner);
   } catch (e) {
     return cloudCopy(null, null);
   }
 }
 
-export const isEmptyCopy = copy => !copy.cars.length && !Object.keys(copy.inputs).length;
+export const isEmptyCopy = copy => !copy.cars.length && !Object.keys(copy.inputs).length && !copy.planner;
 
 // A short hash (cyrb53) of a copy, so this browser can remember what it last agreed on
 export function fingerprint(copy) {
@@ -82,11 +86,16 @@ export function syncDirection(local, cloud, agreed) {
 let fb = null;
 let loading = null;
 let user = null;
-let restoring = store.get(SIGNED_IN_KEY) === "1";
+let restoring = !!store.get(SIGNED_IN_KEY);
 let conflict = null; // the account's copy while the person chooses which to keep
 let failed = false;
 let syncing = null, again = false, writeTimer = null;
-let hooks = { reload: () => {} };
+let hooks = { reload: () => {}, beforeApply: () => {} };
+let generation = 0;
+let localSignOut = null;
+let deleting = null;
+const session = () => user && ({ uid: user.uid, generation, identity: user, firebase: fb });
+const current = ctx => !!ctx && user?.uid === ctx.uid && generation === ctx.generation && fb === ctx.firebase;
 
 function loadFirebase() {
   if (fb) return Promise.resolve(fb);
@@ -111,10 +120,29 @@ function loadFirebase() {
 }
 
 function onUser(u) {
+  const previous = user;
+  const storedOwner = store.get(SIGNED_IN_KEY);
+  if (!previous && restoring && (!u || (storedOwner !== "1" && storedOwner !== u.uid))) {
+    applyCopy(cloudCopy(null, null));
+  }
+  if (previous?.uid !== u?.uid) {
+    generation++;
+    clearTimeout(writeTimer);
+    writeTimer = null;
+    syncing = null;
+    again = false;
+    conflict = null;
+    deleting = null;
+    failed = false;
+    // Initial anonymous use keeps its guest draft. A departed account never leaves its
+    // private UI in another tab or gives it to a different account.
+    if (previous && !(localSignOut?.uid === previous.uid && !u)) applyCopy(cloudCopy(null, null));
+    store.remove(AGREED_KEY);
+  }
   user = u;
   restoring = false;
   if (u) {
-    store.set(SIGNED_IN_KEY, "1");
+    store.set(SIGNED_IN_KEY, u.uid);
     syncNow();
   } else {
     store.remove(SIGNED_IN_KEY);
@@ -124,24 +152,26 @@ function onUser(u) {
   renderAccount();
 }
 
-const userDoc = () => fb.F.doc(fb.db, "users", user.uid);
+const userDoc = ctx => ctx.firebase.F.doc(ctx.firebase.db, "users", ctx.uid);
 
 function localCopy() {
   const read = k => { try { return JSON.parse(store.get(k) || "null"); } catch (e) { return null; } };
-  return cloudCopy(read(STORE_KEY), read(COMPARISON_KEY));
+  return cloudCopy(read(STORE_KEY), read(COMPARISON_KEY), read(PLANNER_KEY));
 }
 
 const agree = copy => store.set(AGREED_KEY, fingerprint(copy));
 
-async function upload(copy) {
+async function upload(copy, ctx = session()) {
+  if (!current(ctx)) return;
   const data = JSON.stringify(copy);
   if (data.length > MAX_SIZE) throw new Error("Comparison too large to sync");
-  await fb.F.setDoc(userDoc(), { version: 1, data, updatedAt: fb.F.serverTimestamp() });
-  agree(copy);
+  await ctx.firebase.F.setDoc(userDoc(ctx), { version: 1, data, updatedAt: ctx.firebase.F.serverTimestamp() });
+  if (current(ctx)) agree(copy);
 }
 
 // Writes a copy to this browser and shows it, keeping this device's own photos
 function applyCopy(copy) {
+  hooks.beforeApply();
   const own = new Map();
   try {
     for (const c of JSON.parse(store.get(COMPARISON_KEY) || "{}")?.cars || []) {
@@ -151,18 +181,20 @@ function applyCopy(copy) {
   const cars = copy.cars.map(c => !c.img && own.has(c.id) ? { ...c, img: own.get(c.id) } : c);
   store.set(STORE_KEY, JSON.stringify(copy.inputs));
   store.set(COMPARISON_KEY, JSON.stringify({ version: 3, cars }));
+  if (copy.planner) store.set(PLANNER_KEY, JSON.stringify(copy.planner));
+  else store.remove(PLANNER_KEY);
   hooks.reload();
 }
 
-async function runSync() {
+async function runSync(ctx) {
   try {
-    const snap = await fb.F.getDoc(userDoc());
-    if (!user) return;
+    const snap = await ctx.firebase.F.getDoc(userDoc(ctx));
+    if (!current(ctx)) return;
     const cloud = snap.exists() ? parseCloud(snap.data()) : null;
     const local = localCopy();
     const direction = syncDirection(local, cloud, store.get(AGREED_KEY));
     if (direction === "same") agree(local);
-    else if (direction === "upload") await upload(local);
+    else if (direction === "upload") await upload(local, ctx);
     else if (direction === "download") {
       applyCopy(cloud);
       agree(cloud);
@@ -170,32 +202,36 @@ async function runSync() {
     } else if (direction === "deleted") {
       await signOutHere("Your saved data was deleted on another device, so this browser signed out and cleared it.", { flush: false, clear: "always" });
     } else {
-      conflict = cloud;
+      conflict = { copy: cloud, session: ctx };
       openAccount();
     }
-    failed = false;
+    if (current(ctx)) failed = false;
   } catch (e) {
+    if (!current(ctx)) return;
     console.warn("Account sync failed:", e);
     failed = true;
   }
 }
 
 function syncNow() {
-  if (!user || conflict) return Promise.resolve();
+  if (!user || conflict || current(deleting)) return Promise.resolve();
   if (syncing) { again = true; return syncing; }
   clearTimeout(writeTimer);
   writeTimer = null;
-  syncing = runSync().finally(() => {
+  const ctx = session();
+  const pending = runSync(ctx).finally(() => {
+    if (!current(ctx) || syncing !== pending) return;
     syncing = null;
     renderAccount();
     if (again) { again = false; syncNow(); }
   });
+  syncing = pending;
   renderAccount();
-  return syncing;
+  return pending;
 }
 
 function scheduleSync() {
-  if (!user || conflict) return;
+  if (!user || conflict || current(deleting)) return;
   clearTimeout(writeTimer);
   writeTimer = setTimeout(syncNow, WRITE_DELAY);
 }
@@ -295,14 +331,22 @@ function signIn() {
 // never reached the account. flush sends a pending change first (a sync already running passes
 // false, since it is that sync); clear "always" removes them even then.
 async function signOutHere(message, { flush = true, clear = "if-synced" } = {}) {
+  const ctx = session();
+  if (!current(ctx)) return;
   if (flush && (writeTimer || syncing)) await syncNow();
+  if (!current(ctx)) return;
   clearTimeout(writeTimer);
   writeTimer = null;
   const unsynced = fingerprint(localCopy()) !== store.get(AGREED_KEY);
   conflict = null;
   store.remove(SIGNED_IN_KEY);
   store.remove(AGREED_KEY);
-  if (fb) await fb.A.signOut(fb.auth).catch(() => {});
+  localSignOut = ctx;
+  try { await ctx.firebase.A.signOut(ctx.firebase.auth); } catch (e) { localSignOut = null; setError("Couldn’t sign out. Check your connection and try again."); return; }
+  localSignOut = null;
+  // Auth callbacks may already have ended this session. A replacement account owns
+  // everything after that transition; the older operation must not touch it.
+  if (user && !current(ctx)) return;
   window.google?.accounts?.id?.disableAutoSelect?.();
   user = null;
   if (isOpen($("accountModal"))) closeModal($("accountModal"));
@@ -316,27 +360,40 @@ async function signOutHere(message, { flush = true, clear = "if-synced" } = {}) 
 }
 
 async function deleteData() {
+  const ctx = session();
+  if (!current(ctx)) return;
+  if (current(deleting)) return;
+  deleting = ctx;
+  again = false;
   const btn = $("confirmDeleteBtn");
   btn.disabled = true;
   clearTimeout(writeTimer);
   writeTimer = null;
   try {
     if (syncing) await syncing;
-    await fb.F.deleteDoc(userDoc());
+    if (!current(ctx)) return;
+    await ctx.firebase.F.deleteDoc(userDoc(ctx));
+    if (!current(ctx)) return;
     // Also removes the sign-in record when Google allows it (it needs a recent sign-in)
-    await fb.A.deleteUser(user).catch(() => {});
+    // Removing the app document is sufficient. The Google/Firebase identity may
+    // be shared by an in-flight sign-in, so never delete or retarget that identity.
     await signOutHere("Deleted your saved inputs and vehicles from your account and this browser.", { flush: false, clear: "always" });
   } catch (e) {
+    if (!current(ctx)) return;
     console.warn("Couldn't delete account data:", e);
     $("syncStatus").textContent = "Couldn't delete your saved data. Check your connection and try again.";
   } finally {
+    if (deleting === ctx) deleting = null;
+    if (user && !current(ctx)) return;
     btn.disabled = false;
     $("deleteConfirm").hidden = true;
   }
 }
 
 function resolveConflict(useAccount) {
-  const cloud = conflict;
+  const choice = conflict;
+  if (!choice || !current(choice.session) || current(deleting)) return;
+  const { copy: cloud, session: ctx } = choice;
   conflict = null;
   if (useAccount) {
     applyCopy(cloud);
@@ -344,8 +401,9 @@ function resolveConflict(useAccount) {
     showToast("Now showing the inputs and vehicles saved in your account.");
     renderAccount();
   } else {
-    syncing = upload(localCopy()).then(() => { failed = false; }, e => { console.warn("Account sync failed:", e); failed = true; })
-      .finally(() => { syncing = null; renderAccount(); });
+    const pending = upload(localCopy(), ctx).then(() => { if (current(ctx)) failed = false; }, e => { if (current(ctx)) { console.warn("Account sync failed:", e); failed = true; } })
+      .finally(() => { if (current(ctx) && syncing === pending) { syncing = null; renderAccount(); } });
+    syncing = pending;
     renderAccount();
   }
 }
@@ -371,11 +429,16 @@ function renderAccount() {
   $("accountSignedIn").hidden = !user;
   $("signInBtn").disabled = !fb;
   $("signInBtn").textContent = fb ? "Sign In with Google" : "Loading…";
-  if (!user) return;
+  if (!user) {
+    for (const id of ["accountEmail", "syncStatus", "syncConflictCounts"]) $(id).textContent = "";
+    $("syncConflict").hidden = true;
+    $("deleteConfirm").hidden = true;
+    return;
+  }
   $("accountEmail").textContent = user.email || user.displayName || "your Google account";
   $("syncStatus").textContent = statusText();
   $("syncConflict").hidden = !conflict;
-  if (conflict) $("syncConflictCounts").textContent = `Your account has ${count(conflict)}. This browser has ${count(localCopy())}.`;
+  if (conflict) $("syncConflictCounts").textContent = `Your account has ${count(conflict.copy)}. This browser has ${count(localCopy())}.`;
 }
 
 function openAccount() {
@@ -390,9 +453,9 @@ function openAccount() {
 }
 
 // reload() shows inputs and vehicles that sync wrote to this browser
-export function initAccount({ reload }) {
+export function initAccount({ reload, beforeApply = () => {} }) {
   if (!$("accountBtn") || typeof window.addEventListener !== "function") return;
-  hooks = { reload };
+  hooks = { reload, beforeApply };
   $("accountBtn").addEventListener("click", openAccount);
   for (const id of ["closeAccountBtn", "cancelAccountBtn"]) $(id).addEventListener("click", () => closeModal($("accountModal")));
   $("signInBtn").addEventListener("click", signIn);

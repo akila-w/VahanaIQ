@@ -1,19 +1,21 @@
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS } from "./calculator.js?v=2.10.1";
-import { baseVehicles } from "./catalog.js?v=2.10.1";
-import { initCatalogue } from "./catalogue-browser.js?v=2.10.1";
-import { APP_VERSION } from "./config.js?v=2.10.1";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.10.1";
-import { searchVehicle } from "./gemini.js?v=2.10.1";
-import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.10.1";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.10.1";
-import { openModal, closeModal } from "./modal.js?v=2.10.1";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.10.1";
-import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.10.1";
-import { showToast } from "./toast.js?v=2.10.1";
-import { initAccount } from "./account.js?v=2.10.1";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.10.1";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.10.1";
-import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.10.1";
+import { formatDate } from "./dates.js?v=2.11.3";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor } from "./calculator.js?v=2.11.3";
+import { baseVehicles } from "./catalog.js?v=2.11.3";
+import { initCatalogue } from "./catalogue-browser.js?v=2.11.3";
+import { APP_VERSION } from "./config.js?v=2.11.3";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.11.3";
+import { searchVehicle } from "./gemini.js?v=2.11.3";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.11.3";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.11.3";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.3";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.11.3";
+import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.11.3";
+import { showToast, clearToast } from "./toast.js?v=2.11.3";
+import { initAccount } from "./account.js?v=2.11.3";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.11.3";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.11.3";
+import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.11.3";
+import { initPlanner } from "./planner.js?v=2.11.3";
 
 clearLegacyKeys();
 
@@ -27,6 +29,13 @@ let currentAiImgSrc = "";
 let pendingAdImage = null;
 let currentDiscoveredVehicles = [];
 let refreshCatalogue = () => {};
+let refreshPlanner = () => {};
+let comparisonLimit = 24;
+let copyGeneration = 0;
+function normaliseCurrentImage(src, callback) {
+  const token = copyGeneration;
+  normalizeImageToStudio(src, image => { if (token === copyGeneration) callback(image); });
+}
 
 export function formatVehicleTitle(modelName, trimName, year) {
   let m = (modelName || "").trim();
@@ -89,9 +98,9 @@ function summaryHtml(s, f, room) {
       return `<div class="stat stat-wide"><b class="bad">No room for a lease rental</b><span>Your existing monthly payments already use up your ${limit}% limit — no room for a lease rental.</span></div>`;
     }
     const maxPrice = room / f / (1 - s.down / 100);
-    return `<div class="stat"><b>Rs. ${fmt(room)}</b><span>Highest monthly rental at a ${limit}% limit${s.debt ? " after existing payments" : ""}</span></div>
+    return `<div class="stat"><b>Rs. ${fmt(room)}</b><span>Highest monthly rental at a ${limit}% limit${s.debt ? " after existing payments" : ""}${s.insurance ? " and monthly insurance" : ""}</span></div>
 <div class="stat"><b>Rs. ${fmt(maxPrice)}</b><span>Highest vehicle price you can finance with ${s.down}% down${s.down < 60 ? " (cars registered over a year only)" : ""}</span></div>
-<div class="stat"><b>Rs. ${fmt(maxPrice * s.down / 100 + (s.fees || 0))}</b><span>Cash needed up front for that vehicle${s.fees ? ", with fees" : ""}</span></div>`;
+<div class="stat"><b>Rs. ${fmt(maxPrice * s.down / 100 + (s.fees || 0))}</b><span>Cash Needed Up Front for that vehicle${s.fees ? ", with fees" : ""}</span></div>`;
   }
   if (s.down >= 100) {
     return `<div class="stat"><b>Rs. 0.00</b><span>Monthly rental (100% down payment)</span></div>
@@ -99,7 +108,7 @@ function summaryHtml(s, f, room) {
 <div class="stat"><span>Enter your net monthly income above to evaluate affordability and budget room.</span></div>`;
   }
   return `<div class="stat"><b>Rs. ${fmt(1e6 * f * (1 - s.down / 100))}</b><span>Monthly rental for every Rs. 1.00 million of vehicle price</span></div>
-<div class="stat"><b>Rs. ${fmt(1e6 * f * (1 - s.down / 100) / s.dti)}</b><span>Net income needed per Rs. 1.00 million of price at a ${limit}% limit</span></div>
+<div class="stat"><b>Rs. ${fmt(1e6 * f * (1 - s.down / 100) / s.dti)}</b><span>Net Income Needed per Rs. 1.00 million of price at a ${limit}% limit</span></div>
 <div class="stat"><span>Enter your net monthly income above to see which vehicles fit and the highest price you can finance.</span></div>`;
 }
 
@@ -138,7 +147,7 @@ function buildRow(key) {
 <td class="n v-dp" data-label="Down payment (Rs.)"></td>
 <td class="n" data-label="Monthly rental (Rs.)"><b class="v-rent"></b></td>
 <td class="v-bar" data-label="Share of your budget"></td>
-<td class="n v-interest secondary" data-label="Total interest (Rs.)"></td>
+<td class="n v-interest secondary" data-label="Total Interest (Rs.)"></td>
 <td class="n v-total secondary" data-label="Total outlay (Rs.)"></td>
 <td class="n v-need" data-label="Income needed (Rs.)"></td>
 <td class="v-status" data-label="Status"></td>
@@ -153,16 +162,17 @@ function setHtml(el, html) {
 
 function setThumb(tr, r) {
   const slot = tr.querySelector(".thumb");
-  if (slot._img === r.img && slot._alt === r.name) return;
-  slot._img = r.img;
+  const officialPhoto = photoForModel(r);
+  if (slot._img === officialPhoto && slot._alt === r.name) return;
+  slot._img = officialPhoto;
   slot._alt = r.name;
   slot.innerHTML = NO_PHOTO;
-  if (!r.img) return;
+  if (!officialPhoto) return;
   const img = new Image();
   img.loading = "lazy";
   img.alt = r.name;
   img.addEventListener("error", () => { slot.innerHTML = NO_PHOTO; });
-  img.src = r.img;
+  img.src = officialPhoto;
   slot.replaceChildren(img);
 }
 
@@ -171,11 +181,14 @@ function updateRow(tr, r, { s, room, scale, labels }) {
   const cl = condLabel(r.cond);
   setThumb(tr, r);
   q(".v-name").textContent = r.name;
-  setHtml(q(".v-spec"), [r.pt, r.km].filter(t => t && t !== UNKNOWN_SPEC).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
+  setHtml(q(".v-spec"), [r.trim, r.pt, r.power, r.drivetrain, r.km].filter(t => t && t !== UNKNOWN_SPEC).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
   q(".v-warr").textContent = r.w === "Official" ? "Official agent" : r.w === "Grey" ? "Grey import" : "Route unconfirmed";
-  const basis = { "user-entered": "Your price", "ai-estimate": "AI estimate: confirm with the seller", "seller-listed": "Seller's asking price" };
+  const basis = { "user-entered": "Your Price", "ai-estimate": "AI estimate: confirm with the seller", "seller-listed": "Seller's asking price", "unpublished": "Unverified price estimate", "published": "Source-backed asking price", "starting": "Source-backed starting price" };
+  if (r.firstRegisteredOn) q(".v-warr").textContent += " · First registered " + formatDate(r.firstRegisteredOn);
   if (r.legacy) q(".v-warr").textContent += " · Saved estimate: verify price";
   else if (r.priceBasis) q(".v-warr").textContent += " · " + (basis[r.priceBasis] || "Confirm current quote");
+  if (r.conditionAssumed) q(".v-warr").textContent += ' · Condition unconfirmed; new-car deposit assumed';
+  if (r.financeNote) q(".v-warr").textContent += ' · ' + r.financeNote;
   q(".v-cond").textContent = cl;
   q(".cond-tag").setAttribute("aria-label", `Change condition, currently ${cl}`);
   setHtml(q(".v-ltv"), r.downRaised ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least ${r.downPct}% down, so this car is calculated at ${r.downPct}% instead of ${s.down}%">${r.downPct}% down (CBSL minimum)</span>` : "");
@@ -196,6 +209,9 @@ function updateRow(tr, r, { s, room, scale, labels }) {
 }
 
 function render() {
+  // The shared deposit control permits 40% only when a selected vehicle can use it.
+  const eligibleForForty = cars.some(c => !c.hidden && minDownFor(c.cond, c.financeClass, c.firstRegisteredOn) === 40);
+  if ($('down')) $('down').min = String(eligibleForForty ? 40 : 60);
   const settings = readSettings();
   const { s, f, rows: allRows, room } = computeLeaseTable(cars, settings);
   const rows = allRows.filter(r => !r.hidden);
@@ -226,7 +242,7 @@ function render() {
     if (cFilter !== "all" && (r.cond || "New") !== cFilter) return false;
     if (affordVal === "ok") {
       if (!s.income) return false;
-      if (r.rental > room) return false;
+      if (r.status !== "ok") return false;
     }
     return true;
   });
@@ -247,7 +263,7 @@ function render() {
 
   const maxRent = Math.max(1, ...rows.map(r => r.rental));
   const scale = s.income ? Math.max(room, maxRent) : maxRent;
-  const labels = { ok: "Comfortable", mid: "Stretching", bad: "Out of reach", na: "" };
+  const labels = { ok: "Within your limit", mid: "Above your limit", bad: "Above your limit", na: "" };
 
   const hasCars = cars.some(c => !c.hidden);
   $("resetCatalogWrap").hidden = !cars.length;
@@ -259,7 +275,7 @@ function render() {
 
   const ctx = { s, room, scale, labels };
   const tbody = $("rows");
-  const wanted = list.map(r => {
+  const wanted = list.slice(0, comparisonLimit).map(r => {
     let tr = rowEls.get(r._key);
     if (!tr) { tr = buildRow(r._key); rowEls.set(r._key, tr); }
     updateRow(tr, r, ctx);
@@ -272,6 +288,11 @@ function render() {
   });
   while (tbody.children.length > wanted.length) tbody.lastElementChild.remove();
   for (const k of rowEls.keys()) if (!cars.some(c => c._key === k)) rowEls.delete(k);
+  if ($('comparisonCount')) $('comparisonCount').textContent = `${Math.min(comparisonLimit, list.length)} of ${list.length} matching vehicles · ${rows.length} in your comparison`;
+  if ($('showMoreVehicles')) $('showMoreVehicles').hidden = list.length <= comparisonLimit;
+  if ($('compactTerms')) $('compactTerms').textContent = `${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing'} · ${s.n} months · ${s.down}% down`;
+  if ($('calculationBasis')) $('calculationBasis').textContent = `Calculated from each selected vehicle's price, ${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing-balance'} interest, ${s.n} months and your ${s.down}% deposit (or the vehicle's higher legal minimum). ${s.income ? `Monthly budget uses your LKR ${fmt(s.income)} income, LKR ${fmt(s.debt)} existing payments and ${Math.round(s.dti * 100)}% limit.` : 'Add income to calculate a personal monthly budget.'} Fees and insurance use the amounts you enter. Catalogue prices are sourced amounts or clearly labelled estimates.`;
+  refreshPlanner();
 
   if (list.length === 0) {
     $("empty").textContent = affordVal === "ok" && !s.income
@@ -308,8 +329,8 @@ function updateBudgetExtras(s, f, room, rows) {
   const legend = $("budgetLegend");
   legend.hidden = !s.income;
   if (s.income) {
-    legend.innerHTML = `<span><span class="legend-tick" aria-hidden="true"></span>Your limit: ${limit}% of income${s.debt ? " after existing payments" : ""}</span>
-<span>Rental plus existing payments: <span class="tag ok">Comfortable</span> up to 40% · <span class="tag mid">Stretching</span> 40–50% · <span class="tag bad">Out of reach</span> over 50%</span>`;
+    legend.innerHTML = `<span><span class="legend-tick" aria-hidden="true"></span>Your limit: ${limit}% of income${s.debt ? " after existing payments" : ""}${s.insurance ? " and monthly insurance" : ""}</span>
+<span>Rental, monthly insurance and existing payments: <span class="tag ok">Within your limit</span> up to ${limit}% · <span class="tag bad">Above your limit</span> over ${limit}%</span>`;
   }
 
   let sentence = "", bar = "";
@@ -321,7 +342,7 @@ function updateBudgetExtras(s, f, room, rows) {
     sentence = bar = `Your existing payments already use up your ${limit}% limit. No room for a lease rental.`;
   } else {
     const maxPrice = room / f / (1 - s.down / 100);
-    const ok = rows.filter(r => r.rental <= room).length;
+    const ok = rows.filter(r => r.status === "ok").length;
     sentence = `Highest monthly rental Rs. ${fmt(room)}. Highest vehicle price Rs. ${fmt(maxPrice)}. ${ok} of ${rows.length} vehicles fit your budget.`;
     bar = `Max rental Rs. ${fmt(room)} · Max price Rs. ${fmt(maxPrice)}`;
   }
@@ -386,6 +407,8 @@ document.addEventListener("input", e => {
   if (e.target.id) clearSnapNote(e.target.id);
   if (isTermsField(e.target)) render();
 });
+
+for (const id of ['down','tenure']) $(id)?.addEventListener('blur', () => { snapField(id); render(); });
 
 document.addEventListener("change", e => {
   if (e.target.id === "sort" && e.target.value) {
@@ -479,6 +502,7 @@ $("rows").addEventListener("click", e => {
   } else if (act === "cond") {
     const cycle = { New: "Recond", Recond: "Recent", Recent: "Used", Used: "New" };
     car.cond = cycle[car.cond || "New"] || "New";
+    delete car.conditionAssumed;
     car.custom = true;
     car.priceBasis = "user-entered";
     car.priceSourceUrl = null;
@@ -555,11 +579,12 @@ function openDetails(car, opener) {
   const { s, rows: [r] } = computeLeaseTable([car], readSettings());
   const limit = Math.round(s.dti * 100);
   const line = (label, value) => `<div><dt>${label}</dt><dd>${value}</dd></div>`;
-  const photo = car.img || photoForModel(car);
-  const credit = creditFor(car);
+  const photo = photoForModel(car);
+  const candidateCredit = creditFor(car);
+  const credit = candidateCredit?.img === photo ? candidateCredit : null;
   let html = "";
   if (photo) {
-    html += `<div class="detail-photo"><img src="${esc(photo)}" alt="${esc(car.name || "Vehicle")}" loading="lazy">${credit ? `<div class="photo-byline" title="${esc(`Photo: ${credit.author}, ${credit.licence}`)}">${formatCreditHtml(credit)}</div>` : ""}</div>`;
+    html += `<div class="detail-photo"><img src="${esc(photo)}" alt="${esc(car.name || "Vehicle")}" loading="lazy"></div>${credit ? `<div class="source-links detail-source">${formatCreditHtml(credit)}</div>` : ""}`;
   }
   html += `<p class="detail-sub">${esc(condLabel(car.cond))} · Rs. ${fmt(car.price)} · ${esc(rateLabel(s))} over ${s.n} months</p><dl class="detail-list">`;
   if (r.downPct >= 100) {
@@ -567,17 +592,31 @@ function openDetails(car, opener) {
   } else {
     const extras = s.fees || s.insurance;
     html += line(`Down payment (${r.downPct}%${r.downRaised ? ", the CBSL minimum for this car" : ""})`, `Rs. ${fmt(r.dp)}`) +
-      (s.fees ? line("Up-front fees", `Rs. ${fmt(s.fees)}`) + line("Cash needed up front", `<b>Rs. ${fmt(r.upfront)}</b>`) : "") +
-      line("Amount financed", `Rs. ${fmt(r.loan)}`) +
+      (s.fees ? line("Up-front fees", `Rs. ${fmt(s.fees)}`) + line("Cash Needed Up Front", `<b>Rs. ${fmt(r.upfront)}</b>`) : "") +
+      line("Amount Financed", `Rs. ${fmt(r.loan)}`) +
       line(`Monthly rental × ${s.n}`, `<b>Rs. ${fmt(r.rental)}</b>`) +
       (s.insurance ? line("Monthly cost with insurance", `Rs. ${fmt(r.monthlyCost)}`) : "") +
-      line("Total interest", `Rs. ${fmt(r.interest)}`) +
-      line(`Total paid (down payment, rentals${extras ? ", fees and insurance" : ""})`, `Rs. ${fmt(r.total)}`) +
-      line(`Net income needed at a ${limit}% limit`, `Rs. ${fmt(r.need)}`) + "</dl>";
+      line("Total Interest", `Rs. ${fmt(r.interest)}`) +
+      line(`Total Paid (down payment, rentals${extras ? ", fees and insurance" : ""})`, `Rs. ${fmt(r.total)}`) +
+      line(`Net Income Needed at a ${limit}% limit`, `Rs. ${fmt(r.need)}`) + "</dl>";
     const years = yearlySchedule(r.loan, s.rate, s.n);
     html += `<h3 class="detail-h">Year by Year</h3><div class="wrap detail-wrap"><table class="detail-table"><thead><tr><th>Year</th><th class="n">Rentals paid</th><th class="n">Interest</th><th class="n">Principal</th><th class="n">Balance left</th></tr></thead><tbody>${
       years.map(y => `<tr><td>${y.year}${y.months < 12 ? ` (${y.months} months)` : ""}</td><td class="n">${fmt(y.paid)}</td><td class="n">${fmt(y.interest)}</td><td class="n">${fmt(y.principal)}</td><td class="n">${fmt(y.balance)}</td></tr>`).join("")
     }</tbody></table></div><p class="hint">Rentals use the standard reducing-balance formula with monthly compounding${s.rateType === "flat" ? "; the flat rate is converted to its reducing-balance equivalent" : ""}. ${extras ? "Fees and insurance are the amounts you entered." : "Insurance and fees are not included."}</p>`;
+  }
+  const specRows = [
+    ["Trim / Grade", car.trim],
+    ["Powertrain", car.pt && car.pt !== UNKNOWN_SPEC ? car.pt : ""],
+    ["Output", [car.power, car.torque].filter(Boolean).join(" · ")],
+    ["Transmission & Drive", [car.transmission, car.drivetrain].filter(Boolean).join(" · ")],
+    ["Economy / Range", car.km],
+    ["Dimensions & Cabin", [car.dimensions, car.groundClearance ? `${car.groundClearance} clearance` : "", car.seats ? `${car.seats} seats` : ""].filter(Boolean).join(" · ")],
+    ["Safety", car.safety],
+    ["Key Features", car.features],
+    ["Warranty", car.warranty]
+  ].filter(([, val]) => val);
+  if (specRows.length) {
+    html += `<h3 class="detail-h">Vehicle Specifications</h3><dl class="detail-list">${specRows.map(([k, val]) => line(esc(k), esc(val))).join("")}</dl>`;
   }
   $("detailTitle").textContent = car.name;
   $("detailBody").innerHTML = html;
@@ -592,7 +631,7 @@ function renderPhotoCredits() {
   list.innerHTML = entries.map(([model, credit]) => `
     <div class="credit-row">
       <span class="credit-model">${esc(model)}</span>
-      <span class="credit-info">${formatCreditHtml(credit)}</span>
+      <span class="credit-info">${formatCreditHtml(credit, false)}</span>
     </div>
   `).join("");
   list._rendered = true;
@@ -622,6 +661,9 @@ function openAddFlow(tab, opener) {
 $("openAiModalBtn").addEventListener("click", () => openAddFlow("ai", $("addVehicleBtn") || $("openAiModalBtn")));
 if ($("openManualBtn")) $("openManualBtn").addEventListener("click", () => openAddFlow("manual", $("addVehicleBtn")));
 if ($("aiEmptyBtn")) $("aiEmptyBtn").addEventListener("click", () => openAddFlow("ai", $("aiEmptyBtn")));
+let screenComparisonLimit = comparisonLimit;
+window.addEventListener("beforeprint", () => { screenComparisonLimit = comparisonLimit; comparisonLimit = Infinity; render(); });
+window.addEventListener("afterprint", () => { comparisonLimit = screenComparisonLimit; render(); });
 if ($("printBtn")) $("printBtn").addEventListener("click", () => window.print());
 
 $("closeAiModalBtn").addEventListener("click", closeAiModal);
@@ -667,8 +709,10 @@ $("tabAiBtn").parentNode.addEventListener("keydown", e => {
 
 // Classified Ad / Auction Sheet Screenshot Upload & Clipboard Paste
 function setAttachedAdImage(file) {
+  const token = copyGeneration;
   const reader = new FileReader();
   reader.onload = evt => {
+    if (token !== copyGeneration) return;
     pendingAdImage = {
       mimeType: file.type || "image/jpeg",
       data: evt.target.result.split(",")[1]
@@ -709,6 +753,7 @@ $("aiModal").addEventListener("paste", e => {
 // Search execution
 $("aiSearchBtn").addEventListener("click", async () => {
   if ($("aiSearchBtn").disabled) return;
+  const token = copyGeneration;
   const query = $("aiSearchQuery").value.trim();
   if (!query && !pendingAdImage) {
     $("aiSearchMsg").textContent = "Please enter a vehicle name, paste an ad, or attach a screenshot.";
@@ -724,15 +769,19 @@ $("aiSearchBtn").addEventListener("click", async () => {
 
   try {
     const parsed = await searchVehicle(query, pendingAdImage);
+    if (token !== copyGeneration) return;
     currentAiData = parsed;
     renderAiResults(parsed).catch(error => {
+      if (token !== copyGeneration) return;
       console.error("AI result could not be displayed:", error);
       showSearchUnavailable(error);
     });
   } catch (e) {
+    if (token !== copyGeneration) return;
     console.error("AI vehicle search failed:", e);
     showSearchUnavailable(e);
   } finally {
+    if (token !== copyGeneration) return;
     $("aiSearchBtn").disabled = false;
     $("paneAi").removeAttribute("aria-busy");
   }
@@ -752,6 +801,7 @@ function showSearchUnavailable(error) {
 }
 
 async function renderAiResults(data) {
+  const token = copyGeneration;
   $("aiSearchMsg").textContent = "";
   $("aiSearchMsg").classList.remove("msg-error");
 
@@ -800,13 +850,14 @@ async function renderAiResults(data) {
   $("aiImgUrl").value = "";
   try {
     const fetchedImg = await fetchVehicleStudioImage(modelName, wikiSlug);
+    if (token !== copyGeneration) return;
     if (fetchedImg && currentAiData === data) {
-      normalizeImageToStudio(fetchedImg, procImg => {
+      ((procImg) => {
         if (currentAiData !== data) return;
-        setAiImgPreview(procImg || fetchedImg);
+        setAiImgPreview(fetchedImg);
         // Show where the photo came from, never the processed image data
-        $("aiImgUrl").value = /^https?:\/\//.test(fetchedImg) ? fetchedImg : "";
-      });
+        $("aiImgUrl").value = creditFor(modelName)?.sourceUrl || "";
+      })(fetchedImg);
     }
   } catch (e) {
     console.warn("Studio photo resolution error:", e);
@@ -898,8 +949,8 @@ function isValidImageUrl(url) {
 }
 
 function setAiImgPreview(src) {
-  const trimmed = (src && typeof src === "string") ? src.trim() : "";
-  currentAiImgSrc = (trimmed && trimmed !== window.location.href && isValidImageUrl(trimmed)) ? trimmed : "";
+  const trimmed = src ? photoForModel(currentAiData?.model_name || "") : "";
+  currentAiImgSrc = trimmed || "";
   const preview = $("aiImgPreview");
   const previewBox = preview.closest(".preview-box");
   let existingPh = previewBox.querySelector(".pimg-ph");
@@ -962,7 +1013,7 @@ $("aiConfirmAddBtn").addEventListener("click", () => {
   // Mark where the price came from: the seller's ad, an AI estimate, or the user's own figure
   const offered = +condOpt?.dataset.p || 0;
   const priceBasis = price !== offered ? "user-entered" : condOpt?.value === "seller_price" ? "seller-listed" : "ai-estimate";
-  normalizeImageToStudio(currentAiImgSrc, procImg => {
+  normaliseCurrentImage(currentAiImgSrc, procImg => {
     if (!addCars([{
       name: fullName,
       pt: pt,
@@ -1009,7 +1060,7 @@ $("aiAddAllTrimsBtn").addEventListener("click", () => {
   const error = vehicleBatchError(batch);
   if (error) { showVehicleError(error + " Select another condition or add trims individually with a price."); return; }
 
-  normalizeImageToStudio(currentAiImgSrc, procImg => {
+  normaliseCurrentImage(currentAiImgSrc, procImg => {
     if (!addCars(batch.map(car => ({ ...car, img: procImg })))) return;
     saveCars(cars);
     render();
@@ -1039,7 +1090,7 @@ function renderDiscoveryChecklist(vehicles) {
         </div>
         <div class="discovery-spec">${esc(v.powertrain || "")}${v.fuel_economy_kml ? " · " + esc(v.fuel_economy_kml) : ""}</div>
         <div class="discovery-tags">
-          <span class="callout-badge ${v.warranty_type === "Official" ? "badge-official" : "badge-grey"}">${v.warranty_type || "Grey"}</span>
+          <span class="callout-badge ${v.warranty_type === "Official" ? "badge-official" : "badge-grey"}">${esc(v.warranty_type || "Grey")}</span>
           <span class="cond-tag">${condLabel}</span>
         </div>
       </div>
@@ -1049,12 +1100,14 @@ function renderDiscoveryChecklist(vehicles) {
   updateSelectedCount();
 
   // Async load thumbnails
+  const token = copyGeneration;
   vehicles.forEach(async (v, i) => {
     try {
       const imgUrl = await fetchVehicleStudioImage(v.model_name, v.wikipedia_slug);
+      if (token !== copyGeneration) return;
       const imgEl = $(`discThumb${i}`);
       if (imgEl && imgUrl) {
-        normalizeImageToStudio(imgUrl, normalized => {
+        normaliseCurrentImage(imgUrl, normalized => {
           if (imgEl) { imgEl.src = normalized || imgUrl; imgEl.hidden = false; }
         });
       }
@@ -1151,9 +1204,9 @@ $("mAddBtn").addEventListener("click", () => {
   const cond = $("mCond").value;
   const w = $("mWarr").value;
   const pt = $("mPt").value.trim() || "Custom entry";
-  const rawImg = $("mImgUrl").value.trim();
+  const rawImg = photoForModel(name);
 
-  normalizeImageToStudio(rawImg, procImg => {
+  normaliseCurrentImage(rawImg, procImg => {
     if (!addCars([{
       name: name,
       pt: pt,
@@ -1207,11 +1260,22 @@ document.addEventListener("change", e => {
 
 // Footer: catalogue availability and individual prices have separate evidence dates.
 $("appVersion").textContent = APP_VERSION;
-$("priceAsOf").textContent = "Catalogue sources were checked on 20/10/2026. Confirm prices and stock with the seller.";
+$("priceAsOf").textContent = "Prices checked on 21 Oct 2026. Unsubstantiated amounts are omitted; enter a quote to calculate. Confirm stock and final terms with the seller.";
 
 refreshCatalogue = initCatalogue({
-  terms: () => { const s = readSettings(); return { f: rental(1, s.rate, s.n), down: s.down }; },
+  terms: () => { const s = readSettings(); return { f: rental(1, s.rate, s.n), down: s.down, income: s.income, room: s.income ? s.income * s.dti - s.debt - (s.insurance || 0) / 12 : -1 }; },
   isSelected: id => cars.some(c => c.catalogueId === id && !c.hidden),
+  onAddBatch(batch, skipped) {
+    if (!addCars(batch)) return false;
+    const added = new Set(batch.map(v => v.id));
+    saveCars(cars); render();
+    const unverified = batch.filter(v => !['published', 'starting'].includes(v.priceBasis)).length;
+    const undo = showToast(`Added ${batch.length} vehicles.${skipped ? ` ${skipped} need a quote and were left out.` : ''}${unverified ? ` ${unverified} amounts are unverified estimates.` : ''}`, 'Undo', () => {
+      cars = cars.filter(v => !added.has(v.id)); saveCars(cars); render(); $('h-list').focus();
+    });
+    if (undo) undo.focus();
+    return true;
+  },
   onAdd: vehicle => {
     if (cars.some(c => c.catalogueId === vehicle.catalogueId && !c.hidden)) return false;
     if (!addCars([vehicle])) return false;
@@ -1220,6 +1284,13 @@ refreshCatalogue = initCatalogue({
     showToast(`Added ${vehicle.name} to your comparison.`);
     return true;
   }
+});
+if ($('showMoreVehicles')) $('showMoreVehicles').addEventListener('click', () => { comparisonLimit += 24; render(); });
+if ($('toggleTerms')) $('toggleTerms').addEventListener('click', () => {
+  const open = $('toggleTerms').getAttribute('aria-expanded') !== 'true';
+  $('toggleTerms').setAttribute('aria-expanded', String(open));
+  $('loanTermsGrid').classList.toggle('mobile-collapsed', !open);
+  $('toggleTerms').textContent = open ? 'Done' : 'Edit';
 });
 
 // --- Sharing: a link carries inputs and vehicles (catalogue cars by ID, others in full);
@@ -1246,8 +1317,9 @@ function carFromShare(item) {
 }
 
 function updateShareLink() {
-  $("shareLink").value = buildShareLink(currentState(), shareableCars(), $("shareIncome").checked);
-  $("shareStatus").textContent = "";
+  const shared = shareableCars();
+  $("shareLink").value = buildShareLink(currentState(), shared.slice(0,30), $("shareIncome").checked);
+  $("shareStatus").textContent = shared.length > 30 ? `This link includes the first 30 of ${shared.length} vehicles to keep it manageable. Your full comparison stays saved here.` : `This link includes ${shared.length} vehicles.`;
 }
 
 if ($("shareBtn")) {
@@ -1262,7 +1334,7 @@ if ($("shareBtn")) {
     const link = $("shareLink").value;
     try {
       await navigator.clipboard.writeText(link);
-      $("shareStatus").textContent = "Link copied.";
+      $("shareStatus").textContent = "Link copied." + (shareableCars().length > 30 ? " Includes the first 30 vehicles." : "");
     } catch (e) {
       $("shareLink").select();
       $("shareStatus").textContent = "Select the link above and copy it.";
@@ -1276,6 +1348,10 @@ if (typeof navigator !== "undefined" && "serviceWorker" in navigator && window.l
 }
 
 applyState(loadState());
+refreshPlanner = initPlanner({
+  vehicles: () => [...cars.filter(c => !c.hidden), ...marketCatalogue.filter(v => !cars.some(c => c.catalogueId === v.id && !c.hidden))],
+  settings: readSettings
+});
 
 // A shared link's vehicles: loaded when the comparison is empty, otherwise offered
 const sharedCars = sharedCarsFromUrl().map(carFromShare).filter(Boolean);
@@ -1298,10 +1374,30 @@ render();
 
 // Signing in syncs these inputs and vehicles with the person's account (see js/account.js)
 initAccount({
+  beforeApply() {
+    copyGeneration++;
+    clearToast();
+    clearState();
+    for (const id of ['detailModal', 'shareModal', 'aiModal', 'catalogueAddModal']) {
+      const modal = $(id);
+      if (modal && isOpen(modal)) closeModal(modal);
+    }
+    $('detailBody').textContent = '';
+    currentAiData = null; currentAiImgSrc = ''; pendingAdImage = null; currentDiscoveredVehicles = [];
+    for (const id of ['aiSearchQuery','aiPriceInput','aiKmInput','aiImgUrl','aiAdFile','mName','mPrice','mPt','mImgUrl','catalogueName','cataloguePrice','shareLink']) $(id).value = '';
+    for (const id of ['aiSearchMsg','aiDiscoveryList','aiAttachedAdLabel']) $(id).textContent = '';
+    $('shareIncome').checked = false;
+    window.dispatchEvent(new Event('vahanaiq:copy-reset'));
+    $('aiSearchBtn').disabled = false;
+    $('paneAi').removeAttribute('aria-busy');
+    for (const id of ['aiResultForm','aiDiscoveryBox','aiAttachedAdBox']) $(id).hidden = true;
+    $('plannerName').value = '';
+  },
   reload() {
     cars = loadSavedCars(baseVehicles);
     cars.forEach(assignKey);
     applyState(loadState());
+    window.dispatchEvent(new Event('vahanaiq:planner-reload'));
     render();
   }
 });

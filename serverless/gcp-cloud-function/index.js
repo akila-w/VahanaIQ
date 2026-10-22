@@ -10,7 +10,9 @@ const errorCode = status => status === 429 ? 'quota' : status === 400 ? 'bad_req
 // (default: the GitHub Pages site). Requests without an Origin header (servers, the monthly
 // price script) are allowed but still rate limited.
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://akila-w.github.io').split(',').map(o => o.trim()).filter(Boolean);
-// Best-effort limit per client IP on each instance: RATE_LIMIT requests per 10 minutes
+// Conservative quota per transport peer on each instance. Forwarded headers are
+// client-controlled unless a separately verified trusted proxy normalises them.
+// Cloud Run peers may be shared, so this can be an aggregate quota behind its proxy.
 const RATE_LIMIT = Number(process.env.RATE_LIMIT) || 30;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const hits = new Map();
@@ -239,7 +241,7 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  const ip = String(header('x-forwarded-for') || req.ip || 'unknown').split(',')[0].trim();
+  const ip = req.socket?.remoteAddress || 'shared-proxy';
   if (rateLimited(ip)) {
     res.status(429).json({ error: 'rate_limited', detail: 'Too many searches. Try again in a few minutes.' });
     return;
