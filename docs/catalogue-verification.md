@@ -1,3 +1,5 @@
+> Historical baseline. Scope was expanded on 21/10/2026 to passenger vehicles and pickups; see [the current review](review-findings.md) and [visual catalogue](catalogue-review.html). Earlier exclusions and counts below are superseded.
+
 # Catalogue batch verification — 20/10/2026
 
 Version: v2.8.0. Status: deployed to GitHub Pages on 20/10/2026 (PR #10 onwards). Catalogue coverage remains in progress. This page records the checks run for that first batch.

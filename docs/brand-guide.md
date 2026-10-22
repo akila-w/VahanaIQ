@@ -54,20 +54,24 @@ The identity system introduces three distinct vector logo directions:
 
 Every colour below is a design token in [`design-system/tokens.json`](../design-system/tokens.json). Section 5 explains how it reaches the app. Contrast figures are WCAG 2 ratios measured against the token values.
 
-### Palette A: "Ceylon Emerald & Midnight Slate" (Signature)
-Designed to convey financial health, Sri Lankan heritage, and executive stability.
+### Palette A: "Forest Ink, Warm Bone & Ceylon Emerald" (Editorial)
+Designed to convey financial health, Sri Lankan heritage, and warm editorial clarity matching the vehicle catalogue.
 
 | Token | CSS Variable | Light | Dark | Role | Contrast |
 |---|---|---|---|---|---|
-| **Primary Emerald** | `--accent` | `#0F766E` | `#2DD4BF` | Brand core, primary actions, links, focus rings | 5.47:1 on panel (light), 9.59:1 (dark) |
-| **Electric Mint** | `--accent-bright` | `#2DD4BF` | `#5EEAD4` | IQ spark, highlights | 1.86:1 on white: never text in light |
-| **Midnight Slate** | `--ink` | `#0F172A` | `#F1F5F9` | Primary text | 17.85:1 (light), 16.3:1 (dark) |
-| **Slate Mute** | `--mute` | `#64748B` | `#94A3B8` | Labels, hints, table headers | 4.55:1 on bg (light), 6.96:1 (dark) |
-| **Alabaster White** | `--panel` | `#FFFFFF` | `#0F172A` | Card and panel surface | Surface |
-| **Page** | `--bg` | `#F8FAFC` | `#0B1120` | Page background, inputs | Surface |
-| **Border Slate** | `--line` | `#E2E8F0` | `#1E293B` | Dividers, panel, card and table borders | 1.23:1 (decorative only) |
-| **Control Border** | `--control-border` | `#7F8EA3` | `#5B6B82` | Edges of inputs, selects, textareas, outline, row and file buttons | 3.33:1 on panel, 3.19:1 on bg (light); 3.29:1 / 3.47:1 (dark) |
-| **On Emerald** | `--on-accent` | `#FFFFFF` | `#0F172A` | Text on an `--accent` fill | 5.47:1 / 9.59:1 |
+| **Primary Forest** | `--accent` | `#103E36` | `#5EEAD4` | Brand core, primary actions, active tabs | 11.9:1 with white (light), 11.0:1 on panel (dark) |
+| **Bright Interaction** | `--accent-bright` | `#168265` | `#5EEAD4` | Focus rings, hover states | 4.8:1 on panel (light) |
+| **Forest Ink** | `--ink` | `#142A25` | `#E8F0EA` | Primary text | 15.1:1 on panel (light), 14.0:1 on panel (dark) |
+| **Sage Mute** | `--mute` | `#586B62` | `#9BB0A5` | Labels, hints, captions, table headers | 5.7:1 on panel (light), 7.1:1 (dark) |
+| **Pure White** | `--panel` | `#FFFFFF` | `#152320` | Card and panel surface | Surface |
+| **Warm Bone** | `--bg` | `#F5F6F3` | `#0E1A16` | Page background, dialog ground | Surface |
+| **Hairline Rule** | `--line` | `#DCE3DB` | `#253730` | Dividers, card and table borders | Decorative (1.25:1) |
+| **Control Border** | `--control-border` | `#86968C` | `#5C7469` | Accessible 3:1+ edges of inputs, selects, outline buttons | 3.11:1 on panel (light), 3.2:1 (dark) |
+| **On Accent** | `--on-accent` | `#FFFFFF` | `#0E1A16` | Text on an `--accent` fill | 11.9:1 / 11.0:1 |
+| **Chip Fill** | `--chip` | `#F3F5F0` | `#1A2C26` | Fill of specs pills, category and status tags | Surface |
+| **Chip Ink** | `--chip-ink` | `#142A25` | `#E8F0EA` | Text colour of specs pills and metadata chips | 14.2:1 on chip |
+| **Brand Badge Fill** | `--badge-bg` | `#E5EBE2` | `#163B33` | Fill of the CBSL 2026 badge and theme switcher | Surface |
+| **Brand Badge Ink** | `--badge-ink` | `#103E36` | `#99F6E4` | Text of the CBSL 2026 brand badge | 7.9:1 on badge-bg |
 
 Fixed tints (`--callout-info-bg`, `--badge-official-bg`, `--badge-grey-bg`, `--ltv-warn-bg`, `--selected-bg`, `--scrim`) are translucent and the same in both themes. The studio plate (`--plate`, `#FFFFFF`) is white in every theme. The `--mark-*` tokens hold the logo colours and are not for UI.
 
@@ -93,13 +97,14 @@ font-family: var(--font-sans); /* system-ui, -apple-system, "Segoe UI", Roboto, 
 The product loads no web fonts.
 
 ### Scale & Hierarchy
-- **Header H1:** `1.8rem` (28.8px), Weight 800, Letter spacing `-0.02em`; `1.4rem` at 480px and below
-- **Stat values:** `1.35rem` (21.6px), Weight 700, `--accent`, tabular figures
-- **Modal titles:** `1.15rem` (18.4px), Weight 700
-- **Section H2:** `1rem` (16px), Weight 700, Title Case
-- **Body Text:** `15px / 1.5`, Weight 400
-- **Input Labels:** `0.875rem` (14px), Weight 400, Colour `--mute`
-- **Hints & Table Headers:** `0.8125rem` (13px). Headers are Weight 600 in `--mute`
+- **Display H1:** `clamp(38px, 4.4vw, 60px)`, Weight 650, Letter spacing `-2.4px`, Line height `1.05`
+- **Section H2:** `28px`, Weight 650, Letter spacing `-0.8px`, Line height `1.2`
+- **Card H3:** `19px`, Weight 650, Letter spacing `-0.4px`, Line height `1.25`
+- **Eyebrow:** `11px`, Weight 700, Letter spacing `2px`, Uppercase, `--accent`
+- **Stat values:** `22px`, Weight 650, Letter spacing `-0.7px`, `--accent`, tabular figures
+- **Input Labels:** `11px`, Weight 650, Colour `--mute`, Sentence case
+- **Body Text:** `15px / 1.55`, Weight 400
+- **Hints & Table Headers:** `12px / 11px`. Headers are Weight 700, Uppercase, letter spacing `1.2px` in `--mute`
 - **Brand Badge:** `0.75rem` (12px), Weight 700, Letter spacing `+0.04em`, Uppercase
 
 ### Sri Lankan Currency Standards (LKR)

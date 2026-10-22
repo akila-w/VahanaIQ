@@ -1,3 +1,5 @@
+> Historical baseline. Scope was expanded on 21/10/2026 to passenger vehicles and pickups; see [the current review](review-findings.md) and [visual catalogue](catalogue-review.html). Earlier exclusions and counts below are superseded.
+
 # Sri Lankan passenger-car and SUV catalogue research
 
 Updated: 20/10/2026. First implementation batch: **146 entries across 27 makes** in `js/market-catalogue.js`. This is a documented market sample, not a verified inventory of every vehicle or historical generation in Sri Lanka.

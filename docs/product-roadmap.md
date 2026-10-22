@@ -4,7 +4,7 @@ Updated: 20/10/2026. Work proceeds one milestone at a time, with a working local
 
 ## Confirmed requirements
 
-- Catalogue scope: **passenger cars and SUVs**, including hatchbacks, saloons, estates, coupes, convertibles and crossovers. Exclude MPVs, vans, pickups, motorcycles, three-wheelers, buses and heavy trucks. Check ambiguous body classifications against model specifications.
+- Catalogue scope, revised 21/10/2026: **all passenger body styles plus pickups**. Include MPVs, passenger vans and minibuses; keep body-type filters and source-backed price status. Do not claim every global model or live stock is covered.
 - Cover vehicles offered in Sri Lanka and remove unsupported or out-of-scope records using evidence. A missing distributor listing alone does not disprove grey-import or used-market availability.
 - Add filters and the ability to remove vehicles from a user's comparison.
 - Add a savings planner: percentage of income saved, monthly savings and time to afford a vehicle.
@@ -69,3 +69,7 @@ After the requested savings and account work: price/source freshness indicators,
 Finish and verify one milestone before broadening the implementation. Use small reviewable changes, retain saved-data compatibility and report local, merged and deployed status separately. Every milestone gets focused checks; reserve the full visual and end-to-end regression for the integrated release as well.
 
 Current status: milestone 1 is in progress. Its first catalogue batch has 146 entries across 27 makes, with source/status metadata, local browsing and stable-ID saved-comparison migration implemented. Fifteen entries carry published/starting amounts (seven added from checked research on 21/10/2026, see price-research-2026-10.md); other prices require a quote. Automated migration and data checks pass. The 25 browser checks pass, including search, quote validation, save/reload, removal/Undo, keyboard focus and responsive catalogue layouts; further makes, trims and used generations remain in the research register. Savings planning has not been implemented. The catalogue batch is deployed; since then the catalogue gained photos, filters and priced-first sorting, and the comparison gained lease details, flat-rate support and per-car legal down payments (v2.9.0), and v2.10.0 added optional Google sign-in that syncs inputs and the comparison across devices.
+
+## Local update · 21/10/2026
+
+The local preview now includes a deposit/cash savings planner with named goals and optional account sync, bulk catalogue/search/filter selection with Undo, input-based affordability filtering, official-source 8:5 images, brand marks/glyphs, mobile reflow improvements and About/Privacy/Terms pages. The catalogue contains 164 entries across 28 makes. Price/photo evidence remains inspectable in the visual review; unverified prices require confirmation. This update has not been deployed.
