@@ -1,0 +1,23 @@
+# GitHub Pages publishes every file in the repository unless it is excluded here, so the
+# working artefacts (review pages, scraped source pages, QA evidence), the build scripts and
+# the test suites must all be listed. Verified by scripts/smoke-deploy.mjs, which fails if a
+# docs/ URL is ever served.
+#
+# Do NOT add a .nojekyll file: that switches Jekyll off and would publish all of the above.
+exclude:
+  - docs
+  - data/batches
+  - test
+  - scripts
+  - serverless
+  - design-system
+  - qa
+  - README.md
+  - firestore.rules
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle
+  - vendor/cache
+  - vendor/gems
+  - vendor/ruby

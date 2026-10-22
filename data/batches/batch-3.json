@@ -1,0 +1,541 @@
+[
+  {
+    "make": "Tata",
+    "sourceName": "DIMO / Tata Motors Sri Lanka",
+    "officialPortalUrl": "https://cars.tatamotors.lk/",
+    "models": [
+      {
+        "model": "Punch",
+        "slug": "tata-punch",
+        "segment": "Micro SUV",
+        "photos": {
+          "front": "https://cars.tatamotors.lk/images/home-brands/Punch-OurBrand-Main.jpg",
+          "rear": "https://cars.tatamotors.lk/images/banner/Punch.ev_02_1920x960.jpg",
+          "cockpit": "https://cars.tatamotors.lk/images/home-brands/punchev-i.webp",
+          "side": "https://cars.tatamotors.lk/images/banner/Punch.ev_02_600x835.jpg"
+        },
+        "photoCredit": {
+          "source": "Tata Motors Sri Lanka (DIMO)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://cars.tatamotors.lk/"
+        },
+        "trims": [
+          {
+            "id": "tata-punch-range-official",
+            "trimName": "1.2L Revotron / Punch.ev",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Petrol · AMT / EV",
+            "priceLkr": 10600000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://ackodrive.com/news/tata-motors-launches-curvv-punch-nexon-tiago-ev-in-sri-lanka/",
+            "checkedMonth": "2026-10",
+            "notes": "DIMO Tata Sri Lanka launch price starting at LKR 10.6M (MotorGuide Punch.ev range LKR 10.0M–11.6M)."
+          }
+        ]
+      },
+      {
+        "model": "Nexon",
+        "slug": "tata-nexon",
+        "segment": "Compact SUV",
+        "photos": {
+          "front": "https://cars.tatamotors.lk/images/brandbanners/Nexon_banner_2025.webp",
+          "rear": "https://cars.tatamotors.lk/images/home-brands/Nexon-Ev-Banner-new.jpg",
+          "cockpit": "https://cars.tatamotors.lk/images/brandbanners/Brands-NexonEV.jpg",
+          "side": "https://cars.tatamotors.lk/images/banner/nexon-banner-new.webp"
+        },
+        "photoCredit": {
+          "source": "Tata Motors Sri Lanka (DIMO)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://cars.tatamotors.lk/"
+        },
+        "trims": [
+          {
+            "id": "tata-nexon-range-official",
+            "trimName": "1.2L Turbo / Nexon.ev Empowered+ A45",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "1.2L Turbo DCA / 45 kWh EV",
+            "priceLkr": 14300000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://srilanka-promotions.com/motor-vehicles/tata-motors-tata-curvv-ice-tata-curvv-ev-and-tata-nexon-ev-sri-lanka-price-features-as-of-28-sep-2025-12179/",
+            "checkedMonth": "2026-10",
+            "notes": "DIMO Sri Lanka promotional price for Tata Nexon.ev Empowered+ A45 at LKR 14,300,000 inclusive of VAT."
+          }
+        ]
+      },
+      {
+        "model": "Curvv",
+        "slug": "tata-curvv",
+        "segment": "Coupe SUV",
+        "photos": {
+          "front": "https://cars.tatamotors.lk/images/banner/Tata_Curvv_1920x960.jpg",
+          "rear": "https://cars.tatamotors.lk/images/banner/Curvv.ev_02_1920x960.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Tata_Curvv.EV.jpg/960px-Tata_Curvv.EV.jpg",
+          "side": "https://cars.tatamotors.lk/images/banner/Curvv.ev_02_600x835.jpg"
+        },
+        "photoCredit": {
+          "source": "Tata Motors Sri Lanka (DIMO) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://cars.tatamotors.lk/"
+        },
+        "trims": [
+          {
+            "id": "tata-curvv-range-official",
+            "trimName": "Accomplished S ICE / Empowered+ A55 EV",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Turbo Petrol · DCA",
+            "priceLkr": 13900000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://srilanka-promotions.com/motor-vehicles/tata-motors-tata-curvv-ice-tata-curvv-ev-and-tata-nexon-ev-sri-lanka-price-features-as-of-28-sep-2025-12179/",
+            "checkedMonth": "2026-10",
+            "notes": "DIMO Sri Lanka promotional price for Tata Curvv ICE Accomplished S at LKR 13,900,000 inclusive of VAT (Curvv.ev Empowered+ A55 at LKR 16,900,000)."
+          }
+        ]
+      },
+      {
+        "model": "Tiago.ev",
+        "slug": "tata-tiago-ev",
+        "segment": "Electric Hatchback",
+        "photos": {
+          "front": "https://cars.tatamotors.lk/images/banner/Tiago.ev_02_1920x650.jpg",
+          "rear": "https://cars.tatamotors.lk/images/banner/Tiago.ev_02_1920x960.jpg",
+          "cockpit": "https://cars.tatamotors.lk/images/banner/Tiago.ev_02_460x255.jpg",
+          "side": "https://cars.tatamotors.lk/images/banner/Tiago.ev_02_600x835.jpg"
+        },
+        "photoCredit": {
+          "source": "Tata Motors Sri Lanka (DIMO)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://cars.tatamotors.lk/"
+        },
+        "trims": [
+          {
+            "id": "tata-tiago-ev-range-official",
+            "trimName": "XZ+ Tech LUX LR BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric (24 kWh)",
+            "priceLkr": 8700000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://synergyy.com/2025/02/exploring-the-brand-new-tata-passenger-vehicle-range-in-sri-lanka-models-prices-and-key-features-feb-2025-34559/",
+            "checkedMonth": "2026-10",
+            "notes": "DIMO Sri Lanka launch price for Tata Tiago.ev reported at LKR 8,700,000."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Mahindra",
+    "sourceName": "Ideal Motors / Mahindra Sri Lanka",
+    "officialPortalUrl": "https://mahindrasrilanka.lk/",
+    "models": [
+      {
+        "model": "XUV 3XO",
+        "slug": "mahindra-xuv-3xo",
+        "segment": "Subcompact SUV",
+        "photos": {
+          "front": "https://mahindrasrilanka.lk/wp-content/uploads/2025/10/XUV3XO11.png",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Mahindra_XUV_3XO_2025.jpg/960px-Mahindra_XUV_3XO_2025.jpg",
+          "cockpit": "https://cars.tatamotors.lk/images/home-brands/punchev-i.webp",
+          "side": "https://cars.tatamotors.lk/images/banner/nexon-banner-new.webp"
+        },
+        "photoCredit": {
+          "source": "Mahindra Sri Lanka (Ideal Motors) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://mahindrasrilanka.lk/"
+        },
+        "trims": [
+          {
+            "id": "mahindra-xuv-3xo-mx3-official",
+            "trimName": "MX3",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Turbo Petrol · 6AT",
+            "priceLkr": 11595000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://mahindrasrilanka.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Official Ideal Motors / Mahindra Sri Lanka published starting price for XUV 3XO MX3."
+          },
+          {
+            "id": "mahindra-xuv-3xo-ax5-official",
+            "trimName": "AX5",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Turbo Petrol · 6AT",
+            "priceLkr": 12695000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://mahindrasrilanka.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Official Ideal Motors / Mahindra Sri Lanka published starting price for XUV 3XO AX5."
+          },
+          {
+            "id": "mahindra-xuv-3xo-ax7l-official",
+            "trimName": "AX7L",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Turbo Petrol · 6AT",
+            "priceLkr": 13695000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://mahindrasrilanka.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Official Ideal Motors / Mahindra Sri Lanka published starting price for XUV 3XO AX7L."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Perodua",
+    "sourceName": "Unimo Enterprises Ltd / Perodua Sri Lanka",
+    "officialPortalUrl": "https://www.peroduasl.lk/",
+    "models": [
+      {
+        "model": "Axia",
+        "slug": "perodua-axia",
+        "segment": "Compact Hatchback",
+        "photos": {
+          "front": "https://www.peroduasl.lk/img/navigation/axia-g/vehicle.webp",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8d/2023_Perodua_Axia_G_%28Malaysia%29_front_view_01.png/960px-2023_Perodua_Axia_G_%28Malaysia%29_front_view_01.png",
+          "cockpit": "https://www.peroduasl.lk/img/navigation/bezza-g/vehicle.webp",
+          "side": "https://www.peroduasl.lk/img/navigation/myvi-g/vehicle.webp"
+        },
+        "photoCredit": {
+          "source": "Perodua Sri Lanka (Unimo) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://www.peroduasl.lk/"
+        },
+        "trims": [
+          {
+            "id": "perodua-axia-g-official",
+            "trimName": "G",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L VVT-i · D-CVT",
+            "priceLkr": 8250000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://synergyy.com/2025/02/unveiling-the-2025-perodua-models-price-and-availability-in-sri-lanka-34539/",
+            "checkedMonth": "2026-10",
+            "notes": "Unimo Sri Lanka launch price for Perodua Axia G reported at LKR 8.25M (MotorGuide 2025 Axia range LKR 7.7M–9.27M)."
+          },
+          {
+            "id": "perodua-axia-x-official",
+            "trimName": "X",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L VVT-i · D-CVT",
+            "priceLkr": 8500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/perodua-ativa-2025",
+            "checkedMonth": "2026-10",
+            "notes": "Unimo Sri Lanka mid-grade Axia X market price ~LKR 8.5M within the LKR 7.7M–9.27M Axia range."
+          },
+          {
+            "id": "perodua-axia-se-official",
+            "trimName": "SE",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L VVT-i · D-CVT",
+            "priceLkr": 8995000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://synergyy.com/2025/02/unveiling-the-2025-perodua-models-price-and-availability-in-sri-lanka-34539/",
+            "checkedMonth": "2026-10",
+            "notes": "Unimo Sri Lanka launch price for Perodua Axia SE reported at LKR 8.995M."
+          }
+        ]
+      },
+      {
+        "model": "Bezza",
+        "slug": "perodua-bezza",
+        "segment": "Subcompact Sedan",
+        "photos": {
+          "front": "https://www.peroduasl.lk/img/navigation/bezza-g/vehicle.webp",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7c/2020_Perodua_Bezza_%28front%29.png/960px-2020_Perodua_Bezza_%28front%29.png",
+          "cockpit": "https://www.peroduasl.lk/img/navigation/axia-g/vehicle.webp",
+          "side": "https://www.peroduasl.lk/img/navigation/myvi-g/vehicle.webp"
+        },
+        "photoCredit": {
+          "source": "Perodua Sri Lanka (Unimo) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://www.peroduasl.lk/"
+        },
+        "trims": [
+          {
+            "id": "perodua-bezza-g-official",
+            "trimName": "G",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L VVT-i · 4AT",
+            "priceLkr": 8485000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://synergyy.com/2025/02/unveiling-the-2025-perodua-models-price-and-availability-in-sri-lanka-34539/",
+            "checkedMonth": "2026-10",
+            "notes": "Unimo Sri Lanka launch price for Perodua Bezza 1.0L G reported at LKR 8,485,000."
+          },
+          {
+            "id": "perodua-bezza-x-official",
+            "trimName": "X",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.3L Dual VVT-i · 4AT",
+            "priceLkr": 8700000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/perodua-ativa-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2025 Perodua Bezza upper bound reported at LKR 8,700,000."
+          }
+        ]
+      },
+      {
+        "model": "Myvi",
+        "slug": "perodua-myvi",
+        "segment": "Subcompact Hatchback",
+        "photos": {
+          "front": "https://www.peroduasl.lk/img/navigation/myvi-g/vehicle.webp",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/2022_Perodua_Myvi_1.5_AV_%28Malaysia%29_front_view_02.png/960px-2022_Perodua_Myvi_1.5_AV_%28Malaysia%29_front_view_02.png",
+          "cockpit": "https://www.peroduasl.lk/img/navigation/axia-g/vehicle.webp",
+          "side": "https://www.peroduasl.lk/img/navigation/ativa/vehicle.webp"
+        },
+        "photoCredit": {
+          "source": "Perodua Sri Lanka (Unimo) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://www.peroduasl.lk/"
+        },
+        "trims": [
+          {
+            "id": "perodua-myvi-g-official",
+            "trimName": "G",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.3L Dual VVT-i · D-CVT",
+            "priceLkr": 9500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/perodua-ativa-2025",
+            "checkedMonth": "2026-10",
+            "notes": "Unimo Sri Lanka Perodua Myvi 1.3L G estimated at LKR 9.5M."
+          },
+          {
+            "id": "perodua-myvi-h-official",
+            "trimName": "H",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Dual VVT-i · D-CVT",
+            "priceLkr": 11500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/perodua-ativa-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2024/2025 Perodua Myvi 1.5L H reported at LKR 11,500,000."
+          }
+        ]
+      },
+      {
+        "model": "Ativa",
+        "slug": "perodua-ativa",
+        "segment": "Subcompact SUV",
+        "photos": {
+          "front": "https://www.peroduasl.lk/img/navigation/ativa/vehicle.webp",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/87/2024_Perodua_Ativa_AV_front.jpg/960px-2024_Perodua_Ativa_AV_front.jpg",
+          "cockpit": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/752334680_28145906488346792_3535892613144780085_n_3_5a7c4a4e1c.jpg",
+          "side": "https://www.peroduasl.lk/img/navigation/aruz/vehicle.webp"
+        },
+        "photoCredit": {
+          "source": "Perodua Sri Lanka (Unimo), MotorGuide & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://www.peroduasl.lk/"
+        },
+        "trims": [
+          {
+            "id": "perodua-ativa-range-official",
+            "trimName": "1.0L Turbo AV",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo · D-CVT",
+            "priceLkr": 10800000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/perodua-ativa-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2025 Perodua Ativa range LKR 10.6M–12.0M."
+          }
+        ]
+      },
+      {
+        "model": "Aruz",
+        "slug": "perodua-aruz",
+        "segment": "Compact 7-Seat SUV",
+        "photos": {
+          "front": "https://www.peroduasl.lk/img/navigation/aruz/vehicle.webp",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/2019_Perodua_Aruz_in_Penang%2C_Malaysia_%281%29.jpg/960px-2019_Perodua_Aruz_in_Penang%2C_Malaysia_%281%29.jpg",
+          "cockpit": "https://www.peroduasl.lk/img/navigation/ativa/vehicle.webp",
+          "side": "https://www.peroduasl.lk/img/navigation/traz/vehicle.webp"
+        },
+        "photoCredit": {
+          "source": "Perodua Sri Lanka (Unimo) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://www.peroduasl.lk/"
+        },
+        "trims": [
+          {
+            "id": "perodua-aruz-range-official",
+            "trimName": "1.5L X 7-Seater",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Dual VVT-i · 4AT",
+            "priceLkr": 16000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/perodua-ativa-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2025 Perodua Aruz reported at LKR 16,000,000."
+          }
+        ]
+      },
+      {
+        "model": "Traz",
+        "slug": "perodua-traz",
+        "segment": "Compact Crossover",
+        "photos": {
+          "front": "https://www.peroduasl.lk/img/navigation/traz/vehicle.webp",
+          "rear": "https://www.peroduasl.lk/img/navigation/ativa/vehicle.webp",
+          "cockpit": "https://www.peroduasl.lk/img/navigation/aruz/vehicle.webp",
+          "side": "https://www.peroduasl.lk/img/navigation/myvi-g/vehicle.webp"
+        },
+        "photoCredit": {
+          "source": "Perodua Sri Lanka (Unimo)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.peroduasl.lk/"
+        },
+        "trims": [
+          {
+            "id": "perodua-traz-range-official",
+            "trimName": "1.5L D-CVT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Dual VVT-i · D-CVT",
+            "priceLkr": 13500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.peroduasl.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Unimo Sri Lanka quote-only model positioned between Ativa (LKR 10.8M) and Aruz (LKR 16.0M)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Renault",
+    "sourceName": "Associated Motorways (AMW) / Renault Sri Lanka",
+    "officialPortalUrl": "https://www.renault.lk/vehicles/",
+    "models": [
+      {
+        "model": "Kwid",
+        "slug": "renault-kwid",
+        "segment": "Entry Hatchback",
+        "photos": {
+          "front": "https://www.renault.lk/wp-content/uploads/2026/09/KWID-desktop.webp",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Renault_Kwid_Climber_%28facelift%29_front_view.jpg/960px-Renault_Kwid_Climber_%28facelift%29_front_view.jpg",
+          "cockpit": "https://www.renault.lk/wp-content/uploads/2026/09/Kiger-desktop.webp",
+          "side": "https://autogiz.com/product_images/thumb/webp/Renault-Twingo-EV-2023.webp"
+        },
+        "photoCredit": {
+          "source": "Renault Sri Lanka (AMW) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://www.renault.lk/vehicles/"
+        },
+        "trims": [
+          {
+            "id": "renault-kwid-range-official",
+            "trimName": "1.0L RXT AMT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L SCe · Easy-R AMT",
+            "priceLkr": 7000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/suzuki-s-presso-2024",
+            "checkedMonth": "2026-10",
+            "notes": "AMW Sri Lanka quote-only on renault.lk; MotorGuide Sri Lanka Kwid benchmark LKR 7.0M."
+          }
+        ]
+      },
+      {
+        "model": "Kiger",
+        "slug": "renault-kiger",
+        "segment": "Subcompact SUV",
+        "photos": {
+          "front": "https://www.renault.lk/wp-content/uploads/2026/09/Kiger-desktop.webp",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Renault_Kiger_F_202103.jpg/960px-Renault_Kiger_F_202103.jpg",
+          "cockpit": "https://www.renault.lk/wp-content/uploads/2026/09/KWID-desktop.webp",
+          "side": "https://www.nissanlk.com/wp-content/uploads/Menu-Magnite-1.jpg"
+        },
+        "photoCredit": {
+          "source": "Renault Sri Lanka (AMW) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://www.renault.lk/vehicles/"
+        },
+        "trims": [
+          {
+            "id": "renault-kiger-range-official",
+            "trimName": "1.0L Turbo CVT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo · X-Tronic CVT",
+            "priceLkr": 8800000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/nissan-magnite-2026",
+            "checkedMonth": "2026-10",
+            "notes": "AMW Sri Lanka quote-only on renault.lk; MotorGuide Sri Lanka Kiger benchmark LKR 8.8M."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Daihatsu",
+    "sourceName": "ImportCar.lk",
+    "officialPortalUrl": "https://importcar.lk/",
+    "models": [
+      {
+        "model": "Mira e:S",
+        "slug": "daihatsu-mira-e-s",
+        "segment": "Kei Hatchback",
+        "photos": {
+          "front": "https://www.daihatsu.co.jp/lineup/mira_e-s/h4o2fg000000sb4d-img/mira_e-s_01_mv_pc-01.jpg",
+          "rear": "https://www.daihatsu.co.jp/lineup/mira_e-s/h4o2fg000000sniv-img/mira_e-s_02_gallery-03.jpg",
+          "cockpit": "https://www.daihatsu.co.jp/lineup/mira_e-s/h4o2fg000000slvc-img/mira_e-s_11_mv_pc.jpg",
+          "side": "https://www.daihatsu.co.jp/lineup/mira_e-s/h4o2fg000000sniv-img/mira_e-s_02_gallery-01.jpg"
+        },
+        "photoCredit": {
+          "source": "Daihatsu Motor Co., Ltd.",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.daihatsu.co.jp/lineup/mira_e-s/"
+        },
+        "trims": [
+          {
+            "id": "daihatsu-mira-e-s-l-grey",
+            "trimName": "L (LA350S)",
+            "condition": "New (0 km Grey Import)",
+            "fuel": "Petrol",
+            "powertrain": "658cc KF · CVT",
+            "priceLkr": 6400000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Sri Lanka JDM import price list for 2025 Daihatsu Mira e:S L (Grade 4.5+) at LKR 6.40M (catalog.js benchmark LKR 6.45M)."
+          },
+          {
+            "id": "daihatsu-mira-e-s-x-grey",
+            "trimName": "X (LA350S)",
+            "condition": "New (0 km Grey Import)",
+            "fuel": "Petrol",
+            "powertrain": "658cc KF · CVT",
+            "priceLkr": 6850000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Sri Lanka JDM import price list for 2025 Daihatsu Mira e:S X SA III (Grade 4.5+) at LKR 6.85M."
+          }
+        ]
+      }
+    ]
+  }
+]

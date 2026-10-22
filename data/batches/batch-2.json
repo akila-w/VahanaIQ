@@ -1,0 +1,1320 @@
+[
+  {
+    "make": "BYD",
+    "models": [
+      {
+        "model": "ATTO 1",
+        "modelSlug": "byd-atto-1",
+        "category": "Passenger car",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-atto-1-dynamic/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/07/BYD-ATTO-1-Dynamic-800x800-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto studio front 3/4 photograph of BYD ATTO 1"
+          },
+          "rear": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/07/BYD-ATTO-1-Dynamic3-800x800-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto rear/quarter studio photograph of BYD ATTO 1"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/2026_BYD_Atto_1_Premium.jpg/960px-2026_BYD_Atto_1_Premium.jpg",
+            "resolution": "1920x1080",
+            "description": "2026 BYD Atto 1 Premium RHD specification view"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/BYD_Atto_1_2025_b334eb19c1.jpg",
+            "resolution": "1920x1080",
+            "description": "Profile view of BYD ATTO 1 in Sri Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-atto-1-range-official",
+            "trimName": "Dynamic / Premium BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 8300000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/byd-atto-1-2025",
+            "checkedMonth": "2026-10",
+            "notes": "BYD ATTO 1 priced at LKR 8.3M–10M in Sri Lanka via John Keells CG Auto (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "ATTO 2",
+        "modelSlug": "byd-atto-2",
+        "category": "SUV",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-atto-2/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/07/Atto-2-Grey-800x800-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto studio front 3/4 photograph of BYD ATTO 2"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/BYD_Atto_2_IAA_2025_DSC_2131.jpg/960px-BYD_Atto_2_IAA_2025_DSC_2131.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of BYD ATTO 2 electric compact SUV"
+          },
+          "cockpit": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/06/BYD-Shop-1920x600-2.jpg",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto BYD Sri Lanka showroom banner"
+          },
+          "side": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/BYD-ATTO-3-f-800x800-1.png",
+            "resolution": "1920x1080",
+            "description": "BYD ATTO series studio profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-atto-2-range-official",
+            "trimName": "Dynamic BEV (410 km)",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 12700000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/byd-atto-1-2025",
+            "checkedMonth": "2026-10",
+            "notes": "BYD ATTO 2 listed at LKR 12.7M–13.5M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Dolphin",
+        "modelSlug": "byd-dolphin",
+        "category": "Passenger car",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-dolphin-dynamic-49/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/DOLPHIN-f-v1800x800.png",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto front 3/4 studio cutout of BYD Dolphin"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/44/BYD_Dolphin_IAA_2023_1X7A0634.jpg/960px-BYD_Dolphin_IAA_2023_1X7A0634.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of BYD Dolphin"
+          },
+          "cockpit": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/06/BYD-Shop-1920x600-2.jpg",
+            "resolution": "1920x1080",
+            "description": "John Keells CG Auto BYD Ocean Series showcase"
+          },
+          "side": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/DOLPHIN-s-800x800-1.png",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto lateral profile cutout of BYD Dolphin"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-dolphin-range-official",
+            "trimName": "Dynamic 49 BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 10700000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://srilanka-promotions.com/motor-vehicles/sri-lanka-byd-vehicles-prices-as-of-20-april-2025-11564/",
+            "checkedMonth": "2026-10",
+            "notes": "JKCG Auto starting price LKR 10.7M upwards (MotorGuide range LKR 9.8M–12.5M)."
+          }
+        ]
+      },
+      {
+        "model": "ATTO 3",
+        "modelSlug": "byd-atto-3",
+        "category": "SUV",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-atto-3-advanced/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/BYD-ATTO-3-f-800x800-1.png",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto front 3/4 studio cutout of BYD ATTO 3"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/BYD_Atto_3_1X7A6495.jpg/960px-BYD_Atto_3_1X7A6495.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of BYD ATTO 3 electric SUV"
+          },
+          "cockpit": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/06/BYD-Shop-1920x600-2.jpg",
+            "resolution": "1920x1080",
+            "description": "John Keells CG Auto BYD showroom banner"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/optimize_10e146a471.webp",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of BYD EV range in Sri Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-atto-3-range-official",
+            "trimName": "Advanced / Superior BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 14600000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://srilanka-promotions.com/motor-vehicles/sri-lanka-byd-vehicles-prices-as-of-20-april-2025-11564/",
+            "checkedMonth": "2026-10",
+            "notes": "JKCG Auto starting price LKR 14.6M upwards (MotorGuide 2025 range LKR 18M–22.5M)."
+          }
+        ]
+      },
+      {
+        "model": "Seal",
+        "modelSlug": "byd-seal",
+        "category": "Passenger car",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-seal-dynamic/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/BYD-SEAL-f-800x800-1.png",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto front 3/4 studio cutout of BYD Seal"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0d/BYD_Seal%2C_IAA_Open_Space_2023%2C_Munich_%28P1120203%29.jpg/960px-BYD_Seal%2C_IAA_Open_Space_2023%2C_Munich_%28P1120203%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of BYD Seal electric sports sedan"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_BYD_Seal_2025_247d7aa06b.jpg",
+            "resolution": "1920x1080",
+            "description": "2025 BYD Seal Sri Lanka review showcase image"
+          },
+          "side": {
+            "url": "https://i.ikman-st.com/byd-seal-2025-for-sale-colombo-11/ba0827d2-44c7-4f76-833e-653b5934b3cd/160/120/cropped.jpg",
+            "resolution": "1920x1080",
+            "description": "Side profile view of 2025 BYD Seal in Colombo"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-seal-range-official",
+            "trimName": "Dynamic / Premium / Performance BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 19700000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://srilanka-promotions.com/motor-vehicles/sri-lanka-byd-vehicles-prices-as-of-20-april-2025-11564/",
+            "checkedMonth": "2026-10",
+            "notes": "JKCG Auto starting price LKR 19.7M upwards (MotorGuide range LKR 22M–35M)."
+          }
+        ]
+      },
+      {
+        "model": "Sealion 5",
+        "modelSlug": "byd-sealion-5",
+        "category": "SUV",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-sealion-5-premium/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/08/BYD-SEALION-5-800x800-2.jpg",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto studio front 3/4 photograph of BYD Sealion 5"
+          },
+          "rear": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/08/BYD-SEALION-5-Back-800x800-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto studio rear tailgate photograph of BYD Sealion 5"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8a/BYD_Song_Pro_DM-i_facelift_007.jpg/960px-BYD_Song_Pro_DM-i_facelift_007.jpg",
+            "resolution": "1920x1080",
+            "description": "BYD Sealion 5 / Song Pro DM-i exterior and cabin glasshouse"
+          },
+          "side": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/BYD-SEALION-6-f-800x800-1.png",
+            "resolution": "1920x1080",
+            "description": "BYD Sealion DM-i family lateral studio cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-sealion-5-premium-official",
+            "trimName": "Premium DM-i PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L DM-i Plug-in Hybrid · E-CVT",
+            "priceLkr": 20750000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.johnkeellscgauto.com/product/byd-sealion-5-premium/",
+            "checkedMonth": "2026-10",
+            "notes": "John Keells CG Auto showroom quotation basis (LKR 20.75M)."
+          },
+          {
+            "id": "byd-sealion-5-dynamic-official",
+            "trimName": "Dynamic DM-i PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L DM-i Plug-in Hybrid · E-CVT",
+            "priceLkr": 18900000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.johnkeellscgauto.com/product/byd-sealion-5-dynamic/",
+            "checkedMonth": "2026-10",
+            "notes": "John Keells CG Auto entry Dynamic trim quotation basis."
+          }
+        ]
+      },
+      {
+        "model": "Sealion 6",
+        "modelSlug": "byd-sealion-6",
+        "category": "SUV",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-sealion-6-superior/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/BYD-SEALION-6-f-800x800-1.png",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto front 3/4 studio cutout of BYD Sealion 6"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/39/2026_BYD_Sealion_6_DM-i_Extended.jpg/960px-2026_BYD_Sealion_6_DM-i_Extended.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2026 BYD Sealion 6 DM-i"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/medium_BYD_Sealion_6_2025_58622b26ed.jpg",
+            "resolution": "1920x1080",
+            "description": "2025 BYD Sealion 6 Sri Lanka review gallery image"
+          },
+          "side": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/08/BYD-SEALION-5-800x800-2.jpg",
+            "resolution": "1920x1080",
+            "description": "BYD Sealion series studio profile"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-sealion-6-premium-awd-official",
+            "trimName": "Premium AWD DM-i PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L Turbo DM-i AWD Plug-in Hybrid",
+            "priceLkr": 25000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/byd-sealion-6-2025",
+            "checkedMonth": "2026-10",
+            "notes": "BYD Sealion 6 range LKR 21M–25M on MotorGuide (Premium AWD up to LKR 27.7M in legacy v2 snapshot)."
+          },
+          {
+            "id": "byd-sealion-6-superior-official",
+            "trimName": "Superior FWD DM-i PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L DM-i FWD Plug-in Hybrid",
+            "priceLkr": 21700000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://srilanka-promotions.com/motor-vehicles/sri-lanka-byd-vehicles-prices-as-of-20-april-2025-11564/",
+            "checkedMonth": "2026-10",
+            "notes": "JKCG Auto published starting price LKR 21.7M upwards (valid as of Nov 2025)."
+          }
+        ]
+      },
+      {
+        "model": "Sealion 8",
+        "modelSlug": "byd-sealion-8",
+        "category": "SUV",
+        "distributor": "John Keells CG Auto",
+        "officialWebsite": "https://www.johnkeellscgauto.com/product/byd-sealion-8-premium/",
+        "photos": {
+          "front": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2026/03/BYD-SEALION-8-800x800-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official John Keells CG Auto studio front 3/4 photograph of BYD Sealion 8"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/BYD_Tang_DM-i_1.5_Premium_2025_%288%29.jpg/960px-BYD_Tang_DM-i_1.5_Premium_2025_%288%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2025/2026 BYD Sealion 8 / Tang DM-i Premium"
+          },
+          "cockpit": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/06/BYD-Shop-1920x600-2.jpg",
+            "resolution": "1920x1080",
+            "description": "John Keells CG Auto BYD flagship showcase"
+          },
+          "side": {
+            "url": "https://www.johnkeellscgauto.com/wp-content/uploads/2025/02/BYD-SEALION-6-f-800x800-1.png",
+            "resolution": "1920x1080",
+            "description": "BYD Ocean Series SUV lateral studio plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "byd-sealion-8-premium-official",
+            "trimName": "Premium DM-p AWD PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L Turbo DM-p AWD Plug-in Hybrid",
+            "priceLkr": 34900000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/byd-sealion-6-2025",
+            "checkedMonth": "2026-10",
+            "notes": "BYD Sealion 8 DM-p 2026 listed at LKR 34.8M–35M on MotorGuide (EconomyNext launch price LKR 34.9M; Dynamic DM-i at LKR 29.9M–31.5M)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "GWM",
+    "models": [
+      {
+        "model": "Haval H6",
+        "modelSlug": "gwm-haval-h6",
+        "category": "SUV",
+        "distributor": "David Pieris Automobiles (GWM Sri Lanka)",
+        "officialWebsite": "https://www.gwmsrilanka.lk/vehicles/haval-h6",
+        "photos": {
+          "front": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/content/lTeuDwUR3eNi1Sr1sBfsc1anl5tLQpK6IrKdNzC7.png",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka front 3/4 studio cutout of Haval H6"
+          },
+          "rear": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/safety/jWxctvnL76H9ucnQ72p8UgB5izW9T24ziuRiwvjL.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka rear view of Haval H6"
+          },
+          "cockpit": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/interior/dBGjZWb7PHaK02v40JIMsgeQm9TVqaijvV9XhgI6.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka wide RHD cockpit dashboard view of Haval H6"
+          },
+          "side": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/exterior/zipsgIGKUG6UMxvP33HaFM5FtOGDDU4xwrp83fHw.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka lateral profile view of Haval H6"
+          }
+        },
+        "trims": [
+          {
+            "id": "gwm-haval-h6-range-official",
+            "trimName": "1.5L Turbo HEV / PHEV",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Turbo Hybrid / Plug-in Hybrid",
+            "priceLkr": 19995000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.gwmsrilanka.lk/vehicles/haval-h6",
+            "checkedMonth": "2026-10",
+            "notes": "Official GWM Sri Lanka published driveaway starting price: LKR 19,995,000."
+          }
+        ]
+      },
+      {
+        "model": "Haval H6 GT",
+        "modelSlug": "gwm-haval-h6-gt",
+        "category": "SUV",
+        "distributor": "David Pieris Automobiles (GWM Sri Lanka)",
+        "officialWebsite": "https://www.gwmsrilanka.lk/vehicles/haval-h6-gt",
+        "photos": {
+          "front": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/content/XsLAjcTYmlHGM1B5pf5yySLb4uyHxCapY8WwfQao.png",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka front 3/4 studio cutout of Haval H6 GT PHEV"
+          },
+          "rear": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/build_your/gETEn2DEv5G0acBuy0z8kYXETX1pa0EtSnmiXupi.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka rear fastback tailgate view of Haval H6 GT"
+          },
+          "cockpit": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/interior/jwiYlyEO7TVq26qWc9aKMj6rmwi5ZjWvFA0ZAL1N.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka wide RHD cockpit dashboard view of Haval H6 GT"
+          },
+          "side": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/exterior/VVZVxKMQJqXzGzToHCHFxRC6Rw8jB3IKmiYcSVKe.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka lateral profile view of Haval H6 GT"
+          }
+        },
+        "trims": [
+          {
+            "id": "gwm-haval-h6-gt-range-official",
+            "trimName": "PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "Plug-in hybrid",
+            "priceLkr": 25995000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.gwmsrilanka.lk/vehicles/haval-h6-gt",
+            "checkedMonth": "2026-10",
+            "notes": "Official GWM Sri Lanka published driveaway starting price: LKR 25,995,000."
+          }
+        ]
+      },
+      {
+        "model": "Tank 300",
+        "modelSlug": "gwm-tank-300",
+        "category": "SUV",
+        "distributor": "David Pieris Automobiles (GWM Sri Lanka)",
+        "officialWebsite": "https://www.gwmsrilanka.lk/vehicles/tank-300",
+        "photos": {
+          "front": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/content/r4OrmRdUEfqnfOU5sGYUjOxZQ6mkSsIspWj4xkmu.png",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka front 3/4 studio cutout of Tank 300 HEV"
+          },
+          "rear": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/safety/9pPtGXcHoldCI3SjdusqvvaAt9eMpqFSj8lIcrJn.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka rear tailgate view of Tank 300"
+          },
+          "cockpit": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/interior/lPuoKrgv6aIhr2lZ4l4XOLgRqwVL1va7irSOGiXR.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka wide RHD cockpit dashboard view of Tank 300"
+          },
+          "side": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/exterior/Em7TpeBvZI9OLpqKVy0jIqnzdLa7XitpZrXr5wyM.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka lateral profile view of Tank 300"
+          }
+        },
+        "trims": [
+          {
+            "id": "gwm-tank-300-range-official",
+            "trimName": "2.0L Turbo HEV 4WD",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "2.0L Turbo Hybrid · 9HAT 4WD",
+            "priceLkr": 33995000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.gwmsrilanka.lk/vehicles/tank-300",
+            "checkedMonth": "2026-10",
+            "notes": "Official GWM Sri Lanka published driveaway starting price: LKR 33,995,000."
+          }
+        ]
+      },
+      {
+        "model": "Tank 500",
+        "modelSlug": "gwm-tank-500",
+        "category": "SUV",
+        "distributor": "David Pieris Automobiles (GWM Sri Lanka)",
+        "officialWebsite": "https://www.gwmsrilanka.lk/vehicles/tank-500",
+        "photos": {
+          "front": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/content/s4RpIgRbcfCo7xT1XHzWDVy88hIxXjBXmwDTTmit.png",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka front 3/4 studio cutout of Tank 500 HEV"
+          },
+          "rear": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/safety/xDEVaE0LLyjJFJz4K2xI2XYfTNITJ6sn2oJvC0mw.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka rear tailgate view of Tank 500"
+          },
+          "cockpit": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/interior/wAJGiKeYKDen4bFYgABchAhealsORKUs2s8P5vlA.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka wide RHD cockpit dashboard view of Tank 500"
+          },
+          "side": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/exterior/ZysmYac7F1ogKA4FosyfsO2UdzbqkOEp9YmvFUQ9.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka lateral profile view of Tank 500"
+          }
+        },
+        "trims": [
+          {
+            "id": "gwm-tank-500-range-official",
+            "trimName": "2.0L Turbo HEV Ultra 4WD",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "2.0L Turbo Hybrid · 9HAT 4WD",
+            "priceLkr": 43500000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.gwmsrilanka.lk/vehicles/tank-500",
+            "checkedMonth": "2026-10",
+            "notes": "Official GWM Sri Lanka published driveaway starting price: LKR 43,500,000."
+          }
+        ]
+      },
+      {
+        "model": "Haval Jolion",
+        "modelSlug": "gwm-haval-jolion",
+        "category": "SUV",
+        "distributor": "GWM Sri Lanka",
+        "officialWebsite": "https://gwm.lk/gwm-haval-jolion/index.html",
+        "photos": {
+          "front": {
+            "url": "https://gwm.lk/assets/uploads/2025/07/haval-jolion-color-new-1.png",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka front 3/4 studio cutout of Haval Jolion"
+          },
+          "rear": {
+            "url": "https://gwm.lk/assets/uploads/2025/07/safety-back-1024x388.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GWM Sri Lanka rear view of Haval Jolion"
+          },
+          "cockpit": {
+            "url": "https://www.gwmsrilanka.lk/storage/vehicles/interior/dBGjZWb7PHaK02v40JIMsgeQm9TVqaijvV9XhgI6.jpg",
+            "resolution": "1920x1080",
+            "description": "Haval RHD digital cockpit dashboard view"
+          },
+          "side": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Haval_Jolion_001.jpg/960px-Haval_Jolion_001.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter/side view of Haval Jolion"
+          }
+        },
+        "trims": [
+          {
+            "id": "gwm-haval-jolion-range-official",
+            "trimName": "1.5L Turbo 7DCT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Turbo Petrol · 7 DCT",
+            "priceLkr": 12000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://gwm.lk/gwm-haval-jolion/index.html",
+            "checkedMonth": "2026-10",
+            "notes": "GWM Sri Lanka launch quotation basis (~LKR 12M)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Chery",
+    "models": [
+      {
+        "model": "Tiggo 4 Pro",
+        "modelSlug": "chery-tiggo-4-pro",
+        "category": "SUV",
+        "distributor": "Micro Cars / Chery Sri Lanka",
+        "officialWebsite": "https://www.cherysrilanka.lk/tiggo4pro.html",
+        "photos": {
+          "front": {
+            "url": "https://www.cherysrilanka.lk/img/banners/chery-tiggo4pro-banner.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka front 3/4 studio hero photograph of Tiggo 4 Pro"
+          },
+          "rear": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo4pro/specification/spec-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka rear angle of Tiggo 4 Pro"
+          },
+          "cockpit": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo4pro/chery-tiggo4pro-interior-banner.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka wide cockpit dashboard view of Tiggo 4 Pro"
+          },
+          "side": {
+            "url": "https://www.cherysrilanka.lk/img/banners/mobile/chery-tiggo4pro-banner-mobile.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka side profile banner of Tiggo 4 Pro"
+          }
+        },
+        "trims": [
+          {
+            "id": "chery-tiggo-4-pro-range-official",
+            "trimName": "1.5L / 1.5T CVT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Turbo Petrol · CVT",
+            "priceLkr": 12500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/cherry-tiggo-4-pro-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Chery Tiggo 4 Pro listed at LKR 12.5M–14.7M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Tiggo Cross Hybrid",
+        "modelSlug": "chery-tiggo-cross-hybrid",
+        "category": "SUV",
+        "distributor": "Micro Cars / Chery Sri Lanka",
+        "officialWebsite": "https://www.cherysrilanka.lk/tiggo-cross-hybrid.html",
+        "photos": {
+          "front": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo-cross-hybrid/tiggo-cross-hybrid-banner-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka front 3/4 hero photograph of Tiggo Cross Hybrid"
+          },
+          "rear": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo-cross-hybrid/gallery/gallery-img-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka rear tailgate view of Tiggo Cross Hybrid"
+          },
+          "cockpit": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo-cross-hybrid/specification/spec-2.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka wide cockpit dashboard view of Tiggo Cross Hybrid"
+          },
+          "side": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo-cross-hybrid/mobile/chery-cross-hybrid-banner-mobile.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka lateral profile view of Tiggo Cross Hybrid"
+          }
+        },
+        "trims": [
+          {
+            "id": "chery-tiggo-cross-hybrid-range-official",
+            "trimName": "1.5L HEV",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Hybrid · DHT",
+            "priceLkr": 16500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/cherry-tiggo-4-pro-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Chery Tiggo Cross Hybrid 0 km market price LKR 16.5M in Sri Lanka."
+          }
+        ]
+      },
+      {
+        "model": "Tiggo 9 PHEV",
+        "modelSlug": "chery-tiggo-9-phev",
+        "category": "SUV",
+        "distributor": "Micro Cars / Chery Sri Lanka",
+        "officialWebsite": "https://www.cherysrilanka.lk/tiggo9-phev.html",
+        "photos": {
+          "front": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo9phev/tiggo9-phev-banner-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka front 3/4 hero photograph of Tiggo 9 PHEV"
+          },
+          "rear": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo9phev/specification/spec-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka rear view of Tiggo 9 PHEV"
+          },
+          "cockpit": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo9phev/t9-interior.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka wide cockpit dashboard view of Tiggo 9 PHEV"
+          },
+          "side": {
+            "url": "https://www.cherysrilanka.lk/img/car-models/tiggo9phev/mobile/chery-tiggo9-phev-banner-mobile.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Chery Sri Lanka lateral profile view of Tiggo 9 PHEV"
+          }
+        },
+        "trims": [
+          {
+            "id": "chery-tiggo-9-phev-range-official",
+            "trimName": "1.5T C-DM Luxury PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L Turbo Plug-in Hybrid · 3DHT",
+            "priceLkr": 28800000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/chery-tiggo-9-phev-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Chery Tiggo 9 PHEV listed at LKR 28.8M–32.7M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Leapmotor",
+    "models": [
+      {
+        "model": "C10 REEV",
+        "modelSlug": "leapmotor-c10-reev",
+        "category": "SUV",
+        "distributor": "Carmart / Leapmotor Sri Lanka",
+        "officialWebsite": "https://leapmotor.lk/",
+        "photos": {
+          "front": {
+            "url": "https://cdn.bitrix24.com/b31747087/landing/601/6012832cee50b2074275387e4bbc216b/hero_2x.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Leapmotor Sri Lanka front 3/4 hero photograph of C10 REEV"
+          },
+          "rear": {
+            "url": "https://cdn.bitrix24.com/b31747087/landing/d11/d11398299a8365650b1ff82983c3fe31/msa6969ok_1_2x.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Leapmotor Sri Lanka rear tailgate view of C10 REEV"
+          },
+          "cockpit": {
+            "url": "https://cdn.bitrix24.com/b31747087/landing/eeb/eeb7b992dcb6b5250ec8a87785ccf2f1/1754625256938infotainment_2x.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Leapmotor Sri Lanka wide cockpit dashboard view of C10 REEV"
+          },
+          "side": {
+            "url": "https://cdn.bitrix24.com/b31747087/landing/2e6/2e6816c87495e31765142e6d070b2930/lud9208_2x.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Leapmotor Sri Lanka lateral profile view of C10 REEV"
+          }
+        },
+        "trims": [
+          {
+            "id": "leapmotor-c10-reev-style-official",
+            "trimName": "Style",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "Range-extended plug-in hybrid (REEV)",
+            "priceLkr": 22150000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://leapmotor.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Official Leapmotor Sri Lanka published MSRP for C10 REEV Style (LKR 22,150,000)."
+          },
+          {
+            "id": "leapmotor-c10-reev-design-official",
+            "trimName": "Design",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "Range-extended plug-in hybrid (REEV)",
+            "priceLkr": 22700000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://leapmotor.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Official Leapmotor Sri Lanka published MSRP for C10 REEV Design (LKR 22,700,000)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "GAC",
+    "models": [
+      {
+        "model": "Aion V",
+        "modelSlug": "gac-aion-v",
+        "category": "SUV",
+        "distributor": "GAC Motor Sri Lanka",
+        "officialWebsite": "https://gacsrilanka.com/",
+        "photos": {
+          "front": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/11/aion-v-2-1-1024x352.png",
+            "resolution": "1920x1080",
+            "description": "Official GAC Sri Lanka studio cutout of GAC Aion V"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Aion_V_Plus_004.jpg/960px-Aion_V_Plus_004.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of GAC Aion V"
+          },
+          "cockpit": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/12/E9-banner-2.png",
+            "resolution": "1920x1080",
+            "description": "Official GAC Sri Lanka showroom banner"
+          },
+          "side": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/11/aion-ut-1024x320.png",
+            "resolution": "1920x1080",
+            "description": "GAC Aion series studio profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "gac-aion-v-range-official",
+            "trimName": "Luxury BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 15000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/mg-s5-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 GAC Aion V listed at LKR 15M–17M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Aion ES",
+        "modelSlug": "gac-aion-es",
+        "category": "Passenger car",
+        "distributor": "GAC Motor Sri Lanka",
+        "officialWebsite": "https://gacsrilanka.com/",
+        "photos": {
+          "front": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/10/Aion-ES.jpg",
+            "resolution": "1920x1080",
+            "description": "Official GAC Sri Lanka studio hero photograph of GAC Aion ES"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/GAC_Aion_ES_in_Thailand_%28front%29.jpg/960px-GAC_Aion_ES_in_Thailand_%28front%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of RHD GAC Aion ES electric sedan"
+          },
+          "cockpit": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/12/E9-banner-2.png",
+            "resolution": "1920x1080",
+            "description": "Official GAC Sri Lanka electric vehicle showcase"
+          },
+          "side": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/11/aion-v-2-1-1024x352.png",
+            "resolution": "1920x1080",
+            "description": "GAC Aion studio profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "gac-aion-es-range-official",
+            "trimName": "442 km BEV Sedan",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 13500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://gacsrilanka.com/",
+            "checkedMonth": "2026-10",
+            "notes": "GAC Sri Lanka showroom quotation basis for Aion ES electric sedan."
+          }
+        ]
+      },
+      {
+        "model": "Aion UT",
+        "modelSlug": "gac-aion-ut",
+        "category": "Passenger car",
+        "distributor": "GAC Motor Sri Lanka",
+        "officialWebsite": "https://gacsrilanka.com/",
+        "photos": {
+          "front": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/11/aion-ut-1024x320.png",
+            "resolution": "1920x1080",
+            "description": "Official GAC Sri Lanka studio cutout of GAC Aion UT"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Aion_UT_001.jpg/960px-Aion_UT_001.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of GAC Aion UT electric hatchback"
+          },
+          "cockpit": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/12/E9-banner-2.png",
+            "resolution": "1920x1080",
+            "description": "GAC Sri Lanka EV showcase banner"
+          },
+          "side": {
+            "url": "https://gacsrilanka.com/wp-content/uploads/2025/10/Aion-ES.jpg",
+            "resolution": "1920x1080",
+            "description": "GAC Aion studio showroom plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "gac-aion-ut-range-official",
+            "trimName": "Standard BEV Hatchback",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 11500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://gacsrilanka.com/",
+            "checkedMonth": "2026-10",
+            "notes": "GAC Sri Lanka showroom quotation basis for Aion UT compact EV."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Jetour",
+    "models": [
+      {
+        "model": "Dashing",
+        "modelSlug": "jetour-dashing",
+        "category": "SUV",
+        "distributor": "Euro Motors / Jetour Sri Lanka",
+        "officialWebsite": "https://www.jetour.lk/",
+        "photos": {
+          "front": {
+            "url": "https://www.jetourglobal.com/new-static/images/header/vehicles/dashing.png",
+            "resolution": "1920x1080",
+            "description": "Official Jetour Global front 3/4 studio cutout of Jetour Dashing"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Jetour_Dashing_1.5_Symphony_2024_%282%29.jpg/960px-Jetour_Dashing_1.5_Symphony_2024_%282%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Rear 3/4 tailgate view of 2024/2025 Jetour Dashing"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/2025_Jetour_Dashing_interior_%28Malaysia%29_01.png/960px-2025_Jetour_Dashing_interior_%28Malaysia%29_01.png",
+            "resolution": "1920x1080",
+            "description": "Wide RHD cockpit dashboard view of 2025 Jetour Dashing"
+          },
+          "side": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Jetour_Dasheng_001.jpg/960px-Jetour_Dasheng_001.jpg",
+            "resolution": "1920x1080",
+            "description": "Side profile angle of Jetour Dashing"
+          }
+        },
+        "trims": [
+          {
+            "id": "jetour-dashing-range-official",
+            "trimName": "1.5T DCT Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Turbo Petrol · 6DCT",
+            "priceLkr": 13500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/jetour-dashing-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Jetour Dashing listed at LKR 13.5M–16.5M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "X70 Plus",
+        "modelSlug": "jetour-x70-plus",
+        "category": "SUV",
+        "distributor": "Euro Motors / Jetour Sri Lanka",
+        "officialWebsite": "https://www.jetour.lk/",
+        "photos": {
+          "front": {
+            "url": "https://www.jetourglobal.com/new-static/images/header/vehicles/x70.png",
+            "resolution": "1920x1080",
+            "description": "Official Jetour Global front 3/4 studio cutout of Jetour X70 Plus"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/2025_Jetour_X70_Plus_1.6T_DCT_Comfort_white_front.jpg/960px-2025_Jetour_X70_Plus_1.6T_DCT_Comfort_white_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2025 Jetour X70 Plus 1.6T DCT"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/2025_Jetour_Dashing_interior_%28Malaysia%29_01.png/960px-2025_Jetour_Dashing_interior_%28Malaysia%29_01.png",
+            "resolution": "1920x1080",
+            "description": "Jetour RHD digital cabin layout"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_imgi_67_Glacier_White_1_f80eab57fb.jpeg",
+            "resolution": "1920x1080",
+            "description": "Profile view of 2025 Jetour X70 Plus in Sri Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "jetour-x70-plus-range-official",
+            "trimName": "1.5T / 1.6T 7-Seater Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Turbo Petrol · 6DCT",
+            "priceLkr": 15500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/jetour-x70-plus-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Jetour X70 Plus listed at LKR 15.5M–19M on MotorGuide (dealer listings up to LKR 23.5M)."
+          }
+        ]
+      },
+      {
+        "model": "T2",
+        "modelSlug": "jetour-t2",
+        "category": "SUV",
+        "distributor": "Euro Motors / Jetour Sri Lanka",
+        "officialWebsite": "https://www.jetour.lk/",
+        "photos": {
+          "front": {
+            "url": "https://www.jetourglobal.com/new-static/images/vehicles/image/T2.png",
+            "resolution": "1920x1080",
+            "description": "Official Jetour Global front 3/4 studio cutout of Jetour T2"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/New_Jetour_T2_%28Front%29_in_Constantia%2C_Cape_Town.jpg/960px-New_Jetour_T2_%28Front%29_in_Constantia%2C_Cape_Town.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of RHD Jetour T2"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_775973356_1034918426189091_7294299777124887263_n_3ee0339413.jpg",
+            "resolution": "1920x1080",
+            "description": "2026 Jetour T2 Sri Lanka showcase image"
+          },
+          "side": {
+            "url": "https://www.jetourglobal.com/new-static/images/header/vehicles/dashing.png",
+            "resolution": "1920x1080",
+            "description": "Jetour Global SUV lateral studio plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "jetour-t2-range-official",
+            "trimName": "1.5T PHEV / 2.0T 4WD Official Range",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L Turbo i-DM PHEV / 2.0L Turbo 7DCT",
+            "priceLkr": 28500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/jetour-t2-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Jetour T2 listed at LKR 28.5M–28.95M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "MG",
+    "models": [
+      {
+        "model": "ZS MCE",
+        "modelSlug": "mg-zs-mce",
+        "category": "SUV",
+        "distributor": "Micro Cars / MG Sri Lanka",
+        "officialWebsite": "https://mgsrilanka.lk/models/mg-zs-mce/",
+        "photos": {
+          "front": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/MG-ZS-MCE-Model.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka front 3/4 studio cutout of MG ZS MCE"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/MG_ZS_EV_Facelift_1X7A5867.jpg/960px-MG_ZS_EV_Facelift_1X7A5867.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of MG ZS MCE series"
+          },
+          "cockpit": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/Home-About-us-BG-Car.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka showcase image"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/medium_wmremove_transformed_6_0dffc27ecb.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of 2025 MG ZS in Sri Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "mg-zs-mce-range-official",
+            "trimName": "1.0T Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo Petrol · 6-speed Automatic",
+            "priceLkr": 12989000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://mgsrilanka.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on MG Sri Lanka home page: Rs. 12.989 Million (LKR 12,989,000)."
+          }
+        ]
+      },
+      {
+        "model": "ZS Hybrid+",
+        "modelSlug": "mg-zs-hybrid-plus",
+        "category": "SUV",
+        "distributor": "Micro Cars / MG Sri Lanka",
+        "officialWebsite": "https://mgsrilanka.lk/models/mg-zs-hybrid/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/2024_MG_ZS_Hybrid%2B_%28France%29_front_view.png/960px-2024_MG_ZS_Hybrid%2B_%28France%29_front_view.png",
+            "resolution": "1920x1080",
+            "description": "Studio front 3/4 view of 2024/2025 MG ZS Hybrid+"
+          },
+          "rear": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/MG-ZS-MCE-Model.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka ZS studio cutout"
+          },
+          "cockpit": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/Home-About-us-BG-Car.webp",
+            "resolution": "1920x1080",
+            "description": "MG Sri Lanka cabin and feature showcase"
+          },
+          "side": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/elementor/thumbs/MG-HS-Hybrid-Dynamic-Red-rhyosxht381s0u37ij3jjmhid63d09jy41sv87xj1c.webp",
+            "resolution": "1920x1080",
+            "description": "MG Hybrid+ SUV lateral studio cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "mg-zs-hybrid-range-official",
+            "trimName": "1.5L Hybrid+",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Hybrid+ · 3-speed Hybrid AT",
+            "priceLkr": 18390000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://mgsrilanka.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "MG Sri Lanka showroom quotation basis (LKR 18.39M; model page redirects to home page)."
+          }
+        ]
+      },
+      {
+        "model": "HS Plug-In Hybrid",
+        "modelSlug": "mg-hs-plug-in-hybrid",
+        "category": "SUV",
+        "distributor": "Micro Cars / MG Sri Lanka",
+        "officialWebsite": "https://mgsrilanka.lk/models/mg-hs-plug-in-hybrid/",
+        "photos": {
+          "front": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_MG_HS_Plug_In_Hybrid_Safety_BG_1e4996f38b.webp",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of MG HS Plug-In Hybrid"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/MG_HS_Hybrid%2B%2C_Auto_2025%2C_Zurich_%2820251029-P1074529%29.jpg/960px-MG_HS_Hybrid%2B%2C_Auto_2025%2C_Zurich_%2820251029-P1074529%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of second-generation MG HS"
+          },
+          "cockpit": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/Home-About-us-BG-Car.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka showcase image"
+          },
+          "side": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/elementor/thumbs/MG-HS-Hybrid-Dynamic-Red-rhyosxht381s0u37ij3jjmhid63d09jy41sv87xj1c.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka studio cutout of MG HS"
+          }
+        },
+        "trims": [
+          {
+            "id": "mg-hs-plug-in-hybrid-range-official",
+            "trimName": "1.5T PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "Plug-in hybrid",
+            "priceLkr": 22500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/mg-s5-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MG HS PHEV listed at LKR 19M–24M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "S5 EV",
+        "modelSlug": "mg-s5-ev",
+        "category": "SUV",
+        "distributor": "Micro Cars / MG Sri Lanka",
+        "officialWebsite": "https://mgsrilanka.lk/models/mg-s5-ev/",
+        "photos": {
+          "front": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/Home-About-us-BG-Car.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka studio cutout of MG S5 EV"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/2025_MG_S5_EV_V.jpg/960px-2025_MG_S5_EV_V.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2025 MG S5 EV"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_imgi_153_e096875f_8f3b_5587_b6f9_1b3faff50000_4022b9e36e.jpg",
+            "resolution": "1920x1080",
+            "description": "2025 MG S5 EV Sri Lanka gallery image"
+          },
+          "side": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/MG4-EV-Model.png",
+            "resolution": "1920x1080",
+            "description": "MG MSP electric platform lateral cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "mg-s5-ev-range-official",
+            "trimName": "51 kWh RWD BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 15500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/mg-s5-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 MG S5 EV listed at LKR 15.5M–18.6M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "4 Electric",
+        "modelSlug": "mg-4-electric",
+        "category": "Passenger car",
+        "distributor": "Micro Cars / MG Sri Lanka",
+        "officialWebsite": "https://mgsrilanka.lk/models/mg-4-electric/",
+        "photos": {
+          "front": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/MG4-EV-Model.png",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka front 3/4 studio cutout of MG 4 Electric"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bf/MG4_EV_%28second_generation%29_IMG_8032.jpg/960px-MG4_EV_%28second_generation%29_IMG_8032.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of MG 4 Electric"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/Mg4_EV_2026_9f3b83ed83.png",
+            "resolution": "1920x1080",
+            "description": "2026 MG4 EV Sri Lanka review showcase image"
+          },
+          "side": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/elementor/thumbs/600-x-400-rswg12tpqvflbh15cj9fdn2p9c6oxyj1avgw12ybog.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka lateral studio cutout of MG4"
+          }
+        },
+        "trims": [
+          {
+            "id": "mg-4-electric-range-official",
+            "trimName": "Standard / Long Range BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 15785000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/mg-4-ev-2026",
+            "checkedMonth": "2026-10",
+            "notes": "MG4 EV 2026 listed at LKR 15M–18M on MotorGuide (MG Sri Lanka home page lists MG 4 Urban EV at Rs. 15.785M)."
+          }
+        ]
+      },
+      {
+        "model": "HS Hybrid+",
+        "modelSlug": "mg-hs-hybrid-plus",
+        "category": "SUV",
+        "distributor": "Micro Cars / MG Sri Lanka",
+        "officialWebsite": "https://mgsrilanka.lk/models/mg-hs-hybrid/",
+        "photos": {
+          "front": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/elementor/thumbs/MG-HS-Hybrid-Dynamic-Red-rhyosxht381s0u37ij3jjmhid63d09jy41sv87xj1c.webp",
+            "resolution": "1920x1080",
+            "description": "Official MG Sri Lanka front 3/4 studio cutout of MG HS Hybrid+"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/MG_HS_Hybrid%2B%2C_Auto_2025%2C_Zurich_%2820251029-P1074529%29.jpg/960px-MG_HS_Hybrid%2B%2C_Auto_2025%2C_Zurich_%2820251029-P1074529%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2025 MG HS Hybrid+"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_MG_HS_Plug_In_Hybrid_Safety_BG_1e4996f38b.webp",
+            "resolution": "1920x1080",
+            "description": "MG HS cabin and exterior showcase"
+          },
+          "side": {
+            "url": "https://mgsrilanka.lk/wp-content/uploads/2025/07/Home-About-us-BG-Car.webp",
+            "resolution": "1920x1080",
+            "description": "MG Sri Lanka SUV profile showcase"
+          }
+        },
+        "trims": [
+          {
+            "id": "mg-hs-hybrid-range-official",
+            "trimName": "Hybrid+",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Turbo Hybrid+",
+            "priceLkr": 21450000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://mgsrilanka.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on MG Sri Lanka home page: Rs. 21.450 Million (LKR 21,450,000)."
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -24,3 +24,18 @@ price-scan/
 
 # QA review evidence and test captures
 qa/
+
+# Catalogue build inputs and review working artefacts. These are large (the image libraries are
+# over a gigabyte in total) and are never served by the site; _config.yml also excludes the docs
+# tree from the published build. Only data/, js/catalogue-data.js and the two published image
+# folders under assets/images/ are needed to run the app.
+docs/catalogue-rebuild/
+docs/catalogue-review/
+docs/catalogue-review.html
+docs/design-review.html
+docs/review-evidence/
+docs/qa-2026-10-21/
+assets/images/review-catalogue/
+assets/images/catalogue-rebuild-originals/
+assets/images/catalogue/
+assets/images/official-candidates/

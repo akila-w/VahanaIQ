@@ -1,0 +1,7 @@
+import fs from 'node:fs';
+const models=JSON.parse(fs.readFileSync('docs/catalogue-review/catalogue.json')).models;
+const score=p=>(p.isHero?50:0)+(/front|quarter|overview|hero|thumbnail|exterior/i.test(p.url+' '+p.caption)?20:0)-(/interior|cockpit|dashboard|safety|lamp|wheel|logo|feature|specification|battery|charging/i.test(p.url+' '+p.caption)?30:0)+(p.width/p.height>=1.3&&p.width/p.height<=2.5?5:0);
+const overrides=fs.existsSync('data/photo-cover-overrides.json')?JSON.parse(fs.readFileSync('data/photo-cover-overrides.json')):{};
+const photos={};
+for(const m of models){const candidates=m.photos.filter(p=>p.origin==='official-page-candidate'&&p.thumbnailPath);candidates.sort((a,b)=>score(b)-score(a));const p=candidates.find(p=>p.sha256===overrides[m.name])||candidates.find(p=>p.isHero)||candidates[0];if(!p)continue;photos[m.name]={img:p.thumbnailPath.replace('../',''),author:p.sourceOwner||m.make+' · '+new URL(p.sourcePage).hostname.replace(/^www\./,''),licence:'Official source · rights reserved',licenceUrl:p.sourcePage,sourceUrl:p.sourcePage,originalUrl:p.url,sourceKind:'official',aspectRatio:'8:5',model:m.model,make:m.make,variantNote:'Representative official image; generation, grade and market may differ.'};}
+fs.writeFileSync('js/official-photo-data.js','// Generated from attributable official galleries. Images remain representative until visual review.\nexport const OFFICIAL_PHOTOS = '+JSON.stringify(photos,null,2)+';\n');console.log(Object.keys(photos).length+' official model photo records');

@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
 
+# Working artefacts, scraped publisher pages, build scripts and tests are not published
+# content. They are also excluded from the Jekyll build in _config.yml.
+Disallow: /docs/
+Disallow: /data/batches/
+Disallow: /test/
+Disallow: /scripts/
+Disallow: /serverless/
+
 Sitemap: https://akila-w.github.io/vahanaiq/sitemap.xml

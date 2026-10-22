@@ -1,0 +1,935 @@
+[
+  {
+    "make": "Audi",
+    "sourceName": "Senok / Audi Sri Lanka",
+    "officialPortalUrl": "https://www.audi.lk/en/models/",
+    "models": [
+      {
+        "model": "A3",
+        "slug": "audi-a3",
+        "segment": "Compact Executive Sedan",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Audi_A3_8Y_Sedan_IMG_5976.jpg/960px-Audi_A3_8Y_Sedan_IMG_5976.jpg",
+          "rear": "https://cartivatemotors.lk/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-28-at-06.57.30-1-660x471.jpeg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/2020_Audi_A4_35_TFSI_S_line_2.0_Front.jpg/960px-2020_Audi_A4_35_TFSI_S_line_2.0_Front.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Audi_A5_Sportback_F5_IMG_3652.jpg/960px-Audi_A5_Sportback_F5_IMG_3652.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons & Cartivate Motors Sri Lanka",
+          "license": "CC BY-SA 4.0 / Dealer listing imagery",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-a3-range-official",
+            "trimName": "30 TFSI / 35 TFSI",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L / 1.5L TFSI · S tronic",
+            "priceLkr": 19500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/audi-q2-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2025 Audi A3 range LKR 19.5M–24.5M; Cartivate Motors lists 2023 Audi A3 at LKR 18.5M."
+          }
+        ]
+      },
+      {
+        "model": "A4",
+        "slug": "audi-a4",
+        "segment": "Compact Executive Sedan",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/2020_Audi_A4_35_TFSI_S_line_2.0_Front.jpg/960px-2020_Audi_A4_35_TFSI_S_line_2.0_Front.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Audi_A3_8Y_Sedan_IMG_5976.jpg/960px-Audi_A3_8Y_Sedan_IMG_5976.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Audi_A5_Sportback_F5_IMG_3652.jpg/960px-Audi_A5_Sportback_F5_IMG_3652.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Audi_A6_C8_IMG_3063.jpg/960px-Audi_A6_C8_IMG_3063.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-a4-range-official",
+            "trimName": "35 TFSI S tronic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "2.0L TFSI MHEV · S tronic",
+            "priceLkr": 28500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.audi.lk/en/models/",
+            "checkedMonth": "2026-10",
+            "notes": "Senok / Audi Sri Lanka quote-only; Sri Lankan market benchmark LKR 28.5M."
+          }
+        ]
+      },
+      {
+        "model": "A5",
+        "slug": "audi-a5",
+        "segment": "Compact Executive Sportback",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Audi_A5_Sportback_F5_IMG_3652.jpg/960px-Audi_A5_Sportback_F5_IMG_3652.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/2020_Audi_A4_35_TFSI_S_line_2.0_Front.jpg/960px-2020_Audi_A4_35_TFSI_S_line_2.0_Front.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Audi_A6_C8_IMG_3063.jpg/960px-Audi_A6_C8_IMG_3063.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Audi_A7_C8_IMG_0094.jpg/960px-Audi_A7_C8_IMG_0094.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-a5-range-official",
+            "trimName": "Sportback 40 TFSI",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "2.0L TFSI · S tronic",
+            "priceLkr": 32500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.audi.lk/en/models/",
+            "checkedMonth": "2026-10",
+            "notes": "Senok / Audi Sri Lanka quote-only; Cartivate Motors lists 2018 Audi A5 Sportback at LKR 19.85M–21.2M."
+          }
+        ]
+      },
+      {
+        "model": "A6",
+        "slug": "audi-a6",
+        "segment": "Executive Sedan",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Audi_A6_C8_IMG_3063.jpg/960px-Audi_A6_C8_IMG_3063.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Audi_A7_C8_IMG_0094.jpg/960px-Audi_A7_C8_IMG_0094.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Audi_A8_D5_IMG_0066.jpg/960px-Audi_A8_D5_IMG_0066.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Audi_A5_Sportback_F5_IMG_3652.jpg/960px-Audi_A5_Sportback_F5_IMG_3652.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-a6-range-official",
+            "trimName": "40 TFSI / 45 TFSI",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "2.0L TFSI MHEV · S tronic",
+            "priceLkr": 42000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.audi.lk/en/models/",
+            "checkedMonth": "2026-10",
+            "notes": "Senok / Audi Sri Lanka quote-only; Sri Lankan executive sedan market benchmark LKR 42.0M."
+          }
+        ]
+      },
+      {
+        "model": "A7",
+        "slug": "audi-a7",
+        "segment": "Executive Sportback",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Audi_A7_C8_IMG_0094.jpg/960px-Audi_A7_C8_IMG_0094.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Audi_A6_C8_IMG_3063.jpg/960px-Audi_A6_C8_IMG_3063.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Audi_A8_D5_IMG_0066.jpg/960px-Audi_A8_D5_IMG_0066.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Audi_A5_Sportback_F5_IMG_3652.jpg/960px-Audi_A5_Sportback_F5_IMG_3652.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-a7-range-official",
+            "trimName": "Sportback 45 TFSI quattro",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "2.0L / 3.0L TFSI · S tronic",
+            "priceLkr": 52000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.audi.lk/en/models/",
+            "checkedMonth": "2026-10",
+            "notes": "Senok / Audi Sri Lanka quote-only; Sri Lankan market benchmark LKR 52.0M."
+          }
+        ]
+      },
+      {
+        "model": "A8",
+        "slug": "audi-a8",
+        "segment": "Full-Size Luxury Sedan",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Audi_A8_D5_IMG_0066.jpg/960px-Audi_A8_D5_IMG_0066.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Audi_A7_C8_IMG_0094.jpg/960px-Audi_A7_C8_IMG_0094.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Audi_A6_C8_IMG_3063.jpg/960px-Audi_A6_C8_IMG_3063.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Audi_Q7_FY_Facelift_IMG_4148.jpg/960px-Audi_Q7_FY_Facelift_IMG_4148.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-a8-range-official",
+            "trimName": "L 55 TFSI quattro",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "3.0L V6 TFSI MHEV · tiptronic",
+            "priceLkr": 142000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/audi-q2-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2025 Audi A8 range reported at LKR 142,000,000–145,000,000."
+          }
+        ]
+      },
+      {
+        "model": "Q2",
+        "slug": "audi-q2",
+        "segment": "Subcompact Luxury SUV",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Audi_Q2_Facelift_IMG_3886.jpg/960px-Audi_Q2_Facelift_IMG_3886.jpg",
+          "rear": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/medium_Audi_Q2_2025_c7417e5a8d.jpeg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Audi_Q3_F3_IMG_0015.jpg/960px-Audi_Q3_F3_IMG_0015.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Audi_Q5_FY_Facelift_IMG_4254.jpg/960px-Audi_Q5_FY_Facelift_IMG_4254.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons & MotorGuide Sri Lanka",
+          "license": "CC BY-SA 4.0 / Editorial review imagery",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-q2-range-official",
+            "trimName": "30 TFSI / 35 TFSI",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L / 1.4L TFSI · S tronic",
+            "priceLkr": 25000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/audi-q2-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2025 Audi Q2 range reported at LKR 25,000,000–35,000,000."
+          }
+        ]
+      },
+      {
+        "model": "Q3",
+        "slug": "audi-q3",
+        "segment": "Compact Luxury SUV",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Audi_Q3_F3_IMG_0015.jpg/960px-Audi_Q3_F3_IMG_0015.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Audi_Q2_Facelift_IMG_3886.jpg/960px-Audi_Q2_Facelift_IMG_3886.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Audi_Q5_FY_Facelift_IMG_4254.jpg/960px-Audi_Q5_FY_Facelift_IMG_4254.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Audi_Q7_FY_Facelift_IMG_4148.jpg/960px-Audi_Q7_FY_Facelift_IMG_4148.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-q3-range-official",
+            "trimName": "35 TFSI S tronic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.4L / 1.5L TFSI · S tronic",
+            "priceLkr": 32000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.audi.lk/en/models/",
+            "checkedMonth": "2026-10",
+            "notes": "Senok / Audi Sri Lanka quote-only; positioned between Q2 (LKR 25M) and Q5 (LKR 48M)."
+          }
+        ]
+      },
+      {
+        "model": "Q5",
+        "slug": "audi-q5",
+        "segment": "Midsize Luxury SUV",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Audi_Q5_FY_Facelift_IMG_4254.jpg/960px-Audi_Q5_FY_Facelift_IMG_4254.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Audi_Q7_FY_Facelift_IMG_4148.jpg/960px-Audi_Q7_FY_Facelift_IMG_4148.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Audi_Q3_F3_IMG_0015.jpg/960px-Audi_Q3_F3_IMG_0015.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/Audi_Q2_Facelift_IMG_3886.jpg/960px-Audi_Q2_Facelift_IMG_3886.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-q5-range-official",
+            "trimName": "40 TFSI / 45 TFSI quattro",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "2.0L TFSI MHEV · S tronic",
+            "priceLkr": 48000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.audi.lk/en/models/",
+            "checkedMonth": "2026-10",
+            "notes": "Senok / Audi Sri Lanka quote-only; positioned between Q3 (LKR 32M) and Q7 (LKR 74.5M)."
+          }
+        ]
+      },
+      {
+        "model": "Q7",
+        "slug": "audi-q7",
+        "segment": "Full-Size Luxury SUV",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c8/Audi_Q7_FY_Facelift_IMG_4148.jpg/960px-Audi_Q7_FY_Facelift_IMG_4148.jpg",
+          "rear": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/medium_audi_q7_quattro_2025_c89a29f4d7.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Audi_Q5_FY_Facelift_IMG_4254.jpg/960px-Audi_Q5_FY_Facelift_IMG_4254.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e9/Audi_A8_D5_IMG_0066.jpg/960px-Audi_A8_D5_IMG_0066.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons & MotorGuide Sri Lanka",
+          "license": "CC BY-SA 4.0 / Editorial review imagery",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-q7-range-official",
+            "trimName": "45 TFSI / 55 TFSI quattro",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "2.0L / 3.0L TFSI quattro · tiptronic",
+            "priceLkr": 74500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/audi-q7-quattro-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2025 Audi Q7 Quattro range LKR 74.5M–76.5M; Cartivate Motors lists 2017 Q7 at LKR 31.5M."
+          }
+        ]
+      },
+      {
+        "model": "TT",
+        "slug": "audi-tt",
+        "segment": "Sports Coupe",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/Audi_TT_Coup%C3%A9_2.0_TFSI_quattro_S-line_%288S%29_%E2%80%93_Frontansicht%2C_3._April_2015%2C_D%C3%BCsseldorf.jpg/960px-Audi_TT_Coup%C3%A9_2.0_TFSI_quattro_S-line_%288S%29_%E2%80%93_Frontansicht%2C_3._April_2015%2C_D%C3%BCsseldorf.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Audi_A5_Sportback_F5_IMG_3652.jpg/960px-Audi_A5_Sportback_F5_IMG_3652.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Audi_A3_8Y_Sedan_IMG_5976.jpg/960px-Audi_A3_8Y_Sedan_IMG_5976.jpg",
+          "side": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Audi_A7_C8_IMG_0094.jpg/960px-Audi_A7_C8_IMG_0094.jpg"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (M 93)",
+          "license": "CC BY-SA 3.0 de",
+          "sourcePage": "https://www.audi.lk/en/models/"
+        },
+        "trims": [
+          {
+            "id": "audi-tt-range-official",
+            "trimName": "40 TFSI / 45 TFSI Coupé",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "2.0L TFSI · S tronic",
+            "priceLkr": 32000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/audi-q2-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka Audi TT market benchmark LKR 32.0M."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Land Rover",
+    "sourceName": "Access Motors / Land Rover Sri Lanka",
+    "officialPortalUrl": "https://www.landrover.lk/our-vehicles",
+    "models": [
+      {
+        "model": "Range Rover",
+        "slug": "land-rover-range-rover",
+        "segment": "Flagship Luxury SUV",
+        "photos": {
+          "front": "https://media.cdn-jaguarlandrover.com/api/v2/images/126267/w/1600.jpg",
+          "rear": "https://media.cdn-jaguarlandrover.com/api/v2/images/126268/w/1600.jpg",
+          "cockpit": "https://media.cdn-jaguarlandrover.com/api/v2/images/126269/w/1600.jpg",
+          "side": "https://media.cdn-jaguarlandrover.com/api/v2/images/126270/w/1600.jpg"
+        },
+        "photoCredit": {
+          "source": "Jaguar Land Rover (Land Rover Sri Lanka)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.landrover.lk/our-vehicles"
+        },
+        "trims": [
+          {
+            "id": "land-rover-range-rover-range-official",
+            "trimName": "HSE / Autobiography L460",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "3.0L PHEV / Mild Hybrid · AWD",
+            "priceLkr": 145000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.landrover.lk/our-vehicles",
+            "checkedMonth": "2026-10",
+            "notes": "Access Motors Sri Lanka quote-only for flagship Range Rover L460 (~LKR 145M+ above Range Rover Sport Autobiography at LKR 143.3M)."
+          }
+        ]
+      },
+      {
+        "model": "Range Rover Sport",
+        "slug": "land-rover-range-rover-sport",
+        "segment": "Luxury Performance SUV",
+        "photos": {
+          "front": "https://media.cdn-jaguarlandrover.com/api/v2/images/105475/w/1600.jpg",
+          "rear": "https://media.cdn-jaguarlandrover.com/api/v2/images/105476/w/1600.jpg",
+          "cockpit": "https://media.cdn-jaguarlandrover.com/api/v2/images/105477/w/1600.jpg",
+          "side": "https://media.cdn-jaguarlandrover.com/api/v2/images/126267/w/1600.jpg"
+        },
+        "photoCredit": {
+          "source": "Jaguar Land Rover (Land Rover Sri Lanka)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.landrover.lk/our-vehicles"
+        },
+        "trims": [
+          {
+            "id": "land-rover-range-rover-sport-range-official",
+            "trimName": "Autobiography 3.0L Petrol 360PS",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "3.0L I6 MHEV (360 BHP) · AWD",
+            "priceLkr": 143296000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.landrover.lk/stock-locator/new-vehicles/range-rover",
+            "checkedMonth": "2026-10",
+            "notes": "Official Access Motors / Land Rover Sri Lanka New Vehicle Stock Locator price for Range Rover Sport Autobiography 3.0L Petrol 360 BHP: LKR 143,296,000."
+          }
+        ]
+      },
+      {
+        "model": "Range Rover Velar",
+        "slug": "land-rover-range-rover-velar",
+        "segment": "Midsize Luxury SUV",
+        "photos": {
+          "front": "https://media.cdn-jaguarlandrover.com/api/v2/images/117709/w/1600.jpg",
+          "rear": "https://media.cdn-jaguarlandrover.com/api/v2/images/105475/w/1600.jpg",
+          "cockpit": "https://media.cdn-jaguarlandrover.com/api/v2/images/105477/w/1600.jpg",
+          "side": "https://media.cdn-jaguarlandrover.com/api/v2/images/59895/w/1216/h/684.jpg"
+        },
+        "photoCredit": {
+          "source": "Jaguar Land Rover (Land Rover Sri Lanka)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.landrover.lk/our-vehicles"
+        },
+        "trims": [
+          {
+            "id": "land-rover-range-rover-velar-range-official",
+            "trimName": "Dynamic SE P250 / P400e",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "2.0L Turbo / PHEV · AWD",
+            "priceLkr": 78000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.landrover.lk/our-vehicles",
+            "checkedMonth": "2026-10",
+            "notes": "Access Motors Sri Lanka quote-only; positioned between Range Rover Evoque (LKR 48.97M–55.61M) and Defender 110 (LKR 99.72M)."
+          }
+        ]
+      },
+      {
+        "model": "Range Rover Evoque",
+        "slug": "land-rover-range-rover-evoque",
+        "segment": "Compact Luxury SUV",
+        "photos": {
+          "front": "https://media.cdn-jaguarlandrover.com/api/v2/images/59895/w/1216/h/684.jpg",
+          "rear": "https://media.cdn-jaguarlandrover.com/api/v2/images/117709/w/1600.jpg",
+          "cockpit": "https://media.cdn-jaguarlandrover.com/api/v2/images/120884/w/1600.jpg",
+          "side": "https://media.cdn-jaguarlandrover.com/api/v2/images/120883/w/1600.jpg"
+        },
+        "photoCredit": {
+          "source": "Jaguar Land Rover (Land Rover Sri Lanka)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.landrover.lk/our-vehicles"
+        },
+        "trims": [
+          {
+            "id": "land-rover-range-rover-evoque-range-official",
+            "trimName": "SWB S 1.5L Petrol 160PS",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L I3 MHEV (160 BHP)",
+            "priceLkr": 48970000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.landrover.lk/stock-locator/new-vehicles/range-rover",
+            "checkedMonth": "2026-10",
+            "notes": "Official Access Motors / Land Rover Sri Lanka New Vehicle Stock Locator price for Range Rover Evoque SWB S at LKR 48,970,000 (Dynamic SE at LKR 51,000,000; Hoxton Edition at LKR 55,612,504)."
+          }
+        ]
+      },
+      {
+        "model": "Discovery",
+        "slug": "land-rover-discovery",
+        "segment": "Full-Size 7-Seat SUV",
+        "photos": {
+          "front": "https://media.cdn-jaguarlandrover.com/api/v2/images/97721/w/1600.jpg",
+          "rear": "https://media.cdn-jaguarlandrover.com/api/v2/images/97722/w/1600.jpg",
+          "cockpit": "https://media.cdn-jaguarlandrover.com/api/v2/images/97724/w/1600.jpg",
+          "side": "https://media.cdn-jaguarlandrover.com/api/v2/images/120883/w/1600.jpg"
+        },
+        "photoCredit": {
+          "source": "Jaguar Land Rover (Land Rover Sri Lanka)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.landrover.lk/our-vehicles"
+        },
+        "trims": [
+          {
+            "id": "land-rover-discovery-range-official",
+            "trimName": "Dynamic SE D300 / P360",
+            "condition": "New",
+            "fuel": "Diesel",
+            "powertrain": "3.0L I6 MHEV · AWD",
+            "priceLkr": 95000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.landrover.lk/our-vehicles",
+            "checkedMonth": "2026-10",
+            "notes": "Access Motors Sri Lanka quote-only for full-size Discovery 7-seater (~LKR 95M)."
+          }
+        ]
+      },
+      {
+        "model": "Discovery Sport",
+        "slug": "land-rover-discovery-sport",
+        "segment": "Compact 7-Seat Luxury SUV",
+        "photos": {
+          "front": "https://media.cdn-jaguarlandrover.com/api/v2/images/120883/w/1600.jpg",
+          "rear": "https://media.cdn-jaguarlandrover.com/api/v2/images/120884/w/1600.jpg",
+          "cockpit": "https://media.cdn-jaguarlandrover.com/api/v2/images/97724/w/1600.jpg",
+          "side": "https://media.cdn-jaguarlandrover.com/api/v2/images/97721/w/1600.jpg"
+        },
+        "photoCredit": {
+          "source": "Jaguar Land Rover (Land Rover Sri Lanka)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.landrover.lk/our-vehicles"
+        },
+        "trims": [
+          {
+            "id": "land-rover-discovery-sport-range-official",
+            "trimName": "Dynamic SE P250 / P300e",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "1.5L PHEV / 2.0L Turbo · AWD",
+            "priceLkr": 54000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.landrover.lk/our-vehicles",
+            "checkedMonth": "2026-10",
+            "notes": "Access Motors Sri Lanka quote-only (~LKR 54M alongside Evoque Dynamic SE)."
+          }
+        ]
+      },
+      {
+        "model": "Defender",
+        "slug": "land-rover-defender",
+        "segment": "Luxury Off-Road SUV",
+        "photos": {
+          "front": "https://media.cdn-jaguarlandrover.com/api/v2/images/97722/w/1600.jpg",
+          "rear": "https://media.cdn-jaguarlandrover.com/api/v2/images/97721/w/1600.jpg",
+          "cockpit": "https://media.cdn-jaguarlandrover.com/api/v2/images/126269/w/1600.jpg",
+          "side": "https://media.cdn-jaguarlandrover.com/api/v2/images/105476/w/1600.jpg"
+        },
+        "photoCredit": {
+          "source": "Jaguar Land Rover (Land Rover Sri Lanka)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.landrover.lk/our-vehicles"
+        },
+        "trims": [
+          {
+            "id": "land-rover-defender-range-official",
+            "trimName": "110 X-Dynamic SE P400e PHEV",
+            "condition": "New",
+            "fuel": "PHEV",
+            "powertrain": "2.0L Petrol PHEV (404 BHP) · AWD",
+            "priceLkr": 99720682,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.landrover.lk/stock-locator/new-vehicles/defender",
+            "checkedMonth": "2026-10",
+            "notes": "Official Access Motors / Land Rover Sri Lanka New Vehicle Stock Locator price for Defender 110 X-Dynamic SE P400e PHEV at LKR 99,720,682 (up to LKR 101,332,924)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Volkswagen",
+    "sourceName": "Senok / Volkswagen Sri Lanka & AutoXO",
+    "officialPortalUrl": "https://www.volkswagen.lk/en.html",
+    "models": [
+      {
+        "model": "Virtus Chrome",
+        "slug": "volkswagen-virtus-chrome",
+        "segment": "Compact Sedan",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/2023_Volkswagen_Virtus_Exclusive_1.4_TSI_%28Brazil%29_front_view.jpg/960px-2023_Volkswagen_Virtus_Exclusive_1.4_TSI_%28Brazil%29_front_view.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1d/Volkswagen_Taigun_2021_front.jpg/960px-Volkswagen_Taigun_2021_front.jpg",
+          "cockpit": "https://autoxolk.com/wp-content/uploads/2026/02/VW-T-Cross-R-Line-1-746x516.png",
+          "side": "https://autogiz.com/product_images/thumb/webp/Volkswagen-ID.7-GTX-2024.webp"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons & AutoXO Sri Lanka",
+          "license": "CC BY 4.0 / Dealer imagery",
+          "sourcePage": "https://www.volkswagen.lk/en.html"
+        },
+        "trims": [
+          {
+            "id": "volkswagen-virtus-chrome-range-official",
+            "trimName": "1.0L TSI Topline AT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L TSI · 6AT",
+            "priceLkr": 12500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.volkswagen.lk/en.html",
+            "checkedMonth": "2026-10",
+            "notes": "Senok / Volkswagen Sri Lanka quote-only; positioned slightly below Volkswagen Taigun (LKR 12.7M–13.0M)."
+          }
+        ]
+      },
+      {
+        "model": "Taigun",
+        "slug": "volkswagen-taigun",
+        "segment": "Compact SUV",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1d/Volkswagen_Taigun_2021_front.jpg/960px-Volkswagen_Taigun_2021_front.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/2023_Volkswagen_Virtus_Exclusive_1.4_TSI_%28Brazil%29_front_view.jpg/960px-2023_Volkswagen_Virtus_Exclusive_1.4_TSI_%28Brazil%29_front_view.jpg",
+          "cockpit": "https://autoxolk.com/wp-content/uploads/2026/02/VW-T-Cross-R-Line-1-746x516.png",
+          "side": "https://autogiz.com/product_images/thumb/webp/Volkswagen-ID.7-GTX-2024.webp"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons & AutoXO Sri Lanka",
+          "license": "CC BY-SA 4.0 / Dealer imagery",
+          "sourcePage": "https://www.volkswagen.lk/en.html"
+        },
+        "trims": [
+          {
+            "id": "volkswagen-taigun-range-official",
+            "trimName": "1.0L TSI Topline AT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L TSI · 6AT",
+            "priceLkr": 12700000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/mg-s5-2025",
+            "checkedMonth": "2026-10",
+            "notes": "MotorGuide Sri Lanka 2026 Volkswagen Taigun Topline range LKR 12.7M–14.1M; AutoDirect.lk lists brand new Taigun 1.0 TSI Topline at LKR 13,000,000."
+          }
+        ]
+      },
+      {
+        "model": "T-Cross",
+        "slug": "volkswagen-t-cross",
+        "segment": "Subcompact SUV",
+        "photos": {
+          "front": "https://autoxolk.com/wp-content/uploads/2026/02/VW-T-Cross-R-Line-1-746x516.png",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1d/Volkswagen_Taigun_2021_front.jpg/960px-Volkswagen_Taigun_2021_front.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/2023_Volkswagen_Virtus_Exclusive_1.4_TSI_%28Brazil%29_front_view.jpg/960px-2023_Volkswagen_Virtus_Exclusive_1.4_TSI_%28Brazil%29_front_view.jpg",
+          "side": "https://autogiz.com/product_images/thumb/webp/Volkswagen-ID.7-GTX-2024.webp"
+        },
+        "photoCredit": {
+          "source": "AutoXO Sri Lanka & Wikimedia Commons",
+          "license": "Dealer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://autoxolk.com/listing/volkswagen-t-cross/"
+        },
+        "trims": [
+          {
+            "id": "volkswagen-t-cross-range-grey",
+            "trimName": "1.0L TSI R-Line",
+            "condition": "New (0 km Grey Import)",
+            "fuel": "Petrol",
+            "powertrain": "1.0L TSI · 7DSG",
+            "priceLkr": 14500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://autoxolk.com/",
+            "checkedMonth": "2026-10",
+            "notes": "AutoXO Sri Lanka grey-import listing for UK/JDM-spec Volkswagen T-Cross R-Line (~LKR 14.5M)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "BMW",
+    "sourceName": "Cartivate Motors",
+    "officialPortalUrl": "https://cartivatemotors.lk/listing/",
+    "models": [
+      {
+        "model": "530e M Sport",
+        "slug": "bmw-530e-m-sport",
+        "segment": "Executive Plug-in Hybrid Sedan",
+        "photos": {
+          "front": "https://cartivatemotors.lk/wp-content/uploads/2025/09/537328268_1348863573906963_4826992389226686526_n-660x471.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/BMW_G30_530e_IMG_0764.jpg/960px-BMW_G30_530e_IMG_0764.jpg",
+          "cockpit": "https://autogiz.com/product_images/thumb/webp/BMW-i5-eDrive40-2023.webp",
+          "side": "https://autogiz.com/product_images/thumb/webp/BMW-i4-eDrive35-2022.webp"
+        },
+        "photoCredit": {
+          "source": "Cartivate Motors Sri Lanka & Wikimedia Commons",
+          "license": "Dealer listing imagery / CC BY-SA 4.0",
+          "sourcePage": "https://cartivatemotors.lk/listing/"
+        },
+        "trims": [
+          {
+            "id": "bmw-530e-m-sport-2017-used",
+            "trimName": "2.0L iPerformance PHEV (2017)",
+            "condition": "Used",
+            "fuel": "PHEV",
+            "powertrain": "2.0L Turbo PHEV · 8AT",
+            "priceLkr": 28500000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/listing/",
+            "checkedMonth": "2026-10",
+            "notes": "Published Cartivate Motors Sri Lanka listing price for 2017 BMW 530e M Sport (61,000 km) at LKR 28,500,000."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Mercedes-Benz",
+    "sourceName": "Cartivate Motors",
+    "officialPortalUrl": "https://cartivatemotors.lk/listing/",
+    "models": [
+      {
+        "model": "E200 Avantgarde",
+        "slug": "mercedes-benz-e200-avantgarde",
+        "segment": "Executive Sedan",
+        "photos": {
+          "front": "https://cartivatemotors.lk/wp-content/uploads/2025/09/541628884_1357234823069838_7867879144519820714_n-660x471.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Mercedes-Benz_W212_E_200_CGI_BlueEFFICIENCY_Avantgarde_front_20100821.jpg/960px-Mercedes-Benz_W212_E_200_CGI_BlueEFFICIENCY_Avantgarde_front_20100821.jpg",
+          "cockpit": "https://autogiz.com/product_images/thumb/webp/Mercedes-Benz-EQE-300-2022.webp",
+          "side": "https://autogiz.com/product_images/thumb/webp/Mercedes-Benz-EQA-250-2021.webp"
+        },
+        "photoCredit": {
+          "source": "Cartivate Motors Sri Lanka & Wikimedia Commons",
+          "license": "Dealer listing imagery / Public Domain",
+          "sourcePage": "https://cartivatemotors.lk/listing/"
+        },
+        "trims": [
+          {
+            "id": "mercedes-benz-e200-avantgarde-2010-used",
+            "trimName": "1.8L CGI W212 (2010)",
+            "condition": "Used",
+            "fuel": "Petrol",
+            "powertrain": "1.8L Turbo · 5AT",
+            "priceLkr": 13450000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/listing/",
+            "checkedMonth": "2026-10",
+            "notes": "Published Cartivate Motors Sri Lanka listing price for 2010 Mercedes-Benz E200 Avantgarde (114,500 km) at LKR 13,450,000."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Porsche",
+    "sourceName": "Eurocars / Porsche Centre Sri Lanka",
+    "officialPortalUrl": "https://models.porsche.com/en-LK/model-start/911",
+    "models": [
+      {
+        "model": "911",
+        "slug": "porsche-911",
+        "segment": "Rear-Engine Sports Car",
+        "photos": {
+          "front": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/Porsche_992_Carrera_4S_Genf_2019_1Y7A5562.jpg/960px-Porsche_992_Carrera_4S_Genf_2019_1Y7A5562.jpg",
+          "rear": "https://autogiz.com/product_images/thumb/webp/Porsche-Taycan-2024.webp",
+          "cockpit": "https://autogiz.com/product_images/thumb/webp/Porsche-Macan-4-Electric-2024.webp",
+          "side": "https://autogiz.com/product_images/thumb/webp/Porsche-Taycan-Turbo-S-2024.webp"
+        },
+        "photoCredit": {
+          "source": "Wikimedia Commons (Alexander Migl)",
+          "license": "CC BY-SA 4.0",
+          "sourcePage": "https://models.porsche.com/en-LK/model-start/911"
+        },
+        "trims": [
+          {
+            "id": "porsche-911-range-official",
+            "trimName": "Carrera 992.2",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "3.0L Twin-Turbo Flat-6 · 8PDK",
+            "priceLkr": 135000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://models.porsche.com/en-LK/model-start/911",
+            "checkedMonth": "2026-10",
+            "notes": "Eurocars / Porsche Centre Sri Lanka quote-only configurator; Sri Lankan landed luxury tax duty estimate ~LKR 135M."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Mazda",
+    "sourceName": "Colonial Motors / Mazda Sri Lanka",
+    "officialPortalUrl": "https://mazdalanka.lk/",
+    "models": [
+      {
+        "model": "CX-3",
+        "slug": "mazda-cx-3",
+        "segment": "Subcompact Crossover",
+        "photos": {
+          "front": "https://mazdalanka.lk/assets/img/cars/cx3/cx-3-1.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/2018_Mazda_CX-3_%28DK%29_sTouring_2WD_wagon_%282018-10-29%29_01.jpg/960px-2018_Mazda_CX-3_%28DK%29_sTouring_2WD_wagon_%282018-10-29%29_01.jpg",
+          "cockpit": "https://autogiz.com/product_images/thumb/webp/Mazda-MX-30-e-Skyactiv-EV-2020.webp",
+          "side": "https://autogiz.com/product_images/thumb/webp/Mazda-6e-2025.webp"
+        },
+        "photoCredit": {
+          "source": "Mazda Sri Lanka (Colonial Motors) & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY-SA 4.0",
+          "sourcePage": "https://mazdalanka.lk/"
+        },
+        "trims": [
+          {
+            "id": "mazda-cx-3-range-official",
+            "trimName": "1.5L Skyactiv-G",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Skyactiv-G · 6AT",
+            "priceLkr": 16500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://mazdalanka.lk/assets/Brochures/2025%20MAZDA%20CX-3%20SPEC%20-%201500CC.pdf",
+            "checkedMonth": "2026-10",
+            "notes": "Colonial Motors Sri Lanka quote-only; 2025 Mazda CX-3 1.5L market benchmark ~LKR 16.5M."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Peugeot",
+    "sourceName": "Cartivate Motors",
+    "officialPortalUrl": "https://cartivatemotors.lk/listing/",
+    "models": [
+      {
+        "model": "5008 Allure Premium",
+        "slug": "peugeot-5008-allure-premium",
+        "segment": "Midsize 7-Seat SUV",
+        "photos": {
+          "front": "https://cartivatemotors.lk/wp-content/uploads/2026/07/WhatsApp-Image-2026-07-02-at-11.27.32-1-660x471.jpeg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/18/Peugeot_5008_II_IMG_3318.jpg/960px-Peugeot_5008_II_IMG_3318.jpg",
+          "cockpit": "https://autogiz.com/product_images/thumb/webp/Peugeot-e-5008-73-kWh-2024.webp",
+          "side": "https://autogiz.com/product_images/thumb/webp/Peugeot-e-3008-73-kWh-2024.webp"
+        },
+        "photoCredit": {
+          "source": "Cartivate Motors Sri Lanka & Wikimedia Commons",
+          "license": "Dealer listing imagery / CC BY-SA 4.0",
+          "sourcePage": "https://cartivatemotors.lk/listing/"
+        },
+        "trims": [
+          {
+            "id": "peugeot-5008-allure-premium-2019-used",
+            "trimName": "1.2L PureTech / 1.6L THP Allure Premium (2019)",
+            "condition": "Used",
+            "fuel": "Petrol",
+            "powertrain": "Turbo Petrol · EAT8",
+            "priceLkr": 22500000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/listing/",
+            "checkedMonth": "2026-10",
+            "notes": "Published Cartivate Motors Sri Lanka listing price for 2019 Peugeot 5008 Allure Premium (37,000 km) at LKR 22,500,000."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Mitsubishi",
+    "sourceName": "United Motors & Cartivate Motors",
+    "officialPortalUrl": "https://www.unitedmotors.lk/",
+    "models": [
+      {
+        "model": "Outlander",
+        "slug": "mitsubishi-outlander",
+        "segment": "Midsize Plug-in Hybrid SUV",
+        "photos": {
+          "front": "https://cartivatemotors.lk/wp-content/uploads/2025/09/541986022_1356202863173034_2039660065645516720_n-660x471.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/2016_Mitsubishi_Outlander_PHEV_GX4hs_Automatic_2.0_Front.jpg/960px-2016_Mitsubishi_Outlander_PHEV_GX4hs_Automatic_2.0_Front.jpg",
+          "cockpit": "https://www.mitsubishisl.lk/wp-content/uploads/2026/02/Mitsubishi-Destinator-Banner-Mobile-copy.webp",
+          "side": "https://www.unitedmotors.lk/images/vehicles/mitsubishi-montero-sport/montero-sport-banner-mobile.jpg"
+        },
+        "photoCredit": {
+          "source": "Cartivate Motors Sri Lanka & Wikimedia Commons",
+          "license": "Dealer listing imagery / CC BY-SA 4.0",
+          "sourcePage": "https://cartivatemotors.lk/listing/"
+        },
+        "trims": [
+          {
+            "id": "mitsubishi-outlander-2015-used",
+            "trimName": "PHEV G-Safety (2015)",
+            "condition": "Used",
+            "fuel": "PHEV",
+            "powertrain": "2.0L Twin-Motor PHEV · 4WD",
+            "priceLkr": 12300000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/listing/",
+            "checkedMonth": "2026-10",
+            "notes": "Published Cartivate Motors Sri Lanka listing price for 2015 Mitsubishi Outlander (78,500 km) at LKR 12,300,000."
+          }
+        ]
+      },
+      {
+        "model": "Montero Sport",
+        "slug": "mitsubishi-montero-sport",
+        "segment": "Midsize 7-Seat Ladder-Frame SUV",
+        "photos": {
+          "front": "https://www.unitedmotors.lk/images/vehicles/mitsubishi-montero-sport/montero-sport-banner-mobile.jpg",
+          "rear": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/2020_Mitsubishi_Pajero_Sport_2.4_GT-Plus_%28KS%2C_Thailand%29_front_view.png/960px-2020_Mitsubishi_Pajero_Sport_2.4_GT-Plus_%28KS%2C_Thailand%29_front_view.png",
+          "cockpit": "https://www.mitsubishisl.lk/wp-content/uploads/2026/02/Mitsubishi-Destinator-Banner-Mobile-copy.webp",
+          "side": "https://cartivatemotors.lk/wp-content/uploads/2025/09/541986022_1356202863173034_2039660065645516720_n-660x471.jpg"
+        },
+        "photoCredit": {
+          "source": "United Motors Lanka PLC & Wikimedia Commons",
+          "license": "Manufacturer promotional imagery / CC BY 4.0",
+          "sourcePage": "https://www.unitedmotors.lk/personal/suvs/mitsubishi/montero-sport"
+        },
+        "trims": [
+          {
+            "id": "mitsubishi-montero-sport-range-official",
+            "trimName": "2.4L MIVEC Turbo Diesel 4WD",
+            "condition": "New",
+            "fuel": "Diesel",
+            "powertrain": "2.4L Turbo Diesel · 8AT 4WD",
+            "priceLkr": 42500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.unitedmotors.lk/personal/suvs/mitsubishi/montero-sport",
+            "checkedMonth": "2026-10",
+            "notes": "United Motors Lanka quote-only; Sri Lankan market benchmark ~LKR 42.5M."
+          }
+        ]
+      },
+      {
+        "model": "Destinator",
+        "slug": "mitsubishi-destinator",
+        "segment": "Compact 7-Seat SUV",
+        "photos": {
+          "front": "https://www.mitsubishisl.lk/wp-content/uploads/2026/02/Mitsubishi-Destinator-Banner-Mobile-copy.webp",
+          "rear": "https://www.unitedmotors.lk/images/vehicles/mitsubishi-montero-sport/montero-sport-banner-mobile.jpg",
+          "cockpit": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a2/2020_Mitsubishi_Pajero_Sport_2.4_GT-Plus_%28KS%2C_Thailand%29_front_view.png/960px-2020_Mitsubishi_Pajero_Sport_2.4_GT-Plus_%28KS%2C_Thailand%29_front_view.png",
+          "side": "https://cartivatemotors.lk/wp-content/uploads/2025/09/541986022_1356202863173034_2039660065645516720_n-660x471.jpg"
+        },
+        "photoCredit": {
+          "source": "Mitsubishi Motors Sri Lanka (United Motors)",
+          "license": "Manufacturer promotional imagery",
+          "sourcePage": "https://www.mitsubishisl.lk/destinator"
+        },
+        "trims": [
+          {
+            "id": "mitsubishi-destinator-range-official",
+            "trimName": "1.5L Turbo 7-Seater",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L MIVEC Turbo · CVT",
+            "priceLkr": 18500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.mitsubishisl.lk/destinator",
+            "checkedMonth": "2026-10",
+            "notes": "United Motors / Mitsubishi Sri Lanka pre-booking open for the 2026 Destinator 7-seater (~LKR 18.5M)."
+          }
+        ]
+      }
+    ]
+  }
+]

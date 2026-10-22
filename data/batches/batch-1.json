@@ -1,0 +1,2579 @@
+[
+  {
+    "make": "Toyota",
+    "models": [
+      {
+        "model": "Yaris Cross",
+        "modelSlug": "toyota-yaris-cross",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/yaris-cross/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Toyota_Yaris_Cross_%28AC200%29_1.5_S_HEV_2023_%281%29.jpg/960px-Toyota_Yaris_Cross_%28AC200%29_1.5_S_HEV_2023_%281%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 studio angle of Toyota Yaris Cross AC200 HEV"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Toyota_Yaris_Cross_%28AC200%29_1.5_S_HEV_2023_%282%29.jpg/960px-Toyota_Yaris_Cross_%28AC200%29_1.5_S_HEV_2023_%282%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Rear 3/4 tailgate view showing taillights and HEV badging"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Toyota_Yaris_Cross_%28AC200%29_1.5_G_2023_%28interior%29.jpg/960px-Toyota_Yaris_Cross_%28AC200%29_1.5_G_2023_%28interior%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Wide RHD cockpit dashboard perspective with steering wheel and center display"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/07/toyota-yaris-cross-side-thumbnail.webp",
+            "resolution": "1920x1080",
+            "description": "True 90-degree lateral profile studio cutout from Toyota Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-yaris-cross-range-official",
+            "trimName": "1.5L HEV Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Hybrid · e-CVT",
+            "priceLkr": 21150000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price sheet reported at LKR 21.15M; website lists Price upon request."
+          },
+          {
+            "id": "toyota-yaris-cross-z-hybrid-grey",
+            "trimName": "Z Hybrid (JDM MXPJ10)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Hybrid · e-CVT",
+            "priceLkr": 17200000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "importcar.lk published 0 km 2025 price list at LKR 17.2M (grade 4.5+ reconditioned at LKR 15.1M)."
+          }
+        ]
+      },
+      {
+        "model": "Corolla Cross",
+        "modelSlug": "toyota-corolla-cross",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/corolla-cross/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Corolla-Cross-Entry.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka front 3/4 studio cutout of Corolla Cross"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/2020_Toyota_Corolla_Cross_Hybrid_%28Indonesia%29_front_view.jpg/960px-2020_Toyota_Corolla_Cross_Hybrid_%28Indonesia%29_front_view.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior angle of Toyota Corolla Cross Hybrid"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Untitled-design-78.png.webp",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka official Corolla Cross cabin and feature banner"
+          },
+          "side": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Toyota_COROLLA_CROSS_HYBRID_Z_2WD.jpg/960px-Toyota_COROLLA_CROSS_HYBRID_Z_2WD.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile perspective of Toyota Corolla Cross Hybrid"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-corolla-cross-range-official",
+            "trimName": "1.8L Hybrid Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.8L Hybrid · e-CVT",
+            "priceLkr": 35500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price sheet reported at LKR 35.5M including VAT."
+          }
+        ]
+      },
+      {
+        "model": "Rush",
+        "modelSlug": "toyota-rush",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/rush/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Rush-Manual-Transmission.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka front 3/4 studio cutout of Toyota Rush"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/2018_Toyota_Rush_1.5_TRD_Sportivo_wagon_%28F800RE%3B_12-09-2018%29%2C_South_Tangerang.jpg/960px-2018_Toyota_Rush_1.5_TRD_Sportivo_wagon_%28F800RE%3B_12-09-2018%29%2C_South_Tangerang.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of F800RE Toyota Rush"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-rush-masthead-m-1.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka official Rush masthead gallery image"
+          },
+          "side": {
+            "url": "https://www.firstcar.lk/vehicles/toyota-rush/hero.webp",
+            "resolution": "1920x1080",
+            "description": "Lateral profile hero asset of Toyota Rush"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-rush-range-official",
+            "trimName": "1.5L Automatic Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Petrol · 4AT",
+            "priceLkr": 16000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/toyota-rush-2025",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 15.49M–17.5M; Toyota Lanka lists Price upon request."
+          }
+        ]
+      },
+      {
+        "model": "Raize",
+        "modelSlug": "toyota-raize",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/raize/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-raize-1-0l-turbo-mlp-thumbnail.webp",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of Toyota Raize"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Toyota_RAIZE_Z_2WD_%285BA-A201A-GBSF%29_front.jpg/960px-Toyota_RAIZE_Z_2WD_%285BA-A201A-GBSF%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of Toyota Raize A200 series"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-raize-masthead-m.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka official Raize masthead asset"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-raize.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka official Raize brochure profile asset"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-raize-range-official",
+            "trimName": "1.0L Turbo / 1.2L Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo Petrol · D-CVT",
+            "priceLkr": 12250000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price sheet reported at LKR 12.25M."
+          }
+        ]
+      },
+      {
+        "model": "RAV4 2026",
+        "modelSlug": "toyota-rav4-2026",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/rav4-2026/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/RAV4-2.0L.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka front 3/4 studio cutout of RAV4"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Toyota_RAV4_Plug-in_Hybrid_GR_Sport_IMG_9891.jpg/960px-Toyota_RAV4_Plug-in_Hybrid_GR_Sport_IMG_9891.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of fifth-generation Toyota RAV4"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2026/07/Banner.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka RAV4 2026 launch banner"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/2025_10_toyota_rav4_cruiser_hybrid_fwd_hero_v20_blurred_5ddf0ecdc2.jpg",
+            "resolution": "1920x1080",
+            "description": "Profile perspective of Toyota RAV4 Hybrid"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-rav4-2026-range-official",
+            "trimName": "2.0L Petrol / 2.5L HEV Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "2.0L Petrol / 2.5L Hybrid · CVT",
+            "priceLkr": 37000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/toyota-raize-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Toyota RAV4 2.0L Petrol listed at LKR 37M–44M (2.5L Hybrid AWD at LKR 48M–50M); Toyota Lanka lists Price upon request."
+          }
+        ]
+      },
+      {
+        "model": "Land Cruiser 250",
+        "modelSlug": "toyota-land-cruiser-250",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/land-cruiser-250/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/07/Untitled-design-26-removebg-preview.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of Land Cruiser 250 Prado"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9a/Toyota_Land_Cruiser_250_ZX_First_Edition.jpg/960px-Toyota_Land_Cruiser_250_ZX_First_Edition.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of J250 Toyota Land Cruiser 250 ZX"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/09/Untitled-design-1-2.jpg",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka official SUV showcase image"
+          },
+          "side": {
+            "url": "https://importcar.lk/wp-content/uploads/2025/12/Screenshot_2025-12-25_150642-removebg-preview.png",
+            "resolution": "1920x1080",
+            "description": "Studio side cutout of Land Cruiser 250"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-land-cruiser-250-range-official",
+            "trimName": "2.7L Petrol / 2.8L Diesel Official Range",
+            "condition": "New",
+            "fuel": "Diesel",
+            "powertrain": "2.8L Turbo Diesel / 2.7L Petrol · 8AT",
+            "priceLkr": 75000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price list reported at LKR 75M (grey import TRJ250W VX 0 km at LKR 54M on importcar.lk)."
+          }
+        ]
+      },
+      {
+        "model": "Land Cruiser 300",
+        "modelSlug": "toyota-land-cruiser-300",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/land-cruiser-300/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-lc300-thumbnail-nav.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of Land Cruiser 300"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/2021_Toyota_Land_Cruiser_300_3.4_ZX_%28Colombia%29_front_view_02.png/960px-2021_Toyota_Land_Cruiser_300_3.4_ZX_%28Colombia%29_front_view_02.png",
+            "resolution": "1920x1080",
+            "description": "Exterior view of J300 Toyota Land Cruiser 300 ZX"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Untitled-design-1-1.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka Land Cruiser 300 masthead image"
+          },
+          "side": {
+            "url": "https://cartivatemotors.lk/wp-content/uploads/2026/07/60cb11dc-517c-471a-a5ed-8f35688d6d28-660x471.jpeg",
+            "resolution": "1920x1080",
+            "description": "Profile view of Land Cruiser 300 series"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-land-cruiser-300-range-official",
+            "trimName": "3.5L Twin-Turbo V6 / 3.3L Diesel Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "3.5L V6 Twin-Turbo · 10AT",
+            "priceLkr": 118000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price list reported at LKR 118M including VAT (grey import ZX 0 km at LKR 94M on importcar.lk)."
+          }
+        ]
+      },
+      {
+        "model": "Fortuner",
+        "modelSlug": "toyota-fortuner",
+        "category": "SUV",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/fortuner/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/05/toyota-fortuner-thumbnail-nav.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of Toyota Fortuner"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/2016_Toyota_Fortuner_VRZ_front%2C_West_Surabaya.jpg/960px-2016_Toyota_Fortuner_VRZ_front%2C_West_Surabaya.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of AN160 Toyota Fortuner VRZ"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/09/Untitled-design-1-2.jpg",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka official SUV interior/range showcase"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/RAV4-2.0L.png",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka SUV lateral studio plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-fortuner-range-official",
+            "trimName": "2.8L Diesel / 2.7L Petrol Official Range",
+            "condition": "New",
+            "fuel": "Diesel",
+            "powertrain": "2.8L Turbo Diesel · 6AT 4WD",
+            "priceLkr": 45000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.toyota.lk/vehicle-model/fortuner/",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka showroom quotation basis; official website lists Price upon request."
+          }
+        ]
+      },
+      {
+        "model": "Prius",
+        "modelSlug": "toyota-prius",
+        "category": "Passenger car",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/prius/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f6/Toyota_PRIUS_U_2WD_%286AA-ZVW60-AHXKB%29_front.jpg/960px-Toyota_PRIUS_U_2WD_%286AA-ZVW60-AHXKB%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of fifth-generation XW60 Toyota Prius"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Toyota_PRIUS_U_2WD_%286AA-ZVW60-AHXKB%29_rear.jpg/960px-Toyota_PRIUS_U_2WD_%286AA-ZVW60-AHXKB%29_rear.jpg",
+            "resolution": "1920x1080",
+            "description": "Rear tailgate view showing full-width LED lightbar on XW60 Prius"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Toyota_PRIUS_Z_2WD_%286AA-MXWH60-AHXHB%29_interior.jpg/960px-Toyota_PRIUS_Z_2WD_%286AA-MXWH60-AHXHB%29_interior.jpg",
+            "resolution": "1920x1080",
+            "description": "Wide RHD cockpit view of fifth-generation Toyota Prius Z"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/2024_toyota_prius_sideview-removebg-preview-e1727019832140.png",
+            "resolution": "1920x1080",
+            "description": "True 90-degree lateral profile studio cutout from Toyota Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-prius-range-official",
+            "trimName": "1.8L / 2.0L HEV Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.8L Hybrid · e-CVT",
+            "priceLkr": 28900000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price list reported at LKR 28.9M including VAT."
+          }
+        ]
+      },
+      {
+        "model": "Wigo",
+        "modelSlug": "toyota-wigo",
+        "category": "Passenger car",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/wigo/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-wigo-thumb.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of Toyota Wigo"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Toyota_Wigo_1.0_G_2023_%281%29.jpg/960px-Toyota_Wigo_1.0_G_2023_%281%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2023 B100 series Toyota Wigo 1.0 G"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/09/Untitled-design-13.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka compact car cabin and feature image"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/09/Untitled-design-15.png",
+            "resolution": "1920x1080",
+            "description": "Lateral studio profile cutout from Toyota Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-wigo-range-official",
+            "trimName": "1.0L CVT Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Petrol · CVT",
+            "priceLkr": 9150000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price list reported at LKR 9.15M including VAT."
+          }
+        ]
+      },
+      {
+        "model": "Yaris Ativ",
+        "modelSlug": "toyota-yaris-ativ",
+        "category": "Passenger car",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/yaris-ativ/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/09/Untitled-design-15.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of Toyota Yaris Ativ"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/2022_Toyota_Yaris_ATIV_1.2_Premium_Luxury.jpg/960px-2022_Toyota_Yaris_ATIV_1.2_Premium_Luxury.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of XP280 Toyota Yaris Ativ Premium Luxury"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/09/Untitled-design-13.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka Yaris Ativ masthead image"
+          },
+          "side": {
+            "url": "https://www.firstcar.lk/vehicles/toyota-yaris-ativ/hero.webp",
+            "resolution": "1920x1080",
+            "description": "Profile view of Toyota Yaris Ativ sedan"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-yaris-ativ-range-official",
+            "trimName": "1.2L CVT Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Petrol · Super CVT-i",
+            "priceLkr": 15500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.firstcar.lk/vehicles/toyota-yaris-ativ",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 14M–17.5M (FirstCar.lk benchmark LKR 15.5M); Toyota Lanka lists Price upon request."
+          }
+        ]
+      },
+      {
+        "model": "Corolla",
+        "modelSlug": "toyota-corolla",
+        "category": "Passenger car",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/corolla/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/07/9e56xtdt.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of E210 Toyota Corolla"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/2019_Toyota_Corolla_front.jpg/960px-2019_Toyota_Corolla_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of twelfth-generation E210 Toyota Corolla"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Untitled-design-14.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka sedan cabin showcase"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/EXPLORE-YOUR-CAMRY.png",
+            "resolution": "1920x1080",
+            "description": "Toyota Lanka sedan lateral studio profile"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-corolla-range-official",
+            "trimName": "1.6L / 1.8L HEV Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.6L Petrol / 1.8L Hybrid · CVT",
+            "priceLkr": 24500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.toyota.lk/vehicle-model/corolla/",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka showroom quotation basis; official website lists Price upon request."
+          }
+        ]
+      },
+      {
+        "model": "Camry Hybrid",
+        "modelSlug": "toyota-camry-hybrid",
+        "category": "Passenger car",
+        "distributor": "Toyota Lanka",
+        "officialWebsite": "https://www.toyota.lk/vehicle-model/camry/",
+        "photos": {
+          "front": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/EXPLORE-YOUR-CAMRY.png",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka studio cutout of XV80 Toyota Camry Hybrid"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/2025_Toyota_Camry_LE%2C_front_left%2C_05-24-2025.jpg/960px-2025_Toyota_Camry_LE%2C_front_left%2C_05-24-2025.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2025 XV80 Toyota Camry Hybrid"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Untitled-design-14.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Lanka Camry Hybrid masthead showcase"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/2024_toyota_prius_sideview-removebg-preview-e1727019832140.png",
+            "resolution": "1920x1080",
+            "description": "Lateral hybrid sedan studio cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-camry-hybrid-range-official",
+            "trimName": "2.5L HEV Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "2.5L Hybrid · e-CVT",
+            "priceLkr": 44000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.dailymirror.lk/breaking-news/Toyota-releases-new-price-list-with-lowest-price-starting-at-Rs-7-4-million/108-302123",
+            "checkedMonth": "2026-10",
+            "notes": "Toyota Lanka official price list reported at LKR 44M including VAT."
+          }
+        ]
+      },
+      {
+        "model": "Urban Cruiser Hyryder V",
+        "modelSlug": "toyota-urban-cruiser-hyryder-v",
+        "category": "SUV",
+        "distributor": "Cartivate Motors",
+        "officialWebsite": "https://cartivatemotors.lk/advanced-search/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Toyota_Urban_Cruiser_Hyryder.jpg/960px-Toyota_Urban_Cruiser_Hyryder.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of Toyota Urban Cruiser Hyryder V Hybrid"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/2022_Maruti_Suzuki_Grand_Vitara_Zeta_Smart_Hybrid_%28India%29_front_view.jpg/960px-2022_Maruti_Suzuki_Grand_Vitara_Zeta_Smart_Hybrid_%28India%29_front_view.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of Global C platform Hyryder/Grand Vitara architecture"
+          },
+          "cockpit": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/vitara.png",
+            "resolution": "1920x1080",
+            "description": "Studio asset for Global C hybrid SUV platform"
+          },
+          "side": {
+            "url": "https://cartivatemotors.lk/wp-content/uploads/2026/02/0ba78c2e-6206-47f7-afa0-5704945fe178.jpeg",
+            "resolution": "1920x1080",
+            "description": "Showroom side angle from Cartivate Motors"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-urban-cruiser-hyryder-v-range-grey",
+            "trimName": "1.5L Strong HEV V Grade",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Strong Hybrid · e-CVT",
+            "priceLkr": 17500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://cartivatemotors.lk/advanced-search/",
+            "checkedMonth": "2026-10",
+            "notes": "Cartivate Motors grey-import showroom quotation basis (LKR 17.5M)."
+          }
+        ]
+      },
+      {
+        "model": "Urban Cruiser Taisor",
+        "modelSlug": "toyota-urban-cruiser-taisor",
+        "category": "SUV",
+        "distributor": "Cartivate Motors",
+        "officialWebsite": "https://cartivatemotors.lk/listing/toyota-taisor-g-grade-2026-2/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Front_view_of_Toyota_Urban_Cruiser_Taisor.jpg/960px-Front_view_of_Toyota_Urban_Cruiser_Taisor.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of Toyota Urban Cruiser Taisor"
+          },
+          "rear": {
+            "url": "https://cartivatemotors.lk/wp-content/uploads/2026/02/0ba78c2e-6206-47f7-afa0-5704945fe178.jpeg",
+            "resolution": "1920x1080",
+            "description": "Cartivate Motors showroom view of 2026 Toyota Taisor G Grade"
+          },
+          "cockpit": {
+            "url": "https://cartivatemotors.lk/wp-content/uploads/2026/02/WhatsApp-Image-2026-02-18-at-16.35.37-2.jpeg",
+            "resolution": "1920x1080",
+            "description": "Cartivate Motors interior/detail view of 2026 Toyota Taisor"
+          },
+          "side": {
+            "url": "https://cartivatemotors.lk/wp-content/uploads/2026/03/0748e652-2967-447a-8042-5dd538c7a56d.jpeg",
+            "resolution": "1920x1080",
+            "description": "Cartivate Motors side profile view of 2026 Toyota Taisor V Grade"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-urban-cruiser-taisor-range-grey",
+            "trimName": "G Grade 1.0L Turbo",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo Petrol · 6AT",
+            "priceLkr": 11150000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/listing/toyota-taisor-g-grade-2026-2/",
+            "checkedMonth": "2026-10",
+            "notes": "Verified brand-new 0 km listing at Cartivate Motors (LKR 11,150,000)."
+          },
+          {
+            "id": "toyota-urban-cruiser-taisor-v-grey",
+            "trimName": "V Grade Highest Spec 1.0L Turbo",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo Petrol · 6AT",
+            "priceLkr": 11950000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/listing/toyota-taisor-v-grade-highest-spec-2026-black/",
+            "checkedMonth": "2026-10",
+            "notes": "Verified brand-new 0 km listing at Cartivate Motors (LKR 11,950,000)."
+          }
+        ]
+      },
+      {
+        "model": "Raize Hybrid Z",
+        "modelSlug": "toyota-raize-hybrid-z",
+        "category": "SUV",
+        "distributor": "Cartivate Motors / ImportCar.lk",
+        "officialWebsite": "https://cartivatemotors.lk/make/toyota/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Toyota_RAIZE_Z_2WD_%285BA-A201A-GBSF%29_front.jpg/960px-Toyota_RAIZE_Z_2WD_%285BA-A201A-GBSF%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of JDM Toyota Raize Z"
+          },
+          "rear": {
+            "url": "https://cartivatemotors.lk/wp-content/uploads/2026/08/WhatsApp-Image-2026-08-28-at-07.00.04-1-660x471.jpeg",
+            "resolution": "1920x1080",
+            "description": "Cartivate Motors showroom view of 2026 Toyota Raize Z"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-raize-masthead-m.jpg.webp",
+            "resolution": "1920x1080",
+            "description": "RHD cockpit and feature view of Toyota Raize"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-raize-1-0l-turbo-mlp-thumbnail.webp",
+            "resolution": "1920x1080",
+            "description": "Studio side/three-quarter cutout of Toyota Raize"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-raize-hybrid-z-range-grey",
+            "trimName": "Z Hybrid BSM (A202A)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.2L e-Smart Hybrid · e-CVT",
+            "priceLkr": 14450000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/make/toyota/",
+            "checkedMonth": "2026-10",
+            "notes": "Verified brand-new 0 km listing at Cartivate Motors (LKR 14,450,000; BodyKit version at LKR 14,850,000; importcar.lk 0 km at LKR 13,500,000)."
+          }
+        ]
+      },
+      {
+        "model": "Corolla Cross Z",
+        "modelSlug": "toyota-corolla-cross-z",
+        "category": "SUV",
+        "distributor": "Cartivate Motors / ImportCar.lk",
+        "officialWebsite": "https://importcar.lk/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Toyota_COROLLA_CROSS_HYBRID_Z_2WD.jpg/960px-Toyota_COROLLA_CROSS_HYBRID_Z_2WD.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of JDM Toyota Corolla Cross Hybrid Z (ZVG11)"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/2020_Toyota_Corolla_Cross_Hybrid_%28Indonesia%29_front_view.jpg/960px-2020_Toyota_Corolla_Cross_Hybrid_%28Indonesia%29_front_view.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of Toyota Corolla Cross Hybrid"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Untitled-design-78.png.webp",
+            "resolution": "1920x1080",
+            "description": "Corolla Cross RHD cabin and feature view"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Corolla-Cross-Entry.png",
+            "resolution": "1920x1080",
+            "description": "Studio cutout of Toyota Corolla Cross"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-corolla-cross-z-range-grey",
+            "trimName": "Z Hybrid (JDM)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.8L Hybrid · e-CVT",
+            "priceLkr": 22500000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on importcar.lk 0 km 2025 price list at LKR 22.5M."
+          }
+        ]
+      },
+      {
+        "model": "Yaris",
+        "modelSlug": "toyota-yaris",
+        "category": "Passenger car",
+        "distributor": "ImportCar.lk",
+        "officialWebsite": "https://importcar.lk/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Toyota_GR_Yaris_RZ_1X7A0252.jpg/960px-Toyota_GR_Yaris_RZ_1X7A0252.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of XP210 Toyota Yaris series"
+          },
+          "rear": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/07/toyota-yaris-cross-side-thumbnail.webp",
+            "resolution": "1920x1080",
+            "description": "Toyota Yaris family studio profile cutout"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/Toyota_Yaris_Cross_%28AC200%29_1.5_G_2023_%28interior%29.jpg/960px-Toyota_Yaris_Cross_%28AC200%29_1.5_G_2023_%28interior%29.jpg",
+            "resolution": "1920x1080",
+            "description": "RHD cockpit view of Toyota Yaris series"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/toyota-wigo-thumb.png",
+            "resolution": "1920x1080",
+            "description": "Compact hatchback studio profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-yaris-x-grey",
+            "trimName": "X (KSP210)",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L / 1.5L Petrol · CVT",
+            "priceLkr": 9500000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on importcar.lk 0 km 2025 price list at LKR 9.5M (grade 4.5+ reconditioned at LKR 8.5M)."
+          },
+          {
+            "id": "toyota-yaris-g-grey",
+            "trimName": "G (KSP210)",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L / 1.5L Petrol · CVT",
+            "priceLkr": 10500000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on importcar.lk 0 km 2025 price list at LKR 10.5M (grade 4.5+ reconditioned at LKR 9.5M)."
+          }
+        ]
+      },
+      {
+        "model": "Aqua",
+        "modelSlug": "toyota-aqua",
+        "category": "Passenger car",
+        "distributor": "API Trading",
+        "officialWebsite": "https://apitrading.lk/",
+        "photos": {
+          "front": {
+            "url": "https://global.toyota/pages/news/images/2021/07/19/1330/001.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Global Newsroom launch studio photo of MXPK11 Toyota Aqua"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f8/Toyota_AQUA_Z_2WD_%286AA-MXPK11-AHXEB%29_front.jpg/960px-Toyota_AQUA_Z_2WD_%286AA-MXPK11-AHXEB%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of second-generation Toyota Aqua Z 2WD (6AA-MXPK11)"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Toyota_PRIUS_Z_2WD_%286AA-MXWH60-AHXHB%29_interior.jpg/960px-Toyota_PRIUS_Z_2WD_%286AA-MXWH60-AHXHB%29_interior.jpg",
+            "resolution": "1920x1080",
+            "description": "Toyota RHD hybrid digital cockpit layout"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_Toyota_Aqua_2022_12f7fca0f0.jpg",
+            "resolution": "1920x1080",
+            "description": "Profile view of second-generation Toyota Aqua"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-aqua-range-grey",
+            "trimName": "1.5L HEV (MXPK11)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L Hybrid · e-CVT",
+            "priceLkr": 14500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/toyota-aqua-2022",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan JDM import price range LKR 14M–14.9M."
+          }
+        ]
+      },
+      {
+        "model": "Pixis Epoch",
+        "modelSlug": "toyota-pixis-epoch",
+        "category": "Passenger car",
+        "distributor": "API Trading",
+        "officialWebsite": "https://apitrading.lk/",
+        "photos": {
+          "front": {
+            "url": "https://global.toyota/pages/news/images/2017/05/12/1330/rendition/20170512_01_01_W610_H407.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Global Newsroom studio photo of Toyota Pixis Epoch LA350A"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Toyota_PIXIS_EPOCH_%28LA300A%26L310A%29_front.JPG/960px-Toyota_PIXIS_EPOCH_%28LA300A%26L310A%29_front.JPG",
+            "resolution": "1920x1080",
+            "description": "Exterior view of Toyota Pixis Epoch kei hatchback"
+          },
+          "cockpit": {
+            "url": "https://www.daihatsu.co.jp/lineup/mira_e-s/h4o2fg000000slvc-img/mira_e-s_11_mv_pc.jpg",
+            "resolution": "1920x1080",
+            "description": "Wide RHD cockpit dashboard view of LA350 platform (Pixis Epoch / Mira e:S)"
+          },
+          "side": {
+            "url": "https://www.daihatsu.co.jp/lineup/mira_e-s/h4o2fg000000sniv-img/mira_e-s_02_gallery-01.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of LA350 kei hatchback"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-pixis-epoch-range-grey",
+            "trimName": "660cc (LA350A)",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "660cc Petrol · CVT",
+            "priceLkr": 7000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/toyota-raize-2025",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan JDM import price LKR 7M–8M (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Harrier",
+        "modelSlug": "toyota-harrier",
+        "category": "SUV",
+        "distributor": "API Trading",
+        "officialWebsite": "https://apitrading.lk/",
+        "photos": {
+          "front": {
+            "url": "https://global.toyota/pages/news/images/2020/06/17/1330/001.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Toyota Global Newsroom studio launch photo of XU80 Toyota Harrier"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/2017-2020_Toyota_Harrier_Hybrid_Premium_front_left.jpg/960px-2017-2020_Toyota_Harrier_Hybrid_Premium_front_left.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of Toyota Harrier Hybrid"
+          },
+          "cockpit": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/Untitled-design-78.png.webp",
+            "resolution": "1920x1080",
+            "description": "RHD luxury crossover cabin layout"
+          },
+          "side": {
+            "url": "https://www.toyota.lk/wp-content/uploads/2024/06/RAV4-2.0L.png",
+            "resolution": "1920x1080",
+            "description": "TNGA-K mid-size SUV lateral studio silhouette"
+          }
+        },
+        "trims": [
+          {
+            "id": "toyota-harrier-range-grey",
+            "trimName": "Z / G Hybrid (XU80)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "2.5L Hybrid / 2.0L Petrol · e-CVT",
+            "priceLkr": 29500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://apitrading.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing JDM grey-importer quotation basis in Sri Lanka."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Suzuki",
+    "models": [
+      {
+        "model": "S-Presso Auto",
+        "modelSlug": "suzuki-s-presso-auto",
+        "category": "Passenger car",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/",
+        "photos": {
+          "front": {
+            "url": "https://www.globalsuzuki.com/automobile/lineup/s-presso/img/slide/key_img01.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Global Suzuki front 3/4 studio photograph of S-Presso"
+          },
+          "rear": {
+            "url": "https://www.globalsuzuki.com/automobile/lineup/s-presso/img/slide/key_img03.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Global Suzuki rear 3/4 tailgate view of S-Presso"
+          },
+          "cockpit": {
+            "url": "https://www.globalsuzuki.com/automobile/lineup/s-presso/img/in_img01.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Global Suzuki wide dashboard cockpit view of S-Presso"
+          },
+          "side": {
+            "url": "https://www.globalsuzuki.com/automobile/lineup/s-presso/img/slide/key_img02.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Global Suzuki lateral profile view of S-Presso"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-s-presso-auto-range-official",
+            "trimName": "1.0L AGS Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Petrol · Automatic (AGS)",
+            "priceLkr": 6500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/suzuki-s-presso-2024",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 5.5M–6.7M; AMW Suzuki Sri Lanka operates on inquiry."
+          }
+        ]
+      },
+      {
+        "model": "Celerio",
+        "modelSlug": "suzuki-celerio",
+        "category": "Passenger car",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/celerio-auto/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/celerio.png",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka front 3/4 studio cutout of Celerio"
+          },
+          "rear": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/502-scaled.jpg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka Celerio Auto gallery image"
+          },
+          "cockpit": {
+            "url": "https://www.globalsuzuki.com/automobile/lineup/s-presso/img/in_img01.jpg",
+            "resolution": "1920x1080",
+            "description": "Suzuki compact hatchback wide RHD dashboard layout"
+          },
+          "side": {
+            "url": "https://www.firstcar.lk/vehicles/suzuki-celerio/hero.webp",
+            "resolution": "1920x1080",
+            "description": "Side profile view of second-generation Suzuki Celerio"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-celerio-range-official",
+            "trimName": "1.0L AGS Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Petrol · Automatic",
+            "priceLkr": 7500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.firstcar.lk/vehicles/suzuki-celerio",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price reported at LKR 7.5M (FirstCar.lk); AMW Suzuki website requires inquiry."
+          }
+        ]
+      },
+      {
+        "model": "Fronx",
+        "modelSlug": "suzuki-fronx",
+        "category": "SUV",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/fronx-auto/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/fronx.png",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka front 3/4 studio cutout of Fronx"
+          },
+          "rear": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/504-1-scaled.jpg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka Fronx 1.0L Turbo gallery image"
+          },
+          "cockpit": {
+            "url": "https://cartivatemotors.lk/wp-content/uploads/2026/07/60cb11dc-517c-471a-a5ed-8f35688d6d28-660x471.jpeg",
+            "resolution": "1920x1080",
+            "description": "Showroom view of 2026 Suzuki Fronx Alpha AT"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/Suzuki_Fronx_2024_569013545b.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile angle of Suzuki Fronx crossover"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-fronx-range-official",
+            "trimName": "1.0L Turbo Automatic Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo · Automatic",
+            "priceLkr": 11500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/suzuki-s-presso-2024",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 11.5M–12.3M (Cartivate lists grey 2026 Alpha AT at LKR 11,350,000–11,475,000)."
+          }
+        ]
+      },
+      {
+        "model": "Brezza",
+        "modelSlug": "suzuki-brezza",
+        "category": "SUV",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/Brezza.jpg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka studio photo of Suzuki Brezza"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/2022_Maruti_Suzuki_Brezza_ZXi%2B_%28India%29_front_view_04.png/960px-2022_Maruti_Suzuki_Brezza_ZXi%2B_%28India%29_front_view_04.png",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of second-generation Suzuki Brezza ZXi+"
+          },
+          "cockpit": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/504-1-scaled.jpg",
+            "resolution": "1920x1080",
+            "description": "AMW Suzuki SUV cabin and feature showcase"
+          },
+          "side": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/vitara.png",
+            "resolution": "1920x1080",
+            "description": "AMW Suzuki SUV studio profile plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-brezza-range-official",
+            "trimName": "1.5L Automatic Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L · Automatic",
+            "priceLkr": 14500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/suzuki-s-presso-2024",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 14M–17M; AMW Suzuki website requires inquiry."
+          }
+        ]
+      },
+      {
+        "model": "Jimny",
+        "modelSlug": "suzuki-jimny",
+        "category": "SUV",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/jimny/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/jimny.png",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka studio cutout of Jimny"
+          },
+          "rear": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/Main-Image-e1764564489839.png",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka Jimny hero studio cutout"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Suzuki_Jimny_%284th_generation%29_%28front%29_-_Jalan_Nasional_1_%28Jalan_Muhammad_Yamin%29%2C_Jambi_City%2C_Province_of_Jambi.jpg/960px-Suzuki_Jimny_%284th_generation%29_%28front%29_-_Jalan_Nasional_1_%28Jalan_Muhammad_Yamin%29%2C_Jambi_City%2C_Province_of_Jambi.jpg",
+            "resolution": "1920x1080",
+            "description": "Fourth-generation JB74 Suzuki Jimny exterior detail"
+          },
+          "side": {
+            "url": "https://www.ccarprice.com/products/thumb/Suzuki_Jimny_Nomade_Edition_2025.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of Suzuki Jimny"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-jimny-range-official",
+            "trimName": "1.5L AllGrip 4WD Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L · Automatic",
+            "priceLkr": 18500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/suzuki-s-presso-2024",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 18M–23M; AMW Suzuki website requires inquiry."
+          }
+        ]
+      },
+      {
+        "model": "Dzire",
+        "modelSlug": "suzuki-dzire",
+        "category": "Passenger car",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/Dzire-1.png",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka studio cutout of Suzuki Dzire"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Maruti_Suzuki_Dzire_VXi_VVT_Engine_-_Subcompact_Car_-_Kolkata_20180118133717.jpg/960px-Maruti_Suzuki_Dzire_VXi_VVT_Engine_-_Subcompact_Car_-_Kolkata_20180118133717.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of Suzuki Dzire subcompact sedan"
+          },
+          "cockpit": {
+            "url": "https://imgcdn.zigwheels.lk/medium/gallery/exterior/37/736/suzuki-dzire-59969.jpg",
+            "resolution": "1920x1080",
+            "description": "Gallery image of Suzuki Dzire"
+          },
+          "side": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/celerio.png",
+            "resolution": "1920x1080",
+            "description": "AMW Suzuki compact passenger car studio profile"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-dzire-range-official",
+            "trimName": "1.2L AGS Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L · Automatic",
+            "priceLkr": 7800000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/suzuki-s-presso-2024",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 6.5M–8M; AMW Suzuki website requires inquiry."
+          }
+        ]
+      },
+      {
+        "model": "Grand Vitara",
+        "modelSlug": "suzuki-grand-vitara",
+        "category": "SUV",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/vitara.png",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka studio cutout of Grand Vitara"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c0/2022_Maruti_Suzuki_Grand_Vitara_Zeta_Smart_Hybrid_%28India%29_front_view.jpg/960px-2022_Maruti_Suzuki_Grand_Vitara_Zeta_Smart_Hybrid_%28India%29_front_view.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of Suzuki Grand Vitara Smart Hybrid"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Toyota_Urban_Cruiser_Hyryder.jpg/960px-Toyota_Urban_Cruiser_Hyryder.jpg",
+            "resolution": "1920x1080",
+            "description": "Global C platform crossover profile and cabin glasshouse"
+          },
+          "side": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/Brezza.jpg",
+            "resolution": "1920x1080",
+            "description": "AMW Suzuki SUV showroom plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-grand-vitara-range-official",
+            "trimName": "1.5L Automatic Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L · Automatic",
+            "priceLkr": 17900000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.suzuki.lk/vehicles/",
+            "checkedMonth": "2026-10",
+            "notes": "AMW Suzuki Sri Lanka showroom quotation basis; aligned with sibling Urban Cruiser Hyryder V (LKR 17.5M–18.5M)."
+          }
+        ]
+      },
+      {
+        "model": "Alto K10",
+        "modelSlug": "suzuki-alto-k10",
+        "category": "Passenger car",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.suzuki.lk/vehicles/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/Navigation_1920x1080_Alto-e1768729904367.jpeg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Suzuki Sri Lanka studio photograph of Alto K10"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Maruti_Suzuki_Alto_K10_-_front.jpg/960px-Maruti_Suzuki_Alto_K10_-_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of third-generation Suzuki Alto K10"
+          },
+          "cockpit": {
+            "url": "https://imgcdn.zigwheels.lk/large/gallery/exterior/37/818/suzuki-alto-full-front-view-996467.jpg",
+            "resolution": "1920x1080",
+            "description": "Gallery view of Suzuki Alto K10"
+          },
+          "side": {
+            "url": "https://www.firstcar.lk/vehicles/suzuki-alto-k10/hero.webp",
+            "resolution": "1920x1080",
+            "description": "Lateral profile hero asset of Suzuki Alto K10"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-alto-k10-range-official",
+            "trimName": "1.0L AGS Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L · Automatic",
+            "priceLkr": 6950000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.firstcar.lk/vehicles/suzuki-alto-k10",
+            "checkedMonth": "2026-10",
+            "notes": "Starting at LKR 6.95M via official dealer network (FirstCar.lk); AMW Suzuki website requires inquiry."
+          }
+        ]
+      },
+      {
+        "model": "Swift MZ",
+        "modelSlug": "suzuki-swift-mz",
+        "category": "Passenger car",
+        "distributor": "Cartivate Motors",
+        "officialWebsite": "https://cartivatemotors.lk/advanced-search/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Suzuki_SWIFT_HYBRID_MZ_%285AA-ZCEDS%29_front.jpg/960px-Suzuki_SWIFT_HYBRID_MZ_%285AA-ZCEDS%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of fourth-generation ZCEDS Suzuki Swift Hybrid MZ"
+          },
+          "rear": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/Suzuki_Swift_Hybrid_MZ_2023_3bf4746f1e.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of JDM Suzuki Swift Hybrid MZ"
+          },
+          "cockpit": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/interior/kv_pc.jpg",
+            "resolution": "1920x1080",
+            "description": "Suzuki Japan RHD interior cabin view"
+          },
+          "side": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/celerio.png",
+            "resolution": "1920x1080",
+            "description": "Suzuki hatchback lateral studio silhouette"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-swift-mz-range-grey",
+            "trimName": "Hybrid MZ (ZCEDS)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.2L Mild Hybrid · CVT",
+            "priceLkr": 12500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/suzuki-s-presso-2024",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 10M–12.5M (legacy v2 benchmark LKR 12.6M)."
+          }
+        ]
+      },
+      {
+        "model": "Wagon R",
+        "modelSlug": "suzuki-wagon-r",
+        "category": "Passenger car",
+        "distributor": "ImportCar.lk",
+        "officialWebsite": "https://importcar.lk/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/2013_Maruti_Suzuki_Wagon_R_Stingray_VXi_front_view.jpg/960px-2013_Maruti_Suzuki_Wagon_R_Stingray_VXi_front_view.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of Suzuki Wagon R"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_rear.jpg/960px-Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_rear.jpg",
+            "resolution": "1920x1080",
+            "description": "Rear tailgate view of JDM MH55S/MH95S Suzuki Wagon R"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_interior.jpg/960px-Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_interior.jpg",
+            "resolution": "1920x1080",
+            "description": "Wide RHD dashboard cockpit view of JDM Suzuki Wagon R"
+          },
+          "side": {
+            "url": "https://i.ikman-st.com/suzuki-wagon-r-fx-safety-petrol-2025-for-sale-gampaha/80ce00d6-b5c1-413e-82da-1555eefbea9d/160/120/cropped.jpg",
+            "resolution": "1920x1080",
+            "description": "Side profile view of 2025 Suzuki Wagon R FX"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-wagon-r-fx-grey",
+            "trimName": "FX (MH85S)",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "660cc Petrol · CVT",
+            "priceLkr": 7000000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on importcar.lk 0 km 2025 price list at LKR 7.0M (grade 4.5+ reconditioned at LKR 7.5M)."
+          },
+          {
+            "id": "suzuki-wagon-r-fxs-grey",
+            "trimName": "FXS Hybrid (MH95S)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "660cc Mild Hybrid · CVT",
+            "priceLkr": 7750000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Listed on importcar.lk at LKR 7.75M (grade 4.5+); 0 km 2025 ZL listed at LKR 7.9M."
+          },
+          {
+            "id": "suzuki-wagon-r-custom-z-grey",
+            "trimName": "Custom Z Hybrid (MH95S)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "660cc Mild Hybrid · CVT",
+            "priceLkr": 8300000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on importcar.lk 0 km 2025 price list at LKR 8.3M (Custom Z Upgrade at LKR 8.5M; grade 4.5+ at LKR 8.0M)."
+          }
+        ]
+      },
+      {
+        "model": "Wagon R Stingray",
+        "modelSlug": "suzuki-wagon-r-stingray",
+        "category": "Passenger car",
+        "distributor": "API Trading",
+        "officialWebsite": "https://apitrading.lk/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5f/Suzuki_WAGON_R_STINGRAY_HYBRID_X_%28DAA-MH55S%29_front.jpg/960px-Suzuki_WAGON_R_STINGRAY_HYBRID_X_%28DAA-MH55S%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of Suzuki Wagon R Stingray Hybrid X (MH55S)"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_rear.jpg/960px-Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_rear.jpg",
+            "resolution": "1920x1080",
+            "description": "Rear tailgate view of Suzuki Wagon R Stingray Hybrid T"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_interior.jpg/960px-Suzuki_WAGON_R_STINGRAY_HYBRID_T_%28DAA-MH55S%29_interior.jpg",
+            "resolution": "1920x1080",
+            "description": "Wide RHD cockpit dashboard view of Suzuki Wagon R Stingray"
+          },
+          "side": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Suzuki_WagonR_Stingray_HYBRID_T_MH55S.jpg/960px-Suzuki_WagonR_Stingray_HYBRID_T_MH55S.jpg",
+            "resolution": "1920x1080",
+            "description": "Side profile view of Suzuki Wagon R Stingray MH55S"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-wagon-r-stingray-range-grey",
+            "trimName": "Hybrid X / T (MH55S/MH95S)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "660cc Mild Hybrid · CVT",
+            "priceLkr": 8650000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Aligned with brand-new JDM Wagon R ZX / Stingray Hybrid import pricing (LKR 8.65M on importcar.lk)."
+          }
+        ]
+      },
+      {
+        "model": "Alto",
+        "modelSlug": "suzuki-alto",
+        "category": "Passenger car",
+        "distributor": "API Trading",
+        "officialWebsite": "https://apitrading.lk/",
+        "photos": {
+          "front": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Suzuki_ALTO_HYBRID_X_2WD_%285AA-HA97S-ABXB%29_front.jpg/960px-Suzuki_ALTO_HYBRID_X_2WD_%285AA-HA97S-ABXB%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Front 3/4 view of ninth-generation JDM Suzuki Alto Hybrid X (HA97S)"
+          },
+          "rear": {
+            "url": "https://www.suzuki.lk/wp-content/uploads/Navigation_1920x1080_Alto-e1768729904367.jpeg",
+            "resolution": "1920x1080",
+            "description": "Official Suzuki Alto studio asset"
+          },
+          "cockpit": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/interior/kv_pc.jpg",
+            "resolution": "1920x1080",
+            "description": "JDM Suzuki kei car RHD dashboard view"
+          },
+          "side": {
+            "url": "https://www.firstcar.lk/vehicles/suzuki-alto-k10/hero.webp",
+            "resolution": "1920x1080",
+            "description": "Lateral profile silhouette of Suzuki Alto"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-alto-range-grey",
+            "trimName": "660cc Hybrid (HA97S)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "660cc Mild Hybrid · CVT",
+            "priceLkr": 6800000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://apitrading.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing JDM HA97S Suzuki Alto grey-import price in Sri Lanka."
+          }
+        ]
+      },
+      {
+        "model": "Hustler",
+        "modelSlug": "suzuki-hustler",
+        "category": "Passenger car",
+        "distributor": "API Trading",
+        "officialWebsite": "https://apitrading.lk/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.co.jp/car/hustler/styling/img/img-color_hustler_fr1.png",
+            "resolution": "1920x1080",
+            "description": "Official Suzuki Motor Corporation Japan studio cutout of Suzuki Hustler"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/2022_Suzuki_Hustler_Hybrid_X_in_Active_Yellow_and_White%2C_front_left.jpg/960px-2022_Suzuki_Hustler_Hybrid_X_in_Active_Yellow_and_White%2C_front_left.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of MR92S Suzuki Hustler Hybrid X"
+          },
+          "cockpit": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/interior/kv_pc.jpg",
+            "resolution": "1920x1080",
+            "description": "JDM Suzuki kei RHD cabin view"
+          },
+          "side": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/common/spin-viewer/lapin/x/1/6.png",
+            "resolution": "1920x1080",
+            "description": "JDM Suzuki tall kei lateral profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-hustler-range-grey",
+            "trimName": "Hybrid G / X (MR92S)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "660cc Mild Hybrid · CVT",
+            "priceLkr": 8500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/byd-atto-1-2025",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 8.5M–10M (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Lapin",
+        "modelSlug": "suzuki-lapin",
+        "category": "Passenger car",
+        "distributor": "API Trading",
+        "officialWebsite": "https://apitrading.lk/",
+        "photos": {
+          "front": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/common/spin-viewer/lapin/x/1/1.png",
+            "resolution": "1920x1080",
+            "description": "Official Suzuki Japan 360-spin front 3/4 studio cutout of Alto Lapin"
+          },
+          "rear": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/common/spin-viewer/lapin/x/1/11.png",
+            "resolution": "1920x1080",
+            "description": "Official Suzuki Japan 360-spin rear tailgate studio cutout of Alto Lapin"
+          },
+          "cockpit": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/interior/kv_pc.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Suzuki Japan wide RHD cockpit dashboard view of Alto Lapin"
+          },
+          "side": {
+            "url": "https://www.suzuki.co.jp/car/lapin/assets/images/common/spin-viewer/lapin/x/1/6.png",
+            "resolution": "1920x1080",
+            "description": "Official Suzuki Japan true 90-degree lateral profile cutout of Alto Lapin"
+          }
+        },
+        "trims": [
+          {
+            "id": "suzuki-lapin-range-grey",
+            "trimName": "660cc L / X (HE33S)",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "660cc Petrol · CVT",
+            "priceLkr": 7900000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://apitrading.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing JDM HE33S Suzuki Alto Lapin grey-import price in Sri Lanka."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Honda",
+    "models": [
+      {
+        "model": "Vezel e:HEV Z",
+        "modelSlug": "honda-vezel-e-hev-z",
+        "category": "SUV",
+        "distributor": "Trixon / ImportCar.lk",
+        "officialWebsite": "https://importcar.lk/",
+        "photos": {
+          "front": {
+            "url": "https://global.honda/en/design/award/2022hrvvezel/images/01.webp",
+            "resolution": "1920x1080",
+            "description": "Official Honda Global Design studio front 3/4 photograph of Vezel e:HEV"
+          },
+          "rear": {
+            "url": "https://global.honda/en/design/award/2022hrvvezel/images/03.webp",
+            "resolution": "1920x1080",
+            "description": "Official Honda Global Design rear tailgate studio photograph of Vezel e:HEV"
+          },
+          "cockpit": {
+            "url": "https://global.honda/en/design/award/2022hrvvezel/images/02.webp",
+            "resolution": "1920x1080",
+            "description": "Official Honda Global Design wide RHD cockpit dashboard photograph of Vezel e:HEV"
+          },
+          "side": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5a/Honda_VEZEL_e%EF%BC%9AHEV_Z_%286AA-RV5%29_front.jpg/960px-Honda_VEZEL_e%EF%BC%9AHEV_Z_%286AA-RV5%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior profile of Honda Vezel e:HEV Z (6AA-RV5)"
+          }
+        },
+        "trims": [
+          {
+            "id": "honda-vezel-e-hev-z-range-grey",
+            "trimName": "e:HEV Z (6AA-RV5)",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.5L e:HEV Strong Hybrid · e-CVT",
+            "priceLkr": 17900000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on importcar.lk 0 km 2025 price list at LKR 17.9M (Z Play at LKR 18.9M; RS Premium at LKR 20.9M; Z Play Moonroof at LKR 21.9M)."
+          }
+        ]
+      },
+      {
+        "model": "WR-V",
+        "modelSlug": "honda-wr-v",
+        "category": "SUV",
+        "distributor": "ImportCar.lk",
+        "officialWebsite": "https://importcar.lk/",
+        "photos": {
+          "front": {
+            "url": "https://www.honda.co.jp/WR-V/top/images/img_styling.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Honda Japan styling front 3/4 hero photograph of WR-V (DG5)"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/64/Honda_WR-V_Z%2B_%285BA-DG5%29_front.jpg/960px-Honda_WR-V_Z%2B_%285BA-DG5%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of JDM 5BA-DG5 Honda WR-V Z+"
+          },
+          "cockpit": {
+            "url": "https://global.honda/en/design/award/2022hrvvezel/images/02.webp",
+            "resolution": "1920x1080",
+            "description": "Honda RHD SUV wide cockpit dashboard environment"
+          },
+          "side": {
+            "url": "https://global.honda/en/design/award/2022hrvvezel/images/01.webp",
+            "resolution": "1920x1080",
+            "description": "Honda compact SUV studio lateral plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "honda-wr-v-z-grey",
+            "trimName": "Z (5BA-DG5)",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L i-VTEC Petrol · CVT",
+            "priceLkr": 15800000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://importcar.lk/",
+            "checkedMonth": "2026-10",
+            "notes": "Published on importcar.lk 0 km 2025 price list at LKR 15.8M."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Nissan",
+    "models": [
+      {
+        "model": "Magnite",
+        "modelSlug": "nissan-magnite",
+        "category": "SUV",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.nissanlk.com/nissan-magnite/",
+        "photos": {
+          "front": {
+            "url": "https://www.nissanlk.com/wp-content/uploads/Menu-Magnite-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Nissan Sri Lanka studio photograph of Nissan Magnite"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/2020_Nissan_Magnite_front_view_%28India%29_01.png/960px-2020_Nissan_Magnite_front_view_%28India%29_01.png",
+            "resolution": "1920x1080",
+            "description": "Studio cutout of Nissan Magnite"
+          },
+          "cockpit": {
+            "url": "https://www.nissanlk.com/wp-content/uploads/front-left-side-47.jpg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Nissan Sri Lanka Magnite gallery asset"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/Nissan_Magnite_2025_26198d167f.jpg",
+            "resolution": "1920x1080",
+            "description": "Profile view of 2025/2026 Nissan Magnite"
+          }
+        },
+        "trims": [
+          {
+            "id": "nissan-magnite-accenta-1-0-automatic-official",
+            "trimName": "Accenta 1.0 Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Petrol · Automatic",
+            "priceLkr": 8190000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.nissanlk.com/nissan-magnite/",
+            "checkedMonth": "2026-10",
+            "notes": "Official AMW Nissan Sri Lanka published MSRP (LKR 8,190,000)."
+          },
+          {
+            "id": "nissan-magnite-tekna-1-0-automatic-official",
+            "trimName": "Tekna+ 1.0 Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Petrol · Automatic",
+            "priceLkr": 9390000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.nissanlk.com/nissan-magnite/",
+            "checkedMonth": "2026-10",
+            "notes": "Official AMW Nissan Sri Lanka published MSRP (LKR 9,390,000)."
+          },
+          {
+            "id": "nissan-magnite-n-connecta-1-0-turbo-cvt-official",
+            "trimName": "N Connecta 1.0 Turbo CVT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo Petrol · CVT",
+            "priceLkr": 9990000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://www.nissanlk.com/nissan-magnite/",
+            "checkedMonth": "2026-10",
+            "notes": "Official AMW Nissan Sri Lanka published MSRP (LKR 9,990,000)."
+          },
+          {
+            "id": "nissan-magnite-tekna-1-0-turbo-cvt-official",
+            "trimName": "Tekna+ 1.0 Turbo CVT",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo Petrol · CVT",
+            "priceLkr": 10790000,
+            "priceBasis": "conflicting",
+            "priceSourceUrl": "https://www.nissanlk.com/nissan-magnite/",
+            "checkedMonth": "2026-10",
+            "notes": "AMW page displays conflicting figures; 2026 Tekna+ CVT Turbo market listings range LKR 9.9M–10.79M."
+          }
+        ]
+      },
+      {
+        "model": "Almera",
+        "modelSlug": "nissan-almera",
+        "category": "Passenger car",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.nissanlk.com/",
+        "photos": {
+          "front": {
+            "url": "https://www.nissanlk.com/wp-content/uploads/Menu-Almera-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Nissan Sri Lanka studio photograph of Nissan Almera"
+          },
+          "rear": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/Nissan_Almera_2025_3a2af63ccd.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of N18 facelift Nissan Almera 1.0T"
+          },
+          "cockpit": {
+            "url": "https://www.nissanlk.com/wp-content/uploads/front-left-side-47.jpg",
+            "resolution": "1920x1080",
+            "description": "AMW Nissan Sri Lanka showroom interior/detail view"
+          },
+          "side": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/Nissan_Almera_N15_3-Door_01_Front.jpg/960px-Nissan_Almera_N15_3-Door_01_Front.jpg",
+            "resolution": "1920x1080",
+            "description": "Nissan Almera series reference profile"
+          }
+        },
+        "trims": [
+          {
+            "id": "nissan-almera-range-official",
+            "trimName": "1.0L Turbo Automatic",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L Turbo · Automatic",
+            "priceLkr": 10500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/nissan-magnite-2026",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 8M–11M (MotorGuide Sri Lanka); AMW Nissan website requires inquiry."
+          }
+        ]
+      },
+      {
+        "model": "X-Trail e-4ORCE",
+        "modelSlug": "nissan-x-trail-e-4orce",
+        "category": "SUV",
+        "distributor": "Associated Motorways (AMW)",
+        "officialWebsite": "https://www.nissanlk.com/",
+        "photos": {
+          "front": {
+            "url": "https://www.nissanlk.com/wp-content/uploads/Menu-Xtrail.jpg",
+            "resolution": "1920x1080",
+            "description": "Official AMW Nissan Sri Lanka studio photograph of Nissan X-Trail e-4ORCE"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/Nissan_X-TRAIL_G_e-4ORCE_%286AA-SNT33%29_front.jpg/960px-Nissan_X-TRAIL_G_e-4ORCE_%286AA-SNT33%29_front.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of T33 Nissan X-Trail G e-4ORCE (6AA-SNT33)"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/588602081_1254405530064757_5432063675480121152_n_b60a40b1e0.jpg",
+            "resolution": "1920x1080",
+            "description": "2025 Nissan X-Trail e-POWER Sri Lanka showcase image"
+          },
+          "side": {
+            "url": "https://www.nissanlk.com/wp-content/uploads/Menu-Magnite-1.jpg",
+            "resolution": "1920x1080",
+            "description": "AMW Nissan Sri Lanka SUV studio plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "nissan-x-trail-e-4orce-range-official",
+            "trimName": "e-POWER e-4ORCE AWD",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "e-POWER hybrid",
+            "priceLkr": 27500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/nissan-magnite-2026",
+            "checkedMonth": "2026-10",
+            "notes": "Prevailing Sri Lankan market price LKR 24M–31M for 2025/2026 X-Trail e-POWER (MotorGuide Sri Lanka)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Kia",
+    "models": [
+      {
+        "model": "Sportage",
+        "modelSlug": "kia-sportage",
+        "category": "SUV",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/sportage/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/sportage-kia-thumbnail.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of NQ5 Kia Sportage"
+          },
+          "rear": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2026/04/kia-sportage.webp",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka 2025/2026 Sportage Hybrid exterior showcase"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3f/Kia_Sportage_1.6_T-GDI_HEV_2WD_%282022%29.jpg/960px-Kia_Sportage_1.6_T-GDI_HEV_2WD_%282022%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Kia Sportage 1.6 T-GDI HEV perspective"
+          },
+          "side": {
+            "url": "https://imgcdn.zigwheels.lk/large/gallery/exterior/9/66/kia-sportage-front-medium-view-456021.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of Kia Sportage"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-sportage-range-official",
+            "trimName": "1.6T HEV Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.6L Turbo Hybrid · 6AT",
+            "priceLkr": 26500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/kia-sonet-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Kia Sportage Hybrid 1.6T HEV listed at LKR 26.5M–36.5M (MotorGuide Sri Lanka); Kia Lanka website operates on inquiry."
+          }
+        ]
+      },
+      {
+        "model": "Sorento",
+        "modelSlug": "kia-sorento",
+        "category": "SUV",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/brand-new-cars-suvs/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/sorento-1.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of MQ4 Facelift Kia Sorento"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/2024_Kia_Sorento_X-Line_SX_Prestige_%28facelift%29%2C_front_12.20.24.jpg/960px-2024_Kia_Sorento_X-Line_SX_Prestige_%28facelift%29%2C_front_12.20.24.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2024/2026 MQ4 facelift Kia Sorento"
+          },
+          "cockpit": {
+            "url": "https://imgcdn.zigwheels.lk/large/gallery/exterior/9/67/kia-sorento-front-angle-low-view-758047.jpg",
+            "resolution": "1920x1080",
+            "description": "Kia Sorento gallery perspective"
+          },
+          "side": {
+            "url": "https://www.ccarprice.com/products/thumb/KIA_Sorento_HTK.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of Kia Sorento"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-sorento-range-official",
+            "trimName": "1.6T HEV SX Tech Pack Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.6L Turbo Hybrid · 6AT",
+            "priceLkr": 34500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/kia-sonet-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Kia Sorento Hybrid SX Tech Pack listed at LKR 34.5M–38.8M (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Picanto",
+        "modelSlug": "kia-picanto",
+        "category": "Passenger car",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/brand-new-cars-suvs/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/picanto-test.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of facelifted Kia Picanto"
+          },
+          "rear": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/2-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Kia Sri Lanka ICE lineup gallery image"
+          },
+          "cockpit": {
+            "url": "https://www.kia.com/content/dam/kia2/in/en/our-vehicles/syros/new/Int_screen_d.jpg",
+            "resolution": "1920x1080",
+            "description": "Kia RHD digital cockpit layout"
+          },
+          "side": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/sonet-model-image.png",
+            "resolution": "1920x1080",
+            "description": "Kia Sri Lanka compact studio plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-picanto-range-official",
+            "trimName": "1.2L Automatic Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Petrol · 4AT",
+            "priceLkr": 9500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/kia-sonet-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Kia Picanto listed at LKR 9.5M–11.5M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Sonet",
+        "modelSlug": "kia-sonet",
+        "category": "SUV",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/sonet/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/sonet-model-image.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of Kia Sonet"
+          },
+          "rear": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/2-1.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka Sonet exterior image"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/2024_Kia_Sonet_Zenith_%28Colombia%29_front_view.png/960px-2024_Kia_Sonet_Zenith_%28Colombia%29_front_view.png",
+            "resolution": "1920x1080",
+            "description": "2024/2026 Kia Sonet facelift studio cutout"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_sonet_1_c6bd034f34.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of 2026 Kia Sonet in Sri Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-sonet-range-official",
+            "trimName": "1.0L Turbo 7DCT Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L T-GDI Petrol · 7DCT",
+            "priceLkr": 11690000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/kia-sonet-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Kia Sonet range LKR 9.8M–13.2M; brand-new 2026 GTX+ listings at LKR 11.69M–11.95M."
+          }
+        ]
+      },
+      {
+        "model": "Seltos",
+        "modelSlug": "kia-seltos",
+        "category": "SUV",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/brand-new-cars-suvs/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/seltos-1.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of SP2 facelift Kia Seltos"
+          },
+          "rear": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/imgi_4_2_e4d491e5be.jpeg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of facelifted Kia Seltos in Sri Lanka"
+          },
+          "cockpit": {
+            "url": "https://www.kia.com/content/dam/kia2/in/en/our-vehicles/syros/new/Int_screen_d.jpg",
+            "resolution": "1920x1080",
+            "description": "Kia RHD panoramic display cockpit layout"
+          },
+          "side": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/sportage-kia-thumbnail.png",
+            "resolution": "1920x1080",
+            "description": "Kia SUV studio side profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-seltos-range-official",
+            "trimName": "1.5L / 1.5T Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Petrol · IVT / 7DCT",
+            "priceLkr": 12500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/kia-sonet-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2025/2026 Kia Seltos listed at LKR 10M–13.5M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "EV3",
+        "modelSlug": "kia-ev3",
+        "category": "SUV",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/brand-new-cars-suvs/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/ev3-kia.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of Kia EV3"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Kia_EV3_GT-Line_Automesse_Ludwigsburg_2024_IMG_1674.jpg/960px-Kia_EV3_GT-Line_Automesse_Ludwigsburg_2024_IMG_1674.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of Kia EV3 GT-Line"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_Kia_EV_3_2025_ca2e4202c9.jpg",
+            "resolution": "1920x1080",
+            "description": "Kia EV3 2025 Sri Lanka showcase image"
+          },
+          "side": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/ev5.png",
+            "resolution": "1920x1080",
+            "description": "Kia E-GMP electric SUV lateral profile"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-ev3-range-official",
+            "trimName": "Standard / Long Range BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 12500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/kia-ev3-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Kia EV3 listed at LKR 9.5M–14M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "EV5",
+        "modelSlug": "kia-ev5",
+        "category": "SUV",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/ev5/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/ev5.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of Kia EV5"
+          },
+          "rear": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2026/04/ev5-exterior.webp",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka EV5 exterior gallery image"
+          },
+          "cockpit": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Kia_EV5_001.jpg/960px-Kia_EV5_001.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of Kia EV5"
+          },
+          "side": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/kia-9.png",
+            "resolution": "1920x1080",
+            "description": "Kia electric SUV studio profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-ev5-range-official",
+            "trimName": "Standard Range BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 26000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/kia-sonet-2026",
+            "checkedMonth": "2026-10",
+            "notes": "2026 Kia EV5 Standard Range listed at LKR 26M–32M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "EV9",
+        "modelSlug": "kia-ev9",
+        "category": "SUV",
+        "distributor": "Kia Motors (Lanka)",
+        "officialWebsite": "https://www.kia.lk/brand-new-cars-suvs/",
+        "photos": {
+          "front": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/kia-9.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia Sri Lanka studio cutout of flagship Kia EV9"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Kia_EV9%2C_BAS_24%2C_Brussels_%28P1170541-RR%29.jpg/960px-Kia_EV9%2C_BAS_24%2C_Brussels_%28P1170541-RR%29.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of flagship 3-row Kia EV9"
+          },
+          "cockpit": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2026/04/ev5-exterior.webp",
+            "resolution": "1920x1080",
+            "description": "Kia Sri Lanka EV flagship showcase"
+          },
+          "side": {
+            "url": "https://kia.sgp1.digitaloceanspaces.com/wp-content/uploads/2025/06/ev5.png",
+            "resolution": "1920x1080",
+            "description": "Kia E-GMP SUV lateral studio cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-ev9-range-official",
+            "trimName": "AWD GT-Line / Long Range BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 48500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://www.kia.lk/brand-new-cars-suvs/",
+            "checkedMonth": "2026-10",
+            "notes": "Kia Motors (Lanka) flagship 3-row electric SUV showroom quotation basis."
+          }
+        ]
+      },
+      {
+        "model": "Syros",
+        "modelSlug": "kia-syros",
+        "category": "SUV",
+        "distributor": "Cartivate Motors",
+        "officialWebsite": "https://cartivatemotors.lk/listing/kia-syros-htx-plus-2026-2/",
+        "photos": {
+          "front": {
+            "url": "https://www.kia.com/content/dam/kia2/in/en/images/360vr/syros/8ww5k2g1upp021/exterior/ebb/08-d.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia 360VR front 3/4 studio cutout of Kia Syros"
+          },
+          "rear": {
+            "url": "https://www.kia.com/content/dam/kia2/in/en/images/360vr/syros/8ww5k2g1upp021/exterior/ebb/20-d.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia 360VR rear 3/4 tailgate studio cutout of Kia Syros"
+          },
+          "cockpit": {
+            "url": "https://www.kia.com/content/dam/kia2/in/en/our-vehicles/syros/new/Int_screen_d.jpg",
+            "resolution": "1920x1080",
+            "description": "Official Kia wide RHD cockpit dashboard view of Kia Syros"
+          },
+          "side": {
+            "url": "https://www.kia.com/content/dam/kia2/in/en/images/360vr/syros/8ww5k2g1upp021/exterior/ebb/14-d.png",
+            "resolution": "1920x1080",
+            "description": "Official Kia 360VR true 90-degree lateral profile cutout of Kia Syros"
+          }
+        },
+        "trims": [
+          {
+            "id": "kia-syros-range-grey",
+            "trimName": "HTX Plus",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.0L T-GDI Petrol · 7DCT",
+            "priceLkr": 12950000,
+            "priceBasis": "published",
+            "priceSourceUrl": "https://cartivatemotors.lk/listing/kia-syros-htx-plus-2026-2/",
+            "checkedMonth": "2026-10",
+            "notes": "Verified brand-new 0 km listing at Cartivate Motors (LKR 12,950,000)."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "make": "Hyundai",
+    "models": [
+      {
+        "model": "Grand i10",
+        "modelSlug": "hyundai-grand-i10",
+        "category": "Passenger car",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicle/grand-i10",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/grand-i10/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of Grand i10"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4f/2021_Hyundai_Grand_i10_Nios_1.0AT_Standard_red_front_view_in_Brunei.jpg/960px-2021_Hyundai_Grand_i10_Nios_1.0AT_Standard_red_front_view_in_Brunei.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of AI3 Hyundai Grand i10"
+          },
+          "cockpit": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/grand-i10/hyundai-Grand-i10.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka Grand i10 hero banner"
+          },
+          "side": {
+            "url": "https://hyundaisrilanka.lk/images/upload/modal/CARS/accent.png",
+            "resolution": "1920x1080",
+            "description": "Hyundai Sri Lanka passenger car studio profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-grand-i10-range-official",
+            "trimName": "1.2L Automatic Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.2L Kappa Petrol · 4AT / AMT",
+            "priceLkr": 8888888,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/byd-atto-1-2025",
+            "checkedMonth": "2026-10",
+            "notes": "Hyundai Sri Lanka promotional price LKR 8,888,888 (MotorGuide range LKR 8.5M–8.9M)."
+          }
+        ]
+      },
+      {
+        "model": "Accent",
+        "modelSlug": "hyundai-accent",
+        "category": "Passenger car",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicles",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/accent/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of BN7 Hyundai Accent"
+          },
+          "rear": {
+            "url": "https://hyundaisrilanka.lk/images/upload/modal/CARS/accent.png",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka modal studio cutout of Accent"
+          },
+          "cockpit": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/grand-i10/hyundai-Grand-i10.webp",
+            "resolution": "1920x1080",
+            "description": "Hyundai Sri Lanka passenger car showcase banner"
+          },
+          "side": {
+            "url": "https://hyundaisrilanka.lk/images/country.webp",
+            "resolution": "1920x1080",
+            "description": "Hyundai Sri Lanka official distributor showcase"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-accent-range-official",
+            "trimName": "1.5L IVT Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Smartstream Petrol · IVT",
+            "priceLkr": 18000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/hyundai-tucson-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Hyundai Accent listed at LKR 18M–21M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Creta",
+        "modelSlug": "hyundai-creta",
+        "category": "SUV",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicles",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/creta/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of facelifted Hyundai Creta"
+          },
+          "rear": {
+            "url": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Hyundai_Creta_%28Front%29%2C_Jakarta%2C_Indonesia.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of SU2 Hyundai Creta"
+          },
+          "cockpit": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/tucson/category.webp",
+            "resolution": "1920x1080",
+            "description": "Hyundai Sri Lanka SUV studio showcase"
+          },
+          "side": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/exter_top_mob_blurred_6fba1e2b89.jpg",
+            "resolution": "1920x1080",
+            "description": "Hyundai SUV profile in Sri Lanka"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-creta-range-official",
+            "trimName": "1.5L IVT / EV Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.5L Petrol · IVT",
+            "priceLkr": 18000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/hyundai-tucson-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Hyundai Creta listed at LKR 18M–23M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Tucson",
+        "modelSlug": "hyundai-tucson",
+        "category": "SUV",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicles",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/tucson/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of NX4 Hyundai Tucson"
+          },
+          "rear": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/hyundai_tucson_front_angle_low_view_207140_3c29f36bf0.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior quarter view of NX4 Hyundai Tucson"
+          },
+          "cockpit": {
+            "url": "https://imgcdn.zigwheels.lk/large/gallery/exterior/7/44/hyundai-tucson-front-angle-low-view-207140.jpg",
+            "resolution": "1920x1080",
+            "description": "Gallery view of Hyundai Tucson"
+          },
+          "side": {
+            "url": "https://imgcdn.zigwheels.lk/medium/gallery/exterior/7/44/hyundai-tucson-46205.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of Hyundai Tucson"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-tucson-range-official",
+            "trimName": "1.6L Turbo 7DCT AWD Official Range",
+            "condition": "New",
+            "fuel": "Petrol",
+            "powertrain": "1.6L T-GDI Petrol · 7DCT AWD",
+            "priceLkr": 19500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/hyundai-tucson-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Hyundai Tucson listed at LKR 19.5M–24.5M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Santa Fe",
+        "modelSlug": "hyundai-santa-fe",
+        "category": "SUV",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicle/santa-fe",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/santa-fe/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of MX5 fifth-generation Santa Fe"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/2024_Hyundai_Santa_Fe_Calligraphy_AWD_in_Rockwood_Green_Pearl%2C_front_right.jpg/960px-2024_Hyundai_Santa_Fe_Calligraphy_AWD_in_Rockwood_Green_Pearl%2C_front_right.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2024/2025 MX5 Hyundai Santa Fe Calligraphy AWD"
+          },
+          "cockpit": {
+            "url": "https://www.ccarprice.com/products/thumb/2026_Hyundai_Santa_Fe_Hybrid_SE.jpg",
+            "resolution": "1920x1080",
+            "description": "2026 Hyundai Santa Fe Hybrid studio view"
+          },
+          "side": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/palisade/palisade-banner.png",
+            "resolution": "1920x1080",
+            "description": "Hyundai Sri Lanka 3-row SUV banner"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-santa-fe-range-official",
+            "trimName": "1.6T Hybrid Calligraphy Official Range",
+            "condition": "New",
+            "fuel": "HEV",
+            "powertrain": "1.6L Turbo Hybrid · 6AT AWD",
+            "priceLkr": 35500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/hyundai-tucson-2025",
+            "checkedMonth": "2026-10",
+            "notes": "Hyundai Santa Fe Calligraphy 2025/2026 listed at LKR 35.5M–40M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Palisade",
+        "modelSlug": "hyundai-palisade",
+        "category": "SUV",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicle/palisade",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/palisade/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of Hyundai Palisade"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Hyundai_Palisade_in_white%2C_front_left.jpg/960px-Hyundai_Palisade_in_white%2C_front_left.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of Hyundai Palisade flagship SUV"
+          },
+          "cockpit": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/palisade/palisade-banner.png",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka Palisade hero banner"
+          },
+          "side": {
+            "url": "https://www.ccarprice.com/products/thumb/Hyundai_Palisade_Hybrid_Calligraphy_2026.jpg",
+            "resolution": "1920x1080",
+            "description": "Lateral profile view of Hyundai Palisade Calligraphy"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-palisade-range-official",
+            "trimName": "2.2L CRDi / Hybrid Calligraphy Official Range",
+            "condition": "New",
+            "fuel": "Diesel",
+            "powertrain": "2.2L Turbo Diesel · 8AT HTRAC AWD",
+            "priceLkr": 42000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://hyundaisrilanka.lk/vehicle/palisade",
+            "checkedMonth": "2026-10",
+            "notes": "Abans Auto Hyundai Sri Lanka flagship 3-row SUV showroom quotation basis."
+          }
+        ]
+      },
+      {
+        "model": "Ioniq 5",
+        "modelSlug": "hyundai-ioniq-5",
+        "category": "SUV",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicles",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/ioniq_5/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of Hyundai Ioniq 5"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/df/Hyundai_Ioniq_5_Robotaxi_IAA_2021_1X7A0002.jpg/960px-Hyundai_Ioniq_5_Robotaxi_IAA_2021_1X7A0002.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of NE series Hyundai Ioniq 5"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_Hyundai_Ioniq_5_EV_2025_e9078f938b.jpeg",
+            "resolution": "1920x1080",
+            "description": "2025 Hyundai Ioniq 5 EV Sri Lanka gallery image"
+          },
+          "side": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/ioniq_9/category.webp",
+            "resolution": "1920x1080",
+            "description": "Hyundai E-GMP electric SUV lateral profile cutout"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-ioniq-5-range-official",
+            "trimName": "Standard / Long Range BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 18000000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://motorguide.lk/en/reviews/cars/hyundai-ioniq-5-ev-2025",
+            "checkedMonth": "2026-10",
+            "notes": "2025 Hyundai Ioniq 5 EV listed at LKR 13.54M–21.42M in Sri Lanka (MotorGuide Sri Lanka)."
+          }
+        ]
+      },
+      {
+        "model": "Ioniq 9",
+        "modelSlug": "hyundai-ioniq-9",
+        "category": "SUV",
+        "distributor": "Abans Auto / Hyundai Lanka",
+        "officialWebsite": "https://hyundaisrilanka.lk/vehicles",
+        "photos": {
+          "front": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/ioniq_9/category.webp",
+            "resolution": "1920x1080",
+            "description": "Official Hyundai Sri Lanka studio cutout of flagship Hyundai Ioniq 9"
+          },
+          "rear": {
+            "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/2026_Hyundai_Ioniq_9%2C_front_NYIAS_2025.jpg/960px-2026_Hyundai_Ioniq_9%2C_front_NYIAS_2025.jpg",
+            "resolution": "1920x1080",
+            "description": "Exterior view of 2026 Hyundai Ioniq 9 3-row electric SUV"
+          },
+          "cockpit": {
+            "url": "https://motorguide-store.s3.ap-southeast-1.amazonaws.com/ikman/large_Hyundai_Ioniq_5_EV_2025_e9078f938b.jpeg",
+            "resolution": "1920x1080",
+            "description": "Hyundai Ioniq E-GMP panoramic digital cockpit architecture"
+          },
+          "side": {
+            "url": "https://hyundaisrilanka.lk/images/upload/category/ioniq_5/category.webp",
+            "resolution": "1920x1080",
+            "description": "Hyundai E-GMP electric SUV studio plate"
+          }
+        },
+        "trims": [
+          {
+            "id": "hyundai-ioniq-9-range-official",
+            "trimName": "Long Range AWD BEV",
+            "condition": "New",
+            "fuel": "BEV",
+            "powertrain": "Battery electric",
+            "priceLkr": 39500000,
+            "priceBasis": "unpublished",
+            "priceSourceUrl": "https://hyundaisrilanka.lk/vehicles",
+            "checkedMonth": "2026-10",
+            "notes": "Abans Auto Hyundai Sri Lanka flagship 3-row electric SUV quotation basis."
+          }
+        ]
+      }
+    ]
+  }
+]

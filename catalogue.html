@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#103e36">
+  <title>Vehicle Catalogue · VahanaIQ</title>
+  <meta name="description" content="Explore passenger vehicles and pickups with curated official imagery and clearly sourced Sri Lankan prices.">
+  <link rel="icon" href="assets/icons/favicon.svg">
+  <link rel="stylesheet" href="css/curated-catalogue.css">
+  <script src="js/catalogue-data.js?v=2.11.3" defer></script>
+  <script src="js/curated-catalogue.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#vehicles">Skip to Vehicles</a>
+  <header class="site-header"><a class="brand" href="index.html"><img src="assets/icons/logo-option-1-apex.svg" width="34" height="34" alt=""><span>VahanaIQ</span></a><nav aria-label="Main"><a href="index.html">Calculator</a><a href="catalogue.html" aria-current="page">Catalogue</a></nav><button id="sourceGuide" class="quiet">Source Guide <span aria-hidden="true">↗</span></button></header>
+  <main>
+    <section class="hero"><div><p class="eyebrow">The Vehicle Collection</p><h1>Find Your<br>Next Vehicle.</h1><p class="intro">Official imagery. Local prices. A clearer starting point.</p></div><div class="hero-aside"><span class="edition">Sri Lanka · October 2026</span><div class="metrics" id="metrics" aria-live="polite"></div><p class="small">Published prices and dealer offers are labelled separately.</p></div></section>
+    <section class="filters" aria-label="Filter Vehicles"><label class="search-field"><span class="sr-only">Search Vehicles</span><img src="assets/icons/lucide/search.svg" alt="" width="20" height="20"><input id="search" type="search" placeholder="Search make, model or trim…" autocomplete="off"></label><div class="filter-row"><label>Make<select id="make"><option value="">All Makes</option></select></label><label>Body Type<select id="body"><option value="">All Body Types</option></select></label><label>Price Source<select id="priceType"><option value="">All Vehicles</option><option value="priced">Published Prices</option><option value="official">Distributor Prices</option><option value="dealer">Dealer Asking Prices</option><option value="estimated">Estimated Prices</option><option value="quote">Price on Request</option></select></label><label>Sort By<select id="sort"><option value="make">Make &amp; Model</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option></select></label><button id="clear" class="quiet">Reset Filters</button></div></section>
+    <div class="results-line"><p id="resultCount" role="status">Loading the collection…</p><button id="reviewFilter" class="quiet" aria-pressed="false">My Review <span id="reviewCount"></span></button></div>
+    <section id="vehicles" class="grid" aria-label="Vehicle Catalogue" tabindex="-1"></section>
+    <nav class="pagination" aria-label="Catalogue Pages"><button id="previous" disabled>← Previous</button><span id="pageCount"></span><button id="next" disabled>Next →</button></nav>
+    <section class="review-bar"><div><strong>Your Catalogue Review</strong><p>Mark vehicles to revisit. Your review stays in this browser.</p></div><button id="export">Export Review <img src="assets/icons/lucide/download.svg" width="16" height="16" alt=""></button></section>
+  </main>
+  <footer><p>Manufacturer images are representative; equipment, colour and appearance may vary by year, trim and market. Prices are published amounts or asking prices, checked on the dates shown. They are not binding quotations.</p><p>© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle imagery and brand marks belong to their respective owners. VahanaIQ is an independent personal project.</p><div><a href="about.html">About</a><a href="terms.html">Terms &amp; Disclaimers</a><a href="privacy.html">Privacy</a><a href="data/catalogue.json" download>Catalogue Data</a></div></footer>
+  <dialog id="detail" aria-labelledby="detailTitle"><header class="dialog-head"><div><p id="detailMake" class="eyebrow"></p><h2 id="detailTitle"></h2></div><button id="closeDetail" aria-label="Close Vehicle Details" class="close">✕</button></header><div id="detailBody"></div></dialog>
+  <dialog id="guide" aria-labelledby="guideTitle"><header class="dialog-head"><h2 id="guideTitle">Source Guide</h2><button id="closeGuide" class="close" aria-label="Close Source Guide">✕</button></header><div class="guide-body"><h3>Images</h3><p>Selected visually from manufacturer and authorised distributor websites. Sri Lankan sources are preferred. Manuals, promotional graphics, wrong models and repeated colour views are excluded. Every frame uses the same 8:5 proportion.</p><h3>Prices</h3><dl><dt>Distributor Price</dt><dd>A published Sri Lankan manufacturer or authorised distributor amount. Starting prices, offers and stock-specific prices retain their source conditions.</dd><dt>Dealer Asking Price</dt><dd>A local dealer’s offer for the stated vehicle, year and condition. It may differ from an official distributor price.</dd><dt>Published Launch Price</dt><dd>A dated manufacturer announcement. Introductory availability must be reconfirmed.</dd><dt>Estimated Price</dt><dd>An indicative market calculation based on customs tariff, CIF, and distributor bracket where a custom quote is required.</dd><dt>Price on Request</dt><dd>A matching numerical price has not been substantiated. No amount has been invented to fill the gap.</dd></dl><p>Counts and price ranges are calculated from this catalogue’s records. Vehicle prices come from the cited sources. The collection is a review edition, not an exhaustive record of every vehicle available in Sri Lanka.</p><p>Photo credits identify the source and rights holder; they do not transfer ownership or establish a licence for commercial reuse.</p></div></dialog>
+  <p class="toast" id="toast" role="status" hidden></p>
+  <noscript><p class="load-error">Enable JavaScript to search the catalogue, or <a href="data/catalogue.json">read the source data</a>.</p></noscript>
+</body></html>
