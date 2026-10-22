@@ -49,12 +49,32 @@ near(t.rows[0].dp, 6000000);
 near(t.rows[2].dp, 4000000);
 assert.deepEqual(computeLeaseTable(cars, { ...base, down: 70 }).rows.map(r => r.downPct), [70, 70, 70]);
 
-// Optional costs: fees up front, insurance spread over the term, neither counted as debt
+// Optional costs: fees up front, insurance spread over the term, included in the personal monthly budget
 const withCosts = computeLeaseTable([cars[0]], { ...base, down: 60, fees: 150000, insurance: 240000, income: 500000 }).rows[0];
 const plain = computeLeaseTable([cars[0]], { ...base, down: 60, income: 500000 }).rows[0];
 near(withCosts.upfront, withCosts.dp + 150000);
 near(withCosts.monthlyCost, withCosts.rental + 20000);
 near(withCosts.total, plain.total + 150000 + 240000 * 7);
-assert.equal(withCosts.status, plain.status, 'Insurance and fees do not change the debt-to-income status');
+near(withCosts.need, (withCosts.rental + 20000) / base.dti);
+const tight = computeLeaseTable([cars[0]], { ...base, down: 60, insurance: 240000, income: 220000 });
+assert.equal(tight.rows[0].status, 'bad');
+near(tight.room, 220000 * base.dti - 20000);
+assert.equal(computeLeaseTable([cars[0]], { ...base, income: 220000, dti: 0.5 }).rows[0].status, 'ok');
 
 console.log('Flat-rate, legal down payment and extra-cost checks passed');
+
+assert.equal(minDownFor('New', 'commercial'), 40);
+assert.equal(computeLeaseTable([{ price: 20000000, cond: 'New', financeClass: 'commercial' }], base).rows[0].downPct, 40);
+
+// An asserted "Used" condition cannot override a known recent first registration.
+const today = new Date('2026-10-21T12:00:00');
+assert.equal(minDownFor('Used', null, '2026-04-01', today), 60);
+assert.equal(minDownFor('Used', null, '2025-10-21', today), 60);
+assert.equal(minDownFor('Used', null, '2025-10-20', today), 40);
+assert.equal(minDownFor('Used', null, '2026-02-30', today), 60);
+assert.equal(minDownFor('Used', null, '2027-01-01', today), 60);
+assert.equal(minDownFor('New', null, '2024-01-01', today), 60);
+const recent = computeLeaseTable([{price: 10000000, cond: 'Used', firstRegisteredOn: '2026-10-01'}], {...base, down: 40}).rows[0];
+assert.equal(recent.downPct, 60);
+near(recent.loan, 4000000);
+assert.equal(computeLeaseTable(cars, {...base, down: 100}).rows[0].loan, 0);

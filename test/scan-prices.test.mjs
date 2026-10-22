@@ -44,7 +44,9 @@ assert.match(ic[0].evidence, /updated on 08th Oct 2026/);
 const taisor = baseVehicles.find(v => v.id === 'toyota-urban-cruiser-taisor-range-grey');
 const raize = baseVehicles.find(v => v.id === 'toyota-raize-hybrid-z-range-grey');
 const tank = baseVehicles.find(v => v.id === 'gwm-tank-300-range-official');
-assert.ok(taisor?.price && raize?.price && tank && !tank.price, 'fixture entries exist');
+assert.ok(taisor?.price && raize?.price && tank, 'fixture entries exist');
+// Keep the first-price case independent of live catalogue price updates.
+const fixtureCatalogue = baseVehicles.map(v => v.id === tank.id ? { ...v, price: null } : v);
 const listings = [
   { source: 'cartivate', title: 'Toyota Taisor G Grade 2026', price: 11400000, condition: 'New', url: 'https://c/1', year: 2026 },
   { source: 'cartivate', title: 'Toyota Taisor G Grade 2026 Red', price: 11200000, condition: 'New', url: 'https://c/2', year: 2026 },
@@ -60,7 +62,7 @@ const rules = [
   { id: tank.id, source: 'gwm', title: '^Tank 300$' },
   { id: 'no-such-entry', source: 'gwm', title: 'x' }
 ];
-const { matches, unmatched } = matchListings(rules, listings, baseVehicles);
+const { matches, unmatched } = matchListings(rules, listings, fixtureCatalogue);
 assert.deepEqual(matches[0].found.map(l => l.price), [11200000, 11400000], 'Taisor: new listings only, cheapest first, other sites ignored');
 assert.equal(matches[1].found.length, 0, 'Raize: the BodyKit listing is excluded');
 assert.equal(matches[2].found[0].price, 33995000);
@@ -72,7 +74,7 @@ const file = buildPricesFile(matches, '2026-10-21');
 assert.deepEqual(file.vehicles.map(v => v.id), [taisor.id]);
 assert.equal(file.vehicles[0].prices[0].brand_new_price_lkr, 11200000);
 assert.equal(file.vehicles[0].prices[0].as_of, '2026-10');
-const report = renderScanReport({ date: '2026-10-21', matches, unmatched, catalogue: baseVehicles, errors: [], rules });
+const report = renderScanReport({ date: '2026-10-21', matches, unmatched, catalogue: fixtureCatalogue, errors: [], rules });
 assert.match(report, /First prices to review[\s\S]*GWM Tank 300 \| LKR 33,995,000/);
 assert.match(report, /Priced entries not listed this month[\s\S]*Toyota Raize Hybrid Z/);
 assert.match(report, /Brand-new listings with no catalogue entry[\s\S]*Hyundai Venue N Line 2026/);

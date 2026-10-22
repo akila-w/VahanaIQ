@@ -1,0 +1,28 @@
+# Checks the live site after a deploy, so a stale-but-successful Pages build cannot go unnoticed
+# (see "Deploying" in README.md). scripts/smoke-deploy.mjs waits for the release marker, then
+# verifies every page and asset is served and that docs/, test/ and scripts/ are not published.
+name: Smoke test the deployed site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-deploy
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Confirm the published site matches this release
+        run: node scripts/smoke-deploy.mjs

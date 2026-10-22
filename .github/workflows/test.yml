@@ -28,4 +28,8 @@ jobs:
           node test/tokens.test.mjs
           node test/calculator.test.mjs
           node test/account.test.mjs
+          node test/account-session.test.mjs
+          node test/copy-privacy.test.mjs
+          node test/catalogue-data.test.mjs
           node test/scan-prices.test.mjs
+          node test/savings-bulk.test.mjs

@@ -53,9 +53,9 @@ try {
   }
 
   // Origins, screenshots and the rate limit
-  const cloudRunWith = async (body, headers) => {
+  const cloudRunWith = async (body, headers, peer) => {
     const res = { statusCode: 200, headers: {}, set(k, v) { this.headers[k] = v; }, status(code) { this.statusCode = code; return this; }, json(b) { this.body = b; }, send() {} };
-    await globalThis.__searchHandler({ method: 'POST', body, headers }, res);
+    await globalThis.__searchHandler({ method: 'POST', body, headers, socket: peer ? { remoteAddress: peer } : undefined }, res);
     return res;
   };
   const cloudflareWith = async (body, headers, env = {}) => {
@@ -84,7 +84,15 @@ try {
   r = { statusCode: 200 };
   for (let i = 0; i < 4 && r.statusCode !== 429; i++) r = await cloudflareWith({ query: 'Toyota' }, { 'CF-Connecting-IP': '203.0.113.10' }, { RATE_LIMIT: '2' });
   assert.equal(r.statusCode, 429, 'Cloudflare honours RATE_LIMIT');
-  console.log('Both proxies: origin allowlist, screenshot checks and rate limit passed');
+  // Forged forwarded headers cannot rotate the quota for a single transport peer.
+  upstreamStatus = 200;
+  for (let i = 0; i < 30; i++) assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': `198.51.100.${i}, 203.0.113.9`, 'x-real-ip': `198.51.100.${i}` }, '192.0.2.1')).statusCode, 200);
+  for (const body of [{query:'Toyota'}, {image:{mimeType:'image/png',data:'AAAA'}}, {mode:'price',queries:['Toyota']}]) {
+    r = await cloudRunWith(body, {'x-forwarded-for':'new-forged-prefix'}, '192.0.2.1');
+    assert.equal(r.statusCode,429);
+  }
+  assert.equal((await cloudRunWith({query:'Toyota'}, {}, '192.0.2.2')).statusCode,200,'Another transport peer has its own budget');
+  console.log('Both proxies: origins, screenshots and rate limits passed; forged IP prefixes cannot bypass the Cloud Run quota');
 } finally {
   globalThis.fetch = realFetch; console.error = realError;
   if (previousKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = previousKey;

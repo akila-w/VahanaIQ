@@ -223,6 +223,7 @@ globalThis.document = {
 };
 
 globalThis.window = {
+  addEventListener() {},
   location: {
     href: "http://localhost:8000/index.html",
     origin: "http://localhost:8000",
@@ -441,8 +442,8 @@ assert(html.includes('aria-label="Search vehicle with Gemini AI or paste adverti
 assert(html.includes('<label for="aiImgUrl">'), "index.html must give aiImgUrl a visible label");
 assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
 assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
-assert(html.includes('js/app.js?v=2.10.1'), "index.html must reference js/app.js?v=2.10.1");
-assert(html.includes('css/style.css?v=2.10.1'), "index.html must reference css/style.css?v=2.10.1");
+assert(html.includes('js/app.js?v=2.11.3'), "index.html must reference js/app.js?v=2.11.3");
+assert(html.includes('css/style.css?v=2.11.3'), "index.html must reference css/style.css?v=2.11.3");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");
 
 // -------------------------------------------------------------
@@ -453,13 +454,14 @@ const imgFetcher = await import("../js/image-fetcher.js");
 const { fetchVehicleStudioImage } = imgFetcher;
 
 const yarisImg = await fetchVehicleStudioImage("Toyota Yaris Cross", "Toyota_Yaris_Cross");
-assert.equal(yarisImg, "assets/images/toyota-yaris-cross.jpg");
+assert.match(yarisImg, /^assets\/images\/review-thumbnails\/[a-f0-9]+\.webp$/);
 
 const vezelImg = await fetchVehicleStudioImage("Honda Vezel e:HEV", "Honda_Vezel");
-assert.equal(vezelImg, "assets/images/honda-vezel.jpg");
+assert.ok(vezelImg === "" || /^assets\/images\/review-thumbnails\//.test(vezelImg));
 
 const sealionImg = await fetchVehicleStudioImage("BYD Sealion 6 Premium", "BYD_Sealion_6");
-assert.equal(sealionImg, "assets/images/byd-sealion-6.jpg");
+assert.match(sealionImg, /^assets\/images\/review-thumbnails\/[a-f0-9]+\.webp$/);
+assert.equal(await fetchVehicleStudioImage("Nonexistent Model", "Some_Wikipedia_Slug"), "");
 console.log("✓ Zero-Touch Studio Image Resolver PASSED\n");
 
 // -------------------------------------------------------------

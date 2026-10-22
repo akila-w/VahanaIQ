@@ -51,15 +51,22 @@ assert.equal(new Set(catalogue.map(v => v.id)).size, catalogue.length);
 assert.ok(catalogue.length >= 100, 'Guard against accidentally publishing an incomplete generated file');
 for (const v of catalogue) {
   assert.match(v.id, /^[a-z0-9-]+$/);
-  assert.ok(['Passenger car', 'SUV'].includes(v.body), v.name + ' is outside the requested scope');
+  assert.ok(['Passenger car', 'SUV', 'MPV', 'Passenger van', 'Minibus', 'Pickup'].includes(v.body), v.name + ' is outside the requested scope');
   assert.match(v.sourceUrl, /^https:\/\//);
   assert.match(v.checkedOn, /^\d{4}-\d{2}-\d{2}$/);
   assert.ok(v.price === null || (Number.isFinite(v.price) && v.price > 0));
   if (v.price === null) assert.match(vehicleBatchError([v]), /greater than zero/);
-  else { assert.match(v.priceSourceUrl, /^https:\/\//); assert.ok(v.trim); }
+  else {
+    assert.match(v.priceSourceUrl, /^https:\/\//);
+    assert.ok(v.trim || v.priceScope, 'A price must name its trim or explicitly state its broader/unverified scope');
+    if (['published', 'starting'].includes(v.priceBasis)) {
+      assert.ok(['confirmed','correction'].includes(v.priceVerification));
+      assert.match(v.priceVerifiedOn, /^\d{4}-\d{2}-\d{2}$/);
+    }
+  }
 }
-for (const excluded of ['Hilux', 'Hiace', 'Coaster', 'Alphard', 'Ertiga', 'XL6', 'Carnival', 'Clavis', 'Tasman', 'Triber', 'M6', 'Shark 6', 'Alza']) {
-  assert.ok(!catalogue.some(v => v.model === excluded), excluded + ' must not enter this catalogue');
+for (const included of ['Alphard', 'Hiace', 'Coaster', 'Ertiga', 'XL6', 'Carnival', 'Tasman', 'Triber', 'M6', 'Shark 6', 'Alza', 'D-Max']) {
+  assert.ok(catalogue.some(v => v.model === included), included + ' must be in the expanded catalogue');
 }
 assert.ok(searchCatalogue(catalogue, 'NISSAN turbo').every(v => v.make === 'Nissan' && v.pt.includes('Turbo')));
 assert.equal(searchCatalogue(catalogue, 'zz-no-such-model').length, 0);
@@ -84,16 +91,16 @@ try {
 
 // Photo credits registry & attribution tests
 const creditEntries = Object.entries(PHOTO_CREDITS);
-assert.ok(creditEntries.length >= 120, `Expected at least 120 photo credits, got ${creditEntries.length}`);
+assert.ok(creditEntries.length >= 80, 'Official galleries must be available for the reviewed source set');
 for (const [key, c] of creditEntries) {
-  assert.ok(typeof key === 'string' && key.length > 0, 'Credit key must be non-empty');
-  assert.match(c.img, /^https:\/\//, `${key}: img must be an https URL`);
-  assert.ok(typeof c.author === 'string' && c.author.trim().length > 0, `${key}: author must be non-empty`);
-  assert.ok(!c.licence.toUpperCase().includes('-NC'), `${key}: licence must not prohibit commercial reuse (-NC)`);
-  assert.ok(!c.licence.toUpperCase().includes('NONCOMMERCIAL'), `${key}: licence must not be non-commercial`);
-  assert.match(c.licence, /^(CC0(\s+1\.0)?|Public domain|CC BY(\s+[2-4]\.0)?|CC BY-SA(\s+[2-4]\.0)?)$/, `${key}: licence must be strictly CC0, Public domain, CC BY, or CC BY-SA`);
-  assert.match(c.licenceUrl, /^https?:\/\//, `${key}: licenceUrl must be a valid URL`);
-  assert.match(c.sourceUrl, /^https:\/\/commons\.wikimedia\.org\/wiki\/File:/, `${key}: sourceUrl must be a Wikimedia Commons File URL`);
+  assert.ok(typeof key === 'string' && key.length > 0);
+  assert.match(c.img, /^assets\/images\/review-thumbnails\/[a-f0-9]+\.webp$/);
+  assert.equal(c.sourceKind, 'official');
+  assert.equal(c.aspectRatio, '8:5');
+  assert.match(c.sourceUrl, /^https:\/\//);
+  assert.ok(!/wikimedia|wikipedia/.test(c.sourceUrl));
+  assert.ok(fs.existsSync(c.img));
+  assert.match(c.licence, /rights reserved/);
 }
 
 // creditFor and photoForModel lookup tests
@@ -106,9 +113,10 @@ assert.equal(photoForModel('Nonexistent Supercar 9000'), '', 'Unknown vehicle mu
 
 // formatCreditHtml tests
 const creditHtml = formatCreditHtml(yarisCredit);
-assert.match(creditHtml, /^<span class="photo-credit">Photo: <a href="https:\/\/commons\.wikimedia\.org\/wiki\/File:/);
-assert.match(creditHtml, /rel="noopener noreferrer">/);
+assert.match(creditHtml, /<a class="photo-source" href="https:\/\//);
+assert.match(creditHtml, /rel="noopener noreferrer"/);
+assert.match(creditHtml, /Photo Source/);
 assert.equal(formatCreditHtml(null), '');
 assert.equal(formatCreditHtml({}), '');
 
-console.log(`Catalogue: ${catalogue.length} entries; photo credits: ${creditEntries.length} verified; migration, selection, source contracts, unknown prices and stable-ID refresh checks passed`);
+console.log(`Catalogue: ${catalogue.length} entries; official photo sources: ${creditEntries.length}; migration, selection, source contracts, unknown prices and stable-ID refresh checks passed`);

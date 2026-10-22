@@ -49,8 +49,15 @@ assert.match(rules, /allow read, delete: if request\.auth != null && request\.au
 assert.match(rules, /hasOnly\(\["version", "data", "updatedAt"\]\)/);
 assert.doesNotMatch(rules, /allow read, write: if true/);
 const account = fs.readFileSync(new URL('../js/account.js', import.meta.url), 'utf8');
-assert.match(account, /setDoc\(userDoc\(\), \{ version: 1, data, updatedAt: fb\.F\.serverTimestamp\(\) \}\)/);
+assert.match(account, /setDoc\(userDoc\(ctx\), \{ version: 1, data, updatedAt: ctx\.firebase\.F\.serverTimestamp\(\) \}\)/);
 assert.match(account, /MAX_SIZE = 900000/);
 assert.match(rules, /data\.size\(\) <= 900000/);
 
 console.log('Account sync checks passed');
+
+const planner = { version: 1, draft: { plannerVehicle: 'test-car', plannerSaved: '125000.25' }, scenarios: [{ id: 'goal-a', name: 'Deposit', draft: { plannerVehicle: 'test-car' }, savedOn: '2026-10-21' }] };
+const planned = cloudCopy({}, { cars: [] }, planner);
+assert.ok(!isEmptyCopy(planned));
+assert.deepEqual(parseCloud({ data: JSON.stringify(planned) }).planner, planner);
+assert.notEqual(fingerprint(planned), fingerprint(empty));
+assert.equal(syncDirection(empty, planned, null), 'download');
