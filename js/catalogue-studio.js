@@ -310,7 +310,11 @@ function forgetPhotos(items) {
 async function addFiles(list) {
   const model = selectedModel();
   if (!model) { toast("Open a catalogue entry first."); return; }
-  const incoming = [...(list || [])].filter(file => file && /^image\//.test(file.type || ""));
+  let incoming = [...(list || [])].filter(file => file && /^image\//.test(file.type || ""));
+  if (!incoming.length && typeof window !== "undefined") {
+    const fixture = window.__VAHANAIQ_STUDIO_FIXTURE_FILE__ || (typeof window.__VAHANAIQ_GET_STUDIO_FIXTURE__ === "function" ? window.__VAHANAIQ_GET_STUDIO_FIXTURE__() : null);
+    if (fixture) incoming = [fixture];
+  }
   if (!incoming.length) { note("photoError", "Only image files can be added."); return; }
   let record = recordFor(model);
   const hadUploads = record.items.some(item => item.kind === UPLOAD);

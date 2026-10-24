@@ -33,7 +33,7 @@ http.createServer(async (req, res) => {
   }
   try {
     const relative = pathname === '/' ? 'index.html' : decodeURIComponent(pathname).replace(/^\//, '');
-    if (!/^(?:(?:index|about|privacy|terms)\.html|manifest\.json|favicon\.ico|sw\.js|robots\.txt|sitemap\.xml|(?:js|css|assets|docs)\/)/.test(relative)) throw new Error('Not served');
+    if (!/^(?:(?:index|about|privacy|terms|catalogue|studio)\.html|manifest\.json|favicon\.ico|sw\.js|robots\.txt|sitemap\.xml|(?:js|css|assets|docs|data|test)\/)/.test(relative)) throw new Error('Not served');
     const target = path.resolve(root, relative);
     if (!target.startsWith(root + path.sep)) throw new Error('Outside root');
     let data = await fs.readFile(target);

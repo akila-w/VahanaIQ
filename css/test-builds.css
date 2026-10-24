@@ -1,0 +1,1029 @@
+/* ==========================================================================
+   VahanaIQ Interactive Streamlining Test Builds (css/test-builds.css)
+   Fixes all layout, compositing, flex/grid collision, and sticky-header issues:
+   - Eliminates offscreen backdrop-filter blank panel bug & GPU thermal spike
+   - Uses sticky in-flow top switcher bar so .site-header is never overlapped
+   - Fixes .terms-split-row flex crushing of Income & Commitments
+   - Fixes .gauge-dial-box 340px width overflow onto .telemetry-console
+   - Fixes cashflow threshold label collision (40% CBSL vs 50% Max Cap)
+   - Fixes Option 2 Tab isolation & above-the-fold compactness
+   - Fixes Option 3 Two-Column Split-Pane without internal scroll clipping
+   - Fixes Catalogue & Photo Studio header and filter bar alignment
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. Compositor & Performance Stabilization (Fixes Blank Offscreen Panels)
+   -------------------------------------------------------------------------- */
+body.tb-active::before,
+body.tb-active::after {
+  /* Pause infinite full-screen blur animations so offscreen panels paint
+     reliably during scrolling/captures and CPU stays cool */
+  animation: none !important;
+  will-change: auto !important;
+}
+
+body.tb-active main {
+  /* Remove pageFadeIn fill-mode transform on <main> so descendant panels do
+     not get trapped in a 100vh transformed backdrop root */
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+body.tb-active .panel,
+body.tb-active .studio-panel {
+  /* Use crisp solid/opaque surface so panels below the initial viewport
+     never render as empty translucent glass boxes */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--panel, #ffffff) !important;
+}
+
+/* --------------------------------------------------------------------------
+   1. Top Interactive Test Build Switcher Bar (In-Flow Sticky — Zero Overlap)
+   -------------------------------------------------------------------------- */
+.tb-switcher-bar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: #0d2621;
+  border-bottom: 1px solid rgba(94, 234, 212, 0.28);
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  padding: 8px 20px;
+  font: 12px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
+  flex-wrap: wrap;
+}
+
+.tb-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #5eead4;
+  background: rgba(20, 184, 166, 0.16);
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tb-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.tb-seg {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 7px;
+  padding: 2px;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.tb-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  font: 600 11px/1.2 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 4px 9px;
+  min-height: 26px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.tb-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tb-btn.is-active,
+.tb-btn[aria-pressed="true"] {
+  background: #14b8a6;
+  color: #042f2e;
+  font-weight: 700;
+}
+
+.tb-btn-demo {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  min-height: 26px;
+  font-size: 11px;
+}
+
+.tb-btn-demo:hover {
+  background: rgba(20, 184, 166, 0.25);
+  border-color: #5eead4;
+  color: #ffffff;
+}
+
+@media print {
+  .tb-switcher-bar,
+  .tb-workspace-tabs,
+  .tb-sticky-summary,
+  .tb-drawer-toggle {
+    display: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. Shared Streamlining Rules (Active in option1, option2, option3, hybrid)
+   -------------------------------------------------------------------------- */
+body[data-test-layout]:not([data-test-layout="baseline"]) .site-header {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+/* Compact Hero Banner with clean spacing between numbers and labels */
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero {
+  padding: 16px 0 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 14px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero .eyebrow {
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero h1 {
+  font-size: clamp(22px, 2.4vw, 30px);
+  letter-spacing: -0.8px;
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero .intro {
+  font-size: 13px;
+  max-width: 64ch;
+  margin: 0;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero-aside {
+  width: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 14px;
+  background: var(--badge-bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero-aside .edition {
+  padding: 4px 9px;
+  font-size: 9.5px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero-aside .metrics {
+  margin-top: 0;
+  gap: 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero-aside .metrics > div {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero-aside .metrics strong {
+  font-size: 17px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
+  display: inline;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero-aside .metrics span {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .hero-aside .small {
+  display: none;
+}
+
+/* Hide legacy jump-nav in streamlined modes */
+body[data-test-layout]:not([data-test-layout="baseline"]) .page-nav {
+  display: none !important;
+}
+
+/* Streamline Loan Terms & Income panel */
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-panel {
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-panel .panel-head {
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-panel .panel-head h2 {
+  font-size: 19px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) #resetInputsBtn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-grid {
+  gap: 10px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .strategy-scenarios-wrap {
+  padding: 6px 10px;
+  gap: 8px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .strategy-pill {
+  padding: 4px 10px;
+  min-height: 34px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard {
+  padding: 12px 14px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-head {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+}
+
+/* Fix Lease Financing 4-column grid: all 4 core fields sit in 1 clean row on desktop */
+@media (min-width: 980px) {
+  body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-financing .terms-subcard-grid.cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-financing .terms-field.span-2 {
+    grid-column: span 1 !important;
+  }
+}
+
+/* Fix .terms-split-row so Income & Commitments is NEVER squished by Incidental Costs drawer */
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-split-row {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-income,
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-costs {
+  flex: none !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+@media (min-width: 768px) {
+  body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-income .terms-subcard-grid.cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-income .terms-field.span-2 {
+    grid-column: span 1 !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-costs .terms-subcard-grid.cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) .terms-subcard-costs .terms-field.span-2 {
+    grid-column: span 1 !important;
+  }
+}
+
+/* Hide multi-line hint paragraphs unless warning so inputs stay compact */
+body[data-test-layout]:not([data-test-layout="baseline"]) .terms-field .hint:not(.warn) {
+  display: none;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .stepper-wrap,
+body[data-test-layout]:not([data-test-layout="baseline"]) .seg-control,
+body[data-test-layout]:not([data-test-layout="baseline"]) .input-adorn-wrap {
+  min-height: 38px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .stepper-wrap input,
+body[data-test-layout]:not([data-test-layout="baseline"]) .input-adorn-wrap input,
+body[data-test-layout]:not([data-test-layout="baseline"]) .step-btn {
+  min-height: 36px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .seg-btn {
+  min-height: 30px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* Collapsible Drawer Buttons (for Optional Costs, CBSL LTV, and Savings Planner) */
+.tb-drawer-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--badge-bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  text-align: left;
+  min-height: 36px;
+  flex: none;
+}
+
+.tb-drawer-toggle:hover {
+  border-color: var(--accent);
+}
+
+.tb-drawer-toggle .tb-drawer-meta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mute);
+  margin-left: auto;
+}
+
+.tb-drawer-toggle .tb-chev {
+  font-size: 12px;
+  color: var(--accent);
+  transition: transform 0.16s ease;
+}
+
+.tb-drawer-toggle[aria-expanded="true"] .tb-chev {
+  transform: rotate(180deg);
+}
+
+.tb-drawer-collapsed {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. Budget Visualization Modes (Fixes Gauge Overlap & Label Collisions)
+   -------------------------------------------------------------------------- */
+body[data-test-layout]:not([data-test-layout="baseline"]) #budgetPanel {
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) #budgetPanel .panel-head {
+  margin-bottom: 10px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) #budgetPanel .panel-head h2 {
+  font-size: 19px;
+}
+
+/* Prevent .gauge-dial-box (width: 340px in style.css) from overflowing its column */
+body[data-test-layout]:not([data-test-layout="baseline"]) .gauge-wrapper {
+  display: grid !important;
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .gauge-dial-box {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .gauge-svg-container {
+  height: 130px !important;
+  max-width: 210px !important;
+  margin: 0 auto !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .classic-dti-hero {
+  font-size: 21px !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .telemetry-console {
+  min-width: 0 !important;
+  width: 100% !important;
+  gap: 10px !important;
+}
+
+/* Fix 40% CBSL Limit and 50% Max Cap label collision on narrow cashflow bars */
+body[data-test-layout]:not([data-test-layout="baseline"]) .line-cbsl .cashflow-threshold-label {
+  transform: translateX(-92%) !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .line-cap .cashflow-threshold-label {
+  transform: translateX(4%) !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .telemetry-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .telemetry-card {
+  padding: 10px 12px !important;
+  min-width: 0 !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .telemetry-card-val {
+  font-size: 15px !important;
+}
+
+@media (max-width: 900px) {
+  body[data-test-layout]:not([data-test-layout="baseline"]) .gauge-wrapper {
+    grid-template-columns: 1fr !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) .telemetry-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mode B: Slim Inline Affordability Bar (data-test-budget="inline") */
+.tb-inline-budget-bar {
+  display: none;
+}
+
+body[data-test-budget="inline"] #budgetPanel {
+  padding: 12px 18px !important;
+}
+
+body[data-test-budget="inline"]:not(.tb-peek-gauge) #budgetPanel > .panel-head,
+body[data-test-budget="inline"]:not(.tb-peek-gauge) #budgetPanel > #budgetGraphic {
+  display: none !important;
+}
+
+body[data-test-budget="inline"].tb-peek-gauge #budgetPanel > .panel-head {
+  display: none !important;
+}
+
+body[data-test-budget="inline"].tb-peek-gauge #budgetPanel > #budgetGraphic {
+  display: block !important;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+body[data-test-budget="inline"] .tb-inline-budget-bar {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.tb-ib-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.tb-ib-title {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mute);
+}
+
+.tb-ib-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.tb-ib-pill.ok {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.tb-ib-pill.mid {
+  background: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.tb-ib-pill.bad {
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+:root[data-theme="dark"] .tb-ib-pill.ok { color: #34d399; }
+:root[data-theme="dark"] .tb-ib-pill.mid { color: #fbbf24; }
+:root[data-theme="dark"] .tb-ib-pill.bad { color: #f87171; }
+
+.tb-ib-spectrum {
+  flex: 1 1 180px;
+  min-width: 160px;
+  max-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tb-ib-track {
+  position: relative;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981 0%, #10b981 66.6%, #f59e0b 66.6%, #f59e0b 83.3%, #ef4444 83.3%, #ef4444 100%);
+  overflow: visible;
+}
+
+.tb-ib-marker {
+  position: absolute;
+  top: -3px;
+  width: 6px;
+  height: 14px;
+  border-radius: 3px;
+  background: var(--ink);
+  border: 2px solid var(--panel);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+}
+
+.tb-ib-scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.tb-ib-metrics {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tb-ib-metric {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.tb-ib-metric span {
+  font-size: 9.5px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--mute);
+}
+
+.tb-ib-metric strong {
+  font-size: 13.5px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.tb-ib-peek-btn {
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 7px;
+  background: var(--badge-bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+/* --------------------------------------------------------------------------
+   4. Vehicles Comparison Table Cleanups
+   -------------------------------------------------------------------------- */
+body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel {
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel .panel-head {
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel .panel-head h2 {
+  font-size: 19px;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]) .calculation-basis {
+  display: none;
+}
+
+/* When <= 2 cars, tuck the 6 quick-filter chips and 5 dropdowns behind Filters & Sort */
+body[data-test-layout]:not([data-test-layout="baseline"]).tb-few-cars #quickFilterChips {
+  display: none;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]).tb-few-cars #toolsPanel.collapsed {
+  display: none !important;
+}
+
+body[data-test-layout]:not([data-test-layout="baseline"]).tb-few-cars #filtersToggle {
+  display: inline-flex !important;
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  margin-bottom: 8px;
+}
+
+/* Keep table layout clean without horizontal clipping on desktop */
+@media (min-width: 980px) {
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel table {
+    display: table !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: auto !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel thead {
+    display: table-header-group !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel tbody {
+    display: table-row-group !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel tr {
+    display: table-row !important;
+    border: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel th,
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel td {
+    display: table-cell !important;
+    width: auto !important;
+    padding: 10px 8px !important;
+    vertical-align: middle !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel td::before {
+    content: none !important;
+    display: none !important;
+  }
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel th.secondary,
+  body[data-test-layout]:not([data-test-layout="baseline"]) #comparisonPanel td.secondary {
+    display: none !important;
+  }
+  body[data-test-layout].tb-show-all-cols #comparisonPanel th.secondary,
+  body[data-test-layout].tb-show-all-cols #comparisonPanel td.secondary {
+    display: table-cell !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. Layout Option 2 & Hybrid: Workspace Tab Bar & Tab Isolation
+   -------------------------------------------------------------------------- */
+.tb-workspace-tabs {
+  display: none;
+}
+
+body[data-test-layout="option2"] .tb-workspace-tabs,
+body[data-test-layout="hybrid"] .tb-workspace-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.tb-tab-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+}
+
+.tb-tab-btn {
+  flex: 1 1 180px;
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--mute);
+  font-size: 12.5px;
+  font-weight: 650;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.tb-tab-btn:hover {
+  color: var(--ink);
+  background: var(--hover-bg);
+}
+
+.tb-tab-btn.is-active {
+  background: var(--accent);
+  color: var(--on-accent, #ffffff);
+  font-weight: 700;
+}
+
+.tb-tab-pill {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: inherit;
+  font-weight: 700;
+}
+
+.tb-tab-btn:not(.is-active) .tb-tab-pill {
+  background: var(--badge-bg);
+  color: var(--badge-ink);
+}
+
+body[data-test-layout="option2"] .tb-tab-hidden,
+body[data-test-layout="hybrid"] .tb-tab-hidden {
+  display: none !important;
+}
+
+/* In Tab 2 (Affordability & CBSL Breakdown), hide core Loan Terms inputs inside .terms-panel
+   so only CBSL Valuation Structure (#ltvSplitContainer) and Incidental Costs show! */
+body[data-test-layout="option2"][data-test-tab="affordability"] .terms-panel > .panel-head,
+body[data-test-layout="option2"][data-test-tab="affordability"] .strategy-scenarios-wrap,
+body[data-test-layout="option2"][data-test-tab="affordability"] .terms-subcard-financing,
+body[data-test-layout="option2"][data-test-tab="affordability"] .terms-subcard-income,
+body[data-test-layout="hybrid"][data-test-tab="affordability"] .terms-panel > .panel-head,
+body[data-test-layout="hybrid"][data-test-tab="affordability"] .strategy-scenarios-wrap,
+body[data-test-layout="hybrid"][data-test-tab="affordability"] .terms-subcard-financing,
+body[data-test-layout="hybrid"][data-test-tab="affordability"] .terms-subcard-income {
+  display: none !important;
+}
+
+/* Hybrid Sticky Summary Ribbon */
+.tb-sticky-summary {
+  display: none;
+}
+
+body[data-test-layout="hybrid"] .tb-sticky-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 8px 16px;
+  background: var(--badge-bg);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.tb-ss-items {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.tb-ss-item span {
+  color: var(--mute);
+  margin-right: 4px;
+}
+
+.tb-ss-item strong {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   6. Layout Option 3: Two-Column Split-Pane Dashboard (No Internal Scroll Clipping)
+   -------------------------------------------------------------------------- */
+@media (min-width: 980px) {
+  body[data-test-layout="option3"] main {
+    display: grid;
+    grid-template-columns: 370px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  body[data-test-layout="option3"] main > .hero {
+    grid-column: 1 / -1;
+    margin-bottom: 2px;
+  }
+
+  body[data-test-layout="option3"] main > .terms-panel {
+    grid-column: 1;
+    grid-row: 2 / span 4;
+    margin-bottom: 0;
+    padding: 14px;
+    /* Keep in normal grid flow (no internal max-height/overflow scrollbox)
+       so all inputs are visible and full-page screenshots never repeat */
+    position: relative;
+    max-height: none;
+    overflow: visible;
+  }
+
+  body[data-test-layout="option3"] main > #budgetPanel,
+  body[data-test-layout="option3"] main > #comparisonPanel,
+  body[data-test-layout="option3"] main > #savingsPanel {
+    grid-column: 2;
+    min-width: 0;
+  }
+
+  /* Compact 2-column sub-grids inside the 370px left sidebar so all inputs fit cleanly */
+  body[data-test-layout="option3"] .terms-subcard-financing .terms-subcard-grid.cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  body[data-test-layout="option3"] .terms-subcard-financing .terms-field.span-2 {
+    grid-column: span 2 !important;
+  }
+
+  body[data-test-layout="option3"] .terms-subcard-income .terms-subcard-grid.cols-3 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  body[data-test-layout="option3"] .terms-subcard-costs .terms-subcard-grid.cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  body[data-test-layout="option3"] .strategy-scenarios-pills {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  /* In Split-Pane, use a 230px dial box + 2x2 telemetry grid so cards have plenty of width */
+  body[data-test-layout="option3"] .gauge-wrapper {
+    grid-template-columns: 230px minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  body[data-test-layout="option3"] .telemetry-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Streamlined Catalogue (catalogue.html)
+   -------------------------------------------------------------------------- */
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) #addVehicleBtn,
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) #printBtn {
+  display: none;
+}
+
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) minmax(0, 3fr);
+  gap: 16px;
+  align-items: end;
+  padding: 12px 16px;
+  background: var(--panel, #ffffff);
+  border: 1px solid var(--line, #dce3db);
+  border-radius: 14px;
+}
+
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .search-field {
+  border-bottom: 0;
+  border-right: 1px solid var(--line, #e2e7df);
+  margin-bottom: 0;
+  padding-bottom: 0;
+  padding-right: 14px;
+  min-height: 38px;
+}
+
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .filter-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .filter-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 10.5px;
+}
+
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .filter-row select {
+  min-height: 38px;
+  padding: 6px 28px 6px 10px;
+  font-size: 13px;
+}
+
+body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .filter-row #clear {
+  min-height: 38px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 920px) {
+  body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .filters {
+    grid-template-columns: 1fr;
+  }
+  body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .search-field {
+    border-right: 0;
+    border-bottom: 1px solid var(--line, #e2e7df);
+    padding-bottom: 8px;
+  }
+  body[data-test-page="catalogue"]:not([data-test-layout="baseline"]) .filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. Streamlined Photo Studio (studio.html)
+   -------------------------------------------------------------------------- */
+body[data-test-page="studio"]:not([data-test-layout="baseline"]) .studio-intro {
+  display: block;
+  padding: 16px 0 12px;
+  max-width: 100%;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+
+body[data-test-page="studio"]:not([data-test-layout="baseline"]) .studio-intro .eyebrow {
+  margin-bottom: 4px;
+}
+
+body[data-test-page="studio"]:not([data-test-layout="baseline"]) .studio-intro h1 {
+  font-size: 28px;
+  letter-spacing: -0.8px;
+  margin-bottom: 6px;
+}
+
+body[data-test-page="studio"]:not([data-test-layout="baseline"]) .studio-lede {
+  font-size: 13.5px;
+  max-width: 75ch;
+  margin-bottom: 4px;
+}
+
+body[data-test-page="studio"]:not([data-test-layout="baseline"]) .studio-note {
+  margin-bottom: 0;
+}
+
+body[data-test-page="studio"]:not([data-test-layout="baseline"]) .filmstrip {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  padding: 6px;
+}
+
+body[data-test-page="studio"]:not([data-test-layout="baseline"]) .crop-controls {
+  background: var(--chip, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  gap: 6px;
+}
