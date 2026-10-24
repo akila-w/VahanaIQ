@@ -133,14 +133,14 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   function rentalLine(v, t) {
     if (!hasPrice(v) || v.priceBasis === 'conflicting' || !t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor(v.cond, v.financeClass, v.firstRegisteredOn));
-    return down < 100 ? `About Rs. ${fmt(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
+    return down < 100 ? `About LKR ${fmt(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
   }
 
-  // One line for every car without a price: what each Rs. 1.00 million of quote costs a month
+  // One line for every car without a price: what each LKR 1.00 million of quote costs a month
   function perMillionLine(t) {
     if (!t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor("New"));
-    return down < 100 ? `No price yet? Each Rs. 1.00 million of a brand-new car's quote is about Rs. ${fmt(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
+    return down < 100 ? `No price yet? Each LKR 1.00 million of a brand-new car's quote is about LKR ${fmt(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
   }
 
   function priceText(v) {
@@ -157,7 +157,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     const candidateCredit = creditFor(v);
     const credit = candidateCredit?.img === photo ? candidateCredit : null;
     const specs = [v.pt && v.pt !== UNKNOWN_SPEC ? v.pt : "", v.km].filter(Boolean).join(" · ");
-    const pills = [v.trim, v.power, v.drivetrain, v.seats ? `${v.seats} seats` : "", v.groundClearance ? `${v.groundClearance} clearance` : ""].filter(Boolean);
+    const pills = [v.trim, v.power, v.drivetrain, v.seats ? `${v.seats} seats` : "", v.groundClearance ? `${v.groundClearance} clearance` : ""].filter(Boolean).slice(0, 3);
     const detailRows = [
       ["Trim", v.trim],
       ["Output", [v.power, v.torque].filter(Boolean).join(" · ")],
@@ -214,8 +214,10 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       const b = $(id); if (!b) continue;
       const pending = scope.filter(v => !isSelected(v.id));
       const { eligible } = prepareBulkSelection(pending);
-      b.disabled = !eligible.length || (id === 'catalogueAddSearch' && !$("catalogueSearch").value.trim());
-      b.querySelector('.bulk-count').textContent = eligible.length;
+      const isSearchBtn = id === 'catalogueAddSearch';
+      const hasSearch = Boolean($("catalogueSearch").value.trim());
+      b.disabled = !eligible.length || (isSearchBtn && !hasSearch);
+      b.querySelector('.bulk-count').textContent = (isSearchBtn && !hasSearch) ? '0' : eligible.length;
     }
   }
 

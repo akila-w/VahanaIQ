@@ -41,6 +41,16 @@ assert(html.includes('class="modal detail-modal"'), "Missing .modal.detail-modal
 assert(html.includes('id="detailTitle"'), "Missing #detailTitle");
 assert(html.includes('id="detailBody"'), "Missing #detailBody");
 
+// Savings Planner Markup
+assert(html.includes('id="savingsPanel"'), "Missing #savingsPanel");
+assert(html.includes('id="plannerVehicle"'), "Missing #plannerVehicle");
+assert(html.includes('id="plannerVehicleBadge"'), "Missing #plannerVehicleBadge");
+assert(html.includes('id="plannerGoal"'), "Missing #plannerGoal");
+assert(html.includes('id="plannerSaved"'), "Missing #plannerSaved");
+assert(html.includes('id="plannerPercent"'), "Missing #plannerPercent");
+assert(html.includes('data-preset-for="plannerPercent"'), "Missing data-preset-for=\"plannerPercent\"");
+assert(html.includes('id="plannerResult"'), "Missing #plannerResult");
+
 console.log("✓ All required DOM IDs and structural elements exist in index.html.\n");
 
 
@@ -94,11 +104,12 @@ class MockElement {
     this.listeners[event].push(fn);
   }
   dispatchEvent(event) {
-    if (!event.target) event.target = this;
-    const fns = this.listeners[event.type] || [];
-    fns.forEach(fn => fn(event));
-    const docFns = docListeners[event.type] || [];
-    docFns.forEach(fn => fn(event));
+    const evt = typeof event === "string" ? { type: event, target: this } : event;
+    if (!evt.target) evt.target = this;
+    const fns = this.listeners[evt.type] || [];
+    fns.forEach(fn => fn(evt));
+    const docFns = docListeners[evt.type] || [];
+    docFns.forEach(fn => fn(evt));
   }
   click() {
     this.dispatchEvent({
@@ -274,6 +285,23 @@ registerEl("detailModal");
 registerEl("detailTitle");
 registerEl("detailBody");
 registerEl("closeDetailBtn", "BUTTON");
+registerEl("plannerVehicle", "SELECT");
+registerEl("plannerVehicleBadge", "DIV");
+registerEl("plannerGoal", "SELECT");
+registerEl("plannerSaved", "INPUT", "0.00");
+registerEl("plannerMode", "SELECT", "percent");
+registerEl("plannerPercent", "INPUT", "20");
+registerEl("plannerPercentWrap", "DIV");
+registerEl("plannerMonthly", "INPUT", "");
+registerEl("plannerMonthlyWrap", "DIV");
+registerEl("plannerDate", "INPUT", "");
+registerEl("plannerCalendar", "BUTTON");
+registerEl("plannerName", "INPUT", "");
+registerEl("plannerSave", "BUTTON");
+registerEl("plannerScenarios", "SELECT");
+registerEl("plannerDelete", "BUTTON");
+registerEl("plannerResult", "DIV");
+registerEl("closeDetailBtn", "BUTTON");
 registerEl("donutTabLifetime", "BUTTON");
 registerEl("donutTabMonthly", "BUTTON");
 registerEl("donutSegmentsGroup");
@@ -319,6 +347,16 @@ registerEl("catalogueRows");
 registerEl("catalogueResultsCount");
 registerEl("catalogueEmpty");
 registerEl("openAddVehicleBtn", "BUTTON");
+registerEl("headToHeadTray");
+registerEl("h2hTrayCount");
+registerEl("h2hTrayPills");
+registerEl("clearHeadToHeadBtn", "BUTTON");
+registerEl("openHeadToHeadBtn", "BUTTON");
+registerEl("h2hModal");
+registerEl("h2hTitle");
+registerEl("closeH2hBtn", "BUTTON");
+registerEl("h2hBody");
+registerEl("quickFilterChips");
 
 globalThis.Image = class extends MockElement {
   constructor() {
@@ -475,8 +513,8 @@ assert.ok(domElements.budgetCashflowBar.innerHTML.includes("Enter net monthly in
 assert.ok(domElements.budgetTelemetryGrid.innerHTML.includes("telemetry-card"), "Telemetry grid must render cards");
 console.log("  ✓ 2.1 Zero-Income verified: needle at far-left, prompt to enter monthly income.\n");
 
-// 2.2 Standard Cashflow & DTI (Rs. 450,000 Income & Rs. 45,000 Debt):
-console.log("  2.2 Checking Standard Cashflow & DTI (Rs. 450,000 Income & Rs. 45,000 Debt):");
+// 2.2 Standard Cashflow & DTI (LKR 450,000 Income & LKR 45,000 Debt):
+console.log("  2.2 Checking Standard Cashflow & DTI (LKR 450,000 Income & LKR 45,000 Debt):");
 domElements.income.value = "450,000";
 domElements.debt.value = "45,000";
 domElements.dti.value = "0.4"; // 40% standard ceiling
@@ -502,7 +540,7 @@ assert.ok(domElements.budgetCashflowBar.innerHTML.includes("cashflow-seg-free"),
 
 // Verify telemetry grid cards
 assert.ok(domElements.budgetTelemetryGrid.innerHTML.includes("Existing Commitments"), "Telemetry must show Existing Commitments");
-assert.ok(domElements.budgetTelemetryGrid.innerHTML.includes("Rs. 45,000.00"), "Telemetry must reflect Rs. 45,000 debt");
+assert.ok(domElements.budgetTelemetryGrid.innerHTML.includes("LKR 45,000.00"), "Telemetry must reflect LKR 45,000 debt");
 console.log("  ✓ 2.2 Standard Cashflow & DTI verified: Smooth needle rotation, stacked cashflow spectrum segments.\n");
 
 
@@ -564,6 +602,174 @@ assert.equal(monthlyTotal, testRow.rental);
 
 console.log("  ✓ 3.2 Donut Composition verified: Lifetime outlay (DP + Loan + Interest) & Monthly outlay modes.\n");
 
+// 3.3 Test Interactive Hover Structure for Donut & Amortization Curve
+console.log("  3.3 Checking Interactive Inspection Markup:");
+const appJsCode = fs.readFileSync("js/app.js", "utf8");
+assert.ok(appJsCode.includes('id="donutCenterPct"'), "Donut chart must contain center percentage container");
+assert.ok(appJsCode.includes('data-seg-idx'), "Donut segments must link to index via data-seg-idx");
+assert.ok(appJsCode.includes('id="amortInspectionPanel"'), "Amortization chart must include inspection panel");
+assert.ok(appJsCode.includes('id="amortCursorHairline"'), "Amortization chart must include cursor hairline");
+assert.ok(appJsCode.includes('class="amort-point-group"'), "Amortization chart must contain point groups");
+assert.ok(appJsCode.includes('data-amort-yr'), "Detail table must tag rows with data-amort-yr for two-way sync");
+console.log("  ✓ 3.3 Interactive inspection markup verified: Two-way donut legend sync & amortization crosshair.\n");
+
+// ============================================================
+// CHECKLIST ITEM 4: Savings Planner — Trajectory Curve & CBSL Upfront Breakdown
+// ============================================================
+console.log("CHECKLIST ITEM 4: Savings Planner — Trajectory Curve, Split Bar & Milestones");
+
+// Find vehicle IDs populated by app.js
+const usedCarMatch = domElements.plannerVehicle.innerHTML.match(/value="([^"]+)"[^>]*>[^<]*Registered Used/);
+const usedCarId = usedCarMatch ? usedCarMatch[1] : "";
+const newCarMatch = domElements.plannerVehicle.innerHTML.match(/value="([^"]+)"[^>]*>[^<]*BYD ATTO 1/);
+const newCarId = newCarMatch ? newCarMatch[1] : "";
+
+assert.ok(usedCarId, "Registered Used car ID should be present in plannerVehicle select");
+assert.ok(newCarId, "Brand new car ID should be present in plannerVehicle select");
+
+// Ensure income and fees are populated in app settings
+domElements.income.value = "500000";
+domElements.income.dispatchEvent("input");
+
+// 4.1 Vehicle Statutory Floor Badges
+console.log("  4.1 Checking Vehicle Statutory Floor Badges:");
+domElements["plannerVehicle"].value = newCarId;
+domElements["plannerVehicle"].dispatchEvent("input");
+assert.ok(domElements["plannerVehicleBadge"].innerHTML.includes("CBSL 60% Statutory Floor Required"), "New car indicates 60% statutory floor");
+domElements["plannerVehicle"].value = usedCarId;
+domElements["plannerVehicle"].dispatchEvent("input");
+assert.ok(domElements["plannerVehicleBadge"].innerHTML.includes("Eligible for CBSL 40% Minimum Deposit"), "Used car indicates 40% deposit eligibility");
+console.log("  ✓ 4.1 Statutory Badges verified: Dynamic CBSL 60% vs 40% floor indication.");
+
+// 4.2 Upfront Cost Composition Split Bar
+console.log("  4.2 Checking Upfront Cost Composition Split Bar:");
+const plannerHtml = domElements["plannerResult"].innerHTML;
+assert.ok(plannerHtml.includes("planner-cost-split-bar"), "Result includes proportional split bar");
+assert.ok(plannerHtml.includes("cost-split-seg seg-deposit"), "Result includes deposit segment");
+assert.ok(plannerHtml.includes("cost-split-seg seg-fees"), "Result includes fees/insurance segment");
+assert.ok(plannerHtml.includes("CBSL Compliant"), "Result includes CBSL compliance badge");
+console.log("  ✓ 4.2 Upfront Cost Composition Split Bar verified: Visual deposit/fees segments and CBSL compliance badge.");
+
+// 4.3 Savings Horizon & Trajectory SVG
+console.log("  4.3 Checking Savings Horizon & Trajectory SVG:");
+domElements["plannerSaved"].value = "2,000,000.00";
+domElements["plannerMode"].value = "percent";
+domElements["plannerPercent"].value = "20"; // 20% of 500k = 100k/mo
+domElements["plannerPercent"].dispatchEvent("input");
+const trajectoryHtml = domElements["plannerResult"].innerHTML;
+assert.ok(trajectoryHtml.includes("planner-trajectory-card"), "Result includes trajectory card");
+assert.ok(trajectoryHtml.includes("planner-trajectory-svg"), "Result includes SVG element");
+assert.ok(trajectoryHtml.includes("trajectory-ceiling-line"), "SVG includes target ceiling dashed line");
+assert.ok(trajectoryHtml.includes("trajectory-line"), "SVG includes polyline accumulation path");
+assert.ok(trajectoryHtml.includes("trajectory-area"), "SVG includes area polygon fill");
+assert.ok(trajectoryHtml.includes("marker-start"), "SVG includes start checkpoint marker");
+assert.ok(trajectoryHtml.includes("marker-goal"), "SVG includes goal completion checkpoint marker");
+console.log("  ✓ 4.3 Trajectory SVG verified: Responsive coordinate scaling, ceiling guide, area fill and milestone markers.");
+
+// 4.4 Target Date Feasibility Pacing (On Track vs Pace Gap)
+console.log("  4.4 Checking Target Date Feasibility Pacing:");
+domElements["plannerDate"].value = "24-10-2028"; // 24 months
+domElements["plannerMode"].value = "fixed";
+domElements["plannerMonthly"].value = "800,000.00"; // fast pace
+domElements["plannerMonthly"].dispatchEvent("input");
+assert.ok(domElements["plannerResult"].innerHTML.includes("on-track"), "Displays on-track class when planned pace >= required");
+assert.ok(domElements["plannerResult"].innerHTML.includes("On Track"), "Displays On Track badge");
+
+domElements["plannerMonthly"].value = "50,000.00"; // slow pace
+domElements["plannerMonthly"].dispatchEvent("input");
+assert.ok(domElements["plannerResult"].innerHTML.includes("pace-needed"), "Displays pace-needed class when pace < required");
+assert.ok(domElements["plannerResult"].innerHTML.includes("Pace Gap"), "Displays Pace Gap badge");
+console.log("  ✓ 4.4 Target Date Pacing verified: Dynamic On Track / Pace Gap feasibility status.");
+
+// 4.5 Goal Funded Celebratory State
+console.log("  4.5 Checking Fully Funded Goal State:");
+domElements["plannerSaved"].value = "15,000,000.00"; // target is 8.8m
+domElements["plannerSaved"].dispatchEvent("input");
+assert.ok(domElements["plannerResult"].innerHTML.includes("planner-funded-card"), "Displays celebratory funded card");
+assert.ok(domElements["plannerResult"].innerHTML.includes("Goal 100% Funded &amp; Ready") || domElements["plannerResult"].innerHTML.includes("Goal 100% Funded & Ready"));
+console.log("  ✓ 4.5 Goal Funded State verified: Celebratory 100% funded card with readiness confirmation.\n");
+
+// -------------------------------------------------------------
+// CHECKLIST ITEM 5: Bank Quotation Print Stylesheet & Layout
+// -------------------------------------------------------------
+console.log("CHECKLIST ITEM 5: Bank Quotation Print Stylesheet & Regulatory Layout");
+
+// 5.1 Single Consolidated @media print Block
+console.log("  5.1 Checking Single Consolidated @media print Block:");
+const styleFile = fs.readFileSync("css/style.css", "utf8");
+const printMatches = [...styleFile.matchAll(/@media\s+print\s*\{/g)];
+assert.equal(printMatches.length, 1, "css/style.css must have exactly 1 consolidated @media print block");
+const printSlice = styleFile.slice(styleFile.indexOf("@media print {"));
+console.log("  ✓ 5.1 Single consolidated @media print block verified.");
+
+// 5.2 Complete Interactive Noise Suppression
+console.log("  5.2 Checking Interactive Noise Suppression:");
+const requiredHidden = [
+  ".terms-slider",
+  'input[type="range"]',
+  ".step-btn",
+  ".preset-chips",
+  "#toolsPanel",
+  ".modal-bg",
+  ".savings-panel",
+  ".page-nav",
+  ".site-links",
+  "th.actions",
+  "td.v-actions"
+];
+for (const sel of requiredHidden) {
+  assert.ok(printSlice.includes(sel), `Must suppress ${sel} in print`);
+}
+console.log("  ✓ 5.2 Interactive noise suppression verified (sliders, presets, filters, modals, navigation).");
+
+// 5.3 Page Break Hygiene
+console.log("  5.3 Checking Page Break Hygiene:");
+assert.match(printSlice, /tr\s*\{[^}]*break-inside:\s*avoid/i, "Table rows avoid page breaks");
+assert.match(printSlice, /thead\s*\{[^}]*display:\s*table-header-group/i, "Table headers repeat on every page");
+assert.match(printSlice, /\.panel\s*\{[^}]*break-inside:\s*avoid/i, "Panels avoid page breaks");
+assert.match(printSlice, /\.ltv-split-container\s*\{[^}]*break-inside:\s*avoid/i, "LTV container avoids page breaks");
+assert.match(printSlice, /footer\.foot\s*\{[^}]*break-inside:\s*avoid/i, "Footer avoids page breaks");
+console.log("  ✓ 5.3 Page break hygiene verified (tr, thead, .panel, .ltv-split-container, footer).");
+
+// 5.4 Exact Print Color Adjustment
+console.log("  5.4 Checking Exact Print Color Adjustment:");
+assert.match(printSlice, /\.ltv-bar-track\s*\{[^}]*print-color-adjust:\s*exact/i, "LTV track preserves exact color");
+assert.match(printSlice, /\.ltv-bar-dp\s*\{[^}]*print-color-adjust:\s*exact/i, "LTV deposit preserves exact color");
+assert.match(printSlice, /\.dial-arc-safe\s*\{[^}]*print-color-adjust:\s*exact/i, "Speedometer safe arc preserves exact color");
+assert.match(printSlice, /\.cashflow-bar\s*\{[^}]*print-color-adjust:\s*exact/i, "Cashflow spectrum preserves exact color");
+assert.match(printSlice, /\.car\s+img\s*,\s*\.car\s+\.ph\s*\{[^}]*print-color-adjust:\s*exact/i, "Vehicle thumbnails preserve exact color");
+console.log("  ✓ 5.4 Exact print color adjustment verified across all graphics and indicators.");
+
+// 5.5 CBSL Statutory Disclosures & 3-Column Footer
+console.log("  5.5 Checking CBSL Statutory Disclosures & 3-Column Footer:");
+assert.match(printSlice, /Central Bank of Sri Lanka Directions No\. 01 of 2026/i, "Quotation carries CBSL Directions 01 of 2026 citation");
+assert.match(printSlice, /\.foot-cols\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*1fr\)/i, "Footer notes in 3 columns");
+console.log("  ✓ 5.5 CBSL Directions No. 01 of 2026 citation and 3-column footer verified.\n");
+
+// -------------------------------------------------------------
+// CHECKLIST ITEM 6: Improvements #8, #9 & #10 (DP Override, H2H, Quick Filters)
+// -------------------------------------------------------------
+console.log("CHECKLIST ITEM 6: Per-Vehicle DP Override, Head-to-Head Finalists & Quick Market Filters");
+const appMod = await import("../js/app.js");
+const { matchesQuickFilter } = appMod;
+assert.equal(typeof matchesQuickFilter, "function", "matchesQuickFilter must be exported");
+assert.equal(matchesQuickFilter({ price: 12500000 }, "under15m"), true);
+assert.equal(matchesQuickFilter({ price: 18500000 }, "under15m"), false);
+assert.equal(matchesQuickFilter({ pt: "1.5L Strong Hybrid", name: "Toyota Yaris Cross" }, "electrified"), true);
+assert.equal(matchesQuickFilter({ pt: "1.0L Turbo Petrol", name: "Nissan Magnite" }, "electrified"), false);
+assert.equal(matchesQuickFilter({ groundClearance: "210 mm", name: "Toyota Raize" }, "suv"), true);
+assert.equal(matchesQuickFilter({ cond: "Used" }, "cbsl40"), true);
+assert.equal(matchesQuickFilter({ cond: "New" }, "cbsl40"), false);
+assert.equal(matchesQuickFilter({ w: "Official" }, "official"), true);
+assert.equal(matchesQuickFilter({ w: "Grey" }, "official"), false);
+console.log("  ✓ 6.1 Quick Market Segment Filter predicates verified.");
+
+assert.ok(printSlice.includes(".quick-filter-chips"), "Print stylesheet suppresses .quick-filter-chips");
+assert.ok(printSlice.includes("#headToHeadTray"), "Print stylesheet suppresses #headToHeadTray");
+assert.ok(printSlice.includes("#h2hModal"), "Print stylesheet suppresses #h2hModal");
+assert.ok(printSlice.includes(".edit-dp"), "Print stylesheet suppresses .edit-dp");
+console.log("  ✓ 6.2 Print suppression for DP override, Head-to-Head tray/modal, and Quick Filter chips verified.\n");
+
 console.log("============================================================");
-console.log("ALL 3 AUDIT CHECKLIST SUITES VERIFIED AND PASSED SUCCESSFULLY!");
+console.log("ALL 6 AUDIT CHECKLIST SUITES VERIFIED AND PASSED SUCCESSFULLY!");
 console.log("============================================================");

@@ -34,6 +34,7 @@ jobs:
           node test/catalogue-data.test.mjs
           node test/catalogue-studio.test.mjs
           node test/planner.test.mjs
+          node test/print.test.mjs
           node test/scan-prices.test.mjs
           node test/savings-bulk.test.mjs
       - name: Check the repository keeps only published assets

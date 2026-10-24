@@ -47,24 +47,114 @@ export function formatMoneyText(text, { editing = false, grouping = true } = {})
 
 export function attachMoneyInput(el, { grouping = true } = {}) {
   if (!el || !el.addEventListener) return;
-  const finishEditing = () => { el.value = formatMoneyText(el.value, { grouping }); };
+  let prevValue = el.value || "";
+  const finishEditing = () => {
+    el.value = formatMoneyText(el.value, { grouping });
+    prevValue = el.value;
+  };
   finishEditing();
   el.addEventListener("blur", finishEditing);
-  el.addEventListener("input", () => {
-    const value = el.value;
+
+  const selectAll = () => {
+    try {
+      if (typeof el.select === "function" && (typeof document === "undefined" || document.activeElement === el)) {
+        el.select();
+      }
+    } catch (e) {}
+  };
+
+  el.addEventListener("focus", () => {
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(selectAll);
+    } else {
+      setTimeout(selectAll, 0);
+    }
+  });
+
+  el.addEventListener("mouseup", e => {
+    if (el.value === "0.00" || el.value === "0") {
+      if (el.selectionStart === el.selectionEnd) {
+        if (e && typeof e.preventDefault === "function") e.preventDefault();
+        selectAll();
+      }
+    }
+  });
+
+  el.addEventListener("keydown", e => {
+    if (!e || !e.key) return;
+    const isZero = el.value === "0.00" || el.value === "0";
+    if (!isZero) return;
+
+    if (e.key === "Backspace" || e.key === "Delete") {
+      if (typeof e.preventDefault === "function") e.preventDefault();
+      el.value = "";
+      prevValue = "";
+      if (typeof el.dispatchEvent === "function") {
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      } else if (typeof el.oninput === "function") {
+        el.oninput();
+      }
+    } else if (/^[0-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (typeof e.preventDefault === "function") e.preventDefault();
+      el.value = e.key;
+      prevValue = el.value;
+      try {
+        if (typeof el.setSelectionRange === "function") el.setSelectionRange(1, 1);
+      } catch (err) {}
+      if (typeof el.dispatchEvent === "function") {
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      } else if (typeof el.oninput === "function") {
+        el.oninput();
+      }
+    } else if (e.key === "." && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (typeof e.preventDefault === "function") e.preventDefault();
+      el.value = "0.";
+      prevValue = el.value;
+      try {
+        if (typeof el.setSelectionRange === "function") el.setSelectionRange(2, 2);
+      } catch (err) {}
+      if (typeof el.dispatchEvent === "function") {
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+      } else if (typeof el.oninput === "function") {
+        el.oninput();
+      }
+    }
+  });
+
+  el.addEventListener("input", e => {
+    let value = el.value;
+    if (prevValue === "0.00" || prevValue === "0") {
+      if (value !== prevValue && (value === "0.0" || value === "0." || value === ".00" || value === "00" || value === ".0")) {
+        el.value = "";
+        prevValue = "";
+        return;
+      }
+      const digitsOnly = value.replace(/\D/g, "");
+      if (digitsOnly.length > 0 && digitsOnly !== "0" && digitsOnly !== "000") {
+        if (e && e.data && /^\d+$/.test(e.data)) {
+          value = e.data;
+          el.value = value;
+        } else if (digitsOnly.replace(/^0+/, "") !== "") {
+          value = digitsOnly.replace(/^0+/, "");
+          el.value = value;
+        }
+      }
+    }
     const caret = el.selectionStart == null ? value.length : el.selectionStart;
     const digitsBefore = value.slice(0, caret).replace(/\D/g, "").length;
     // Do not pad cents mid-keystroke: the user must be able to enter "250000.5".
     const formatted = formatMoneyText(value, { editing: true, grouping });
-    if (formatted === value) return;
-    el.value = formatted;
-    // Put the caret back after the same number of digits
-    let pos = formatted.startsWith("-") ? 1 : 0;
-    for (let seen = 0; pos < formatted.length && seen < digitsBefore; pos++) {
-      if (/\d/.test(formatted[pos])) seen++;
+    if (formatted !== value) {
+      el.value = formatted;
+      // Put the caret back after the same number of digits
+      let pos = formatted.startsWith("-") ? 1 : 0;
+      for (let seen = 0; pos < formatted.length && seen < digitsBefore; pos++) {
+        if (/\d/.test(formatted[pos])) seen++;
+      }
+      if (value.slice(0, caret).endsWith(".") && formatted[pos] === ".") pos++;
+      if (caret === value.length) pos = formatted.length;
+      try { el.setSelectionRange(pos, pos); } catch (e) {}
     }
-    if (value.slice(0, caret).endsWith(".") && formatted[pos] === ".") pos++;
-    if (caret === value.length) pos = formatted.length;
-    try { el.setSelectionRange(pos, pos); } catch (e) {}
+    prevValue = el.value;
   });
 }

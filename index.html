@@ -101,7 +101,7 @@
           </button>
           <button type="button" class="strategy-pill" data-strategy="cash-purchase" aria-pressed="false">
             <span class="strategy-pill-title">100% Cash</span>
-            <span class="strategy-pill-desc">0% Loan &middot; Rs. 0 Rental</span>
+            <span class="strategy-pill-desc">0% Loan &middot; LKR 0 Rental</span>
           </button>
         </div>
       </div>
@@ -177,18 +177,18 @@
           </div>
           <div class="terms-subcard-grid cols-3">
             <div class="terms-field span-2">
-              <label for="income">Net Monthly Income (Rs.)</label>
+              <label for="income">Net Monthly Income (LKR)</label>
               <div class="input-adorn-wrap">
-                <span class="adorn-prefix" aria-hidden="true">Rs.</span>
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
                 <input id="income" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="incomeHint">
               </div>
               <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
             </div>
             <div class="terms-field span-2">
-              <label for="debt">Existing Monthly Loan and Card Payments (Rs.)</label>
+              <label for="debt">Existing Monthly Loan and Card Payments (LKR)</label>
               <div class="input-adorn-wrap">
-                <span class="adorn-prefix" aria-hidden="true">Rs.</span>
-                <input id="debt" type="text" value="0.00" inputmode="decimal" autocomplete="off" aria-describedby="debtHint">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="debt" type="text" placeholder="0.00" inputmode="decimal" autocomplete="off" aria-describedby="debtHint">
               </div>
               <div class="hint" id="debtHint">Total per month; 0.00 if none</div>
             </div>
@@ -214,17 +214,17 @@
           </div>
           <div class="terms-subcard-grid cols-2">
             <div class="terms-field span-2">
-              <label for="insurance">Insurance per Year (Rs.)</label>
+              <label for="insurance">Insurance per Year (LKR)</label>
               <div class="input-adorn-wrap">
-                <span class="adorn-prefix" aria-hidden="true">Rs.</span>
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
                 <input id="insurance" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="insuranceHint">
               </div>
               <div class="hint" id="insuranceHint">Comprehensive cover is required on a lease</div>
             </div>
             <div class="terms-field span-2">
-              <label for="fees">Up-front Fees (Rs.)</label>
+              <label for="fees">Up-front Fees (LKR)</label>
               <div class="input-adorn-wrap">
-                <span class="adorn-prefix" aria-hidden="true">Rs.</span>
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
                 <input id="fees" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="feesHint">
               </div>
               <div class="hint" id="feesHint">Registration, documentation and similar charges</div>
@@ -316,7 +316,7 @@
           </div>
           <div class="classic-dial-readout">
             <span class="classic-dti-hero" id="budgetDtiHero">0.0% DTI</span>
-            <span class="classic-dti-sub" id="budgetDtiSub">Rs. 0.00 / month</span>
+            <span class="classic-dti-sub" id="budgetDtiSub">LKR 0.00 / month</span>
             <div class="classic-dti-pill ok" id="budgetDtiPill">
               <span class="dial-zone-dot"></span>
               <span id="budgetDtiText">Within 40% CBSL Limit</span>
@@ -360,6 +360,14 @@
     </div>
     <div id="comparisonBody"><p id="comparisonCount" class="hint" role="status"></p>
     <details class="calculation-basis"><summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> Using Your Inputs</summary><p class="hint" id="calculationBasis"></p></details>
+    <div class="quick-filter-chips" id="quickFilterChips" role="group" aria-label="Quick Sri Lankan market segment filters">
+      <button type="button" class="chip-btn qf-chip active" data-qf="all" aria-pressed="true">All Vehicles</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="under15m" aria-pressed="false">Under LKR 15M</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="electrified" aria-pressed="false">Hybrid &amp; EV</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="suv" aria-pressed="false">High Clearance (&ge;170mm)</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="cbsl40" aria-pressed="false">40% Min Down (&gt;1yr Reg)</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="official" aria-pressed="false">Official Agent</button>
+    </div>
     <button class="btn-outline filters-toggle" id="filtersToggle" type="button" aria-expanded="false" aria-controls="toolsPanel">Filters &amp; Sort <span class="count" id="filtersCount" hidden></span></button>
     <div class="tools collapsed" id="toolsPanel">
       <div>
@@ -402,7 +410,7 @@
         </select>
       </div>
       <div>
-        <label for="maxprice">Maximum Price (Rs. Million)</label>
+        <label for="maxprice">Maximum Price (LKR Million)</label>
         <input id="maxprice" type="number" min="0" step="0.01" placeholder="No limit" inputmode="decimal" aria-describedby="maxpriceHint">
         <div class="hint" id="maxpriceHint">Leave empty for no limit</div>
       </div>
@@ -415,6 +423,16 @@
       </div>
     </div>
     <div class="legend" id="budgetLegend" hidden></div>
+    <div class="h2h-tray" id="headToHeadTray" role="region" aria-label="Head-to-head comparison selection" hidden>
+      <div class="h2h-tray-info">
+        <span class="h2h-tray-title"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span> Head-to-Head Finalists (<span id="h2hTrayCount">0</span>/3)</span>
+        <div class="h2h-tray-pills" id="h2hTrayPills"></div>
+      </div>
+      <div class="h2h-tray-actions">
+        <button class="btn-outline btn-sm" id="clearHeadToHeadBtn" type="button">Clear</button>
+        <button class="btn btn-sm" id="openHeadToHeadBtn" type="button">Compare Side-by-Side</button>
+      </div>
+    </div>
     <div class="wrap">
       <table>
         <thead><tr id="head"></tr></thead>
@@ -426,14 +444,18 @@
   </section>
 
   <section class="panel savings-panel" id="savingsPanel" aria-labelledby="h-savings">
-    <div class="panel-head"><div><p class="eyebrow">Target</p><h2 id="h-savings"><span class="glyph glyph-piggy-bank" aria-hidden="true"></span> Savings Planner</h2></div><span class="tag">Plan Your Deposit</span></div>
+    <div class="panel-head"><div><p class="eyebrow">Target</p><h2 id="h-savings">Savings Planner</h2></div><span class="tag">Plan Your Deposit</span></div>
     <div class="planner-layout">
       <div class="planner-inputs">
         <div class="planner-card">
-          <div class="planner-card-head"><span class="planner-card-title">Vehicle &amp; Target Goal</span></div>
+          <div class="planner-card-head">
+            <span class="planner-card-title"><span class="glyph glyph-car" aria-hidden="true"></span> Vehicle &amp; Target Goal</span>
+            <span class="tag">Goal</span>
+          </div>
           <div class="planner-field">
             <label for="plannerVehicle">Your Goal Vehicle</label>
             <select id="plannerVehicle"><option value="">Choose a vehicle</option></select>
+            <div id="plannerVehicleBadge" class="planner-vehicle-badge" hidden></div>
           </div>
           <div class="planner-pair">
             <div>
@@ -445,13 +467,19 @@
             </div>
             <div>
               <label for="plannerSaved">Already Saved (LKR)</label>
-              <input id="plannerSaved" type="text" value="0.00" inputmode="decimal">
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="plannerSaved" type="text" placeholder="0.00" inputmode="decimal">
+              </div>
             </div>
           </div>
         </div>
 
         <div class="planner-card">
-          <div class="planner-card-head"><span class="planner-card-title">Monthly Savings &amp; Pace</span></div>
+          <div class="planner-card-head">
+            <span class="planner-card-title"><span class="glyph glyph-chart-no-axes-combined" aria-hidden="true"></span> Monthly Savings &amp; Pace</span>
+            <span class="tag">Pace</span>
+          </div>
           <div class="planner-field">
             <label for="plannerMode">Monthly Saving Mode</label>
             <select id="plannerMode">
@@ -462,11 +490,25 @@
           <div class="planner-pair">
             <div id="plannerPercentWrap">
               <label for="plannerPercent">Income Saved (%)</label>
-              <input id="plannerPercent" type="number" min="0" max="100" step="1" value="20" inputmode="decimal">
+              <div class="stepper-wrap">
+                <button type="button" class="step-btn" data-step-for="plannerPercent" data-step-delta="-1" aria-label="Decrease percentage saved">&minus;</button>
+                <input id="plannerPercent" type="number" min="0" max="100" step="1" value="20" inputmode="decimal">
+                <span class="stepper-suffix" aria-hidden="true">%</span>
+                <button type="button" class="step-btn" data-step-for="plannerPercent" data-step-delta="1" aria-label="Increase percentage saved">+</button>
+              </div>
+              <div class="preset-chips" role="group" aria-label="Savings pace presets">
+                <button type="button" class="chip-btn" data-preset-for="plannerPercent" data-preset-val="10">10%</button>
+                <button type="button" class="chip-btn" data-preset-for="plannerPercent" data-preset-val="20">20%</button>
+                <button type="button" class="chip-btn" data-preset-for="plannerPercent" data-preset-val="30">30%</button>
+                <button type="button" class="chip-btn active" data-preset-for="plannerPercent" data-preset-val="50" aria-pressed="true">50%</button>
+              </div>
             </div>
             <div id="plannerMonthlyWrap" hidden>
               <label for="plannerMonthly">Save per Month (LKR)</label>
-              <input id="plannerMonthly" type="text" inputmode="decimal">
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="plannerMonthly" type="text" inputmode="decimal">
+              </div>
             </div>
             <div>
               <label for="plannerDate">Target Date (Optional)</label>
@@ -538,9 +580,9 @@
     <div class="modal-header"><h2 id="catalogueTitle">Add a Vehicle</h2><button class="close-btn" id="closeCatalogueBtn" type="button" aria-label="Close catalogue">&times;</button></div>
     <p class="catalogue-intro">Compare passenger vehicles and pickups in Sri Lanka.</p>
     <div class="catalogue-search">
-      <label for="catalogueSearch">Search Make or Model</label>
+      <label for="catalogueSearch" class="sr-only">Search Make or Model</label>
       <div class="catalogue-search-row">
-        <input id="catalogueSearch" type="search" placeholder="e.g. Toyota, electric, SUV" autocomplete="off">
+        <input id="catalogueSearch" type="search" placeholder="Search make, model, or body (e.g. Toyota, electric, SUV)" autocomplete="off">
         <button class="btn-outline catalogue-filters-toggle" id="catalogueFiltersToggle" type="button" aria-expanded="false" aria-controls="catalogueFilters"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span>Filter and Sort <span id="catalogueFiltersCount"></span></button>
       </div>
     </div>
@@ -552,9 +594,12 @@
       <div><label for="catalogueFuel">Fuel</label><select id="catalogueFuel"><option value="">All fuels</option></select></div>
       <div><label for="catalogueRoute">Sold By</label><select id="catalogueRoute"><option value="">Any seller</option><option value="Official">Official agent</option><option value="Grey">Importer</option><option value="Unknown">Independent seller</option></select></div>
     </div>
-    <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear Search and Filters</button></div>
+    <div class="catalogue-toolbar">
+      <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear Search and Filters</button></div>
+      <div class="bulk-actions" aria-label="Add multiple vehicles"><button class="btn-outline" id="catalogueAddAll" type="button" aria-label="Add all catalogue vehicles with usable prices"><span class="glyph glyph-layers" aria-hidden="true"></span>All <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddSearch" type="button" aria-label="Add all vehicles found by the search"><span class="glyph glyph-search" aria-hidden="true"></span>Search <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddFiltered" type="button" aria-label="Add all vehicles matching the filters"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span>Filtered <span class="bulk-count"></span></button><details class="bulk-hint"><summary title="How Bulk Add Works">?</summary><p class="hint">Adds matches across every page and skips existing selections. Missing or conflicting prices need a quote.</p></details></div>
+    </div>
     <p class="hint catalogue-per-million" id="cataloguePerMillion"></p>
-    <div class="bulk-actions" aria-label="Add multiple vehicles"><button class="btn-outline" id="catalogueAddAll" type="button" aria-label="Add all catalogue vehicles with usable prices"><span class="glyph glyph-layers" aria-hidden="true"></span>All <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddSearch" type="button" aria-label="Add all vehicles found by the search"><span class="glyph glyph-search" aria-hidden="true"></span>Search <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddFiltered" type="button" aria-label="Add all vehicles matching the filters"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span>Filtered <span class="bulk-count"></span></button></div><details class="bulk-hint"><summary>How Bulk Add Works</summary><p class="hint">Adds matches across every page and skips existing selections. Unverified amounts stay labelled; missing or conflicting prices need a quote.</p></details><div id="catalogueResults" class="catalogue-grid"></div>
+    <div id="catalogueResults" class="catalogue-grid"></div>
     <div class="catalogue-pagination"><button class="btn-outline" id="cataloguePrev" type="button">Previous</button><span id="cataloguePage"></span><button class="btn-outline" id="catalogueNext" type="button">Next</button></div>
     <p class="catalogue-more">Can't find your car? <button class="link-btn" id="openAiModalBtn" type="button"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search with AI</button> or <button class="link-btn" id="openManualBtn" type="button">Enter It Yourself</button>.</p>
     <p class="hint catalogue-coverage" id="catalogueCoverage"></p>
@@ -729,6 +774,19 @@
   <div class="modal detail-modal">
     <div class="modal-header"><h2 id="detailTitle">Lease Details</h2><button class="close-btn" id="closeDetailBtn" type="button" aria-label="Close lease details">&times;</button></div>
     <div id="detailBody"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="h2hModal" role="dialog" aria-modal="true" aria-labelledby="h2hTitle" inert>
+  <div class="modal detail-modal h2h-modal">
+    <div class="modal-header">
+      <div>
+        <p class="eyebrow">Side-by-Side Finalists</p>
+        <h2 id="h2hTitle">Head-to-Head Comparison</h2>
+      </div>
+      <button class="close-btn" id="closeH2hBtn" type="button" aria-label="Close head-to-head comparison">&times;</button>
+    </div>
+    <div id="h2hBody"></div>
   </div>
 </div>
 

@@ -446,6 +446,7 @@ console.log("✓ OpenAPI responseSchema and Model Validation PASSED\n");
 // -------------------------------------------------------------
 console.log("TEST 7: index.html Elements, Sort Options & Cache Busters");
 const html = fs.readFileSync("index.html", "utf8");
+const style = fs.readFileSync("css/style.css", "utf8");
 
 assert(html.includes('value="total|1"'), "index.html must include total|1 sort option");
 assert(html.includes('value="total|-1"'), "index.html must include total|-1 sort option");
@@ -497,6 +498,30 @@ assert(html.includes('data-strategy="lowest-rental"'), "index.html must include 
 assert(html.includes('data-strategy="fast-payoff"'), "index.html must include fast-payoff strategy pill");
 assert(html.includes('data-strategy="min-cash"'), "index.html must include min-cash strategy pill");
 assert(html.includes('data-strategy="cash-purchase"'), "index.html must include cash-purchase strategy pill");
+assert(style.includes('.badge-lowest-rental'), "css/style.css must include badge-lowest-rental");
+assert(style.includes('.cell-metric'), "css/style.css must include cell-metric");
+assert(style.includes('.micro-sub'), "css/style.css must include micro-sub");
+assert(style.includes('.bar-micro-metric'), "css/style.css must include bar-micro-metric");
+assert(style.includes('.v-bar-inner'), "css/style.css must include v-bar-inner");
+assert(style.includes('.donut-center-pct'), "css/style.css must include donut-center-pct");
+assert(style.includes('.amort-inspection-panel'), "css/style.css must include amort-inspection-panel");
+assert(style.includes('.amort-cursor-hairline'), "css/style.css must include amort-cursor-hairline");
+assert(style.includes('.amort-point-group'), "css/style.css must include amort-point-group");
+assert(style.includes('.dp-wrap'), "css/style.css must include dp-wrap for per-vehicle down payment override");
+assert(style.includes('.inline-dp-input'), "css/style.css must include inline-dp-input");
+assert(style.includes('.dp-custom-badge'), "css/style.css must include dp-custom-badge");
+assert(html.includes('id="headToHeadTray"'), "index.html must include headToHeadTray");
+assert(html.includes('id="h2hModal"'), "index.html must include h2hModal");
+assert(html.includes('id="openHeadToHeadBtn"'), "index.html must include openHeadToHeadBtn");
+assert(style.includes('.h2h-grid'), "css/style.css must include h2h-grid");
+assert(style.includes('.h2h-col-card'), "css/style.css must include h2h-col-card");
+assert(html.includes('id="quickFilterChips"'), "index.html must include quickFilterChips");
+for (const qf of ["all", "under15m", "electrified", "suv", "cbsl40", "official"]) {
+  assert(html.includes(`data-qf="${qf}"`), `index.html must include quick filter chip ${qf}`);
+}
+assert(style.includes('.quick-filter-chips'), "css/style.css must include quick-filter-chips");
+assert(style.includes('@media print'), "css/style.css must include @media print");
+assert(style.includes('STATUTORY LEASE FINANCING QUOTATION'), "css/style.css must include statutory lease financing quotation watermark in print");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");
 
 // -------------------------------------------------------------

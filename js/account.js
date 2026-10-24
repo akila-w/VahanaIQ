@@ -273,7 +273,7 @@ function loadGoogleButton() {
     script.onerror = () => reject(new Error("Couldn't load Google sign-in"));
     document.head.appendChild(script);
   }).then(id => {
-    id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential, ux_mode: "popup", context: "signin", locale: "en" });
+    id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential, ux_mode: "popup", context: "signin", locale: "en", auto_select: false });
     return id;
   }).catch(e => {
     gsi = null;
@@ -313,7 +313,9 @@ function renderGoogleButton() {
     const box = $("googleSignIn");
     box.textContent = "";
     $("signInBtn").hidden = true;
-    id.renderButton(box, { type: "standard", theme: darkTheme() ? "filled_black" : "outline", size: "large", text: "signin_with", shape: "rectangular", logo_alignment: "left", width: 320 });
+    const boxWidth = Math.floor(box.getBoundingClientRect().width);
+    const width = Math.max(200, Math.min(400, boxWidth || 400));
+    id.renderButton(box, { type: "standard", theme: darkTheme() ? "filled_black" : "outline", size: "large", text: "signin_with", shape: "rectangular", logo_alignment: "left", width, locale: "en" });
     fallbackTimer = setTimeout(() => {
       if (![...box.querySelectorAll("iframe")].some(f => f.getBoundingClientRect().height > 0)) showPopupFallback();
     }, GOOGLE_BUTTON_WAIT);
@@ -468,9 +470,9 @@ function openAccount() {
   }
   setError("");
   $("deleteConfirm").hidden = true;
-  if (!user) renderGoogleButton();
   renderAccount();
   if (!isOpen($("accountModal"))) openModal($("accountModal"), $("accountBtn"));
+  if (!user) renderGoogleButton();
 }
 
 // reload() shows inputs and vehicles that sync wrote to this browser

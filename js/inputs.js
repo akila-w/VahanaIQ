@@ -11,7 +11,7 @@ export const FIELDS = {
   tenure: { param: "n", def: "84" },
   down: { param: "down", def: "60" },
   income: { param: "inc", def: "" },
-  debt: { param: "debt", def: "0" },
+  debt: { param: "debt", def: "" },
   dti: { param: "dti", def: "0.4" },
   insurance: { param: "ins", def: "" },
   fees: { param: "fees", def: "" },

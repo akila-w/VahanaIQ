@@ -57,7 +57,7 @@ export function computeExciseDuty(fuel, cc, kw, cifLkr, body = 'SUV') {
       adValoremRate = 0.95;
     }
     specificDuty = motorKw * ratePerKw;
-    method = `BEV tier (${motorKw.toFixed(0)} kW @ Rs. ${ratePerKw.toLocaleString()}/kW)`;
+    method = `BEV tier (${motorKw.toFixed(0)} kW @ LKR ${ratePerKw.toLocaleString()}/kW)`;
   } else if (fuel === 'hev') {
     const disp = cc || 1498;
     let ratePerCc = 2450.0;
@@ -78,7 +78,7 @@ export function computeExciseDuty(fuel, cc, kw, cifLkr, body = 'SUV') {
       adValoremRate = 2.10;
     }
     specificDuty = disp * ratePerCc;
-    method = `HEV tier (${disp} cc @ Rs. ${ratePerCc.toLocaleString()}/cc)`;
+    method = `HEV tier (${disp} cc @ LKR ${ratePerCc.toLocaleString()}/cc)`;
   } else if (fuel === 'phev') {
     const disp = cc || 1498;
     let ratePerCc = 2800.0;
@@ -93,7 +93,7 @@ export function computeExciseDuty(fuel, cc, kw, cifLkr, body = 'SUV') {
       adValoremRate = 1.95;
     }
     specificDuty = disp * ratePerCc;
-    method = `PHEV tier (${disp} cc @ Rs. ${ratePerCc.toLocaleString()}/cc)`;
+    method = `PHEV tier (${disp} cc @ LKR ${ratePerCc.toLocaleString()}/cc)`;
   } else if (fuel === 'diesel') {
     const disp = cc || 2400;
     const isPickup = body.toLowerCase().includes('pickup');
@@ -106,7 +106,7 @@ export function computeExciseDuty(fuel, cc, kw, cifLkr, body = 'SUV') {
       else ratePerCc = 12500.0;
     }
     specificDuty = disp * ratePerCc;
-    method = `Diesel tier (${disp} cc @ Rs. ${ratePerCc.toLocaleString()}/cc)`;
+    method = `Diesel tier (${disp} cc @ LKR ${ratePerCc.toLocaleString()}/cc)`;
   } else {
     // Petrol
     const disp = cc || 1198;
@@ -140,7 +140,7 @@ export function computeExciseDuty(fuel, cc, kw, cifLkr, body = 'SUV') {
       adValoremRate = 3.25;
     }
     specificDuty = disp * ratePerCc;
-    method = `Petrol ICE tier (${disp} cc @ Rs. ${ratePerCc.toLocaleString()}/cc)`;
+    method = `Petrol ICE tier (${disp} cc @ LKR ${ratePerCc.toLocaleString()}/cc)`;
   }
 
   const adValoremDuty = cifLkr * adValoremRate;

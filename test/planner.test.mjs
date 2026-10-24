@@ -67,7 +67,7 @@ function createElement(id, tagName = 'div') {
 }
 
 const elementIds = [
-  'plannerVehicle', 'plannerGoal', 'plannerSaved', 'plannerMode',
+  'plannerVehicle', 'plannerVehicleBadge', 'plannerGoal', 'plannerSaved', 'plannerMode',
   'plannerPercent', 'plannerPercentWrap', 'plannerMonthly', 'plannerMonthlyWrap',
   'plannerDate', 'plannerCalendar', 'plannerName', 'plannerSave',
   'plannerScenarios', 'plannerDelete', 'plannerResult', 'toast'
@@ -86,6 +86,7 @@ globalThis.Event = class Event {
 globalThis.document = {
   getElementById: id => elements.get(id) || null,
   createElement: tag => createElement('', tag),
+  querySelectorAll: () => [],
   body: {
     append() {}
   },
@@ -237,4 +238,48 @@ const resHtmlFast = elements.get('plannerResult').innerHTML;
 assert.ok(resHtmlFast.includes('Fast Track'), 'Should display Fast Track tag for goals achievable within 12 months');
 assert.ok(resHtmlFast.includes('5 months to your goal'), 'Should calculate exact remaining months');
 
-console.log('✓ All 11 Savings Planner unit, integration & boundary checks passed successfully!');
+// L. Test: Interactive Savings Horizon & Trajectory Curve (SVG)
+assert.ok(resHtmlFast.includes('planner-trajectory-card'), 'SVG trajectory card should render');
+assert.ok(resHtmlFast.includes('planner-trajectory-svg'), 'SVG trajectory element should render');
+assert.ok(resHtmlFast.includes('trajectory-line'), 'Trajectory polyline should render');
+assert.ok(resHtmlFast.includes('trajectory-area'), 'Trajectory polygon area should render');
+assert.ok(resHtmlFast.includes('marker-goal'), 'Target reached goal marker should render');
+
+// M. Test: Upfront Cost Composition Visual Split Bar & CBSL Badges
+assert.ok(resHtmlFast.includes('planner-cost-split-bar'), 'Upfront cost split bar should render');
+assert.ok(resHtmlFast.includes('cost-split-seg seg-deposit'), 'Deposit segment should render');
+assert.ok(resHtmlFast.includes('cost-split-seg seg-fees'), 'Fees segment should render');
+assert.ok(resHtmlFast.includes('CBSL Compliant'), 'CBSL compliant tag should render');
+
+// N. Test: Vehicle Statutory Regulatory Floor Badge
+elements.get('plannerVehicle').value = 'v1'; // New car
+elements.get('plannerVehicle').dispatchEvent('input');
+assert.ok(elements.get('plannerVehicleBadge').innerHTML.includes('CBSL 60% Statutory Floor Required'), 'New car must display CBSL 60% floor');
+elements.get('plannerVehicle').value = 'v2'; // Used car
+elements.get('plannerVehicle').dispatchEvent('input');
+assert.ok(elements.get('plannerVehicleBadge').innerHTML.includes('Eligible for CBSL 40% Minimum Deposit'), 'Used car must display CBSL 40% eligibility');
+
+// O. Test: Target Date Feasibility Status (On Track vs Pace Gap)
+elements.get('plannerVehicle').value = 'v1';
+elements.get('plannerSaved').value = '0.00';
+elements.get('plannerMode').value = 'fixed';
+elements.get('plannerDate').value = '24-10-2028'; // 24 months
+elements.get('plannerMonthly').value = '1,000,000.00'; // high monthly pace
+elements.get('plannerMonthly').dispatchEvent('input');
+const resHtmlOnTrack = elements.get('plannerResult').innerHTML;
+assert.ok(resHtmlOnTrack.includes('on-track'), 'Target card should have on-track class when pace is sufficient');
+assert.ok(resHtmlOnTrack.includes('On Track'), 'Badge should show On Track');
+elements.get('plannerMonthly').value = '100,000.00'; // low monthly pace
+elements.get('plannerMonthly').dispatchEvent('input');
+const resHtmlPaceGap = elements.get('plannerResult').innerHTML;
+assert.ok(resHtmlPaceGap.includes('pace-needed'), 'Target card should have pace-needed class when pace is insufficient');
+assert.ok(resHtmlPaceGap.includes('Pace Gap'), 'Badge should display Pace Gap');
+
+// P. Test: Funded Goal Celebratory Card
+elements.get('plannerSaved').value = '20,000,000.00';
+elements.get('plannerSaved').dispatchEvent('input');
+const resHtmlCelebration = elements.get('plannerResult').innerHTML;
+assert.ok(resHtmlCelebration.includes('planner-funded-card'), 'Celebratory funded card should render when target reached');
+assert.ok(resHtmlCelebration.includes('Goal 100% Funded &amp; Ready') || resHtmlCelebration.includes('Goal 100% Funded & Ready'), 'Celebratory title should render');
+
+console.log('✓ All 16 Savings Planner unit, integration, boundary & graphic checks passed successfully!');

@@ -1,6 +1,7 @@
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { formatMoneyText, parseMoneyText, attachMoneyInput } from '../js/money-input.js';
-import { fmt } from '../js/calculator.js';
+import { fmt, computeLeaseTable } from '../js/calculator.js';
 import { validPrice, vehicleBatchError, conditionPrice, validateSearchResponse } from '../js/vehicle-validation.js';
 import { loadSavedCars, saveCars, COMPARISON_KEY } from '../js/storage.js';
 import { searchVehicle } from '../js/gemini.js';
@@ -55,6 +56,69 @@ for (let i = 0; i < '400000'.length; i++) {
 }
 typedHandlers.blur();
 eq(typedInput.value, '400,000.00');
+
+// Zero clearing and replacement in fields that start with 0.00
+const zeroHandlers = {};
+let selected = false;
+const zeroInput = {
+  value: '0.00',
+  selectionStart: 4,
+  selectionEnd: 4,
+  select() { selected = true; },
+  addEventListener: (name, fn) => { zeroHandlers[name] = fn; },
+  setSelectionRange(a, b) { this.selectionStart = a; this.selectionEnd = b ?? a; },
+  dispatchEvent(evt) { if (zeroHandlers[evt.type]) zeroHandlers[evt.type](evt); }
+};
+attachMoneyInput(zeroInput);
+eq(zeroInput.value, '0.00');
+
+// Focus selects all text
+zeroHandlers.focus();
+await new Promise(resolve => setTimeout(resolve, 10));
+ok(selected);
+
+// Desktop Backspace keydown on 0.00 clears it immediately in 1 keystroke
+let prevented = false;
+zeroHandlers.keydown({ key: 'Backspace', preventDefault() { prevented = true; } });
+ok(prevented);
+eq(zeroInput.value, '');
+
+// If value resets to 0.00 on blur
+zeroInput.value = '0';
+zeroHandlers.blur();
+eq(zeroInput.value, '0.00');
+
+// Desktop typing a digit directly replaces 0.00 with that digit
+prevented = false;
+zeroHandlers.keydown({ key: '5', preventDefault() { prevented = true; } });
+ok(prevented);
+eq(zeroInput.value, '5');
+
+// Mobile virtual keyboard fallback: typing digit at end of 0.00 results in "0.005"
+const mobileHandlers = {};
+const mobileInput = {
+  value: '0.00',
+  selectionStart: 4,
+  addEventListener: (name, fn) => { mobileHandlers[name] = fn; },
+  setSelectionRange(a) { this.selectionStart = a; }
+};
+attachMoneyInput(mobileInput);
+mobileInput.value = '0.005';
+mobileHandlers.input({});
+eq(mobileInput.value, '5');
+
+// Mobile virtual keyboard fallback: single backspace turning 0.00 into 0.0 clears to empty
+const mobileBsHandlers = {};
+const mobileBsInput = {
+  value: '0.00',
+  selectionStart: 4,
+  addEventListener: (name, fn) => { mobileBsHandlers[name] = fn; },
+  setSelectionRange(a) { this.selectionStart = a; }
+};
+attachMoneyInput(mobileBsInput);
+mobileBsInput.value = '0.0';
+mobileBsHandlers.input({});
+eq(mobileBsInput.value, '');
 
 for (const price of [0, -1, NaN, Infinity, '12000000', null, 1e15]) ok(!validPrice(price));
 ok(validPrice(12500000.5));
@@ -115,4 +179,64 @@ try {
   globalThis.fetch = async () => ({ ok: true, json: async () => single });
   await assert.rejects(searchVehicle('Compare Toyota and Honda'), { code: 'incomplete_comparison' }); assertions++;
 } finally { globalThis.fetch = realFetch; }
+// In-page section navigation targets
+const indexHtml = fs.readFileSync('index.html', 'utf8');
+ok(indexHtml.includes('class="page-nav"'));
+for (const id of ['budgetPanel', 'comparisonPanel', 'savingsPanel']) {
+  ok(indexHtml.includes(`href="#${id}"`));
+  ok(indexHtml.includes(`id="${id}"`));
+}
+
+// Improvement #6: Table Affordability Badges, DTI limits & Lowest Rental
+const testAffordCars = [
+  { name: 'Vehicle A', price: 10000000 },
+  { name: 'Vehicle B', price: 20000000 }
+];
+const affordResult = computeLeaseTable(testAffordCars, {
+  rate: 16, rateInput: 16, rateType: 'reducing', n: 60, down: 60, income: 500000, debt: 30000, dti: 0.40, insurance: 0, fees: 0
+});
+ok(affordResult.rows[0].rental < affordResult.rows[1].rental);
+const minRentalVal = Math.min(...affordResult.rows.map(r => r.rental));
+eq(affordResult.rows[0].rental, minRentalVal);
+const carDtiA = ((affordResult.rows[0].rental + 30000) / 500000) * 100;
+ok(carDtiA <= 40);
+eq(affordResult.rows[0].status, 'ok');
+const carDtiB = ((affordResult.rows[1].rental + 30000) / 500000) * 100;
+ok(carDtiB > 40);
+eq(affordResult.rows[1].status, 'bad');
+
+// Improvement #8: Per-Vehicle Custom Down Payment Override
+const customDpCars = [
+  { name: 'Standard 60% Car', price: 10000000, cond: 'New' },
+  { name: 'Custom 75% Car', price: 10000000, cond: 'New', downOverride: 75 },
+  { name: 'Clamped Custom Car', price: 10000000, cond: 'New', downOverride: 45 },
+  { name: 'Used 50% Custom Car', price: 10000000, cond: 'Used', downOverride: 50 }
+];
+const dpResult = computeLeaseTable(customDpCars, {
+  rate: 16, rateInput: 16, rateType: 'reducing', n: 60, down: 60, income: 500000, debt: 0, dti: 0.40, insurance: 0, fees: 0
+});
+eq(dpResult.rows[0].downPct, 60);
+eq(dpResult.rows[0].downCustom, false);
+eq(dpResult.rows[0].dp, 6000000);
+eq(dpResult.rows[1].downPct, 75);
+eq(dpResult.rows[1].downCustom, true);
+eq(dpResult.rows[1].dp, 7500000);
+ok(dpResult.rows[1].rental < dpResult.rows[0].rental);
+// New car with 45% override is clamped to CBSL 60% floor
+eq(dpResult.rows[2].downPct, 60);
+eq(dpResult.rows[2].downCustom, true);
+// Used car (>1yr) with 50% override uses 50% even when global down is 60%
+eq(dpResult.rows[3].downPct, 50);
+eq(dpResult.rows[3].downCustom, true);
+eq(dpResult.rows[3].dp, 5000000);
+
+// Improvement #9 & #10: Head-to-Head Finalists & Quick Market Segment Filters in index.html & app.js
+const appJsSource = fs.readFileSync('js/app.js', 'utf8');
+ok(appJsSource.includes('function openHeadToHead'));
+ok(appJsSource.includes('function startDpEdit'));
+ok(appJsSource.includes('export function matchesQuickFilter'));
+ok(indexHtml.includes('id="headToHeadTray"'));
+ok(indexHtml.includes('id="h2hModal"'));
+ok(indexHtml.includes('id="quickFilterChips"'));
+
 console.log(`QA regressions: ${assertions} assertions passed`);
