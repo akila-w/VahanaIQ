@@ -5,12 +5,12 @@
 // owner read, change or delete it. Before every write the account's copy is read and compared
 // with the copy both sides last agreed on, so a change made on another device is never
 // overwritten without asking.
-import { firebaseConfig, FIREBASE_SDK, GOOGLE_CLIENT_ID, GOOGLE_SIGN_IN_SRC } from "./config.js?v=2.11.3";
-import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.3";
-import { showToast } from "./toast.js?v=2.11.3";
-import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.11.3";
-import { STORE_KEY } from "./inputs.js?v=2.11.3";
-import { PLANNER_KEY, cleanPlanner } from "./planner-store.js?v=2.11.3";
+import { firebaseConfig, FIREBASE_SDK, GOOGLE_CLIENT_ID, GOOGLE_SIGN_IN_SRC } from "./config.js?v=2.11.5";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.5";
+import { showToast } from "./toast.js?v=2.11.5";
+import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.11.5";
+import { STORE_KEY } from "./inputs.js?v=2.11.5";
+import { PLANNER_KEY, cleanPlanner } from "./planner-store.js?v=2.11.5";
 
 const SIGNED_IN_KEY = "vahanaiq_account_v1"; // set while signed in, so the next visit restores the session
 const AGREED_KEY = "vahanaiq_synced_v1"; // fingerprint of the copy this browser and the account last agreed on
@@ -273,7 +273,7 @@ function loadGoogleButton() {
     script.onerror = () => reject(new Error("Couldn't load Google sign-in"));
     document.head.appendChild(script);
   }).then(id => {
-    id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential, ux_mode: "popup", context: "signin" });
+    id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential, ux_mode: "popup", context: "signin", locale: "en" });
     return id;
   }).catch(e => {
     gsi = null;
@@ -313,7 +313,7 @@ function renderGoogleButton() {
     const box = $("googleSignIn");
     box.textContent = "";
     $("signInBtn").hidden = true;
-    id.renderButton(box, { type: "standard", theme: darkTheme() ? "filled_black" : "outline", size: "large", text: "signin_with", shape: "rectangular", logo_alignment: "left" });
+    id.renderButton(box, { type: "standard", theme: darkTheme() ? "filled_black" : "outline", size: "large", text: "signin_with", shape: "rectangular", logo_alignment: "left", width: 320 });
     fallbackTimer = setTimeout(() => {
       if (![...box.querySelectorAll("iframe")].some(f => f.getBoundingClientRect().height > 0)) showPopupFallback();
     }, GOOGLE_BUTTON_WAIT);
@@ -433,12 +433,33 @@ function renderAccount() {
     for (const id of ["accountEmail", "syncStatus", "syncConflictCounts"]) $(id).textContent = "";
     $("syncConflict").hidden = true;
     $("deleteConfirm").hidden = true;
+    const avatar = $("accountAvatar");
+    if (avatar) avatar.textContent = "";
+    const dot = $("syncDot");
+    if (dot?.classList) {
+      dot.classList.toggle("ok", false);
+      dot.classList.toggle("syncing", false);
+      dot.classList.toggle("failed", false);
+      dot.classList.toggle("conflict", false);
+    }
     return;
   }
   $("accountEmail").textContent = user.email || user.displayName || "your Google account";
   $("syncStatus").textContent = statusText();
   $("syncConflict").hidden = !conflict;
   if (conflict) $("syncConflictCounts").textContent = `Your account has ${count(conflict.copy)}. This browser has ${count(localCopy())}.`;
+  const avatar = $("accountAvatar");
+  if (avatar) {
+    const raw = (user.displayName || user.email || "A").trim();
+    avatar.textContent = raw.charAt(0).toUpperCase() || "A";
+  }
+  const dot = $("syncDot");
+  if (dot?.classList) {
+    dot.classList.toggle("ok", !syncing && !failed && !conflict);
+    dot.classList.toggle("syncing", !!syncing);
+    dot.classList.toggle("failed", !!failed);
+    dot.classList.toggle("conflict", !!conflict);
+  }
 }
 
 function openAccount() {

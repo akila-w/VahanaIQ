@@ -95,6 +95,9 @@ const domElements = {
   rate: new MockElement("rate", "INPUT"),
   tenure: new MockElement("tenure", "INPUT"),
   down: new MockElement("down", "INPUT"),
+  rateSlider: new MockElement("rateSlider", "INPUT"),
+  tenureSlider: new MockElement("tenureSlider", "INPUT"),
+  downSlider: new MockElement("downSlider", "INPUT"),
   income: new MockElement("income", "INPUT"),
   debt: new MockElement("debt", "INPUT"),
   dti: new MockElement("dti", "SELECT"),
@@ -181,6 +184,26 @@ const domElements = {
   budgetLive: new MockElement("budgetLive"),
   budgetBar: new MockElement("budgetBar"),
   budgetPanel: new MockElement("budgetPanel"),
+  budgetGraphic: new MockElement("budgetGraphic"),
+  budgetNeedle: new MockElement("budgetNeedle"),
+  budgetDtiHero: new MockElement("budgetDtiHero"),
+  budgetDtiSub: new MockElement("budgetDtiSub"),
+  budgetDtiPill: new MockElement("budgetDtiPill"),
+  budgetDtiText: new MockElement("budgetDtiText"),
+  budgetCashflowLabel: new MockElement("budgetCashflowLabel"),
+  budgetCashflowBar: new MockElement("budgetCashflowBar"),
+  budgetTelemetryGrid: new MockElement("budgetTelemetryGrid"),
+  ltvSplitContainer: new MockElement("ltvSplitContainer"),
+  ltvBarTrack: new MockElement("ltvBarTrack"),
+  ltvBarDp: new MockElement("ltvBarDp"),
+  ltvBarDpText: new MockElement("ltvBarDpText"),
+  ltvBarLoan: new MockElement("ltvBarLoan"),
+  ltvBarLoanText: new MockElement("ltvBarLoanText"),
+  ltvEligibilityBadge: new MockElement("ltvEligibilityBadge"),
+  ltvDetailDp: new MockElement("ltvDetailDp"),
+  ltvDetailLoan: new MockElement("ltvDetailLoan"),
+  ltvDetailCeiling: new MockElement("ltvDetailCeiling"),
+  ltvDetailStatus: new MockElement("ltvDetailStatus"),
   appVersion: new MockElement("appVersion"),
   priceAsOf: new MockElement("priceAsOf")
 };
@@ -442,8 +465,38 @@ assert(html.includes('aria-label="Search vehicle with Gemini AI or paste adverti
 assert(html.includes('<label for="aiImgUrl">'), "index.html must give aiImgUrl a visible label");
 assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
 assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
-assert(html.includes('js/app.js?v=2.11.3'), "index.html must reference js/app.js?v=2.11.3");
-assert(html.includes('css/style.css?v=2.11.3'), "index.html must reference css/style.css?v=2.11.3");
+assert(html.includes('js/app.js?v=2.11.5'), "index.html must reference js/app.js?v=2.11.5");
+assert(html.includes('css/style.css?v=2.11.5'), "index.html must reference css/style.css?v=2.11.5");
+assert(html.includes('id="budgetGraphic"'), "index.html must include budgetGraphic container");
+assert(html.includes('id="budgetNeedle"'), "index.html must include budgetNeedle SVG element");
+assert(html.includes('id="budgetDtiHero"'), "index.html must include budgetDtiHero readout");
+assert(html.includes('id="budgetCashflowBar"'), "index.html must include budgetCashflowBar container");
+assert(html.includes('id="budgetTelemetryGrid"'), "index.html must include budgetTelemetryGrid container");
+assert(html.includes('id="ltvSplitContainer"'), "index.html must include ltvSplitContainer container");
+assert(html.includes('id="ltvBarTrack"'), "index.html must include ltvBarTrack element");
+assert(html.includes('id="ltvBarDp"'), "index.html must include ltvBarDp element");
+assert(html.includes('class="modal detail-modal"'), "index.html must include detail-modal class on detailModal");
+assert(html.includes('data-preset-for="tenure"'), "index.html must include tenure preset chips");
+assert(html.includes('data-preset-for="down"'), "index.html must include down payment preset chips");
+assert(html.includes('data-preset-val="36"'), "index.html must include 36m tenure preset");
+assert(html.includes('data-preset-val="60"'), "index.html must include 60m tenure preset");
+assert(html.includes('data-preset-val="84"'), "index.html must include 84m tenure preset");
+assert(html.includes('data-preset-val="40"'), "index.html must include 40% down payment preset");
+assert(html.includes('data-preset-val="70"'), "index.html must include 70% down payment preset");
+assert(html.includes('class="stepper-suffix"'), "index.html must include stepper suffix adornments");
+assert(html.includes('class="input-adorn-wrap"'), "index.html must include input adornment wrappers");
+assert(html.includes('class="adorn-prefix"'), "index.html must include currency prefix adornments");
+assert(html.includes('id="rateSlider"'), "index.html must include rateSlider element");
+assert(html.includes('id="tenureSlider"'), "index.html must include tenureSlider element");
+assert(html.includes('id="downSlider"'), "index.html must include downSlider element");
+assert(html.includes('data-slider-for="rate"'), "index.html must link rate slider");
+assert(html.includes('data-slider-for="tenure"'), "index.html must link tenure slider");
+assert(html.includes('data-slider-for="down"'), "index.html must link down payment slider");
+assert(html.includes('class="strategy-scenarios-wrap"'), "index.html must include strategy-scenarios-wrap");
+assert(html.includes('data-strategy="lowest-rental"'), "index.html must include lowest-rental strategy pill");
+assert(html.includes('data-strategy="fast-payoff"'), "index.html must include fast-payoff strategy pill");
+assert(html.includes('data-strategy="min-cash"'), "index.html must include min-cash strategy pill");
+assert(html.includes('data-strategy="cash-purchase"'), "index.html must include cash-purchase strategy pill");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");
 
 // -------------------------------------------------------------

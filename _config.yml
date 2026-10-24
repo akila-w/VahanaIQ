@@ -12,6 +12,8 @@ exclude:
   - serverless
   - design-system
   - qa
+  # Photo Studio exports carry photo pixels inline and are working files; they are not published.
+  - vahanaiq-studio-photos-*.json
   - README.md
   - firestore.rules
   - Gemfile

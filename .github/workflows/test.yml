@@ -20,6 +20,7 @@ jobs:
       - name: Run regression suites without external services
         run: |
           node test/verify.mjs
+          node test/verify-graphics.test.mjs
           node test/qa-regressions.test.mjs
           node test/catalogue.test.mjs
           node test/proxy-search.test.mjs
@@ -31,6 +32,8 @@ jobs:
           node test/account-session.test.mjs
           node test/copy-privacy.test.mjs
           node test/catalogue-data.test.mjs
+          node test/catalogue-studio.test.mjs
+          node test/planner.test.mjs
           node test/scan-prices.test.mjs
           node test/savings-bulk.test.mjs
       - name: Check the repository keeps only published assets

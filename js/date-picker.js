@@ -1,5 +1,5 @@
-import { formatDate } from './dates.js?v=2.11.3';
-import { addMonths } from './savings.js?v=2.11.3';
+import { formatDate } from './dates.js?v=2.11.5';
+import { addMonths } from './savings.js?v=2.11.5';
 export function dateInputValue(value) {
   const raw=String(value||'').trim();
   if (!raw) return '';
@@ -19,6 +19,7 @@ export function attachDatePicker(input, button) {
   const present=()=>{const iso=dateInputValue(input.value);if(iso&&formatDate(iso)!=='Date unavailable')input.value=formatDate(iso,{numeric:true});button.setAttribute('aria-label',iso&&formatDate(iso)!=='Date unavailable'?'Change Target Date, '+formatDate(iso):'Choose Target Date');};
   const close=()=>dialog.close();
   function render(moveFocus=false) {
+    const minDate=addMonths(today,1);
     const y=focus.getFullYear(),m=focus.getMonth(),first=new Date(y,m,1),offset=(first.getDay()+6)%7,last=new Date(y,m+1,0).getDate();
     month.value=String(m);year.value=String(y);$('#calendarMonthTitle').textContent=months[m]+' '+y;
     let html='';
@@ -27,7 +28,7 @@ export function attachDatePicker(input, button) {
       for(let col=0;col<7;col++) {
         const day=row*7+col-offset+1;
         if(day<1||day>last){html+='<td></td>';continue;}
-        const d=new Date(y,m,day,12),iso=isoDate(d),disabled=d<today;
+        const d=new Date(y,m,day,12),iso=isoDate(d),disabled=d<minDate;
         html+='<td'+(iso===chosen?' aria-selected="true"':'')+'><button type="button" data-date="'+iso+'" aria-label="'+formatDate(iso)+'"'+(iso===isoDate(today)?' aria-current="date"':'')+' tabindex="'+(!disabled&&day===focus.getDate()?'0':'-1')+'"'+(disabled?' disabled':'')+'>'+day+'</button></td>';
       }
       html+='</tr>';
@@ -35,14 +36,15 @@ export function attachDatePicker(input, button) {
     body.innerHTML=html;
     if(moveFocus)body.querySelector('[tabindex="0"]')?.focus();
   }
-  function moveMonth(count) { focus=addMonths(focus,count);if(focus<today)focus=new Date(today);render(true); }
+  function moveMonth(count) { focus=addMonths(focus,count);const minDate=addMonths(today,1);if(focus<minDate)focus=new Date(minDate);render(true); }
   function apply(value){input.value=value?formatDate(value,{numeric:true}):'';input.dispatchEvent(new Event('input',{bubbles:true}));present();close();}
   input.addEventListener('blur',present);
   button.addEventListener('click',()=>{
     today=new Date();today.setHours(12,0,0,0);chosen=dateInputValue(input.value);
-    focus=/^\d{4}-\d{2}-\d{2}$/.test(chosen)&&formatDate(chosen)!=='Date unavailable'?new Date(chosen+'T12:00:00'):new Date(today);
-    if(focus<today)focus=new Date(today);
-    const firstYear=today.getFullYear(),lastYear=Math.max(firstYear+100,focus.getFullYear());
+    const minDate=addMonths(today,1);
+    focus=/^\d{4}-\d{2}-\d{2}$/.test(chosen)&&formatDate(chosen)!=='Date unavailable'?new Date(chosen+'T12:00:00'):new Date(minDate);
+    if(focus<minDate)focus=new Date(minDate);
+    const firstYear=minDate.getFullYear(),lastYear=Math.max(firstYear+100,focus.getFullYear());
     year.innerHTML=Array.from({length:lastYear-firstYear+1},(_,i)=>'<option>'+String(firstYear+i)+'</option>').join('');
     render();dialog.showModal();body.querySelector('[tabindex="0"]')?.focus();
   });
@@ -54,11 +56,12 @@ export function attachDatePicker(input, button) {
     else if(e.target.closest('[data-calendar-next]'))moveMonth(1);
     else if(e.target.closest('[data-date]'))apply(e.target.closest('[data-date]').dataset.date);
   });
-  for(const el of [month,year])el.addEventListener('change',()=>{focus=new Date(Number(year.value),Number(month.value),1,12);if(focus<today)focus=new Date(today);render(true);});
+  for(const el of [month,year])el.addEventListener('change',()=>{const minDate=addMonths(today,1);focus=new Date(Number(year.value),Number(month.value),1,12);if(focus<minDate)focus=new Date(minDate);render(true);});
   body.addEventListener('keydown',e=>{
     if(!e.target.matches('[data-date]'))return;
+    const minDate=addMonths(today,1);
     const day=(focus.getDay()+6)%7,delta={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7,Home:-day,End:6-day}[e.key];
-    if(delta!==undefined){e.preventDefault();focus.setDate(focus.getDate()+delta);if(focus<today)focus=new Date(today);render(true);}
+    if(delta!==undefined){e.preventDefault();focus.setDate(focus.getDate()+delta);if(focus<minDate)focus=new Date(minDate);render(true);}
     else if(['PageUp','PageDown'].includes(e.key)){e.preventDefault();moveMonth((e.key==='PageUp'?-1:1)*(e.shiftKey?12:1));}
   });
   window.addEventListener('vahanaiq:copy-reset',()=>{if(dialog.open)dialog.close();});

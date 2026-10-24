@@ -73,3 +73,15 @@ Current status: milestone 1 is in progress. Its first catalogue batch has 146 en
 ## Local update · 21/10/2026
 
 The local preview now includes a deposit/cash savings planner with named goals and optional account sync, bulk catalogue/search/filter selection with Undo, input-based affordability filtering, official-source 8:5 images, brand marks/glyphs, mobile reflow improvements and About/Privacy/Terms pages. The catalogue contains 164 entries across 28 makes. Price/photo evidence remains inspectable in the visual review; unverified prices require confirmation. This update has not been deployed.
+
+## Local update · 23/10/2026
+
+**Catalogue Photo Studio.** `studio.html` now arranges the photos of any catalogue entry by hand: uploads (multiple files, drag-and-drop or ⌘V paste), an 8:5 crop/zoom stage with drag, wheel, slider, arrow-key nudging, Fit/Centre/per-photo reset and an Automatic/Plate/Fill choice, plus cover selection, reordering and removal. Photos and frames are kept in this browser's own IndexedDB and are never uploaded; the catalogue page applies them as it loads and marks such a card **Your Photo**. `scripts/apply-studio-photos.mjs` publishes an export into `assets/images/curated-catalogue/`, `data/catalogue.json` and `js/catalogue-data.js` together, with refusals for missing pixels, unsafe file names, unknown entry ids and incomplete JPEGs. `test/catalogue-studio.test.mjs` covers the frame geometry against the build script's own maths, the record rules, the manifest and the bake script against a throwaway catalogue. The frame geometry mirrors `scripts/build-curated-catalogue.py`, so a hand-set frame exports to the same 8:5 pixels the automated build produces. Privacy and Terms gained matching sections through `scripts/build-info-pages.mjs`, and the site's dev-only test suites are unchanged. The published catalogue photos are unchanged until an export is applied.
+
+## Local update · 24/10/2026
+
+**VahanaIQ v2.11.5: Full Market Coverage, Telemetry Gauges, and Currency Engine.**
+- **Market expansion:** Ingested Batches 1 to 4 into `data/catalogue.json` and baked into `js/catalogue-data.js`, expanding coverage to 227 models, 504 gallery images and 38 brand marks across Luxury Distributors, Japanese & Pickups, South Asian & Value Segments, and Chinese New Energy marques.
+- **Budget telemetry & LTV split:** Added live interactive SVG DTI dial gauge (`#budgetNeedle`), cashflow bar, and statutory CBSL Direction No. 01 of 2026 LTV split visualization (`ltvSplitContainer`, `ltvBarTrack`).
+- **Currency formatting & South Asian numbering:** Updated `js/money-input.js` to strip intermediate commas during active editing so keystrokes progress without trapping digits at thousands boundaries (e.g. `400000`), and added support for South Asian numbering (`\d{1,2}(?:,\d{2})+,\d{3}`).
+- **Version alignment:** Aligned `APP_VERSION = "2.11.5"` across `js/config.js`, all HTML shell files, service worker cache (`sw.js`), and test suites (`test/tokens.test.mjs`, `test/verify.mjs`, `test/catalogue-studio.test.mjs`, `test/planner.test.mjs`). All regression suites pass.

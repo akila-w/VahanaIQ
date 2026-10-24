@@ -1,114 +1,232 @@
 export const identity = {
   "brands": {
-    "Audi": {
-      "localPath": "../assets/identity/audi.svg",
-      "sourceUrl": "https://simpleicons.org/?q=audi",
-      "packageVersion": "16.35.0"
-    },
     "BMW": {
       "localPath": "../assets/identity/bmw.svg",
-      "sourceUrl": "https://simpleicons.org/?q=bmw",
-      "packageVersion": "16.35.0"
+      "sourceUrl": "https://www.bmw.co.uk/content/dam/bmw/common/images/logo-icons/BMW/BMW_White_Logo.svg.asset.1670245093434.svg",
+      "dark": false,
+      "adaptive": false
+    },
+    "Changan": {
+      "localPath": "../assets/identity/changan.svg",
+      "sourceUrl": "https://www.globalchangan.com/static/clientlibs/changancms/images/header/changan-auto-logo.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Daihatsu": {
+      "localPath": "../assets/identity/daihatsu.png",
+      "sourceUrl": "https://download.logo.wine/logo/Daihatsu/Daihatsu-Logo.wine.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "DFSK": {
+      "localPath": "../assets/identity/dfsk.webp",
+      "sourceUrl": "https://www.dfsk.com/static_/dfsk-black-DglH9b2Z.webp",
+      "dark": false,
+      "adaptive": false
+    },
+    "Ford": {
+      "localPath": "../assets/identity/ford.webp",
+      "sourceUrl": "https://ford.lk/assets/logo-lg-76IkHtvU.webp",
+      "dark": false,
+      "adaptive": false
+    },
+    "GAC": {
+      "localPath": "../assets/identity/gac.png",
+      "sourceUrl": "https://br-www-resouce-cdn.gacgroup.com/www/static/png/GAC-1792653511873.174115eb.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "GWM": {
+      "localPath": "../assets/identity/gwm.png",
+      "sourceUrl": "https://www.gwm-global.com/dist/images/home-page/cc_logo-20250120.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Geely": {
+      "localPath": "../assets/identity/geely.png",
+      "sourceUrl": "https://logos-world.net/wp-content/uploads/2021/09/Geely-Auto-Logo.png",
+      "dark": false,
+      "adaptive": false
     },
     "Honda": {
-      "localPath": "../assets/identity/honda.svg",
-      "sourceUrl": "https://simpleicons.org/?q=honda",
-      "packageVersion": "16.35.0"
+      "localPath": "../assets/identity/honda.png",
+      "sourceUrl": "https://images.seeklogo.com/logo-png/53/2/honda-new-logo-png_seeklogo-531543.png",
+      "dark": false,
+      "adaptive": false
     },
-    "Hyundai": {
-      "localPath": "../assets/identity/hyundai.svg",
-      "sourceUrl": "https://simpleicons.org/?q=hyundai",
-      "packageVersion": "16.35.0"
+    "Isuzu": {
+      "localPath": "../assets/identity/isuzu.png",
+      "sourceUrl": "https://www.isuzu.co.jp/world/app-files/img/cmn_logo02.png",
+      "dark": false,
+      "adaptive": false
     },
-    "Kia": {
-      "localPath": "../assets/identity/kia.svg",
-      "sourceUrl": "https://simpleicons.org/?q=kia",
-      "packageVersion": "16.35.0"
+    "Land Rover": {
+      "localPath": "../assets/identity/land-rover.svg",
+      "sourceUrl": "https://www.landrover.co.uk/",
+      "dark": false,
+      "adaptive": false
+    },
+    "Mercedes-Benz": {
+      "localPath": "../assets/identity/mercedes-benz.png",
+      "sourceUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9e/Mercedes-Benz_Logo_2010.svg/3840px-Mercedes-Benz_Logo_2010.svg.png",
+      "dark": false,
+      "adaptive": false
     },
     "MG": {
-      "localPath": "../assets/identity/mg.svg",
-      "sourceUrl": "https://simpleicons.org/?q=mg",
-      "packageVersion": "16.35.0"
+      "localPath": "../assets/identity/mg.png",
+      "sourceUrl": "https://mgsrilanka.lk/wp-content/uploads/2025/05/MG-Cars-Logo.png",
+      "dark": false,
+      "adaptive": false
     },
-    "Mahindra": {
-      "localPath": "../assets/identity/mahindra.svg",
-      "sourceUrl": "https://simpleicons.org/?q=mahindra",
-      "packageVersion": "16.35.0"
-    },
-    "Mazda": {
-      "localPath": "../assets/identity/mazda.svg",
-      "sourceUrl": "https://simpleicons.org/?q=mazda",
-      "packageVersion": "16.35.0"
+    "Micro": {
+      "localPath": "../assets/identity/micro.png",
+      "sourceUrl": "https://microcars.lk/wp-content/uploads/2025/12/Micro-Logo.png",
+      "dark": false,
+      "adaptive": false
     },
     "Mitsubishi": {
-      "localPath": "../assets/identity/mitsubishi.svg",
-      "sourceUrl": "https://simpleicons.org/?q=mitsubishi",
-      "packageVersion": "16.35.0"
+      "localPath": "../assets/identity/mitsubishi.png",
+      "sourceUrl": "https://wieck-mmna-production.s3.amazonaws.com/photos/dd6a25afee219fc074f97ffc380ace7d33f2d144/preview-928x522.jpg",
+      "dark": false,
+      "adaptive": false
     },
-    "Nissan": {
-      "localPath": "../assets/identity/nissan.svg",
-      "sourceUrl": "https://simpleicons.org/?q=nissan",
-      "packageVersion": "16.35.0"
-    },
-    "Peugeot": {
-      "localPath": "../assets/identity/peugeot.svg",
-      "sourceUrl": "https://simpleicons.org/?q=peugeot",
-      "packageVersion": "16.35.0"
+    "Perodua": {
+      "localPath": "../assets/identity/perodua.svg",
+      "sourceUrl": "https://www.peroduasl.lk/img/navigation/perodua-logo.svg",
+      "dark": false,
+      "adaptive": false
     },
     "Porsche": {
-      "localPath": "../assets/identity/porsche.svg",
-      "sourceUrl": "https://simpleicons.org/?q=porsche",
-      "packageVersion": "16.35.0"
-    },
-    "Renault": {
-      "localPath": "../assets/identity/renault.svg",
-      "sourceUrl": "https://simpleicons.org/?q=renault",
-      "packageVersion": "16.35.0"
+      "localPath": "../assets/identity/porsche.png",
+      "sourceUrl": "https://www.edigitalagency.com.au/wp-content/uploads/Porsche-logo-PNG-large-size.png + https://cdn.freebiesupply.com/logos/large/2x/porsche-1-logo-black-and-white.png",
+      "dark": false,
+      "adaptive": false
     },
     "Suzuki": {
       "localPath": "../assets/identity/suzuki.svg",
-      "sourceUrl": "https://simpleicons.org/?q=suzuki",
-      "packageVersion": "16.35.0"
+      "sourceUrl": "https://www.suzuki.co.jp/",
+      "dark": false,
+      "adaptive": false
     },
     "Tata": {
       "localPath": "../assets/identity/tata.svg",
-      "sourceUrl": "https://simpleicons.org/?q=tata",
-      "packageVersion": "16.35.0"
+      "sourceUrl": "https://www.tatamotors.com/wp-content/themes/TataMotors/images/Tata-Motors-logo.svg",
+      "dark": false,
+      "adaptive": false
     },
     "Toyota": {
-      "localPath": "../assets/identity/toyota.svg",
-      "sourceUrl": "https://simpleicons.org/?q=toyota",
-      "packageVersion": "16.35.0"
+      "localPath": "../assets/identity/toyota.png",
+      "sourceUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Logo_Toyota.svg/960px-Logo_Toyota.svg.png",
+      "dark": false,
+      "adaptive": false
     },
     "Volkswagen": {
-      "localPath": "../assets/identity/volkswagen.svg",
-      "sourceUrl": "https://simpleicons.org/?q=volkswagen",
-      "packageVersion": "16.35.0"
+      "localPath": "../assets/identity/volkswagen.png",
+      "sourceUrl": "https://uploads.vw-mms.de/system/production/images/vwn/030/145/images/7a0d84d3b718c9a621100e43e581278433114c82/DB2019AL01950_web_1600.jpg",
+      "dark": false,
+      "adaptive": false
     },
-    "GWM": {
-      "localPath": "../assets/identity/official-1b491180f03ff34abebe.png",
-      "sourceUrl": "https://www.gwmsrilanka.lk/",
-      "imageUrl": "https://www.gwmsrilanka.lk/assets-home/images/gwm-logo.png"
-    },
-    "GAC": {
-      "localPath": "../assets/identity/official-5bfb97842f067eb08150.png",
-      "sourceUrl": "https://gacsrilanka.com/",
-      "imageUrl": "https://gacsrilanka.com/wp-content/uploads/2025/10/GAC-Auto-Logo-1-1.png"
-    },
-    "Chery": {
-      "localPath": "../assets/identity/official-bb0889e525dea9160f1b.png",
-      "sourceUrl": "https://www.cherysrilanka.lk/",
-      "imageUrl": "https://www.cherysrilanka.lk/img/chery-srilanka-logo.png"
-    },
-    "Leapmotor": {
-      "localPath": "../assets/identity/official-80bb74186ed759764e43.png",
-      "sourceUrl": "https://leapmotor.lk/",
-      "imageUrl": "https://cdn.bitrix24.com/b31747087/landing/e4d/e4db1ad02b39c8594ff3430f62a26da5/leapmotor_logo_small_1x.png"
+    "Audi": {
+      "localPath": "../assets/identity/audi.svg",
+      "sourceUrl": "https://static.audi.com/assets/images/frontend/Audi_Rings_wh-RGB-5SRAGCO4.svg",
+      "dark": false,
+      "adaptive": true
     },
     "BYD": {
-      "localPath": "../assets/identity/official-2b8ca934df800f3a3da8.svg",
-      "sourceUrl": "https://www.byd.com/us",
-      "imageUrl": "https://www.byd.com/material/byd-site/america-public/byd-logo.svg"
+      "localPath": "../assets/identity/byd.svg",
+      "sourceUrl": "https://www.byd.com/static_material/byd/overseas/public-icon/logo.svg",
+      "dark": false,
+      "adaptive": false
+    },
+    "Chery": {
+      "localPath": "../assets/identity/chery.png",
+      "sourceUrl": "https://logos-world.net/wp-content/uploads/2021/08/Chery-Emblem.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Deepal": {
+      "localPath": "../assets/identity/deepal.svg",
+      "sourceUrl": "https://deepal.lk/images/deepal.svg",
+      "dark": false,
+      "adaptive": true
+    },
+    "Hyundai": {
+      "localPath": "../assets/identity/hyundai.png",
+      "sourceUrl": "https://www.hyundai.com/worldwide/en",
+      "dark": false,
+      "adaptive": true
+    },
+    "Jaguar": {
+      "localPath": "../assets/identity/jaguar.png",
+      "sourceUrl": "https://www.jaguar.lk/_nuxt/icons/icon_144x144.cca3cc.png + https://images.seeklogo.com/logo-png/56/2/jaguar-new-2025-logo-png_seeklogo-563810.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Jeep": {
+      "localPath": "../assets/identity/jeep.png",
+      "sourceUrl": "https://www.jeep.com/content/dam/fca-brands/na/jeep/en_us/global/header/logo-jeep.png",
+      "dark": false,
+      "adaptive": true
+    },
+    "Jetour": {
+      "localPath": "../assets/identity/jetour.svg",
+      "sourceUrl": "Jetour Official Inline SVG",
+      "dark": false,
+      "adaptive": true
+    },
+    "Kia": {
+      "localPath": "../assets/identity/kia.png",
+      "sourceUrl": "https://logos-world.net/wp-content/uploads/2021/03/Kia-Logo.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Leapmotor": {
+      "localPath": "../assets/identity/leapmotor.png",
+      "sourceUrl": "https://images.seeklogo.com/logo-png/50/2/leapmotor-logo-png_seeklogo-505249.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Lexus": {
+      "localPath": "../assets/identity/lexus.svg",
+      "sourceUrl": "https://www.lexus.com/content/dam/lexus/content-fragments/navigation/global-nav-v2/assets/lexus-logo.svg",
+      "dark": false,
+      "adaptive": true
+    },
+    "Mahindra": {
+      "localPath": "../assets/identity/mahindra.png",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/d/da/Mahindra_Automotive_new_logo.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Mazda": {
+      "localPath": "../assets/identity/mazda.png",
+      "sourceUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/46/Mazda_logo_2024.svg/1920px-Mazda_logo_2024.svg.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "MINI": {
+      "localPath": "../assets/identity/mini.svg",
+      "sourceUrl": "https://www.mini.com/etc.clientlibs/settings/wcm/designs/minidigital-white/images/logo/resources/mini-logo.svg",
+      "dark": false,
+      "adaptive": true
+    },
+    "Nissan": {
+      "localPath": "../assets/identity/nissan.png",
+      "sourceUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/23/Nissan_2020_logo.svg/1280px-Nissan_2020_logo.svg.png",
+      "dark": false,
+      "adaptive": false
+    },
+    "Peugeot": {
+      "localPath": "../assets/identity/peugeot.png",
+      "sourceUrl": "https://thumb.wikimedia.org/wikipedia/en/thumb/9/9d/Peugeot_2021_Logo.svg/1280px-Peugeot_2021_Logo.svg.png",
+      "dark": false,
+      "adaptive": true
+    },
+    "Renault": {
+      "localPath": "../assets/identity/renault.png",
+      "sourceUrl": "https://logos-world.net/wp-content/uploads/2021/04/Renault-Logo.png",
+      "dark": false,
+      "adaptive": true
     }
   },
   "models": {

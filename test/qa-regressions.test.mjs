@@ -14,7 +14,9 @@ for (const [input, formatted, number] of [
   ['250000.50', '250,000.50', 250000.5], ['10,000,000.00', '10,000,000.00', 10000000],
   ['Rs. 250,000.25', '250,000.25', 250000.25], ['LKR 10000000', '10,000,000.00', 10000000],
   ['-250,000.50', '-250,000.50', -250000.5], ['0.', '0.00', 0], ['0.05', '0.05', 0.05],
-  ['.5', '0.50', 0.5], ['-.5', '-0.50', -0.5]
+  ['.5', '0.50', 0.5], ['-.5', '-0.50', -0.5],
+  ['4,00,000', '400,000.00', 400000], ['1,50,00,000', '15,000,000.00', 15000000],
+  ['4,00,000.50', '400,000.50', 400000.5]
 ]) {
   eq(formatMoneyText(input), formatted);
   eq(parseMoneyText(input), number);
@@ -37,6 +39,22 @@ eq(input.value, '250,000.5'); handlers.blur(); eq(input.value, '250,000.50');
 input.value = ''; handlers.blur(); eq(input.value, '');
 input.value = '12,34'; handlers.blur(); eq(input.value, '12,34');
 input.value = '12.5'; attachMoneyInput(input, { grouping: false }); handlers.blur(); eq(input.value, '12.50');
+
+// Keystroke-by-keystroke typing across thousands boundaries must re-group commas rather than trapping them
+const typedHandlers = {};
+const typedInput = { value: '', selectionStart: 0, addEventListener: (name, fn) => { typedHandlers[name] = fn; }, setSelectionRange(a) { this.selectionStart = a; } };
+attachMoneyInput(typedInput);
+const expectedSteps = ['4', '40', '400', '4,000', '40,000', '400,000'];
+for (let i = 0; i < '400000'.length; i++) {
+  const ch = '400000'[i];
+  typedInput.value = typedInput.value.slice(0, typedInput.selectionStart) + ch + typedInput.value.slice(typedInput.selectionStart);
+  typedInput.selectionStart += 1;
+  typedHandlers.input();
+  eq(typedInput.value, expectedSteps[i]);
+  ok(Number.isFinite(parseMoneyText(typedInput.value)));
+}
+typedHandlers.blur();
+eq(typedInput.value, '400,000.00');
 
 for (const price of [0, -1, NaN, Infinity, '12000000', null, 1e15]) ok(!validPrice(price));
 ok(validPrice(12500000.5));

@@ -6,25 +6,43 @@ const moneyFormatter = new Intl.NumberFormat("en-LK", { minimumFractionDigits: 2
 export const formatMoneyAmount = value => moneyFormatter.format(Math.abs(value) < 0.005 ? 0 : (value || 0));
 
 // Keep decimals and reject ambiguous input instead of silently changing its value.
+// Supports plain digits, standard thousands grouping (groups of 3), and South Asian lakh/crore grouping.
 export function parseMoneyText(text) {
   const raw = String(text ?? "").trim().replace(/^(?:LKR|Rs\.?|₨)\s*/i, "");
-  if (!/^-?(?:(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d{0,2})?|\.\d{1,2})$/.test(raw)) return NaN;
+  if (!/^-?(?:(?:\d+|\d{1,3}(?:,\d{3})+|\d{1,2}(?:,\d{2})+,\d{3})(?:\.\d{0,2})?|\.\d{1,2})$/.test(raw)) return NaN;
   const value = Number(raw.replace(/,/g, ""));
   return Number.isFinite(value) && Math.abs(value) < 10 ** MAX_DIGITS ? value : NaN;
 }
 
 export function formatMoneyText(text, { editing = false, grouping = true } = {}) {
   const raw = String(text ?? "");
-  const value = parseMoneyText(raw);
-  if (!Number.isFinite(value)) return raw;
   if (!editing) {
+    const value = parseMoneyText(raw);
+    if (!Number.isFinite(value)) return raw;
     const formatted = formatMoneyAmount(value);
     return grouping ? formatted : formatted.replace(/,/g, "");
   }
-  const clean = raw.trim().replace(/^(?:LKR|Rs\.?|₨)\s*/i, "").replace(/,/g, "");
+  const trimmed = raw.trim();
+  if (trimmed === "") return "";
+  const clean = trimmed.replace(/^(?:LKR|Rs\.?|₨)\s*/i, "").replace(/,/g, "");
+  if (clean === "-" || clean === "") return clean;
+  if (!/^-?(?:\d*(?:\.\d{0,2})?|\.\d{1,2})$/.test(clean)) return raw;
   const [whole, fraction] = clean.split(".");
-  const formatted = (clean.startsWith("-") ? "-" : "") + Number(whole.replace(/^-/, "") || "0").toLocaleString("en-LK", { useGrouping: grouping });
-  return fraction === undefined ? formatted : formatted + "." + fraction;
+  if (whole === "" && fraction === undefined) return raw;
+  if (whole === "-" && fraction === undefined) return "-";
+  const numDigits = (whole.replace(/^-/, "") + (fraction || "")).length;
+  if (numDigits > MAX_DIGITS) return raw;
+
+  let formattedWhole = "";
+  if (whole === "-") {
+    formattedWhole = "-";
+  } else if (whole !== "") {
+    const isNeg = whole.startsWith("-");
+    const digits = whole.replace(/^-/, "");
+    const n = Number(digits || "0");
+    formattedWhole = (isNeg ? "-" : "") + (grouping ? n.toLocaleString("en-LK") : digits);
+  }
+  return fraction === undefined ? formattedWhole : formattedWhole + "." + fraction;
 }
 
 export function attachMoneyInput(el, { grouping = true } = {}) {

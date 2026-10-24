@@ -1,15 +1,86 @@
-import { formatDate as displayDate } from "./dates.js?v=2.11.3";
-import { baseVehicles as catalogue } from "./market-catalogue.js?v=2.11.3";
-import { fmt, esc, minDownFor } from "./calculator.js?v=2.11.3";
-import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.11.3";
-import { validPrice } from "./vehicle-validation.js?v=2.11.3";
-import { newVehicleId } from "./storage.js?v=2.11.3";
-import { openModal, closeModal } from "./modal.js?v=2.11.3";
-import { searchCatalogue } from "./catalogue-search.js?v=2.11.3";
-import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.11.3";
-import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.11.3";
-import { identity } from "./identity-data.js?v=2.11.3";
-import { prepareBulkSelection } from "./bulk-selection.js?v=2.11.3";
+import { formatDate as displayDate } from "./dates.js?v=2.11.5";
+import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.11.5";
+import { fmt, esc, minDownFor } from "./calculator.js?v=2.11.5";
+import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.11.5";
+import { validPrice } from "./vehicle-validation.js?v=2.11.5";
+import { newVehicleId } from "./storage.js?v=2.11.5";
+import { openModal, closeModal } from "./modal.js?v=2.11.5";
+import { searchCatalogue } from "./catalogue-search.js?v=2.11.5";
+import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.11.5";
+import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.11.5";
+import { identity as fallbackIdentity } from "./identity-data.js?v=2.11.5";
+import { prepareBulkSelection } from "./bulk-selection.js?v=2.11.5";
+
+const getIdentity = () => (typeof window !== "undefined" && window.__VAHANAIQ_IDENTITY__) || fallbackIdentity;
+
+export function getUnifiedCatalogue(fallbackList = fallbackCatalogue) {
+  const unified = (typeof window !== "undefined" && window.__VAHANAIQ_CATALOGUE__) || null;
+  if (!unified?.models?.length) return fallbackList;
+
+  const fallbackMap = new Map();
+  for (const v of fallbackList) {
+    fallbackMap.set(v.id, v);
+    fallbackMap.set(`${v.make} ${v.model || v.name}`.toLowerCase(), v);
+  }
+
+  return unified.models.map(m => {
+    const pricedOffers = (m.offers || []).filter(o => Number.isFinite(o.amount) && o.amount > 0);
+    const best = pricedOffers.reduce((b, o) => !b || o.amount < b.amount ? o : b, null) || m.offers?.[0] || null;
+    const existing = fallbackMap.get(m.id) || fallbackMap.get(best?.id) || fallbackMap.get(`${m.make} ${m.model || m.name}`.toLowerCase()) || {};
+
+    const photo = m.images?.[0]?.smallSrc || m.images?.[0]?.src || existing.img || "";
+    const price = best && Number.isFinite(best.amount) && best.amount > 0 ? best.amount : (existing.price || null);
+    const priceBasis = best && price ? (["official", "dealer", "launch"].includes(best.kind) ? (best.kind === "launch" ? "starting" : "published") : "estimated") : (existing.priceBasis || "unpublished");
+    const cond = best?.condition || existing.cond || "New";
+    const fuel = best?.fuel || m.offers?.find(o => o.fuel)?.fuel || existing.fuel || "";
+    const route = best?.route === "Distributor" ? "Official" : best?.route === "Dealer Listing" ? "Dealer" : (existing.w || "Grey");
+    const normBody = (m.body || "").toLowerCase() === "passenger car" ? "Passenger car" : m.body;
+
+    let pt = existing.pt || (fuel ? `${fuel} Powertrain` : "");
+    if (!existing.pt && best?.name && /turbo/i.test(best.name)) {
+      pt = `${best.name.replace(m.make, "").trim()} Turbo`;
+    }
+
+    return {
+      id: m.id,
+      make: m.make,
+      model: m.model,
+      name: m.name,
+      body: normBody,
+      trim: best?.trim || existing.trim || null,
+      year: best?.year || existing.year || null,
+      fuel: fuel,
+      pt: pt,
+      km: existing.km || "",
+      w: route,
+      cond: cond,
+      price: price,
+      priceBasis: priceBasis,
+      priceCheckedMonth: "2026-10",
+      pricePublishedMonth: null,
+      priceSourceUrl: (best?.sourceUrl || m.sourceUrl || "").replace(/^http:\/\//, "https://"),
+      sourceUrl: (m.sourceUrl || "").replace(/^http:\/\//, "https://"),
+      checkedOn: m.checkedOn || "2026-10-23",
+      availability: best?.sourceStatus === "estimated" ? "estimated" : (existing.availability || "marketed"),
+      img: photo,
+      custom: false,
+      priceVerification: price ? "confirmed" : "unverified",
+      priceScope: "model",
+      priceVerifiedOn: m.checkedOn || "2026-10-23",
+      power: existing.power || "",
+      torque: existing.torque || "",
+      transmission: existing.transmission || "",
+      drivetrain: existing.drivetrain || "FWD",
+      seats: existing.seats || 5,
+      groundClearance: existing.groundClearance || "",
+      dimensions: existing.dimensions || "",
+      safety: existing.safety || "",
+      features: existing.features || "",
+      warranty: existing.warranty || (route === "Official" ? "Official Agent Warranty" : "Importer / Seller Warranty"),
+      offers: m.offers || []
+    };
+  });
+}
 
 const routeLabel = v => v.w === "Official" ? "Official agent range" : v.w === "Grey" ? "Importer listing" : "Independent seller listing";
 const availabilityLabel = v => ({ "used-listed": "Used listing: confirm registration age", "import-service": "Past import example: enquire about availability", "brochure-listed": "Local brochure: enquire about availability", "configurator-listed": "Local configurator: enquire about availability" }[v.availability] || "Confirm stock with seller");
@@ -47,6 +118,8 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   const pageSize = 12;
   let page = 0, pending = null, selection = "";
 
+  const catalogue = getUnifiedCatalogue();
+
   const count = (key, value) => catalogue.filter(v => v[key] === value).length;
   $("catalogueMake").insertAdjacentHTML("beforeend", [...new Set(catalogue.map(v => v.make))].sort()
     .map(m => `<option value="${esc(m)}">${esc(m)} (${count("make", m)})</option>`).join(""));
@@ -78,8 +151,9 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   }
 
   function card(v, t) {
+    const ident = getIdentity();
     const selected = isSelected(v.id);
-    const photo = photoFor(v);
+    const photo = v.img || photoFor(v);
     const candidateCredit = creditFor(v);
     const credit = candidateCredit?.img === photo ? candidateCredit : null;
     const specs = [v.pt && v.pt !== UNKNOWN_SPEC ? v.pt : "", v.km].filter(Boolean).join(" · ");
@@ -97,16 +171,23 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     const rent = rentalLine(v, t);
     return `<article class="catalogue-card">
         <div class="catalogue-photo${photo ? "" : " is-empty"}">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" width="400" height="250">` : NO_PHOTO}</div>
-        <span class="catalogue-category">${identity.brands[v.make] ? `<img class="brand-mark" src="${esc(identity.brands[v.make].localPath.replace("../", ""))}" alt="">` : ""}${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
-        <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>${identity.models[`${v.make} ${v.model}`] ? `<img class="model-mark" src="${esc(identity.models[`${v.make} ${v.model}`].localPath.replace("../", ""))}" alt="">` : ""}
-        ${specs ? `<p class="hint">${esc(specs)}</p>` : ""}
+        <div class="catalogue-card-head">
+          <span class="catalogue-category">${ident.brands?.[v.make] ? `<img class="brand-mark" src="${esc(ident.brands[v.make].localPath.replace("../", ""))}" alt="">` : ""}${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
+          ${ident.models?.[`${v.make} ${v.model}`] ? `<img class="model-mark" src="${esc(ident.models[`${v.make} ${v.model}`].localPath.replace("../", ""))}" alt="">` : ""}
+        </div>
+        <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>
+        ${specs ? `<p class="hint catalogue-specs-line">${esc(specs)}</p>` : ""}
         ${pills.length ? `<div class="catalogue-spec-pills">${pills.map(p => `<span class="spec-pill">${esc(p)}</span>`).join("")}</div>` : ""}
-        <p class="catalogue-price${hasPrice(v) ? "" : " is-unpriced"}">${priceText(v)}</p>
-        ${rent ? `<p class="hint catalogue-rent">${rent}</p>` : ""}
+        <div class="catalogue-price-block">
+          <p class="catalogue-price${hasPrice(v) ? "" : " is-unpriced"}">${priceText(v)}</p>
+          ${rent ? `<p class="hint catalogue-rent">${rent}</p>` : ""}
+        </div>
         ${detailRows.length ? `<details class="catalogue-spec-details"><summary>Specifications &amp; trim details</summary><dl class="catalogue-spec-grid">${detailRows.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join("")}</dl></details>` : ""}
-        <p class="hint">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${v.priceVerifiedOn ? ` · Verified ${displayDate(v.priceVerifiedOn)}` : ""}</p>
-        <div class="source-links"><a href="${esc(safeUrl(link.href))}" target="_blank" rel="noopener noreferrer">${link.text}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>${credit ? formatCreditHtml(credit) : ""}</div>
-        <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In Comparison ✓" : "Choose & Add"}</button>
+        <div class="catalogue-card-foot">
+          <p class="hint catalogue-provenance">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${v.priceVerifiedOn ? ` · Verified ${displayDate(v.priceVerifiedOn)}` : ""}</p>
+          <div class="source-links"><a href="${esc(safeUrl(link.href))}" target="_blank" rel="noopener noreferrer">${link.text}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>${credit ? formatCreditHtml(credit) : ""}</div>
+          <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In Comparison ✓" : "Choose & Add"}</button>
+        </div>
       </article>`;
   }
 
@@ -143,7 +224,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     const scope = id === 'catalogueAddAll' ? catalogue : id === 'catalogueAddSearch' ? searched : searched.filter(v => matchesFilters(v, filterValues()) && fitsBudget(v, filterValues(), terms?.()));
     const { eligible, skipped } = prepareBulkSelection(scope, catalogue.filter(v => isSelected(v.id)).map(v => v.id));
     if (!eligible.length || !onAddBatch) return;
-    const batch = eligible.map(v => ({ ...v, id: newVehicleId(), catalogueId: v.id, cond: v.cond || 'New', conditionAssumed: !v.cond, img: photoFor(v), custom: true, legacy: false }));
+    const batch = eligible.map(v => ({ ...v, id: newVehicleId(), catalogueId: v.id, cond: v.cond || 'New', conditionAssumed: !v.cond, img: v.img || photoFor(v), custom: true, legacy: false }));
     if (!onAddBatch(batch, skipped.length)) return;
     closeModal($("catalogueModal"));
     $("h-list").focus(); render();
@@ -190,8 +271,35 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     $("cataloguePrice").value = validPrice(pending.price) && pending.priceBasis !== 'conflicting' ? formatMoneyText(String(pending.price)) : "";
     $("cataloguePriceNote").textContent = pending.priceBasis === "conflicting" ? "The source does not establish a reliable price for this variant. Enter a confirmed quote." : publishedPrice(pending) ? "Source-backed asking/starting amount, checked " + displayDate(pending.priceVerifiedOn || pending.checkedOn) + ". Confirm the exact specification and current quote." : validPrice(pending.price) ? "Unverified catalogue estimate. Replace it with a seller quote before relying on the calculation." : "No verified price is published here. Enter your quote to calculate a lease.";
     $("catalogueAddError").textContent = "";
+
+    if ($("catalogueTrimWrap") && $("catalogueTrimSelect")) {
+      const offers = pending.offers || [];
+      if (offers.length > 1) {
+        $("catalogueTrimWrap").hidden = false;
+        $("catalogueTrimSelect").innerHTML = offers.map((o, idx) =>
+          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${fmt(o.amount)}` : ""}${o.condition ? ` (${esc(o.condition)})` : ""}</option>`
+        ).join("");
+        $("catalogueTrimSelect").value = "0";
+      } else {
+        $("catalogueTrimWrap").hidden = true;
+      }
+    }
+
     openModal($("catalogueAddModal"), button, $("cataloguePrice"));
   });
+
+  if ($("catalogueTrimSelect")) {
+    $("catalogueTrimSelect").addEventListener("change", () => {
+      if (!pending?.offers) return;
+      const o = pending.offers[Number($("catalogueTrimSelect").value)];
+      if (!o) return;
+      $("catalogueName").value = o.name || (pending.name + (o.trim ? ` ${o.trim}` : ""));
+      $("catalogueCondition").value = o.condition || pending.cond || "New";
+      $("cataloguePrice").value = validPrice(o.amount) ? formatMoneyText(String(o.amount)) : "";
+      $("cataloguePriceNote").textContent = o.amount ? `Source-backed amount (${o.kind || "published"}), checked ${displayDate(o.checkedOn || pending.checkedOn)}. Confirm current quote.` : "No published price for this variant; enter quote.";
+    });
+  }
+
   for (const id of ["closeCatalogueAddBtn", "cancelCatalogueAddBtn"]) $(id).addEventListener("click", () => closeModal($("catalogueAddModal")));
   attachMoneyInput($("cataloguePrice"));
   window.addEventListener("vahanaiq:copy-reset", () => { pending = null; });
@@ -207,7 +315,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     }
     const published = price === pending.price && cond === pending.cond;
     const vehicle = { ...pending, id: newVehicleId(), catalogueId: pending.id, name, price, cond,
-      img: photoFor(pending),
+      img: pending.img || photoFor(pending),
       custom: true, legacy: false, priceBasis: published ? pending.priceBasis : "user-entered",
       priceSourceUrl: published ? pending.priceSourceUrl : null, priceCheckedMonth: published ? pending.priceCheckedMonth : null };
     if (!onAdd(vehicle)) return;

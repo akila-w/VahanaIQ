@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Photo Studio · VahanaIQ</title>
+  <meta name="description" content="Arrange, frame and upload the photos of any entry in the VahanaIQ vehicle catalogue.">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#103e36">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+  <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} try { var now = Date.now() / 1000; var rootStyle = document.documentElement.style; rootStyle.setProperty("--aurora-delay-1", "-" + (now % 44).toFixed(2) + "s"); rootStyle.setProperty("--aurora-delay-2", "-" + (now % 56).toFixed(2) + "s"); } catch (e) {}</script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.11.5">
+  <link rel="stylesheet" href="css/curated-catalogue.css">
+  <link rel="stylesheet" href="css/catalogue-studio.css">
+  <script src="js/page-transitions.js" defer></script>
+  <script type="module" src="js/catalogue-studio.js?v=2.11.5"></script>
+</head>
+<body>
+  <a class="skip" href="#models">Skip to Catalogue Entries</a>
+  <header class="site-header">
+    <div class="header-brand-group">
+      <a class="brand" href="index.html">
+        <img src="assets/icons/logo-v-mark-transparent-light.svg" alt="" class="brand-logo logo-light" width="36" height="36">
+        <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" class="brand-logo logo-dark" width="36" height="36">
+        <div class="brand-text">
+          <span class="brand-title">Vahana<span class="brand-iq">IQ</span></span>
+          <span class="brand-tagline">Sri Lanka Vehicle Finance Intelligence</span>
+        </div>
+      </a>
+      <nav aria-label="Main">
+        <a href="index.html">Calculator</a>
+        <a href="catalogue.html">Catalogue</a>
+        <a href="studio.html" aria-current="page">Studio</a>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <button class="btn-outline" id="exportBtn" type="button">Export My Photos</button>
+      <fieldset class="theme-switch" id="themeSwitch">
+        <legend class="sr-only">Theme</legend>
+        <label title="System: match this device"><input type="radio" name="theme" value="system" checked><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="sr-only">System</span></label>
+        <label title="Light"><input type="radio" name="theme" value="light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="sr-only">Light</span></label>
+        <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
+      </fieldset>
+    </div>
+  </header>
+  <main class="studio">
+    <section class="studio-intro">
+      <p class="eyebrow">Catalogue Photos</p>
+      <h1>Photo Studio</h1>
+      <p class="studio-lede">Upload your own pictures, frame any photo at 8:5, arrange the order and choose the cover for an entry in the Vehicle Catalogue. Every photo and setting stays on this device, and the catalogue page in this browser shows your work straight away.</p>
+      <p class="studio-note" id="storageNote">Photos are kept in this browser only. Nothing is uploaded anywhere.</p>
+    </section>
+    <div class="studio-layout">
+      <section id="models" class="studio-panel studio-models" aria-labelledby="modelsTitle">
+        <h2 id="modelsTitle">Catalogue Entries</h2>
+        <label class="studio-field" for="modelSearch">Find a model
+          <input id="modelSearch" type="search" placeholder="Make or model…" autocomplete="off" spellcheck="false">
+        </label>
+        <label class="studio-field" for="modelFilter">Show
+          <select id="modelFilter">
+            <option value="all">All entries</option>
+            <option value="edited">Entries I have changed</option>
+          </select>
+        </label>
+        <p class="studio-note" id="modelCount" role="status"></p>
+        <ul class="model-list" id="modelList"></ul>
+      </section>
+      <section class="studio-panel studio-editor" aria-labelledby="editorTitle">
+        <header class="editor-head">
+          <div>
+            <p class="eyebrow" id="editorMake">Photo Studio</p>
+            <h2 id="editorTitle">Choose a Catalogue Entry</h2>
+          </div>
+          <div class="editor-actions">
+            <a class="btn-outline" id="openCatalogue" href="catalogue.html">Open In Catalogue ↗</a>
+            <button class="btn-outline" id="resetModelBtn" type="button" hidden>Undo My Changes</button>
+          </div>
+        </header>
+        <p class="studio-empty" id="editorEmpty">Pick a model on the left to arrange its photos. Changes are saved as you make them.</p>
+        <div id="editorWork" hidden>
+          <section class="studio-block" aria-labelledby="photosTitle">
+            <div class="block-head">
+              <h3 id="photosTitle">Photos <span class="count-chip" id="photoCount">0</span></h3>
+              <div class="block-actions">
+                <label class="btn" for="photoFiles">Add Photos</label>
+                <input id="photoFiles" class="sr-only" type="file" accept="image/*" multiple>
+              </div>
+            </div>
+            <p class="studio-hint">The photo marked <strong>Cover</strong> is the one the card shows. Add several files at once, drag them onto the strip, or paste a screenshot with ⌘V (Ctrl+V).</p>
+            <ul class="filmstrip" id="filmstrip"></ul>
+            <p class="studio-note is-alert" id="photoError" role="alert" hidden></p>
+          </section>
+          <section class="studio-block" aria-labelledby="frameTitle">
+            <div class="block-head">
+              <h3 id="frameTitle">Frame</h3>
+              <span class="count-chip" id="frameItem">No photo selected</span>
+            </div>
+            <div class="crop-area">
+              <div class="crop-stage">
+                <canvas id="cropStage" width="800" height="500" tabindex="0" role="img" aria-label="Preview of the framed catalogue photo. Drag to move the photo, scroll or use the zoom slider to zoom, and use the arrow keys to nudge it."></canvas>
+                <div class="crop-guides" id="cropGuides" aria-hidden="true">
+                  <div class="guide-grid">
+                    <span class="grid-line grid-v grid-v-1"></span>
+                    <span class="grid-line grid-v grid-v-2"></span>
+                    <span class="grid-line grid-h grid-h-1"></span>
+                    <span class="grid-line grid-h grid-h-2"></span>
+                  </div>
+                  <div class="guide-margins">
+                    <span class="margin-line margin-left" title="Safe margin (8%)"></span>
+                    <span class="margin-line margin-right" title="Safe margin (8%)"></span>
+                  </div>
+                  <div class="guide-line guide-roofline">
+                    <span class="guide-label">Roofline Baseline</span>
+                  </div>
+                  <div class="guide-line guide-tyreline">
+                    <span class="guide-label">Tyre Baseline</span>
+                  </div>
+                </div>
+                <p class="crop-hint" id="cropHint">Choose a photo above to frame it.</p>
+              </div>
+              <div class="crop-controls">
+                <p class="studio-field is-label">Zoom <span class="count-chip" id="zoomValue">1.00×</span></p>
+                <input id="zoomRange" type="range" min="0.5" max="3" step="0.05" value="1" aria-label="Zoom">
+                <div class="button-row">
+                  <button class="btn-outline" id="zoomOut" type="button" aria-label="Zoom out">−</button>
+                  <button class="btn-outline" id="zoomIn" type="button" aria-label="Zoom in">+</button>
+                </div>
+                <label class="studio-field" for="frameMode">Framing</label>
+                <select id="frameMode" disabled>
+                  <option value="auto">Automatic: ask the photo</option>
+                  <option value="plate">Vehicle on a white plate</option>
+                  <option value="scene">Fill the frame (8:5 crop)</option>
+                </select>
+                <div class="button-row">
+                  <button class="btn-outline" id="fitBtn" type="button" disabled>Fit</button>
+                  <button class="btn-outline" id="centreBtn" type="button" disabled>Centre</button>
+                </div>
+                <button class="quiet" id="resetFrameBtn" type="button" disabled>Reset this frame</button>
+                <div class="studio-guides-control">
+                  <p class="studio-field is-label">Framing Guides</p>
+                  <div class="guide-toggles">
+                    <button class="btn-outline btn-guide active" id="toggleBaselinesBtn" type="button" aria-pressed="true">Baselines</button>
+                    <button class="btn-outline btn-guide active" id="toggleGridBtn" type="button" aria-pressed="true">Grid</button>
+                    <button class="btn-outline btn-guide active" id="toggleMarginsBtn" type="button" aria-pressed="true">Margins</button>
+                  </div>
+                </div>
+                <p class="studio-hint">Drag the photo to move it · scroll to zoom · the arrow keys nudge it by 1%.</p>
+              </div>
+            </div>
+            <p class="studio-note" id="frameStatus"></p>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="foot">
+    <div class="foot-cols">
+      <section aria-labelledby="footStorage">
+        <h2 class="foot-h" id="footStorage">On-Device Storage</h2>
+        <p>Photos you upload here are kept in this browser's own storage and are never sent to a server. Manufacturer images remain the property of their respective owners; a photo you add is published under your own responsibility.</p>
+      </section>
+      <section aria-labelledby="footFraming">
+        <h2 class="foot-h" id="footFraming">Framing Standards</h2>
+        <p>All display frames use standardized 8:5 proportions. Zoom, focus and mode choices stay on this device, and the catalogue page in this browser reflects your framing immediately.</p>
+      </section>
+      <section aria-labelledby="footPublishing">
+        <h2 class="foot-h" id="footPublishing">Publishing to Catalogue</h2>
+        <p>Export your photos and run the bake script to update the repository data. VahanaIQ is an independent personal project.</p>
+      </section>
+    </div>
+    <nav class="site-links" aria-label="Information"><a href="index.html">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html" aria-current="page">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+      <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
+      <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
+      <span>VahanaIQ v2.11.5</span>
+    </p>
+  </footer>
+  <dialog id="exportDialog" aria-labelledby="exportTitle">
+    <header class="dialog-head">
+      <div><p class="eyebrow">Photo Studio</p><h2 id="exportTitle">Export My Photos</h2></div>
+      <button id="exportClose" class="close" aria-label="Close Export">✕</button>
+    </header>
+    <div class="export-body">
+      <p id="exportSummary" role="status"></p>
+      <p class="studio-note is-alert" id="exportProblems" role="alert" hidden></p>
+      <ol class="export-list" id="exportList"></ol>
+      <div class="export-actions">
+        <button class="btn" id="exportDownload" type="button">Download The Export File</button>
+        <button class="quiet" id="exportClear" type="button" hidden>Remove all studio photos</button>
+      </div>
+      <details class="export-help">
+        <summary>What to do with the file</summary>
+        <ol>
+          <li>Keep the download beside the working files (exports are not committed).</li>
+          <li>From the project folder run <code>node scripts/apply-studio-photos.mjs vahanaiq-studio-photos-DATE.json</code>. It writes the framed photos into <code>assets/images/curated-catalogue/</code> and updates <code>data/catalogue.json</code> and <code>js/catalogue-data.js</code> together, so the two can never drift.</li>
+          <li>Review the change, then commit and push. The published catalogue will then show your photos, your order and your cover.</li>
+        </ol>
+        <p>Published photos you removed are left out of the export; the rest of the entry's prices are untouched.</p>
+      </details>
+    </div>
+  </dialog>
+  <p class="toast" id="toast" role="status" hidden></p>
+  <noscript><p class="load-error">The Photo Studio needs JavaScript: it frames photos on a canvas and keeps them in this browser's own storage.</p></noscript>
+</body>
+</html>

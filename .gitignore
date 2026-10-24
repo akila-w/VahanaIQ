@@ -17,6 +17,11 @@ Thumbs.db
 # Agent working trees. These are scratch checkouts, not project files.
 .claude/
 .codex/
+.gemini_workspace/
+
+# Python cache
+__pycache__/
+*.py[cod]
 
 # Local environment & secrets
 .env
@@ -43,3 +48,7 @@ assets/images/review-catalogue/
 assets/images/catalogue-rebuild-originals/
 assets/images/catalogue/
 assets/images/official-candidates/
+
+# Exports from the Photo Studio (studio.html). They carry the framed photo pixels inline, so they are
+# working files: apply one with scripts/apply-studio-photos.mjs and keep it out of the repository.
+vahanaiq-studio-photos-*.json

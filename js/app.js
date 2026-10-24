@@ -1,21 +1,21 @@
-import { formatDate } from "./dates.js?v=2.11.3";
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor } from "./calculator.js?v=2.11.3";
-import { baseVehicles } from "./catalog.js?v=2.11.3";
-import { initCatalogue } from "./catalogue-browser.js?v=2.11.3";
-import { APP_VERSION } from "./config.js?v=2.11.3";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.11.3";
-import { searchVehicle } from "./gemini.js?v=2.11.3";
-import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.11.3";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.11.3";
-import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.3";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.11.3";
-import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.11.3";
-import { showToast, clearToast } from "./toast.js?v=2.11.3";
-import { initAccount } from "./account.js?v=2.11.3";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.11.3";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.11.3";
-import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.11.3";
-import { initPlanner } from "./planner.js?v=2.11.3";
+import { formatDate } from "./dates.js?v=2.11.5";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor } from "./calculator.js?v=2.11.5";
+import { baseVehicles } from "./catalog.js?v=2.11.5";
+import { initCatalogue } from "./catalogue-browser.js?v=2.11.5";
+import { APP_VERSION } from "./config.js?v=2.11.5";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.11.5";
+import { searchVehicle } from "./gemini.js?v=2.11.5";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.11.5";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.11.5";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.5";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.11.5";
+import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.11.5";
+import { showToast, clearToast } from "./toast.js?v=2.11.5";
+import { initAccount } from "./account.js?v=2.11.5";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.11.5";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.11.5";
+import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.11.5";
+import { initPlanner } from "./planner.js?v=2.11.5";
 
 clearLegacyKeys();
 
@@ -213,6 +213,7 @@ function render() {
   const eligibleForForty = cars.some(c => !c.hidden && minDownFor(c.cond, c.financeClass, c.firstRegisteredOn) === 40);
   if ($('down')) $('down').min = String(eligibleForForty ? 40 : 60);
   const settings = readSettings();
+  syncSegmentedAndSteppers();
   const { s, f, rows: allRows, room } = computeLeaseTable(cars, settings);
   const rows = allRows.filter(r => !r.hidden);
 
@@ -260,6 +261,7 @@ function render() {
 
   updateFilterCount();
   updateBudgetExtras(s, f, room, rows);
+  updateLtvBar(s, rows);
 
   const maxRent = Math.max(1, ...rows.map(r => r.rental));
   const scale = s.income ? Math.max(room, maxRent) : maxRent;
@@ -333,6 +335,196 @@ function updateBudgetExtras(s, f, room, rows) {
 <span>Rental, monthly insurance and existing payments: <span class="tag ok">Within your limit</span> up to ${limit}% · <span class="tag bad">Above your limit</span> over ${limit}%</span>`;
   }
 
+  const budgetGraphic = $("budgetGraphic");
+  if (budgetGraphic) {
+    budgetGraphic.hidden = false;
+    if ($("summary")) $("summary").hidden = true;
+
+    if (!s.income) {
+      const needleEl = $("budgetNeedle");
+      if (needleEl) needleEl.setAttribute("transform", "rotate(-90.0, 160, 150)");
+
+      const heroEl = $("budgetDtiHero");
+      if (heroEl) heroEl.textContent = "0.0% DTI";
+
+      const propRent = rows.length > 0 ? rows[0].rental : 1e6 * f * (1 - s.down / 100);
+      const subEl = $("budgetDtiSub");
+      if (subEl) subEl.textContent = rows.length > 0
+        ? `Rs. ${fmt(propRent)} / month rental`
+        : `Rs. ${fmt(propRent)} / Rs. 1M price`;
+
+      const pillEl = $("budgetDtiPill");
+      if (pillEl) pillEl.className = "classic-dti-pill ok";
+      const textEl = $("budgetDtiText");
+      if (textEl) textEl.textContent = "Enter Net Monthly Income";
+
+      const labelEl = $("budgetCashflowLabel");
+      if (labelEl) labelEl.textContent = "Net Income Cashflow (Enter income above)";
+
+      const barEl = $("budgetCashflowBar");
+      if (barEl) {
+        const fullW = 100;
+        barEl.innerHTML = `<div class="cashflow-seg-free" style="width:${fullW}%" title="Discretionary: Enter net monthly income">Enter net monthly income above to evaluate DTI &amp; cashflow</div>`;
+      }
+
+      const gridEl = $("budgetTelemetryGrid");
+      if (gridEl) {
+        const card1Title = rows.length > 0 ? "Vehicle Lease Rental" : "Monthly Rental / Rs. 1M";
+        const card1Tag = rows.length > 0 ? "Proposed" : "Standard";
+        const card1Val = propRent;
+        const card1Sub = rows.length > 0 ? esc(rows[0].name) : "Per Rs. 1.00M vehicle price";
+
+        const card2Title = "Existing Commitments";
+        const card2Tag = s.debt > 0 ? "Loans / Cards" : "Zero Debt";
+        const card2TagClass = s.debt > 0 ? "mid" : "ok";
+        const card2Val = s.debt;
+        const card2Sub = "Existing monthly payments";
+
+        const card3Title = "Net Income Needed / Rs. 1M";
+        const card3Tag = `${limit}% Limit`;
+        const card3Val = 1e6 * f * (1 - s.down / 100) / s.dti;
+        const card3Sub = `At ${limit}% limit per Rs. 1.00M price`;
+
+        const card4Title = "Down Payment";
+        const card4Tag = "CBSL 2026";
+        const card4Val = 1e6 * (s.down / 100);
+        const card4Sub = `${s.down}% CBSL minimum per Rs. 1M`;
+
+        const zeroW = 0;
+        const downW = Math.min(100, Math.max(0, Math.round(s.down)));
+
+        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ok">${card1Tag}</span></div><div class="telemetry-card-val val-rental">Rs. ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-rental" style="width:${downW}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">Rs. ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${zeroW}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ok">${card3Tag}</span></div><div class="telemetry-card-val">Rs. ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${downW}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ok">${card4Tag}</span></div><div class="telemetry-card-val">Rs. ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${downW}%"></div></div></div>`;
+      }
+    } else {
+      budgetGraphic.hidden = false;
+      if ($("summary")) $("summary").hidden = true;
+
+      const leaseRental = s.down >= 100 ? 0 : (rows.length > 0 ? rows[0].rental : (room > 0 ? room : 0));
+      const monthlyInsurance = s.insurance ? s.insurance / 12 : 0;
+      const totalMonthlyDebt = leaseRental + s.debt + monthlyInsurance;
+      const dtiPct = s.income > 0 ? (totalMonthlyDebt / s.income) * 100 : 0;
+      const dtiStr = dtiPct.toFixed(1) + "%";
+
+      const clampedDti = Math.min(60, Math.max(0, dtiPct));
+      const needleAngle = -90 + (clampedDti / 60) * 180;
+      const needleEl = $("budgetNeedle");
+      if (needleEl) needleEl.setAttribute("transform", `rotate(${needleAngle.toFixed(1)}, 160, 150)`);
+
+      const heroEl = $("budgetDtiHero");
+      if (heroEl) heroEl.textContent = dtiStr + " DTI";
+      const subEl = $("budgetDtiSub");
+      if (subEl) subEl.textContent = `Rs. ${fmt(totalMonthlyDebt)} / month`;
+
+      let statusClass = "ok";
+      let statusText = "Within 40% CBSL Limit";
+      if (dtiPct <= 40) {
+        statusClass = "ok";
+        statusText = "Within 40% CBSL Limit";
+      } else if (dtiPct <= 50) {
+        statusClass = "mid";
+        statusText = "Stretching (40 - 50% Cap)";
+      } else {
+        statusClass = "bad";
+        statusText = "Limit Exceeded (> 50%)";
+      }
+      const pillEl = $("budgetDtiPill");
+      if (pillEl) pillEl.className = "classic-dti-pill " + statusClass;
+      const textEl = $("budgetDtiText");
+      if (textEl) textEl.textContent = statusText;
+
+      const labelEl = $("budgetCashflowLabel");
+      if (labelEl) labelEl.textContent = `Rs. ${fmt(totalMonthlyDebt)} / Rs. ${fmt(s.income)} (${dtiStr})`;
+
+      const barEl = $("budgetCashflowBar");
+      if (barEl) {
+        const rentalPctOfIncome = s.income > 0 ? (leaseRental / s.income) * 100 : 0;
+        const debtPctOfIncome = s.income > 0 ? (s.debt / s.income) * 100 : 0;
+        const ceilingPct = s.dti * 100;
+        const safeRoomPctOfIncome = Math.max(0, ceilingPct - rentalPctOfIncome - debtPctOfIncome);
+        const freeIncomePct = Math.max(0, 100 - rentalPctOfIncome - debtPctOfIncome - safeRoomPctOfIncome);
+
+        const rW = Math.min(100, Math.max(0, Math.round(rentalPctOfIncome * 10) / 10));
+        const dW = Math.min(100 - rW, Math.max(0, Math.round(debtPctOfIncome * 10) / 10));
+        const roomW = Math.min(100 - rW - dW, Math.max(0, Math.round(safeRoomPctOfIncome * 10) / 10));
+        const freeW = Math.max(0, Math.round((100 - rW - dW - roomW) * 10) / 10);
+
+        const rLabel = rW >= 12 ? `Rental ${rW.toFixed(0)}%` : "";
+        const dLabel = dW >= 8 ? `Debt ${dW.toFixed(0)}%` : "";
+        const roomLabel = roomW >= 10 ? `Buffer ${roomW.toFixed(0)}%` : "";
+        const freeLabel = freeW >= 15 ? `Discretionary ${freeW.toFixed(0)}%` : "";
+
+        barEl.innerHTML = `<div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: ${rentalPctOfIncome.toFixed(1)}%">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: ${debtPctOfIncome.toFixed(1)}%">${dLabel}</div><div class="cashflow-seg-room" style="width:${roomW}%" title="Buffer: ${safeRoomPctOfIncome.toFixed(1)}%">${roomLabel}</div><div class="cashflow-seg-free" style="width:${freeW}%" title="Discretionary: ${freeIncomePct.toFixed(1)}%">${freeLabel}</div>`;
+      }
+
+      const gridEl = $("budgetTelemetryGrid");
+      if (gridEl) {
+        const rentalPctOfIncome = s.income > 0 ? (leaseRental / s.income) * 100 : 0;
+        const debtPctOfIncome = s.income > 0 ? (s.debt / s.income) * 100 : 0;
+        const bar1W = Math.min(100, Math.max(0, Math.round(rentalPctOfIncome)));
+        const bar2W = Math.min(100, Math.max(0, Math.round(debtPctOfIncome)));
+
+        let card1Title = "Highest Rental Room";
+        let card1Tag = `${limit}% Limit`;
+        let card1TagClass = room > 0 ? "ok" : "bad";
+        let card1Val = room > 0 ? room : 0;
+        let card1Sub = room > 0 ? `Highest monthly rental at ${limit}% limit` : "No room for a lease rental";
+
+        if (s.down >= 100) {
+          card1Title = "Lease Rental";
+          card1Tag = "100% Cash";
+          card1TagClass = "ok";
+          card1Val = 0;
+          card1Sub = "100% cash purchase — Rs. 0.00 rental";
+        } else if (rows.length > 0) {
+          card1Title = "Vehicle Lease Rental";
+          card1Tag = "Proposed";
+          card1TagClass = rows[0].status === "ok" ? "ok" : "bad";
+          card1Val = rows[0].rental;
+          card1Sub = esc(rows[0].name);
+        }
+
+        const card2Title = "Existing Commitments";
+        const card2Tag = s.debt > 0 ? "Loans / Cards" : "Zero Debt";
+        const card2TagClass = s.debt > 0 ? "mid" : "ok";
+        const card2Val = s.debt;
+        const card2Sub = `${debtPctOfIncome.toFixed(1)}% of net monthly income`;
+
+        const maxPrice = room > 0 ? (s.down >= 100 ? 0 : room / f / (1 - s.down / 100)) : 0;
+        const maxUpfront = maxPrice * s.down / 100 + (s.fees || 0);
+        const bar3W = Math.min(100, Math.max(0, Math.round(room > 0 ? 100 : 0)));
+        const bar4W = Math.min(100, Math.max(0, Math.round(s.down)));
+
+        let card3Title = "Max Vehicle Price";
+        let card3Tag = `${s.down}% Down`;
+        let card3TagClass = "ok";
+        let card3Val = maxPrice;
+        let card3Sub = s.down < 60 ? "Over 1yr registered cars only" : `Financed at ${s.rateInput}% interest`;
+
+        let card4Title = "Cash Needed Up Front";
+        let card4Tag = s.fees ? "Deposit + Fees" : "Deposit";
+        let card4TagClass = "ok";
+        let card4Val = maxUpfront;
+        let card4Sub = s.fees ? `Includes Rs. ${fmt(s.fees)} fees` : `Deposit for highest price`;
+
+        if (s.down >= 100) {
+          card3Title = "Cash Purchase";
+          card3Tag = "100% Down";
+          card3Val = 0;
+          card3Sub = "Zero lease financing needed";
+          card4Title = "Cash Needed";
+          card4Tag = "Fees Only";
+          card4Val = s.fees || 0;
+          card4Sub = s.fees ? "Up-front fees" : "No deposit needed";
+        } else if (room <= 0) {
+          card3Sub = "Zero borrowing capacity";
+          card4Sub = "No lease possible";
+        }
+
+        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ${card1TagClass}">${card1Tag}</span></div><div class="telemetry-card-val val-rental">Rs. ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-rental" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">Rs. ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ${card3TagClass}">${card3Tag}</span></div><div class="telemetry-card-val">Rs. ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ${card4TagClass}">${card4Tag}</span></div><div class="telemetry-card-val">Rs. ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${bar4W}%"></div></div></div>`;
+      }
+    }
+  }
+
   let sentence = "", bar = "";
   if (!s.income) {
     sentence = `Monthly rental is Rs. ${fmt(1e6 * f * (1 - s.down / 100))} for every Rs. 1.00 million of price.`;
@@ -351,6 +543,35 @@ function updateBudgetExtras(s, f, room, rows) {
   syncBudgetBar();
   clearTimeout(liveTimer);
   liveTimer = setTimeout(() => { $("budgetLive").textContent = sentence; }, 500);
+}
+
+function updateLtvBar(s, rows) {
+  const trackEl = $("ltvBarTrack");
+  if (!trackEl) return;
+  const dpPct = Math.min(100, Math.max(0, s.down));
+  const loanPct = Math.max(0, 100 - dpPct);
+  trackEl.innerHTML = `<div class="ltv-bar-dp" id="ltvBarDp" style="width:${dpPct}%"><span id="ltvBarDpText">${dpPct}% Cash Deposit</span></div><div class="ltv-bar-loan" id="ltvBarLoan" style="width:${loanPct}%"><span id="ltvBarLoanText">${loanPct}% Financed Loan</span></div>`;
+
+  const badgeEl = $("ltvEligibilityBadge");
+  if (badgeEl) {
+    if (dpPct >= 100) { badgeEl.className = "tag ok"; badgeEl.textContent = "100% Cash Purchase"; }
+    else if (dpPct >= 60) { badgeEl.className = "tag ok"; badgeEl.textContent = "CBSL Compliant (All Vehicles)"; }
+    else if (dpPct >= 40) { badgeEl.className = "tag mid"; badgeEl.textContent = "CBSL Compliant (>1yr Reg Only)"; }
+    else { badgeEl.className = "tag bad"; badgeEl.textContent = "Below CBSL Minimum"; }
+  }
+  const detailDp = $("ltvDetailDp");
+  if (detailDp) detailDp.textContent = rows.length > 0 ? `Rs. ${fmt(rows[0].dp)} (${dpPct}%)` : `${dpPct}% Deposit`;
+  const detailLoan = $("ltvDetailLoan");
+  if (detailLoan) detailLoan.textContent = rows.length > 0 ? `Rs. ${fmt(rows[0].loan)} (${loanPct.toFixed(1)}% LTV)` : `${loanPct.toFixed(1)}% LTV`;
+  const detailCeiling = $("ltvDetailCeiling");
+  if (detailCeiling) detailCeiling.textContent = dpPct >= 100 ? "Zero Loan (100% Cash)" : dpPct >= 60 ? "Max 40% Loan (All Cars)" : "Max 60% Loan (>1yr Reg)";
+  const detailStatus = $("ltvDetailStatus");
+  if (detailStatus) {
+    if (dpPct >= 100) { detailStatus.className = "ok"; detailStatus.textContent = "100% Cash Purchase"; }
+    else if (dpPct >= 60) { detailStatus.className = "ok"; detailStatus.textContent = "Standard Minimum Met"; }
+    else if (dpPct >= 40) { detailStatus.className = "mid"; detailStatus.textContent = "Used Car Rule Only"; }
+    else { detailStatus.className = "bad"; detailStatus.textContent = "Below Legal Floor"; }
+  }
 }
 
 // The bar shows once the budget panel has scrolled out of view
@@ -380,6 +601,88 @@ function currentState() {
   return state;
 }
 
+function syncSegmentedAndSteppers() {
+  if (typeof document.querySelectorAll !== "function") return;
+  for (const id of ["rateType", "dti"]) {
+    const el = $(id);
+    if (!el) continue;
+    const btns = document.querySelectorAll(`button[data-seg-for="${id}"]`);
+    btns.forEach(btn => {
+      const active = btn.dataset.segVal === String(el.value);
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", String(active));
+    });
+  }
+  for (const id of ["rate", "tenure", "down"]) {
+    const el = $(id);
+    if (!el) continue;
+    const val = num(el);
+    const min = Number(el.min) || (id === "down" ? 40 : id === "tenure" ? 6 : 0);
+    const max = Number(el.max) || (id === "down" ? 100 : id === "tenure" ? 84 : 40);
+    const btns = document.querySelectorAll(`button[data-step-for="${id}"]`);
+    btns.forEach(btn => {
+      const delta = parseFloat(btn.dataset.stepDelta);
+      if (delta < 0) btn.disabled = isFinite(val) && val <= min;
+      else if (delta > 0) btn.disabled = isFinite(val) && val >= max;
+    });
+    const chips = document.querySelectorAll(`button[data-preset-for="${id}"]`);
+    chips.forEach(chip => {
+      const chipVal = Number(chip.dataset.presetVal);
+      const active = isFinite(val) && Math.round(val) === chipVal;
+      chip.classList.toggle("active", active);
+      chip.setAttribute("aria-pressed", String(active));
+      if (id === "down") {
+        const disabled = chipVal < min;
+        chip.disabled = disabled;
+        if (disabled) {
+          chip.title = "Eligible only when a vehicle registered over 1 year is added";
+        } else {
+          chip.title = chipVal === 40
+            ? "CBSL 40% minimum for vehicles registered over 1 year"
+            : chipVal === 60
+            ? "CBSL 60% minimum for new and reconditioned vehicles"
+            : "Conservative down payment (higher equity)";
+        }
+      }
+    });
+    const slider = $(id + "Slider");
+    if (slider) {
+      slider.min = String(min);
+      slider.max = String(max);
+      if (isFinite(val)) {
+        slider.value = String(Math.min(max, Math.max(min, val)));
+      }
+    }
+  }
+
+  const tenureVal = num($("tenure"));
+  const downVal = num($("down"));
+  const rateTypeVal = $("rateType")?.value;
+  const minDown = Number($("down")?.min) || 40;
+  const canForty = minDown <= 40;
+
+  const stratBtns = document.querySelectorAll("button[data-strategy]");
+  stratBtns.forEach(btn => {
+    const strat = btn.dataset.strategy;
+    let active = false;
+    if (strat === "lowest-rental") {
+      active = (tenureVal === 84 && downVal === 60 && rateTypeVal === "reducing");
+    } else if (strat === "fast-payoff") {
+      active = (tenureVal === 36 && downVal === 60 && rateTypeVal === "reducing");
+    } else if (strat === "min-cash") {
+      active = (tenureVal === 84 && downVal === 40 && rateTypeVal === "reducing");
+      btn.disabled = !canForty;
+      btn.title = canForty
+        ? "CBSL minimum 40% deposit (for vehicles registered over 1 year)"
+        : "Requires an eligible vehicle registered over 1 year in comparison";
+    } else if (strat === "cash-purchase") {
+      active = (downVal === 100);
+    }
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", String(active));
+  });
+}
+
 function applyState(state) {
   for (const [id, f] of Object.entries(FIELDS)) {
     const v = state[id] !== undefined ? state[id] : f.def;
@@ -393,10 +696,96 @@ function applyState(state) {
     if (el.tagName === "SELECT" && el.options && el.options.length && ![...el.options].some(o => o.value === v)) continue;
     el.value = ["income", "debt", "insurance", "fees", "maxprice"].includes(id) && v !== "" ? formatMoneyText(v, { grouping: id !== "maxprice" }) : v;
   }
+  syncSegmentedAndSteppers();
 }
 
 // Global Event Listeners
 const isTermsField = el => el.closest && el.closest(".panel") && !el.closest(".modal");
+
+document.addEventListener("click", e => {
+  if (!e.target || typeof e.target.closest !== "function") return;
+  const segBtn = e.target.closest("button[data-seg-for]");
+  if (segBtn) {
+    const id = segBtn.dataset.segFor;
+    const val = segBtn.dataset.segVal;
+    const el = $(id);
+    if (el && String(el.value) !== val) {
+      el.value = val;
+      syncSegmentedAndSteppers();
+      render();
+    }
+    return;
+  }
+  const stepBtn = e.target.closest("button[data-step-for]");
+  if (stepBtn && !stepBtn.disabled) {
+    const id = stepBtn.dataset.stepFor;
+    const delta = parseFloat(stepBtn.dataset.stepDelta);
+    const el = $(id);
+    if (el && isFinite(delta)) {
+      const cur = isFinite(num(el)) ? num(el) : parseFloat(FIELDS[id]?.def || "0");
+      const min = Number(el.min) || (id === "down" ? 40 : id === "tenure" ? 6 : 0);
+      const max = Number(el.max) || (id === "down" ? 100 : id === "tenure" ? 84 : 40);
+      let next = Math.min(max, Math.max(min, Math.round((cur + delta) * 10) / 10));
+      if (id !== "rate") next = Math.round(next);
+      el.value = String(next);
+      clearSnapNote(id);
+      syncSegmentedAndSteppers();
+      render();
+    }
+    return;
+  }
+  const presetBtn = e.target.closest("button[data-preset-for]");
+  if (presetBtn && !presetBtn.disabled) {
+    const id = presetBtn.dataset.presetFor;
+    const val = presetBtn.dataset.presetVal;
+    const el = $(id);
+    if (el) {
+      el.value = val;
+      clearSnapNote(id);
+      try {
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      } catch (err) {}
+      syncSegmentedAndSteppers();
+      render();
+    }
+    return;
+  }
+  const stratBtn = e.target.closest("button[data-strategy]");
+  if (stratBtn && !stratBtn.disabled) {
+    const strat = stratBtn.dataset.strategy;
+    if (strat === "lowest-rental") {
+      if ($("tenure")) $("tenure").value = "84";
+      if ($("down")) $("down").value = "60";
+      if ($("rateType")) $("rateType").value = "reducing";
+    } else if (strat === "fast-payoff") {
+      if ($("tenure")) $("tenure").value = "36";
+      if ($("down")) $("down").value = "60";
+      if ($("rateType")) $("rateType").value = "reducing";
+    } else if (strat === "min-cash") {
+      const minDown = Number($("down")?.min) || 40;
+      if ($("tenure")) $("tenure").value = "84";
+      if ($("down")) $("down").value = String(minDown);
+      if ($("rateType")) $("rateType").value = "reducing";
+    } else if (strat === "cash-purchase") {
+      if ($("down")) $("down").value = "100";
+    }
+    clearSnapNote("tenure");
+    clearSnapNote("down");
+    clearSnapNote("rateType");
+    try {
+      $("tenure")?.dispatchEvent(new Event("input", { bubbles: true }));
+      $("down")?.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch (err) {}
+    syncSegmentedAndSteppers();
+    render();
+    return;
+  }
+  const adornWrap = e.target.closest(".input-adorn-wrap");
+  if (adornWrap && e.target !== adornWrap.querySelector("input")) {
+    adornWrap.querySelector("input")?.focus();
+  }
+});
 
 document.addEventListener("input", e => {
   if (e.target.id === "sort" && e.target.value) {
@@ -405,18 +794,48 @@ document.addEventListener("input", e => {
   }
   if (e.target.tagName === "SELECT") return; // Let change handler process select elements
   if (e.target.id) clearSnapNote(e.target.id);
-  if (isTermsField(e.target)) render();
+  const slider = e.target.closest && e.target.closest("input[data-slider-for]");
+  if (slider) {
+    const id = slider.dataset.sliderFor;
+    const el = $(id);
+    if (el && String(el.value) !== String(slider.value)) {
+      el.value = String(slider.value);
+      clearSnapNote(id);
+      syncSegmentedAndSteppers();
+      render();
+    }
+    return;
+  }
+  if (isTermsField(e.target)) {
+    syncSegmentedAndSteppers();
+    render();
+  }
 });
 
-for (const id of ['down','tenure']) $(id)?.addEventListener('blur', () => { snapField(id); render(); });
+for (const id of ['down','tenure']) $(id)?.addEventListener('blur', () => { snapField(id); syncSegmentedAndSteppers(); render(); });
 
 document.addEventListener("change", e => {
   if (e.target.id === "sort" && e.target.value) {
     const [k, d] = e.target.value.split("|");
     sortKey = k; sortDir = +d;
   }
+  const slider = e.target.closest && e.target.closest("input[data-slider-for]");
+  if (slider) {
+    const id = slider.dataset.sliderFor;
+    const el = $(id);
+    if (el && String(el.value) !== String(slider.value)) {
+      el.value = String(slider.value);
+      clearSnapNote(id);
+      syncSegmentedAndSteppers();
+      render();
+    }
+    return;
+  }
   if (e.target.id === "tenure" || e.target.id === "down") snapField(e.target.id);
-  if (isTermsField(e.target)) render();
+  if (isTermsField(e.target)) {
+    syncSegmentedAndSteppers();
+    render();
+  }
 });
 
 $("head").addEventListener("click", e => {
@@ -574,6 +993,271 @@ $("resetCatalogBtn").addEventListener("click", () => {
   if (undoBtn) undoBtn.focus(); else $("h-list").focus();
 });
 
+function fmtM(n) {
+  if (!Number.isFinite(n) || n <= 0) return "0.00";
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + "M";
+  if (n >= 1e3) return (n / 1e3).toFixed(0) + "K";
+  return n.toFixed(0);
+}
+
+function renderCostDonutMarkup() {
+  return `
+    <div class="donut-card" id="detailDonutCard">
+      <div class="donut-head">
+        <h3 class="donut-title">Cost &amp; Payment Composition</h3>
+        <div class="tab-pills" role="tablist">
+          <button type="button" class="tab-pill active" id="donutTabLifetime">Lifetime Outlay</button>
+          <button type="button" class="tab-pill" id="donutTabMonthly">Monthly Outlay</button>
+        </div>
+      </div>
+      <div class="donut-wrapper">
+        <div class="donut-chart-box">
+          <svg class="donut-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <g transform="rotate(-90 50 50)">
+              <circle cx="50" cy="50" r="38" class="donut-bg-circle"/>
+              <g id="donutSegmentsGroup"></g>
+            </g>
+          </svg>
+          <div class="donut-center-info">
+            <span class="donut-center-label" id="donutCenterLabel">Lifetime Outlay</span>
+            <span class="donut-center-amount" id="donutCenterAmount"></span>
+          </div>
+        </div>
+        <div class="donut-legend" id="donutLegend"></div>
+      </div>
+    </div>
+  `;
+}
+
+function updateDonutContent(car, r, s, mode) {
+  const segmentsGroup = $("donutSegmentsGroup");
+  const centerLabel = $("donutCenterLabel");
+  const centerAmount = $("donutCenterAmount");
+  const legend = $("donutLegend");
+  if (!segmentsGroup || !centerLabel || !centerAmount || !legend) return;
+
+  let items = [];
+  if (mode === "monthly") {
+    centerLabel.textContent = "Monthly Outlay";
+    if (r.downPct >= 100) {
+      items.push({
+        val: 0,
+        segClass: "donut-seg-accent",
+        dotClass: "donut-dot-accent",
+        label: "Vehicle Lease Rental",
+        subtitle: "100% Cash — Zero monthly lease"
+      });
+    } else {
+      items.push({
+        val: r.rental,
+        segClass: "donut-seg-accent",
+        dotClass: "donut-dot-accent",
+        label: "Vehicle Lease Rental",
+        subtitle: `${s.n} monthly installments`
+      });
+    }
+    if (s.insurance) {
+      items.push({
+        val: s.insurance / 12,
+        segClass: "donut-seg-teal",
+        dotClass: "donut-dot-teal",
+        label: "Monthly Insurance",
+        subtitle: "Comprehensive annual cover ÷ 12"
+      });
+    }
+    if (s.debt) {
+      items.push({
+        val: s.debt,
+        segClass: "donut-seg-bad",
+        dotClass: "donut-dot-bad",
+        label: "Existing Commitments",
+        subtitle: "Monthly loans & credit cards"
+      });
+    }
+  } else {
+    centerLabel.textContent = "Lifetime Outlay";
+    if (r.downPct >= 100) {
+      items.push({
+        val: car.price,
+        segClass: "donut-seg-accent",
+        dotClass: "donut-dot-accent",
+        label: "Cash Vehicle Purchase",
+        subtitle: "100% cash paid upfront"
+      });
+    } else {
+      items.push({
+        val: r.dp,
+        segClass: "donut-seg-accent",
+        dotClass: "donut-dot-accent",
+        label: "Cash Down Payment",
+        subtitle: `${r.downPct}% statutory cash deposit`
+      });
+      items.push({
+        val: r.loan,
+        segClass: "donut-seg-spark",
+        dotClass: "donut-dot-spark",
+        label: "Principal Financed",
+        subtitle: `${100 - r.downPct}% financed loan capital`
+      });
+      items.push({
+        val: r.interest,
+        segClass: "donut-seg-amber",
+        dotClass: "donut-dot-amber",
+        label: "Total Lease Interest",
+        subtitle: `${s.rateInput}% rate over ${s.n} months`
+      });
+    }
+    if (s.fees) {
+      items.push({
+        val: s.fees,
+        segClass: "donut-seg-teal",
+        dotClass: "donut-dot-teal",
+        label: "Up-Front Fees",
+        subtitle: "Registration & doc charges"
+      });
+    }
+    if (s.insurance) {
+      items.push({
+        val: (s.insurance * s.n) / 12,
+        segClass: "donut-seg-bad",
+        dotClass: "donut-dot-bad",
+        label: "Comprehensive Insurance",
+        subtitle: `Total over ${s.n} month tenure`
+      });
+    }
+  }
+
+  const positiveItems = items.filter(it => it.val > 0);
+  const total = positiveItems.reduce((sum, it) => sum + it.val, 0);
+  centerAmount.textContent = "Rs. " + fmtM(total);
+
+  const circ = 2 * Math.PI * 38;
+  let cumOffset = 0;
+  let segsHtml = "";
+
+  if (positiveItems.length === 0) {
+    segsHtml = `<circle cx="50" cy="50" r="38" class="donut-seg donut-seg-accent" stroke-dasharray="${circ} 0" stroke-dashoffset="0"/>`;
+  } else {
+    positiveItems.forEach(item => {
+      const pct = item.val / total;
+      const dash = (pct * circ).toFixed(2);
+      const gap = (circ - parseFloat(dash)).toFixed(2);
+      const off = (-cumOffset).toFixed(2);
+      segsHtml += `<circle cx="50" cy="50" r="38" class="donut-seg ${item.segClass}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${off}"/>`;
+      cumOffset += pct * circ;
+    });
+  }
+  segmentsGroup.innerHTML = segsHtml;
+
+  let legendHtml = "";
+  items.forEach(item => {
+    const pctStr = total > 0 && item.val > 0 ? ((item.val / total) * 100).toFixed(1) + "%" : "0.0%";
+    legendHtml += `
+      <div class="legend-item">
+        <div class="legend-lead">
+          <span class="legend-dot ${item.dotClass}"></span>
+          <div>
+            <div class="legend-title">${esc(item.label)}</div>
+            <div class="legend-subtitle">${esc(item.subtitle)}</div>
+          </div>
+        </div>
+        <div>
+          <div class="legend-val">Rs. ${fmt(item.val)}</div>
+          <div class="legend-pct">${pctStr} of total</div>
+        </div>
+      </div>
+    `;
+  });
+  legend.innerHTML = legendHtml;
+}
+
+function setupDetailDonut(car, r, s) {
+  const tabLifetime = $("donutTabLifetime");
+  const tabMonthly = $("donutTabMonthly");
+  if (!tabLifetime || !tabMonthly) return;
+
+  function renderMode(mode) {
+    tabLifetime.classList.toggle("active", mode === "lifetime");
+    tabMonthly.classList.toggle("active", mode === "monthly");
+    updateDonutContent(car, r, s, mode);
+  }
+
+  tabLifetime.addEventListener("click", () => renderMode("lifetime"));
+  tabMonthly.addEventListener("click", () => renderMode("monthly"));
+  renderMode("lifetime");
+}
+
+function buildAmortizationSvg(r, s, years) {
+  if (r.downPct >= 100 || !years || !years.length) return "";
+  const totalInterest = r.interest;
+  const maxVal = Math.max(1, r.loan, totalInterest);
+  const xStart = 55, xEnd = 660, yBase = 160, yTop = 20;
+  const chartW = xEnd - xStart;
+  const chartH = yBase - yTop;
+  const xStep = chartW / years.length;
+
+  const y = (val) => (yBase - (val / maxVal) * chartH).toFixed(1);
+
+  let princPts = [`${xStart},${y(r.loan)}`];
+  let intPts = [`${xStart},${y(0)}`];
+  let markersHtml = "";
+  let xLabelsHtml = `<text x="${xStart}" y="178" class="amort-axis-label" text-anchor="middle">Yr 0</text>`;
+
+  markersHtml += `<circle cx="${xStart}" cy="${y(r.loan)}" r="4" class="amort-marker-principal"><title>Year 0: Initial Principal Rs. ${fmt(r.loan)}</title></circle>`;
+  markersHtml += `<circle cx="${xStart}" cy="${y(0)}" r="3.5" class="amort-marker-interest"><title>Year 0: Cumulative Interest Rs. 0.00</title></circle>`;
+
+  let cumInterest = 0;
+  years.forEach((yr, i) => {
+    const x = (xStart + (i + 1) * xStep).toFixed(1);
+    cumInterest += yr.interest;
+    const yP = y(yr.balance);
+    const yI = y(cumInterest);
+
+    princPts.push(`${x},${yP}`);
+    intPts.push(`${x},${yI}`);
+
+    markersHtml += `<circle cx="${x}" cy="${yP}" r="4" class="amort-marker-principal"><title>Year ${yr.year}: Principal Remaining Rs. ${fmt(yr.balance)}</title></circle>`;
+    markersHtml += `<circle cx="${x}" cy="${yI}" r="3.5" class="amort-marker-interest"><title>Year ${yr.year}: Cumulative Interest Rs. ${fmt(cumInterest)}</title></circle>`;
+    xLabelsHtml += `<text x="${x}" y="178" class="amort-axis-label" text-anchor="middle">Yr ${yr.year}</text>`;
+  });
+
+  const princAreaPts = `${xStart},${yBase} ${princPts.join(" ")} ${xEnd},${yBase}`;
+  const intAreaPts = `${xStart},${yBase} ${intPts.join(" ")} ${xEnd},${yBase}`;
+
+  return `
+    <div class="amort-card">
+      <div class="amort-head">
+        <h3 class="amort-title">Loan Amortization Paydown Curve</h3>
+        <div class="amort-legend-row">
+          <span class="amort-legend-item"><span class="amort-legend-color amort-color-principal"></span> Principal Balance Remaining</span>
+          <span class="amort-legend-item"><span class="amort-legend-color amort-color-interest"></span> Cumulative Interest Paid</span>
+        </div>
+      </div>
+      <div class="amort-svg-box">
+        <svg class="amort-svg" viewBox="0 0 680 200" aria-hidden="true">
+          <line x1="55" y1="20" x2="660" y2="20" class="amort-grid-line"/>
+          <line x1="55" y1="90" x2="660" y2="90" class="amort-grid-line"/>
+          <line x1="55" y1="160" x2="660" y2="160" class="amort-grid-line"/>
+          <line x1="55" y1="160" x2="660" y2="160" class="amort-axis-base"/>
+
+          <polygon points="${princAreaPts}" class="amort-principal-area"/>
+          <polyline points="${princPts.join(" ")}" class="amort-principal-line"/>
+
+          <polygon points="${intAreaPts}" class="amort-interest-area"/>
+          <polyline points="${intPts.join(" ")}" class="amort-interest-line"/>
+
+          <g>${markersHtml}</g>
+          <g>${xLabelsHtml}</g>
+
+          <text x="48" y="24" class="amort-axis-label" text-anchor="end">Rs. ${fmtM(maxVal)}</text>
+          <text x="48" y="94" class="amort-axis-label" text-anchor="end">Rs. ${fmtM(maxVal / 2)}</text>
+          <text x="48" y="164" class="amort-axis-label" text-anchor="end">Rs. 0</text>
+        </svg>
+      </div>
+    </div>
+  `;
+}
+
 // Lease details: the numbers behind one row, and the balance year by year
 function openDetails(car, opener) {
   const { s, rows: [r] } = computeLeaseTable([car], readSettings());
@@ -589,6 +1273,7 @@ function openDetails(car, opener) {
   html += `<p class="detail-sub">${esc(condLabel(car.cond))} · Rs. ${fmt(car.price)} · ${esc(rateLabel(s))} over ${s.n} months</p><dl class="detail-list">`;
   if (r.downPct >= 100) {
     html += line("Paid in cash", `Rs. ${fmt(car.price)}`) + "</dl><p class=\"hint\">With a 100% down payment there's no lease to repay.</p>";
+    html += renderCostDonutMarkup();
   } else {
     const extras = s.fees || s.insurance;
     html += line(`Down payment (${r.downPct}%${r.downRaised ? ", the CBSL minimum for this car" : ""})`, `Rs. ${fmt(r.dp)}`) +
@@ -599,7 +1284,9 @@ function openDetails(car, opener) {
       line("Total Interest", `Rs. ${fmt(r.interest)}`) +
       line(`Total Paid (down payment, rentals${extras ? ", fees and insurance" : ""})`, `Rs. ${fmt(r.total)}`) +
       line(`Net Income Needed at a ${limit}% limit`, `Rs. ${fmt(r.need)}`) + "</dl>";
+    html += renderCostDonutMarkup();
     const years = yearlySchedule(r.loan, s.rate, s.n);
+    html += buildAmortizationSvg(r, s, years);
     html += `<h3 class="detail-h">Year by Year</h3><div class="wrap detail-wrap"><table class="detail-table"><thead><tr><th>Year</th><th class="n">Rentals paid</th><th class="n">Interest</th><th class="n">Principal</th><th class="n">Balance left</th></tr></thead><tbody>${
       years.map(y => `<tr><td>${y.year}${y.months < 12 ? ` (${y.months} months)` : ""}</td><td class="n">${fmt(y.paid)}</td><td class="n">${fmt(y.interest)}</td><td class="n">${fmt(y.principal)}</td><td class="n">${fmt(y.balance)}</td></tr>`).join("")
     }</tbody></table></div><p class="hint">Rentals use the standard reducing-balance formula with monthly compounding${s.rateType === "flat" ? "; the flat rate is converted to its reducing-balance equivalent" : ""}. ${extras ? "Fees and insurance are the amounts you entered." : "Insurance and fees are not included."}</p>`;
@@ -620,6 +1307,7 @@ function openDetails(car, opener) {
   }
   $("detailTitle").textContent = car.name;
   $("detailBody").innerHTML = html;
+  setupDetailDonut(car, r, s);
   openModal($("detailModal"), opener, $("closeDetailBtn"));
 }
 if ($("closeDetailBtn")) $("closeDetailBtn").addEventListener("click", () => closeModal($("detailModal")));
@@ -793,7 +1481,8 @@ function showSearchUnavailable(error) {
     ? "AI did not return a complete comparison. Search again or add each vehicle separately."
     : "AI search isn't available right now. Try again or add the car yourself.";
   $("aiSearchMsg").innerHTML = `<span class="msg-error">${message}</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter Details Manually</button>`;
-  $("goManualBtn").addEventListener("click", () => {
+  const manualBtn = $("goManualBtn");
+  if (manualBtn) manualBtn.addEventListener("click", () => {
     selectTab("manual");
     if (!$("mName").value) $("mName").value = $("aiSearchQuery").value.trim().slice(0, 120);
     $("mName").focus();
@@ -1238,8 +1927,14 @@ function applyTheme(choice) {
     else root.removeAttribute("data-theme");
   }
   // The browser's toolbar colour follows a fixed choice too
-  const fixed = themeMetas.find(m => m.media.includes(choice));
-  themeMetas.forEach(m => { m.content = fixed ? fixed.dataset.content : m.dataset.content; });
+  const fixed = themeMetas.find(m => {
+    const media = m.getAttribute?.("media") || m.media || "";
+    return media.includes(choice);
+  });
+  themeMetas.forEach(m => {
+    const def = m.dataset?.content || m.getAttribute?.("content") || m.content || "";
+    m.content = fixed ? (fixed.dataset?.content || fixed.getAttribute?.("content") || fixed.content || def) : def;
+  });
   const radio = document.querySelector?.(`input[name="theme"][value="${choice}"]`);
   if (radio) radio.checked = true;
 }
@@ -1257,6 +1952,29 @@ document.addEventListener("change", e => {
   } catch (err) {}
   applyTheme(choice);
 });
+
+const themeSwitchEl = $("themeSwitch");
+if (themeSwitchEl) {
+  themeSwitchEl.addEventListener("change", e => {
+    const radio = themeSwitchEl.querySelector('input[name="theme"]:checked');
+    if (!radio) return;
+    const choice = radio.value;
+    try {
+      if (choice === "system") localStorage.removeItem(THEME_KEY);
+      else localStorage.setItem(THEME_KEY, choice);
+    } catch (err) {}
+    applyTheme(choice);
+  });
+  themeSwitchEl.addEventListener("click", e => {
+    const label = e.target.closest("label");
+    if (!label) return;
+    const input = label.querySelector('input[name="theme"]');
+    if (input && !input.checked) {
+      input.checked = true;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  });
+}
 
 // Footer: catalogue availability and individual prices have separate evidence dates.
 $("appVersion").textContent = APP_VERSION;
@@ -1402,3 +2120,19 @@ initAccount({
   }
 });
 if (invalidSavedCount) showToast("Some saved vehicles had invalid prices and were left out. Add them again with a valid price.");
+
+// Source guidance opens from the footer link on either page; the header no longer carries a button.
+for (const id of ["sourceGuide", "footerSourceGuide"]) {
+  if ($(id)) $(id).addEventListener("click", () => $("guide")?.showModal());
+}
+if ($("closeGuide")) $("closeGuide").addEventListener("click", () => $("guide")?.close());
+
+function checkUrlHash() {
+  if (window.location.hash === "#openAdd") {
+    setTimeout(() => openAddFlow("ai", $("addVehicleBtn")), 60);
+  } else if (window.location.hash === "#account") {
+    setTimeout(() => { if (!isOpen($("accountModal"))) openModal($("accountModal"), $("accountBtn")); }, 60);
+  }
+}
+checkUrlHash();
+window.addEventListener("hashchange", checkUrlHash);
