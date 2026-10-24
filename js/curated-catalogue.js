@@ -264,7 +264,7 @@
     `;
   }
 
-  function mark(m) { const brand = identity.brands?.[m.make]; const path = brand?.localPath; if (!path) return ''; const isAdaptive = Boolean(brand.adaptive); return `<img class="make-logo ${isAdaptive ? 'adaptive' : ''}" src="${esc(path.replace(/\.\.\//g, ''))}" alt="" height="27" loading="lazy">`; }
+  function mark(m) { const brand = identity.brands?.[m.make]; const path = brand?.localPath; if (!path) return ''; const cleanPath = path.startsWith('../') ? path.slice(3) : path; const isAdaptive = Boolean(brand.adaptive); return `<img class="make-logo ${isAdaptive ? 'adaptive' : ''}" src="${esc(cleanPath)}" alt="" height="27" loading="lazy">`; }
   function photo(p, name, eager = false) { return `<img src="${esc(p.smallSrc)}" srcset="${esc(p.smallSrc)} 640w, ${esc(p.src)} 1280w" sizes="(max-width:650px) calc(100vw - 36px), (max-width:1020px) 44vw, 29vw" width="1280" height="800" alt="${esc(name)} — official manufacturer image" loading="${eager?'eager':'lazy'}" decoding="async">`; }
 
   function buildCards(models) {
