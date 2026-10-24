@@ -9,7 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const BASE = (process.env.SITE_URL || "https://akila-w.github.io/vahanaiq").replace(/\/+$/, "");
+const BASE = (process.env.SITE_URL || "https://akila-w.github.io/VahanaIQ").replace(/\/+$/, "");
 const ATTEMPTS = Number(process.env.SMOKE_ATTEMPTS || 12);
 const DELAY_MS = Number(process.env.SMOKE_DELAY_MS || 15000);
 

@@ -1659,9 +1659,9 @@ function openDetails(car, opener) {
   const { s, rows: [r] } = computeLeaseTable([car], readSettings());
   const limit = Math.round(s.dti * 100);
   const line = (label, value) => `<div><dt>${label}</dt><dd>${value}</dd></div>`;
-  const photo = photoForModel(car);
   const candidateCredit = creditFor(car);
-  const credit = candidateCredit?.img === photo ? candidateCredit : null;
+  const photo = candidateCredit?.largeImg || candidateCredit?.img || photoForModel(car);
+  const credit = candidateCredit;
   let html = "";
   if (photo) {
     html += `<div class="detail-photo"><img src="${esc(photo)}" alt="${esc(car.name || "Vehicle")}" loading="lazy"></div>${credit ? `<div class="source-links detail-source">${formatCreditHtml(credit)}</div>` : ""}`;
@@ -2751,3 +2751,16 @@ function checkUrlHash() {
 }
 checkUrlHash();
 window.addEventListener("hashchange", checkUrlHash);
+
+// Connect Catalogue Photo Studio overlay so local edits immediately reflect in the Calculator
+if (typeof window !== "undefined" && window.__VAHANAIQ_PHOTOS__) {
+  const studio = window.__VAHANAIQ_PHOTOS__;
+  const applyStudio = () => {
+    const fn = studio.apply || (typeof studio.resolve === "function" ? null : null);
+    const p = fn ? fn(window.__VAHANAIQ_CATALOGUE__) : (studio.ready ? studio.ready.then(apply => apply && apply(window.__VAHANAIQ_CATALOGUE__)) : null);
+    if (p && typeof p.then === "function") {
+      p.then(res => { if (res) render(); }).catch(() => {});
+    }
+  };
+  applyStudio();
+}

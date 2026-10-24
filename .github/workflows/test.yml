@@ -32,6 +32,7 @@ jobs:
           node test/account-session.test.mjs
           node test/copy-privacy.test.mjs
           node test/catalogue-data.test.mjs
+          node test/catalogue-calculator-imagery.test.mjs
           node test/catalogue-studio.test.mjs
           node test/planner.test.mjs
           node test/print.test.mjs
