@@ -23,6 +23,20 @@
   function save() { try { localStorage.setItem('vahanaiq_curated_review_v1',JSON.stringify(review)); } catch { toast('Browser storage is unavailable. Export your review to keep it.'); } }
   const priced = m => m.offers.filter(o => Number.isFinite(o.amount) && o.amount > 0);
   const lowest = m => priced(m).reduce((best,o) => !best || o.amount < best.amount ? o : best, null);
+  function getOfferForCard(m, type) {
+    const pOffers = priced(m);
+    if (!pOffers.length) return { offer: null, count: 0 };
+    let matching = pOffers;
+    if (type === 'official' || type === 'dealer' || type === 'launch' || type === 'estimated') {
+      const filtered = pOffers.filter(o => o.kind === type);
+      if (filtered.length) matching = filtered;
+    } else if (type === 'priced') {
+      const filtered = pOffers.filter(o => o.kind === 'launch' || o.kind === 'official');
+      if (filtered.length) matching = filtered;
+    }
+    const best = matching.reduce((prev, o) => !prev || o.amount < prev.amount ? o : prev, null);
+    return { offer: best, count: matching.length };
+  }
   const shortName = m => m.name.startsWith(m.make+' ') ? m.name.slice(m.make.length+1) : m.model;
 
   function getSavedComparisonCars() {
@@ -68,7 +82,8 @@
       if (!review.comparison) review.comparison = {};
       review.comparison[m.id] = true;
       save();
-      const low = offer || lowest(m) || m.offers?.[0] || {};
+      const currentType = $('priceType')?.value || '';
+      const low = offer || (currentType ? getOfferForCard(m, currentType).offer : null) || lowest(m) || m.offers?.[0] || {};
       const cleanName = shortName(m).replace(/\s+(202[0-9])$/, '');
       const cardTitle = cleanName.toLowerCase().startsWith(m.make.toLowerCase()) ? cleanName : `${m.make} ${cleanName}`;
       const carRecord = {
@@ -120,7 +135,8 @@
   function buildAffordabilityHtml(m) {
     if (!m) return '';
     const settings = getBudgetSettings();
-    const low = lowest(m);
+    const currentType = $('priceType')?.value || '';
+    const low = (currentType ? getOfferForCard(m, currentType).offer : null) || lowest(m);
     const price = low?.amount || 0;
     const cleanName = shortName(m).replace(/\s+(202[0-9])$/, '');
     const vehicleTitle = cleanName.toLowerCase().startsWith(m.make.toLowerCase()) ? cleanName : `${m.make} ${cleanName}`;
@@ -295,7 +311,8 @@
     let result = cards.filter(m => (!$('make').value || m.make === $('make').value) && (!$('body').value || m.body === $('body').value) && (!reviewOnly || review.flags[m.id] || review.flags[m.modelId] || review.notes[m.id] || review.notes[m.modelId]) && (!q || [m.name,m.body,m.cardYear,...m.offers.flatMap(o => [o.name,o.trim,o.year,o.fuel])].join(' ').toLowerCase().includes(q)) && (!type || type === 'priced' && priced(m).length || type === 'quote' && !priced(m).length || ['official','dealer','launch','estimated'].includes(type) && m.offers.some(o => o.kind === type && o.amount)));
     const sort = $('sort')?.value || 'make';
     return result.sort((a,b) => {
-      const x = lowest(a)?.amount, y = lowest(b)?.amount;
+      const x = (getOfferForCard(a, type).offer || lowest(a))?.amount;
+      const y = (getOfferForCard(b, type).offer || lowest(b))?.amount;
       if (sort === 'low') {
         if (x === undefined && y !== undefined) return 1;
         if (y === undefined && x !== undefined) return -1;
@@ -351,13 +368,16 @@
     $('resultCount').textContent = `${all.length} ${all.length===1?'Vehicle':'Vehicles'} · ${all.reduce((n,m) => n+m.offers.length,0)} Purchase Options`;
     $('reviewCount').textContent = '('+cards.filter(m => review.flags[m.id] || review.flags[m.modelId] || review.notes[m.id] || review.notes[m.modelId] || isCarInComparison(m)).length+')';
     $('reviewFilter').setAttribute('aria-pressed',String(reviewOnly));
+    const type = $('priceType')?.value || '';
     $('vehicles').innerHTML = all.slice(page*size,page*size+size).map((m,i) => {
-      const p = m.images[0], low = lowest(m), fuels = [...new Set(m.offers.map(o => o.fuel).filter(Boolean))];
+      const p = m.images[0];
+      const { offer: low, count: offerCount } = getOfferForCard(m, type);
+      const fuels = [...new Set(m.offers.map(o => o.fuel).filter(Boolean))];
       const cleanName = shortName(m).replace(/\s+(202[0-9])$/, '');
       const cardTitle = cleanName.toLowerCase().startsWith(m.make.toLowerCase()) ? cleanName : `${m.make} ${cleanName}`;
       const isMarked = Boolean(review.flags[m.id] || review.flags[m.modelId]);
       const inComp = isCarInComparison(m);
-      return `<article class="card"><button class="photo-button" data-open="${esc(m.id)}" aria-label="View ${esc(m.name)}">${photo(p,m.name,i<3)}${mark(m)?`<span class="brand-badge" aria-label="${esc(m.make)}">${mark(m)}</span>`:''}${p.origin === "owner-upload" ? '<span class="photo-count">Your Photo</span>' : (m.images.length > 1 ? `<span class="photo-count">${m.images.length} Views</span>` : "")}</button><div class="card-body"><h3>${esc(cardTitle)} <span class="model-year">${esc(m.cardYear)}</span></h3><div class="card-meta"><span><img src="assets/icons/lucide/car.svg" alt="">${esc(m.body)}</span>${fuels.length?`<span><img src="assets/icons/lucide/fuel.svg" alt="">${esc(fuels.join(' / '))}</span>`:''}</div><div class="price-area"><p class="price ${low?'':'quote'}">${low?`${priced(m).length>1?'From ':''}${money(low.amount)}`:'Price on Request'}</p><p class="price-label">${low?`${kinds[low.kind]}${low.year?' · '+low.year:''}`:'Request a Matching Current Quotation'}</p>${low?.kind === 'estimated' ? '<p class="estimate-methodology">Estimated Price based on Sri Lanka Customs Tariff, engine capacity/EV tier &amp; distributor bracket</p>' : ''}</div><div class="sources">${p.sourcePage?`<a href="${safeUrl(p.sourcePage)}" target="_blank" rel="noopener noreferrer" title="${esc(m.make)} · Official Website · Rights Reserved">Photo Source ↗</a>`:'<span class="studio-credit">Photo Studio · This Device</span>'}${low?`<a href="${safeUrl(low.sourceUrl)}" target="_blank" rel="noopener noreferrer">Price Source ↗</a>`:''}</div><div class="card-actions"><button data-open="${esc(m.id)}">${m.offers.length>1?'Compare Purchase Options':'View Details'} <span aria-hidden="true">↗</span></button><button class="flag" data-flag="${esc(m.id)}" aria-label="Mark ${esc(m.name)} for review" aria-pressed="${isMarked}">${isMarked?'✓ Marked':'Mark for Review'}</button><button class="compare-btn" data-compare="${esc(m.id)}" aria-label="Add ${esc(m.name)} to comparison" aria-pressed="${inComp}">${inComp?'✓ In Comparison':'Add to Comparison'}</button></div></div></article>`;
+      return `<article class="card"><button class="photo-button" data-open="${esc(m.id)}" aria-label="View ${esc(m.name)}">${photo(p,m.name,i<3)}${mark(m)?`<span class="brand-badge" aria-label="${esc(m.make)}">${mark(m)}</span>`:''}${p.origin === "owner-upload" ? '<span class="photo-count">Your Photo</span>' : (m.images.length > 1 ? `<span class="photo-count">${m.images.length} Views</span>` : "")}</button><div class="card-body"><h3>${esc(cardTitle)} <span class="model-year">${esc(m.cardYear)}</span></h3><div class="card-meta"><span><img src="assets/icons/lucide/car.svg" alt="">${esc(m.body)}</span>${fuels.length?`<span><img src="assets/icons/lucide/fuel.svg" alt="">${esc(fuels.join(' / '))}</span>`:''}</div><div class="price-area"><p class="price ${low?'':'quote'}">${low?`${offerCount>1?'From ':''}${money(low.amount)}`:'Price on Request'}</p><p class="price-label">${low?`${kinds[low.kind]}${low.year?' · '+low.year:''}`:'Request a Matching Current Quotation'}</p>${low?.kind === 'estimated' ? '<p class="estimate-methodology">Estimated Price based on Sri Lanka Customs Tariff, engine capacity/EV tier &amp; distributor bracket</p>' : ''}</div><div class="sources">${p.sourcePage?`<a href="${safeUrl(p.sourcePage)}" target="_blank" rel="noopener noreferrer" title="${esc(m.make)} · Official Website · Rights Reserved">Photo Source ↗</a>`:'<span class="studio-credit">Photo Studio · This Device</span>'}${low?`<a href="${safeUrl(low.sourceUrl)}" target="_blank" rel="noopener noreferrer">Price Source ↗</a>`:''}</div><div class="card-actions"><button data-open="${esc(m.id)}">${m.offers.length>1?'Compare Purchase Options':'View Details'} <span aria-hidden="true">↗</span></button><button class="flag" data-flag="${esc(m.id)}" aria-label="Mark ${esc(m.name)} for review" aria-pressed="${isMarked}">${isMarked?'✓ Marked':'Mark for Review'}</button><button class="compare-btn" data-compare="${esc(m.id)}" aria-label="Add ${esc(m.name)} to comparison" aria-pressed="${inComp}">${inComp?'✓ In Comparison':'Add to Comparison'}</button></div></div></article>`;
     }).join('') || '<div class="empty"><h3>No Vehicles Found</h3><p>Try a different search or reset the filters.</p></div>';
     $('pageCount').textContent = `${all.length?page+1:0} / ${Math.ceil(all.length/size)}`;
     $('previous').disabled = page === 0; $('next').disabled = (page+1)*size >= all.length;
