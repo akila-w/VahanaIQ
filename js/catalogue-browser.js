@@ -172,8 +172,8 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     return `<article class="catalogue-card">
         <div class="catalogue-photo${photo ? "" : " is-empty"}">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy" width="400" height="250">` : NO_PHOTO}</div>
         <div class="catalogue-card-head">
-          <span class="catalogue-category">${ident.brands?.[v.make] ? `<img class="brand-mark" src="${esc(ident.brands[v.make].localPath.replace("../", ""))}" alt="">` : ""}${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
-          ${ident.models?.[`${v.make} ${v.model}`] ? `<img class="model-mark" src="${esc(ident.models[`${v.make} ${v.model}`].localPath.replace("../", ""))}" alt="">` : ""}
+          <span class="catalogue-category">${ident.brands?.[v.make] ? `<img class="brand-mark" src="${esc(ident.brands[v.make].localPath.replace(/\.\.\//g, ""))}" alt="">` : ""}${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
+          ${ident.models?.[`${v.make} ${v.model}`] ? `<img class="model-mark" src="${esc(ident.models[`${v.make} ${v.model}`].localPath.replace(/\.\.\//g, ""))}" alt="">` : ""}
         </div>
         <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>
         ${specs ? `<p class="hint catalogue-specs-line">${esc(specs)}</p>` : ""}

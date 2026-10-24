@@ -25,9 +25,9 @@ const overrides = fs.existsSync('data/photo-cover-overrides.json')
 const shaModelCount = new Map();
 for (const [modelName, entry] of Object.entries(prd)) {
   const candidates = [];
-  if (entry.officialImgUrl && entry.localPath) candidates.push(entry.localPath.replace('../', ''));
+  if (entry.officialImgUrl && entry.localPath) candidates.push(entry.localPath.replace(/\.\.\//g, ''));
   for (const ang of Object.values(entry.angles || {})) {
-    if (ang?.localPath) candidates.push(ang.localPath.replace('../', ''));
+    if (ang?.localPath) candidates.push(ang.localPath.replace(/\.\.\//g, ''));
   }
   for (const rel of new Set(candidates)) {
     if (!fs.existsSync(rel)) continue;
@@ -93,11 +93,11 @@ for (const m of inp.models) {
   const existingShas = new Set(mPc.photos.map(p => p.sha256));
   const items = [];
   if (entry.officialImgUrl && entry.localPath) {
-    items.push({ url: entry.officialImgUrl, localPath: entry.localPath.replace('../', ''), caption: `${m.model} · Official web listing hero`, isHeroCandidate: true });
+    items.push({ url: entry.officialImgUrl, localPath: entry.localPath.replace(/\.\.\//g, ''), caption: `${m.model} · Official web listing hero`, isHeroCandidate: true });
   }
   for (const [angKey, ang] of Object.entries(entry.angles || {})) {
     if (ang?.url && ang?.localPath) {
-      items.push({ url: ang.url, localPath: ang.localPath.replace('../', ''), caption: `${m.model} · Official ${ang.label || angKey}`, isHeroCandidate: angKey === 'front' });
+      items.push({ url: ang.url, localPath: ang.localPath.replace(/\.\.\//g, ''), caption: `${m.model} · Official ${ang.label || angKey}`, isHeroCandidate: angKey === 'front' });
     }
   }
 
@@ -117,7 +117,7 @@ for (const m of inp.models) {
     if (!fs.existsSync(destRel)) fs.copyFileSync(item.localPath, destRel);
     const isCutout = /\.(png|webp)$/i.test(item.url) || /cutout|thumb|Menu-|category\.webp|vehicle\.webp/i.test(item.url);
     const thumbnailPath = ensureThumbnail(destRel, sha24, isCutout);
-    if (!fs.existsSync(thumbnailPath.replace('../', ''))) continue;
+    if (!fs.existsSync(thumbnailPath.replace(/\.\.\//g, ''))) continue;
     const { width, height } = getDimensions(destRel);
 
     const photoRecord = {

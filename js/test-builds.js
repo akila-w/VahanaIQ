@@ -648,15 +648,25 @@
     const tCards = document.querySelectorAll("#budgetTelemetryGrid .telemetry-card");
     const ibMetrics = document.getElementById("tbIbMetrics");
     if (ibMetrics && tCards.length > 0) {
-      const items = [];
-      tCards.forEach((card) => {
+      ibMetrics.replaceChildren();
+      let count = 0;
+      for (const card of tCards) {
+        if (count >= 3) break;
         const title = card.querySelector(".telemetry-card-title")?.textContent?.trim() || "";
         const val = card.querySelector(".telemetry-card-val")?.textContent?.trim() || "";
         if (title && val) {
-          items.push(`<div class="tb-ib-metric"><span>${title}</span><strong>${val}</strong></div>`);
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "tb-ib-metric";
+          const span = document.createElement("span");
+          span.textContent = title;
+          const strong = document.createElement("strong");
+          strong.textContent = val;
+          itemDiv.appendChild(span);
+          itemDiv.appendChild(strong);
+          ibMetrics.appendChild(itemDiv);
+          count++;
         }
-      });
-      ibMetrics.innerHTML = items.slice(0, 3).join("");
+      }
     }
 
     const ltvDp = document.getElementById("ltvDetailDp")?.textContent?.trim() || "60%";
@@ -706,11 +716,23 @@
       const tenure = document.getElementById("tenure")?.value || "84";
       const down = document.getElementById("down")?.value || "60";
       const inc = document.getElementById("income")?.value || "Not set";
-      stickySummaryItems.innerHTML = `
-        <div class="tb-ss-item"><span>Terms:</span><strong>${rate}% · ${tenure}m · ${down}% Down</strong></div>
-        <div class="tb-ss-item"><span>Net Income:</span><strong>${inc !== "Not set" ? "LKR " + inc : "Optional"}</strong></div>
-        <div class="tb-ss-item"><span>Budget Status:</span><strong>${dtiHero}${dtiText ? " (" + dtiText + ")" : ""}</strong></div>
-      `;
+      stickySummaryItems.replaceChildren();
+      const entries = [
+        ["Terms:", `${rate}% · ${tenure}m · ${down}% Down`],
+        ["Net Income:", inc !== "Not set" ? `LKR ${inc}` : "Optional"],
+        ["Budget Status:", `${dtiHero}${dtiText ? " (" + dtiText + ")" : ""}`]
+      ];
+      for (const [label, val] of entries) {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "tb-ss-item";
+        const span = document.createElement("span");
+        span.textContent = label;
+        const strong = document.createElement("strong");
+        strong.textContent = val;
+        itemDiv.appendChild(span);
+        itemDiv.appendChild(strong);
+        stickySummaryItems.appendChild(itemDiv);
+      }
     }
   }
 
