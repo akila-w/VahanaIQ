@@ -5,11 +5,20 @@ console.log("============================================================");
 console.log("AUTOMATED E2E JOURNEYS TEST SUITE");
 console.log("============================================================\n");
 
+const filter = (process.argv[2] || "").toLowerCase();
+let runCount = 0;
+function shouldRun(title) {
+  if (!filter) return true;
+  return title.toLowerCase().includes(filter);
+}
+
+
 // -------------------------------------------------------------
 // Journey 1: Add first vehicle to comparison
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 1: Add first vehicle to comparison");
-{
+if (shouldRun("Add first vehicle to comparison")) {
+  runCount++;
+  console.log("TEST JOURNEY 1: Add first vehicle to comparison");
   const catalogueHtml = fs.readFileSync("catalogue.html", "utf8");
   assert.ok(catalogueHtml.includes('id="detail"'), "catalogue.html must have #detail modal");
   assert.ok(catalogueHtml.includes('id="detailBody"'), "catalogue.html must have #detailBody container");
@@ -28,8 +37,9 @@ console.log("TEST JOURNEY 1: Add first vehicle to comparison");
 // -------------------------------------------------------------
 // Journey 2: Add vehicle from shortlisted catalogue results
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 2: Add vehicle from shortlisted catalogue results");
-{
+if (shouldRun("Add vehicle from shortlisted catalogue results")) {
+  runCount++;
+  console.log("TEST JOURNEY 2: Add vehicle from shortlisted catalogue results");
   const catalogueJs = fs.readFileSync("js/curated-catalogue.js", "utf8");
   assert.ok(catalogueJs.includes('compare-btn'), "Result cards must include compare-btn affordance");
   assert.ok(catalogueJs.includes('data-compare'), "Cards must expose data-compare action");
@@ -42,8 +52,9 @@ console.log("TEST JOURNEY 2: Add vehicle from shortlisted catalogue results");
 // -------------------------------------------------------------
 // Journey 3: Compare vehicle against budget settings
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 3: Compare vehicle against budget settings");
-{
+if (shouldRun("Compare vehicle against budget settings")) {
+  runCount++;
+  console.log("TEST JOURNEY 3: Compare vehicle against budget settings");
   const catalogueHtml = fs.readFileSync("catalogue.html", "utf8");
   assert.ok(catalogueHtml.includes('id="reviewBar"'), "catalogue.html must have #reviewBar for Your Catalogue Review");
   assert.ok(catalogueHtml.includes('id="affordabilityPanel"'), "Your Catalogue Review must contain #affordabilityPanel");
@@ -61,8 +72,9 @@ console.log("TEST JOURNEY 3: Compare vehicle against budget settings");
 // -------------------------------------------------------------
 // Journey 4: Set a target date for the savings plan
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 4: Set a target date for the savings plan");
-{
+if (shouldRun("Set a target date for the savings plan")) {
+  runCount++;
+  console.log("TEST JOURNEY 4: Set a target date for the savings plan");
   const plannerJs = fs.readFileSync("js/planner.js", "utf8");
   assert.ok(plannerJs.includes('r.targetMonths && r.targetMonths > 0 && r.targetMonths <= 120'), "buildSavingsTrajectorySvg must support targetMonths when monthly is 0");
   assert.ok(plannerJs.includes('isTargetTrajectory'), "Savings planner must support target-date trajectory projection");
@@ -94,8 +106,9 @@ console.log("TEST JOURNEY 4: Set a target date for the savings plan");
 // -------------------------------------------------------------
 // Journey 5: Switch between rental strategy presets
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 5: Switch between rental strategy presets");
-{
+if (shouldRun("Switch between rental strategy presets")) {
+  runCount++;
+  console.log("TEST JOURNEY 5: Switch between rental strategy presets");
   const appJs = fs.readFileSync("js/app.js", "utf8");
   assert.ok(!appJs.includes('btn.disabled = !canForty;'), "Minimum Cash preset button must NOT be disabled");
   assert.ok(appJs.includes('strat === "min-cash"'), "min-cash strategy must be handled");
@@ -107,8 +120,9 @@ console.log("TEST JOURNEY 5: Switch between rental strategy presets");
 // -------------------------------------------------------------
 // Journey 6: Reset studio changes for an entry
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 6: Reset studio changes for an entry");
-{
+if (shouldRun("Reset studio changes for an entry") || shouldRun("studio")) {
+  runCount++;
+  console.log("TEST JOURNEY 6: Reset studio changes for an entry");
   const studioHtml = fs.readFileSync("studio.html", "utf8");
   assert.ok(studioHtml.includes('id="resetModelBtn"'), "studio.html must contain #resetModelBtn for undo");
   assert.ok(studioHtml.includes('id="zoomRange"'), "studio.html must contain #zoomRange");
@@ -133,8 +147,9 @@ console.log("TEST JOURNEY 6: Reset studio changes for an entry");
 // -------------------------------------------------------------
 // Journey 7: Change the catalogue price source
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 7: Change the catalogue price source");
-{
+if (shouldRun("Change the catalogue price source")) {
+  runCount++;
+  console.log("TEST JOURNEY 7: Change the catalogue price source");
   const catalogueHtml = fs.readFileSync("catalogue.html", "utf8");
   assert.ok(catalogueHtml.includes('id="priceType"'), "catalogue.html must contain #priceType select");
   assert.ok(catalogueHtml.includes('value="priced">Published Prices</option>'), "Must have Published Prices option");
@@ -175,8 +190,9 @@ console.log("TEST JOURNEY 7: Change the catalogue price source");
 // -------------------------------------------------------------
 // Journey 8: Adjust photo framing for a vehicle image
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 8: Adjust photo framing for a vehicle image");
-{
+if (shouldRun("Adjust photo framing for a vehicle image") || shouldRun("studio")) {
+  runCount++;
+  console.log("TEST JOURNEY 8: Adjust photo framing for a vehicle image");
   const studioHtml = fs.readFileSync("studio.html", "utf8");
   assert.ok(studioHtml.includes('id="cropStage"'), "studio.html must have #cropStage canvas");
   assert.ok(studioHtml.includes('id="fitBtn"'), "studio.html must have Fit button");
@@ -194,8 +210,9 @@ console.log("TEST JOURNEY 8: Adjust photo framing for a vehicle image");
 // -------------------------------------------------------------
 // Journey 9: Select a cover photo in the studio
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 9: Select a cover photo in the studio");
-{
+if (shouldRun("Select a cover photo in the studio") || shouldRun("studio")) {
+  runCount++;
+  console.log("TEST JOURNEY 9: Select a cover photo in the studio");
   const studioHtml = fs.readFileSync("studio.html", "utf8");
   assert.ok(studioHtml.includes('id="filmstrip"'), "studio.html must have #filmstrip");
 
@@ -210,8 +227,9 @@ console.log("TEST JOURNEY 9: Select a cover photo in the studio");
 // -------------------------------------------------------------
 // Journey 10: Open and return from vehicle details
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 10: Open and return from vehicle details");
-{
+if (shouldRun("Open and return from vehicle details")) {
+  runCount++;
+  console.log("TEST JOURNEY 10: Open and return from vehicle details");
   const catalogueHtml = fs.readFileSync("catalogue.html", "utf8");
   assert.ok(catalogueHtml.includes('id="detail"'), "catalogue.html must have #detail modal");
   assert.ok(catalogueHtml.includes('id="closeDetail"'), "catalogue.html must have #closeDetail button");
@@ -226,8 +244,9 @@ console.log("TEST JOURNEY 10: Open and return from vehicle details");
 // -------------------------------------------------------------
 // Journey 11: Browse the full vehicle catalogue
 // -------------------------------------------------------------
-console.log("TEST JOURNEY 11: Browse the full vehicle catalogue");
-{
+if (shouldRun("Browse the full vehicle catalogue")) {
+  runCount++;
+  console.log("TEST JOURNEY 11: Browse the full vehicle catalogue");
   const catalogueHtml = fs.readFileSync("catalogue.html", "utf8");
   assert.ok(catalogueHtml.includes('id="vehicles"'), "catalogue.html must contain #vehicles grid");
   assert.ok(catalogueHtml.includes('id="search"'), "catalogue.html must contain #search input");
@@ -244,6 +263,169 @@ console.log("TEST JOURNEY 11: Browse the full vehicle catalogue");
   console.log("  ✓ Browse the full vehicle catalogue PASSED: catalogue browsing, multi-criteria filtering and pagination verified.\n");
 }
 
+
+// -------------------------------------------------------------
+// Journey 12: Add photos to a vehicle entry
+// -------------------------------------------------------------
+if (shouldRun("Add photos to a vehicle entry") || shouldRun("studio")) {
+  runCount++;
+  console.log("TEST JOURNEY 12: Add photos to a vehicle entry");
+
+  const studioHtml = fs.readFileSync("studio.html", "utf8");
+  assert.ok(studioHtml.includes('id="photoFiles"'), "studio.html must contain #photoFiles");
+  assert.ok(studioHtml.includes('id="photoCount"'), "studio.html must contain #photoCount");
+  assert.ok(studioHtml.includes('id="filmstrip"'), "studio.html must contain #filmstrip");
+  assert.ok(studioHtml.includes('accept="image/*"'), "photoFiles must accept image/*");
+  assert.ok(studioHtml.includes("multiple"), "photoFiles must accept multiple");
+
+  const studioJs = fs.readFileSync("js/catalogue-studio.js", "utf8");
+  assert.ok(studioJs.includes("addFiles"), "catalogue-studio.js must implement addFiles");
+  assert.ok(studioJs.includes("uploadItem"), "catalogue-studio.js must use uploadItem");
+  assert.ok(studioJs.includes("commit(model, record"), "catalogue-studio.js must commit updated record");
+
+  // Verify test harness wiring
+  const harnessJs = fs.readFileSync("js/test-builds.js", "utf8");
+  assert.ok(harnessJs.includes("STUDIO_FIXTURE_FILENAME"), "Test harness must define deterministic fixture");
+  assert.ok(harnessJs.includes("setupStudioTestFixture"), "Test harness must wire studio test fixture");
+  assert.ok(harnessJs.includes("__VAHANAIQ_STUDIO_FIXTURE_FILE__"), "Test harness must expose fixture file");
+
+  // Verify deterministic image fixture on disk
+  const fixturePath = "test/fixtures/audi-a3-studio-fixture.jpg";
+  assert.ok(fs.existsSync(fixturePath), "Deterministic image fixture must exist on disk");
+  const fixtureBytes = fs.readFileSync(fixturePath);
+  assert.ok(fixtureBytes.length > 1000, "Fixture must be a non-trivial JPEG");
+  assert.equal(fixtureBytes[0], 0xff, "JPEG must start with FF D8");
+  assert.equal(fixtureBytes[1], 0xd8, "JPEG must start with FF D8");
+  assert.equal(fixtureBytes[fixtureBytes.length - 2], 0xff, "JPEG must end with FF D9");
+  assert.equal(fixtureBytes[fixtureBytes.length - 1], 0xd9, "JPEG must end with FF D9");
+
+  // Verify end-to-end add/save/verify path for Audi A3 entry
+  const { newRecord, uploadItem, addItem, setCover, orderedItems, recordIsEdited } = await import("../js/catalogue-photos.js");
+  const catData = JSON.parse(fs.readFileSync("data/catalogue.json", "utf8"));
+  const a3 = catData.models.find(m => m.id === "audi-a3");
+  assert.ok(a3, "Audi A3 must be in catalogue");
+
+  const initialRecord = newRecord(a3);
+  assert.equal(initialRecord.items.length, 1, "Audi A3 initially has 1 published photo");
+  assert.equal(recordIsEdited(initialRecord, a3), false, "Fresh record is unedited");
+
+  // Upload step using deterministic image fixture
+  const upload = uploadItem({ name: "audi-a3-studio-fixture.jpg", type: "image/jpeg", size: fixtureBytes.length });
+  assert.equal(upload.kind, "upload");
+  assert.equal(upload.name, "audi-a3-studio-fixture.jpg");
+  assert.match(upload.id, /^upload:/);
+
+  // Add and save
+  let updatedRecord = addItem(initialRecord, upload);
+  const hadUploads = initialRecord.items.some(i => i.kind === "upload");
+  if (!hadUploads) updatedRecord = setCover(updatedRecord, upload.id);
+
+  assert.equal(recordIsEdited(updatedRecord, a3), true, "Record with uploaded photo is an edit");
+
+  // Verify updated photo set
+  const items = orderedItems(updatedRecord);
+  assert.equal(items.length, 2, "Updated photo set must contain 2 photos");
+  assert.equal(items[0].id, upload.id, "First item must be the uploaded photo (new cover)");
+  assert.equal(items[0].kind, "upload", "First item must be an upload");
+  assert.equal(items[1].kind, "official", "Second item must be the official photo");
+  assert.equal(updatedRecord.coverId, upload.id, "coverId must be set to the new photo");
+
+  console.log("  ✓ Add photos to a vehicle entry PASSED: deterministic fixture uploaded into Audi A3 entry, saved, and verified.\n");
+}
+
+// -------------------------------------------------------------
+// Journey 13: Export edited studio photos
+// -------------------------------------------------------------
+if (shouldRun("Export edited studio photos") || shouldRun("studio")) {
+  runCount++;
+  console.log("TEST JOURNEY 13: Export edited studio photos");
+
+  const studioHtml = fs.readFileSync("studio.html", "utf8");
+  assert.ok(studioHtml.includes('id="exportBtn"'), "studio.html must contain #exportBtn");
+  assert.ok(studioHtml.includes('id="exportDialog"'), "studio.html must contain #exportDialog");
+  assert.ok(studioHtml.includes('id="exportDownload"'), "studio.html must contain #exportDownload");
+
+  const studioJs = fs.readFileSync("js/catalogue-studio.js", "utf8");
+  assert.ok(studioJs.includes("buildManifest"), "catalogue-studio.js must build manifest");
+  assert.ok(studioJs.includes("exportDownload"), "catalogue-studio.js must wire export download");
+
+  const { newRecord, uploadItem, addItem, setCover, orderedItems, buildManifest, manifestProblems } = await import("../js/catalogue-photos.js");
+  const catData = JSON.parse(fs.readFileSync("data/catalogue.json", "utf8"));
+  const a3 = catData.models.find(m => m.id === "audi-a3");
+
+  const initialRecord = newRecord(a3);
+  const fixtureBytes = fs.readFileSync("test/fixtures/audi-a3-studio-fixture.jpg");
+  const upload = uploadItem({ name: "audi-a3-studio-fixture.jpg", type: "image/jpeg", size: fixtureBytes.length });
+  const exportRecord = setCover(addItem(initialRecord, upload), upload.id);
+
+  const dataUrl = "data:image/jpeg;base64," + fixtureBytes.toString("base64");
+  const order = orderedItems(exportRecord);
+  const encoded = {
+    [order[0].id]: { large: dataUrl, small: dataUrl },
+    [order[1].id]: { large: dataUrl, small: dataUrl }
+  };
+
+  const manifest = buildManifest({
+    models: [{ record: exportRecord, model: a3, encoded }],
+    capturedAt: new Date().toISOString(),
+    catalogueDate: "2026-10-24",
+    appVersion: "2.11.5"
+  });
+
+  assert.equal(manifest.manifestVersion, 1);
+  assert.equal(manifest.models.length, 1);
+  assert.equal(manifest.models[0].modelId, "audi-a3");
+  assert.equal(manifest.models[0].images.length, 2);
+  assert.equal(manifest.models[0].images[0].kind, "upload");
+  assert.equal(manifest.models[0].images[0].cover, true);
+  assert.equal(manifest.models[0].images[0].file, "audi-a3-studio-1.jpg");
+  assert.equal(manifest.models[0].images[1].kind, "official");
+  assert.equal(manifest.models[0].images[1].cover, false);
+  assert.equal(manifest.models[0].images[1].file, "audi-a3-studio-2.jpg");
+  assert.deepEqual(manifestProblems(manifest), [], "Manifest for export must have zero problems");
+
+  console.log("  ✓ Export edited studio photos PASSED: manifest encodes framed photos, cover ordering, and export validation.\n");
+}
+
+// -------------------------------------------------------------
+// Journey 14: Remove a photo from a vehicle entry
+// -------------------------------------------------------------
+if (shouldRun("Remove a photo from a vehicle entry") || shouldRun("studio")) {
+  runCount++;
+  console.log("TEST JOURNEY 14: Remove a photo from a vehicle entry");
+
+  const studioHtml = fs.readFileSync("studio.html", "utf8");
+  assert.ok(studioHtml.includes('id="filmstrip"'), "studio.html must have #filmstrip");
+
+  const studioJs = fs.readFileSync("js/catalogue-studio.js", "utf8");
+  assert.ok(studioJs.includes("data-remove"), "catalogue-studio.js must handle data-remove");
+  assert.ok(studioJs.includes("removeItem"), "catalogue-studio.js must call removeItem");
+  assert.ok(studioJs.includes("Photo removed. Undo My Changes brings the published set back."), "Removal must toast confirmation");
+
+  const { newRecord, uploadItem, addItem, setCover, removeItem } = await import("../js/catalogue-photos.js");
+  const catData = JSON.parse(fs.readFileSync("data/catalogue.json", "utf8"));
+  const a3 = catData.models.find(m => m.id === "audi-a3");
+
+  const initialRecord = newRecord(a3);
+  const fixtureBytes = fs.readFileSync("test/fixtures/audi-a3-studio-fixture.jpg");
+  const upload = uploadItem({ name: "audi-a3-studio-fixture.jpg", type: "image/jpeg", size: fixtureBytes.length });
+  const twoPhotoRecord = setCover(addItem(initialRecord, upload), upload.id);
+  assert.equal(twoPhotoRecord.items.length, 2);
+
+  // Remove the uploaded photo
+  const removed = removeItem(twoPhotoRecord, upload.id);
+  assert.equal(removed.error, undefined);
+  assert.equal(removed.record.items.length, 1);
+  assert.equal(removed.record.coverId, initialRecord.items[0].id, "Cover reverts to remaining official photo");
+
+  // Attempting to remove the last photo must be blocked
+  const blocked = removeItem(removed.record, removed.record.items[0].id);
+  assert.equal(blocked.error, "A catalogue entry must keep at least one photo.");
+
+  console.log("  ✓ Remove a photo from a vehicle entry PASSED: photo removal updates set, preserves cover, and enforces minimum photo guard.\n");
+}
+
 console.log("============================================================");
-console.log("ALL 11 E2E JOURNEYS VERIFIED AND PASSED SUCCESSFULLY! (100%)");
+console.log(`ALL ${runCount} E2E JOURNEYS VERIFIED AND PASSED SUCCESSFULLY! (100%)`);
 console.log("============================================================\n");
+

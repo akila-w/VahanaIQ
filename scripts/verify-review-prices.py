@@ -45,11 +45,12 @@ for v in data['vehicles']:
             if match:
                 low,high=[round(float(x)*1e6) for x in match.groups()]
                 set_result(r,'range-only',None,'A secondary review reports a model-level market range; it does not verify this exact trim or an agent quote.',url,reportedRange=[low,high])
-    if 'dailymirror.lk' in url and '302123' in url:
+    netloc = (urlsplit(url).netloc or '').lower()
+    if ('dailymirror.lk' in netloc or netloc.endswith('dailymirror.lk')) and '302123' in url:
         set_result(r,'historical',None,'Amount matches a launch-price report dated 11/02/2025. Toyota currently requests a quote; a current price is not confirmed.',url,sourceDate='2025-02-11')
-    if 'srilanka-promotions.com' in url:
+    if netloc == 'srilanka-promotions.com' or netloc.endswith('.srilanka-promotions.com'):
         set_result(r,'historical',None,'This is a 2025 promotional/launch-price page, not current agent evidence. Exact variant and current amount require confirmation.',url,sourceDate='2025')
-    if 'firstcar.lk' in url:
+    if netloc == 'firstcar.lk' or netloc.endswith('.firstcar.lk'):
         set_result(r,'unverified',None,'The linked specification page did not substantiate the inherited amount as a current asking price.')
     if v['make']=='Perodua':
         set_result(r,'unverified',None,'The official site displays a zero-value price placeholder. It does not substantiate the inherited amount. A quote is required.','https://www.peroduasl.lk/')
