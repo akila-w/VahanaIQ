@@ -3,7 +3,7 @@
 // at most 40% financed for unregistered cars and cars registered under a year (60% down),
 // at most 60% financed for cars registered over a year (40% down).
 
-import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.11.3";
+import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.11.5";
 
 export const DOWN_MIN = 40;          // lowest down payment any car can have (registered over a year)
 export const DOWN_MIN_UNREG = 60;    // brand new, reconditioned and recently registered cars
@@ -151,8 +151,11 @@ export function computeLeaseTable(cars, settings = getSettings()) {
   const insurance = s.insurance || 0, fees = s.fees || 0;
   const rows = cars.map((c, idx) => {
     let loan, dp, rent, interest, total, need;
+    const minDown = minDownFor(c.cond, c.financeClass, c.firstRegisteredOn);
+    const hasCustomDown = Number.isFinite(c.downOverride) && c.downOverride > 0;
+    const targetDown = hasCustomDown ? Math.min(100, Math.max(minDown, c.downOverride)) : s.down;
     // Each car is calculated at its legal minimum down payment, or the chosen one if higher
-    const downPct = s.down >= 100 ? 100 : Math.max(s.down, minDownFor(c.cond, c.financeClass, c.firstRegisteredOn));
+    const downPct = targetDown >= 100 ? 100 : Math.max(targetDown, minDown);
     if (downPct >= 100) {
       loan = 0;
       dp = c.price;
@@ -177,7 +180,7 @@ export function computeLeaseTable(cars, settings = getSettings()) {
       const load = (monthlyCost + s.debt) / s.income;
       status = load <= s.dti ? "ok" : "bad";
     }
-    return Object.assign({}, c, { _idx: idx, loan, dp, downPct, downRaised: downPct > s.down, upfront, monthlyCost, rental: rent, interest, total, need, status });
+    return Object.assign({}, c, { _idx: idx, loan, dp, downPct, downCustom: hasCustomDown, downRaised: !hasCustomDown && downPct > s.down, upfront, monthlyCost, rental: rent, interest, total, need, status });
   });
 
   const room = s.income ? Math.max(0, s.income * s.dti - s.debt - insurance / 12) : 0;

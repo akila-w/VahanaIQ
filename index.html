@@ -6,7 +6,7 @@
   <title>VahanaIQ — Sri Lanka Vehicle Lease Calculator</title>
   <meta name="description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.">
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#103e36">
-  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1a16">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <meta property="og:title" content="VahanaIQ — Sri Lanka Vehicle Lease Calculator">
@@ -20,22 +20,32 @@
   <link rel="canonical" href="https://akila-w.github.io/vahanaiq/">
   <meta property="og:url" content="https://akila-w.github.io/vahanaiq/">
   <link rel="manifest" href="manifest.json">
-  <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}</script>
-  <link rel="stylesheet" href="css/tokens.css?v=2.11.3">
-  <link rel="stylesheet" href="css/style.css?v=2.11.3">
-  <script type="module" src="js/app.js?v=2.11.3"></script>
+  <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} try { var now = Date.now() / 1000; var rootStyle = document.documentElement.style; rootStyle.setProperty("--aurora-delay-1", "-" + (now % 44).toFixed(2) + "s"); rootStyle.setProperty("--aurora-delay-2", "-" + (now % 56).toFixed(2) + "s"); } catch (e) {}</script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.11.5">
+  <link rel="stylesheet" href="css/style.css?v=2.11.5">
+  <script src="js/page-transitions.js" defer></script>
+  <script src="js/catalogue-data.js?v=2.11.5" defer></script>
+  <script type="module" src="js/app.js?v=2.11.5"></script>
 </head>
 <body>
+<a class="skip" href="#h-terms">Skip to Calculator</a>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
 <header class="site-header">
-  <a class="brand" href="index.html">
-    <img src="assets/icons/logo-option-1-apex.svg?v=20261020" alt="" class="brand-logo" width="34" height="34">
-    <span>Vahana<span class="brand-iq">IQ</span></span>
-  </a>
-  <nav aria-label="Main">
-    <a href="index.html" aria-current="page">Calculator</a>
-    <a href="catalogue.html">Catalogue</a>
-  </nav>
+  <div class="header-brand-group">
+    <a class="brand" href="index.html">
+      <img src="assets/icons/logo-v-mark-transparent-light.svg" alt="" class="brand-logo logo-light" width="36" height="36">
+      <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" class="brand-logo logo-dark" width="36" height="36">
+      <div class="brand-text">
+        <span class="brand-title">Vahana<span class="brand-iq">IQ</span></span>
+        <span class="brand-tagline">Sri Lanka Vehicle Finance Intelligence</span>
+      </div>
+    </a>
+    <nav aria-label="Main">
+      <a href="index.html" aria-current="page">Calculator</a>
+      <a href="catalogue.html">Catalogue</a>
+      <a href="studio.html">Studio</a>
+    </nav>
+  </div>
   <div class="header-actions">
     <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
     <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
@@ -54,7 +64,7 @@
   <section class="hero">
     <div>
       <p class="eyebrow">Sri Lanka Vehicle Finance</p>
-      <h1>Know your<br>monthly rental.</h1>
+      <h1>Know Your<br>Monthly Rental.</h1>
       <p class="intro">Set your terms, add the cars you are considering, and see what you can genuinely afford — before you walk into a showroom.</p>
     </div>
     <div class="hero-aside">
@@ -64,70 +74,277 @@
         <div><strong>84</strong><span>Maximum term, months</span></div>
         <div><strong>50%</strong><span>Debt-to-income ceiling</span></div>
       </div>
+      <p class="small">Down-payment rules follow CBSL Directions No. 01 of 2026.</p>
     </div>
   </section>
 
   <nav class="page-nav" aria-label="Main sections"><a href="#budgetPanel"><span class="glyph glyph-wallet" aria-hidden="true"></span> Budget</a><a href="#comparisonPanel"><span class="glyph glyph-car" aria-hidden="true"></span> Compare</a><a href="#savingsPanel"><span class="glyph glyph-target" aria-hidden="true"></span> Save</a></nav><section class="panel terms-panel" aria-labelledby="h-terms">
     <div class="panel-head">
       <div><p class="eyebrow">Loan Terms</p><h2 id="h-terms">Loan Terms and Your Income</h2></div><button class="btn-outline mobile-only" id="toggleTerms" type="button" aria-expanded="false" aria-controls="loanTermsGrid">Edit</button>
-      <button class="link-btn" id="resetInputsBtn" type="button">Reset Inputs</button>
+      <button class="link-btn quiet" id="resetInputsBtn" type="button">Reset Inputs</button>
     </div>
     <p class="compact-terms mobile-only" id="compactTerms"></p><div class="grid terms-grid mobile-collapsed" id="loanTermsGrid">
-      <div class="span-2">
-        <label for="rateType">Rate Type</label>
-        <select id="rateType" aria-describedby="rateHint">
-          <option value="reducing">Reducing balance (effective)</option>
-          <option value="flat">Flat rate</option>
-        </select>
+      <div class="strategy-scenarios-wrap" role="group" aria-label="Financing strategy scenarios">
+        <span class="strategy-scenarios-label"><span class="glyph glyph-target" aria-hidden="true"></span> Strategy Presets:</span>
+        <div class="strategy-scenarios-pills">
+          <button type="button" class="strategy-pill active" data-strategy="lowest-rental" aria-pressed="true">
+            <span class="strategy-pill-title">Lowest Rental</span>
+            <span class="strategy-pill-desc">84m &middot; 60% Down</span>
+          </button>
+          <button type="button" class="strategy-pill" data-strategy="fast-payoff" aria-pressed="false">
+            <span class="strategy-pill-title">Fast Payoff</span>
+            <span class="strategy-pill-desc">36m &middot; 60% Down</span>
+          </button>
+          <button type="button" class="strategy-pill" data-strategy="min-cash" aria-pressed="false" title="CBSL minimum 40% deposit (for vehicles registered over 1 year)">
+            <span class="strategy-pill-title">Minimum Cash</span>
+            <span class="strategy-pill-desc">84m &middot; 40% Down</span>
+          </button>
+          <button type="button" class="strategy-pill" data-strategy="cash-purchase" aria-pressed="false">
+            <span class="strategy-pill-title">100% Cash</span>
+            <span class="strategy-pill-desc">0% Loan &middot; LKR 0 Rental</span>
+          </button>
+        </div>
       </div>
-      <div>
-        <label for="rate">Interest Rate (% a Year)</label>
-        <input id="rate" type="number" min="0" max="40" step="0.1" value="16" inputmode="decimal" aria-describedby="rateHint">
-        <div class="hint" id="rateHint">Reducing-balance rate. Ask the lender which kind they quote.</div>
+      <div class="terms-subcard terms-subcard-financing">
+        <div class="terms-subcard-head">
+          <span class="terms-subcard-title"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span> Lease Financing Parameters</span>
+          <span class="tag ok">Core Terms</span>
+        </div>
+        <div class="terms-subcard-grid cols-4">
+          <div class="terms-field span-2">
+            <label id="rateTypeLabel" for="rateType">Rate Type</label>
+            <select id="rateType" class="sr-only" tabindex="-1" aria-hidden="true" aria-describedby="rateTypeHint rateHint">
+              <option value="reducing">Reducing balance (effective)</option>
+              <option value="flat">Flat rate</option>
+            </select>
+            <div class="seg-control" role="group" aria-labelledby="rateTypeLabel" data-seg="rateType">
+              <button type="button" class="seg-btn active" data-seg-for="rateType" data-seg-val="reducing" aria-pressed="true">Reducing Balance</button>
+              <button type="button" class="seg-btn" data-seg-for="rateType" data-seg-val="flat" aria-pressed="false">Flat Rate</button>
+            </div>
+            <div class="hint" id="rateTypeHint">Standard for regulated leases; flat quotes vary</div>
+          </div>
+          <div class="terms-field">
+            <label for="rate">Interest Rate (% a Year)</label>
+            <div class="stepper-wrap">
+              <button type="button" class="step-btn" data-step-for="rate" data-step-delta="-0.5" aria-label="Decrease interest rate">&minus;</button>
+              <input id="rate" type="number" min="0" max="40" step="0.1" value="16" inputmode="decimal" aria-describedby="rateHint">
+              <span class="stepper-suffix" aria-hidden="true">%</span>
+              <button type="button" class="step-btn" data-step-for="rate" data-step-delta="0.5" aria-label="Increase interest rate">+</button>
+            </div>
+            <input type="range" class="terms-slider" id="rateSlider" data-slider-for="rate" min="0" max="40" step="0.5" value="16" aria-label="Interest rate slider">
+            <div class="hint" id="rateHint">Reducing-balance rate. Ask the lender which kind they quote.</div>
+          </div>
+          <div class="terms-field">
+            <label for="tenure">Tenure (Months)</label>
+            <div class="stepper-wrap">
+              <button type="button" class="step-btn" data-step-for="tenure" data-step-delta="-1" aria-label="Decrease tenure">&minus;</button>
+              <input id="tenure" type="number" min="6" max="84" step="1" value="84" inputmode="numeric" aria-describedby="tenureHint">
+              <span class="stepper-suffix" aria-hidden="true">mo</span>
+              <button type="button" class="step-btn" data-step-for="tenure" data-step-delta="1" aria-label="Increase tenure">+</button>
+            </div>
+            <input type="range" class="terms-slider" id="tenureSlider" data-slider-for="tenure" min="6" max="84" step="1" value="84" aria-label="Tenure slider">
+            <div class="preset-chips" role="group" aria-label="Tenure presets">
+              <button type="button" class="chip-btn" data-preset-for="tenure" data-preset-val="36" aria-pressed="false">36m</button>
+              <button type="button" class="chip-btn" data-preset-for="tenure" data-preset-val="60" aria-pressed="false">60m</button>
+              <button type="button" class="chip-btn active" data-preset-for="tenure" data-preset-val="84" aria-pressed="true">84m</button>
+            </div>
+            <div class="hint" id="tenureHint">Maximum 84</div>
+          </div>
+          <div class="terms-field span-2">
+            <label for="down">Down payment (% of price)</label>
+            <div class="stepper-wrap">
+              <button type="button" class="step-btn" data-step-for="down" data-step-delta="-1" aria-label="Decrease down payment">&minus;</button>
+              <input id="down" type="number" min="40" max="100" step="1" value="60" inputmode="numeric" aria-describedby="downHint">
+              <span class="stepper-suffix" aria-hidden="true">%</span>
+              <button type="button" class="step-btn" data-step-for="down" data-step-delta="1" aria-label="Increase down payment">+</button>
+            </div>
+            <input type="range" class="terms-slider" id="downSlider" data-slider-for="down" min="40" max="100" step="1" value="60" aria-label="Down payment slider">
+            <div class="preset-chips" role="group" aria-label="Down payment presets">
+              <button type="button" class="chip-btn" data-preset-for="down" data-preset-val="40" aria-pressed="false" title="CBSL minimum for vehicles registered over 1 year">40% Min (&gt;1yr)</button>
+              <button type="button" class="chip-btn active" data-preset-for="down" data-preset-val="60" aria-pressed="true" title="CBSL minimum for brand new and reconditioned vehicles">60% Min (New)</button>
+              <button type="button" class="chip-btn" data-preset-for="down" data-preset-val="70" aria-pressed="false" title="Conservative down payment (higher equity)">70%</button>
+            </div>
+            <div class="hint" id="downHint">Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%, so they're calculated at 60% below that.</div>
+          </div>
+        </div>
       </div>
-      <div>
-        <label for="tenure">Tenure (Months)</label>
-        <input id="tenure" type="number" min="6" max="84" step="1" value="84" inputmode="numeric" aria-describedby="tenureHint">
-        <div class="hint" id="tenureHint">Maximum 84</div>
+
+      <div class="terms-split-row">
+        <div class="terms-subcard terms-subcard-income">
+          <div class="terms-subcard-head">
+            <span class="terms-subcard-title"><span class="glyph glyph-wallet" aria-hidden="true"></span> Income &amp; Commitments</span>
+            <span class="tag">Affordability</span>
+          </div>
+          <div class="terms-subcard-grid cols-3">
+            <div class="terms-field span-2">
+              <label for="income">Net Monthly Income (LKR)</label>
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="income" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="incomeHint">
+              </div>
+              <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
+            </div>
+            <div class="terms-field span-2">
+              <label for="debt">Existing Monthly Loan and Card Payments (LKR)</label>
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="debt" type="text" placeholder="0.00" inputmode="decimal" autocomplete="off" aria-describedby="debtHint">
+              </div>
+              <div class="hint" id="debtHint">Total per month; 0.00 if none</div>
+            </div>
+            <div class="terms-field span-2">
+              <label id="dtiLabel" for="dti">Debt-to-Income Limit</label>
+              <select id="dti" class="sr-only" tabindex="-1" aria-hidden="true" aria-describedby="dtiHint">
+                <option value="0.4">40% of income</option>
+                <option value="0.5">50% (higher budget limit)</option>
+              </select>
+              <div class="seg-control" role="group" aria-labelledby="dtiLabel" data-seg="dti">
+                <button type="button" class="seg-btn active" data-seg-for="dti" data-seg-val="0.4" aria-pressed="true">40% Standard</button>
+                <button type="button" class="seg-btn" data-seg-for="dti" data-seg-val="0.5" aria-pressed="false">50% Stretch</button>
+              </div>
+              <div class="hint" id="dtiHint">40% standard CBSL ceiling; 50% for higher budgets</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="terms-subcard terms-subcard-costs">
+          <div class="terms-subcard-head">
+            <span class="terms-subcard-title"><span class="glyph glyph-layers" aria-hidden="true"></span> Incidental Costs</span>
+            <span class="tag">Optional</span>
+          </div>
+          <div class="terms-subcard-grid cols-2">
+            <div class="terms-field span-2">
+              <label for="insurance">Insurance per Year (LKR)</label>
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="insurance" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="insuranceHint">
+              </div>
+              <div class="hint" id="insuranceHint">Comprehensive cover is required on a lease</div>
+            </div>
+            <div class="terms-field span-2">
+              <label for="fees">Up-front Fees (LKR)</label>
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="fees" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="feesHint">
+              </div>
+              <div class="hint" id="feesHint">Registration, documentation and similar charges</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="span-2">
-        <label for="down">Down payment (% of price)</label>
-        <input id="down" type="number" min="40" max="100" step="1" value="60" inputmode="numeric" aria-describedby="downHint">
-        <div class="hint" id="downHint">Minimum 40% (cars registered over a year). Brand new, reconditioned and recently registered cars need 60%, so they're calculated at 60% below that.</div>
-      </div>
-      <div class="span-2">
-        <label for="income">Net Monthly Income (Rs.)</label>
-        <input id="income" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="incomeHint">
-        <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
-      </div>
-      <div class="span-2">
-        <label for="debt">Existing Monthly Loan and Card Payments (Rs.)</label>
-        <input id="debt" type="text" value="0.00" inputmode="decimal" autocomplete="off" aria-describedby="debtHint">
-        <div class="hint" id="debtHint">Total per month; 0.00 if none</div>
-      </div>
-      <div class="span-2">
-        <label for="dti">Debt-to-Income Limit</label>
-        <select id="dti">
-          <option value="0.4">40% of income</option>
-          <option value="0.5">50% (higher budget limit)</option>
-        </select>
-      </div>
-      <div class="span-2">
-        <label for="insurance">Insurance per Year (Rs.)</label>
-        <input id="insurance" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="insuranceHint">
-        <div class="hint" id="insuranceHint">Comprehensive cover is required on a lease</div>
-      </div>
-      <div class="span-2">
-        <label for="fees">Up-front Fees (Rs.)</label>
-        <input id="fees" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="feesHint">
-        <div class="hint" id="feesHint">Registration, documentation and similar charges</div>
+      <div class="ltv-split-container" id="ltvSplitContainer">
+        <div class="ltv-header-row">
+          <div>
+            <strong class="ltv-title">Vehicle Valuation Financing Structure</strong>
+            <div class="ltv-subtitle">Under Central Bank of Sri Lanka Directions No. 01 of 2026, cl. 2.1</div>
+          </div>
+          <span class="tag ok" id="ltvEligibilityBadge">CBSL Compliant (60% Deposit)</span>
+        </div>
+
+        <div class="ltv-main-bar-wrap">
+          <div class="ltv-bar-track" id="ltvBarTrack">
+            <div class="ltv-bar-dp" id="ltvBarDp">
+              <span id="ltvBarDpText">60% Cash Deposit</span>
+            </div>
+            <div class="ltv-bar-loan" id="ltvBarLoan">
+              <span id="ltvBarLoanText">40% Financed Loan</span>
+            </div>
+          </div>
+          <div class="ltv-marker marker-40"><div class="ltv-marker-label">40% Min (&gt;1yr reg)</div></div>
+          <div class="ltv-marker marker-60"><div class="ltv-marker-label">60% Min (New / Recond)</div></div>
+        </div>
+
+        <div class="ltv-details-grid">
+          <div class="ltv-detail-box">
+            <span>Cash Down Payment</span>
+            <strong id="ltvDetailDp" class="accent-val">60%</strong>
+          </div>
+          <div class="ltv-detail-box">
+            <span>Amount Financed (LTV)</span>
+            <strong id="ltvDetailLoan">40.0% LTV</strong>
+          </div>
+          <div class="ltv-detail-box">
+            <span>Financing Ceiling</span>
+            <strong id="ltvDetailCeiling">Max 60% Loan</strong>
+          </div>
+          <div class="ltv-detail-box">
+            <span>Statutory Status</span>
+            <strong id="ltvDetailStatus" class="ok">Standard Minimum Met</strong>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="panel" id="budgetPanel" aria-labelledby="h-sum">
     <div class="panel-head"><div><p class="eyebrow">Affordability</p><h2 id="h-sum">Your Budget</h2></div></div>
-    <div class="summary" id="summary"></div>
+    <div id="budgetGraphic" class="budget-graphic-wrap">
+      <div class="gauge-wrapper">
+        <div class="gauge-dial-box">
+          <div class="gauge-svg-container">
+            <svg class="gauge-svg" viewBox="0 0 320 175" aria-hidden="true">
+              <defs>
+                <linearGradient id="classicHubGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#cbd5e1"/>
+                  <stop offset="50%" stop-color="#64748b"/>
+                  <stop offset="100%" stop-color="#1e293b"/>
+                </linearGradient>
+                <filter id="needleShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.35)"/>
+                </filter>
+              </defs>
+              <path d="M 50 150 A 110 110 0 0 1 215 54.7" class="dial-arc-safe"/>
+              <path d="M 215 54.7 A 110 110 0 0 1 255.3 95" class="dial-arc-mid"/>
+              <path d="M 255.3 95 A 110 110 0 0 1 270 150" class="dial-arc-bad"/>
+              <text x="36" y="154" class="dial-tick-text dial-tick-end">0%</text>
+              <text x="105" y="42" class="dial-tick-text dial-tick-mid">20%</text>
+              <line x1="215" y1="54.7" x2="225" y2="40" class="dial-milestone-safe"/>
+              <text x="240" y="36" class="dial-label-safe">40% CBSL</text>
+              <line x1="255.3" y1="95" x2="268" y2="88" class="dial-milestone-bad"/>
+              <text x="286" y="86" class="dial-label-bad">50% MAX</text>
+              <text x="284" y="154" class="dial-tick-text dial-tick-start">60%</text>
+              <g id="budgetNeedle" class="dial-needle" transform="rotate(-90, 160, 150)" filter="url(#needleShadow)">
+                <polygon points="156,150 160,46 164,150" class="dial-needle-body"/>
+                <polygon points="158.5,150 160,46 161.5,150" class="dial-needle-spine"/>
+                <circle cx="160" cy="46" r="3.5" class="dial-needle-tip"/>
+                <polygon points="157,150 160,162 163,150" class="dial-needle-tail"/>
+              </g>
+              <circle cx="160" cy="150" r="14" fill="url(#classicHubGrad)" class="dial-hub-outer"/>
+              <circle cx="160" cy="150" r="6" class="dial-hub-mid"/>
+              <circle cx="160" cy="150" r="3" class="dial-hub-inner"/>
+            </svg>
+          </div>
+          <div class="classic-dial-readout">
+            <span class="classic-dti-hero" id="budgetDtiHero">0.0% DTI</span>
+            <span class="classic-dti-sub" id="budgetDtiSub">LKR 0.00 / month</span>
+            <div class="classic-dti-pill ok" id="budgetDtiPill">
+              <span class="dial-zone-dot"></span>
+              <span id="budgetDtiText">Within 40% CBSL Limit</span>
+            </div>
+          </div>
+          <div class="dial-zones-legend">
+            <div class="dial-zone-pill"><span class="dial-zone-dot dot-safe"></span> &le;40% Safe</div>
+            <div class="dial-zone-pill"><span class="dial-zone-dot dot-mid"></span> 40-50% Stretch</div>
+            <div class="dial-zone-pill"><span class="dial-zone-dot dot-bad"></span> &gt;50% Cap</div>
+          </div>
+        </div>
+        <div class="telemetry-console">
+          <div class="cashflow-stack-card">
+            <div class="cashflow-stack-head">
+              <span class="cashflow-title">Net Income Cashflow Spectrum</span>
+              <span class="cashflow-total" id="budgetCashflowLabel"></span>
+            </div>
+            <div class="cashflow-bar-wrap">
+              <div class="cashflow-bar" id="budgetCashflowBar"></div>
+              <div class="cashflow-threshold-line line-cbsl"><div class="cashflow-threshold-label">40% CBSL Limit</div></div>
+              <div class="cashflow-threshold-line line-cap"><div class="cashflow-threshold-label">50% Max Cap</div></div>
+            </div>
+          </div>
+          <div class="telemetry-grid" id="budgetTelemetryGrid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="summary" id="summary" hidden></div>
     <p class="sr-only" id="budgetLive" role="status"></p>
   </section>
 
@@ -143,6 +360,14 @@
     </div>
     <div id="comparisonBody"><p id="comparisonCount" class="hint" role="status"></p>
     <details class="calculation-basis"><summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> Using Your Inputs</summary><p class="hint" id="calculationBasis"></p></details>
+    <div class="quick-filter-chips" id="quickFilterChips" role="group" aria-label="Quick Sri Lankan market segment filters">
+      <button type="button" class="chip-btn qf-chip active" data-qf="all" aria-pressed="true">All Vehicles</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="under15m" aria-pressed="false">Under LKR 15M</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="electrified" aria-pressed="false">Hybrid &amp; EV</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="suv" aria-pressed="false">High Clearance (&ge;170mm)</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="cbsl40" aria-pressed="false">40% Min Down (&gt;1yr Reg)</button>
+      <button type="button" class="chip-btn qf-chip" data-qf="official" aria-pressed="false">Official Agent</button>
+    </div>
     <button class="btn-outline filters-toggle" id="filtersToggle" type="button" aria-expanded="false" aria-controls="toolsPanel">Filters &amp; Sort <span class="count" id="filtersCount" hidden></span></button>
     <div class="tools collapsed" id="toolsPanel">
       <div>
@@ -185,7 +410,7 @@
         </select>
       </div>
       <div>
-        <label for="maxprice">Maximum Price (Rs. Million)</label>
+        <label for="maxprice">Maximum Price (LKR Million)</label>
         <input id="maxprice" type="number" min="0" step="0.01" placeholder="No limit" inputmode="decimal" aria-describedby="maxpriceHint">
         <div class="hint" id="maxpriceHint">Leave empty for no limit</div>
       </div>
@@ -198,6 +423,16 @@
       </div>
     </div>
     <div class="legend" id="budgetLegend" hidden></div>
+    <div class="h2h-tray" id="headToHeadTray" role="region" aria-label="Head-to-head comparison selection" hidden>
+      <div class="h2h-tray-info">
+        <span class="h2h-tray-title"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span> Head-to-Head Finalists (<span id="h2hTrayCount">0</span>/3)</span>
+        <div class="h2h-tray-pills" id="h2hTrayPills"></div>
+      </div>
+      <div class="h2h-tray-actions">
+        <button class="btn-outline btn-sm" id="clearHeadToHeadBtn" type="button">Clear</button>
+        <button class="btn btn-sm" id="openHeadToHeadBtn" type="button">Compare Side-by-Side</button>
+      </div>
+    </div>
     <div class="wrap">
       <table>
         <thead><tr id="head"></tr></thead>
@@ -209,16 +444,108 @@
   </section>
 
   <section class="panel savings-panel" id="savingsPanel" aria-labelledby="h-savings">
-    <div class="panel-head"><div><p class="eyebrow">Target</p><h2 id="h-savings"><span class="glyph glyph-piggy-bank" aria-hidden="true"></span> Savings Planner</h2></div><span class="tag">Plan Your Deposit</span></div>
-    <div class="planner-layout"><div class="planner-inputs">
-      <label for="plannerVehicle">Your Goal Vehicle</label><select id="plannerVehicle"><option value="">Choose a vehicle</option></select>
-      <div class="planner-pair"><div><label for="plannerGoal">Save Towards</label><select id="plannerGoal"><option value="deposit">Deposit + upfront costs</option><option value="cash">Full cash purchase</option></select></div><div><label for="plannerSaved">Already Saved (LKR)</label><input id="plannerSaved" type="text" value="0.00" inputmode="decimal"></div></div>
-      <label for="plannerMode">Monthly Saving</label><select id="plannerMode"><option value="percent">Percentage of net income</option><option value="fixed">Fixed LKR amount</option></select>
-      <div class="planner-pair"><div id="plannerPercentWrap"><label for="plannerPercent">Income Saved (%)</label><input id="plannerPercent" type="number" min="0" max="100" step="1" value="20" inputmode="decimal"></div><div id="plannerMonthlyWrap" hidden><label for="plannerMonthly">Save per Month (LKR)</label><input id="plannerMonthly" type="text" inputmode="decimal"></div><div><label for="plannerDate">Target Date (Optional)</label><div class="date-entry"><input id="plannerDate" type="text" inputmode="numeric" placeholder="DD-MM-YYYY" autocomplete="off" aria-describedby="plannerDateFormat"><button id="plannerCalendar" class="btn-outline" type="button" aria-label="Choose target date"><span class="glyph glyph-calendar" aria-hidden="true"></span></button></div><span id="plannerDateFormat" class="hint">DD-MM-YYYY</span></div></div>
-      <p class="hint">Uses your income, down payment, fees and insurance above. Monthly contributions start one month from today.</p>
-      <details class="planner-saved"><summary><span class="glyph glyph-bookmark" aria-hidden="true"></span> Saved Goals</summary><label for="plannerName">Goal Name</label><input id="plannerName" type="text" maxlength="80" placeholder="My next car"><button class="btn-outline" id="plannerSave" type="button"><span class="glyph glyph-save" aria-hidden="true"></span> Save This Goal</button><label for="plannerScenarios">Load a Goal</label><select id="plannerScenarios"><option value="">Saved goals</option></select><button class="link-btn" id="plannerDelete" type="button">Remove Saved Goal</button></details>
-    </div><div id="plannerResult" class="planner-result" aria-live="polite"></div></div>
+    <div class="panel-head"><div><p class="eyebrow">Target</p><h2 id="h-savings">Savings Planner</h2></div><span class="tag">Plan Your Deposit</span></div>
+    <div class="planner-layout">
+      <div class="planner-inputs">
+        <div class="planner-card">
+          <div class="planner-card-head">
+            <span class="planner-card-title"><span class="glyph glyph-car" aria-hidden="true"></span> Vehicle &amp; Target Goal</span>
+            <span class="tag">Goal</span>
+          </div>
+          <div class="planner-field">
+            <label for="plannerVehicle">Your Goal Vehicle</label>
+            <select id="plannerVehicle"><option value="">Choose a vehicle</option></select>
+            <div id="plannerVehicleBadge" class="planner-vehicle-badge" hidden></div>
+          </div>
+          <div class="planner-pair">
+            <div>
+              <label for="plannerGoal">Save Towards</label>
+              <select id="plannerGoal">
+                <option value="deposit">Deposit + upfront costs</option>
+                <option value="cash">Full cash purchase</option>
+              </select>
+            </div>
+            <div>
+              <label for="plannerSaved">Already Saved (LKR)</label>
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="plannerSaved" type="text" placeholder="0.00" inputmode="decimal">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planner-card">
+          <div class="planner-card-head">
+            <span class="planner-card-title"><span class="glyph glyph-chart-no-axes-combined" aria-hidden="true"></span> Monthly Savings &amp; Pace</span>
+            <span class="tag">Pace</span>
+          </div>
+          <div class="planner-field">
+            <label for="plannerMode">Monthly Saving Mode</label>
+            <select id="plannerMode">
+              <option value="percent">Percentage of net income</option>
+              <option value="fixed">Fixed LKR amount</option>
+            </select>
+          </div>
+          <div class="planner-pair">
+            <div id="plannerPercentWrap">
+              <label for="plannerPercent">Income Saved (%)</label>
+              <div class="stepper-wrap">
+                <button type="button" class="step-btn" data-step-for="plannerPercent" data-step-delta="-1" aria-label="Decrease percentage saved">&minus;</button>
+                <input id="plannerPercent" type="number" min="0" max="100" step="1" value="20" inputmode="decimal">
+                <span class="stepper-suffix" aria-hidden="true">%</span>
+                <button type="button" class="step-btn" data-step-for="plannerPercent" data-step-delta="1" aria-label="Increase percentage saved">+</button>
+              </div>
+              <div class="preset-chips" role="group" aria-label="Savings pace presets">
+                <button type="button" class="chip-btn" data-preset-for="plannerPercent" data-preset-val="10">10%</button>
+                <button type="button" class="chip-btn" data-preset-for="plannerPercent" data-preset-val="20">20%</button>
+                <button type="button" class="chip-btn" data-preset-for="plannerPercent" data-preset-val="30">30%</button>
+                <button type="button" class="chip-btn active" data-preset-for="plannerPercent" data-preset-val="50" aria-pressed="true">50%</button>
+              </div>
+            </div>
+            <div id="plannerMonthlyWrap" hidden>
+              <label for="plannerMonthly">Save per Month (LKR)</label>
+              <div class="input-adorn-wrap">
+                <span class="adorn-prefix" aria-hidden="true">LKR</span>
+                <input id="plannerMonthly" type="text" inputmode="decimal">
+              </div>
+            </div>
+            <div>
+              <label for="plannerDate">Target Date (Optional)</label>
+              <div class="date-entry">
+                <input id="plannerDate" type="text" inputmode="numeric" placeholder="DD-MM-YYYY" autocomplete="off" aria-describedby="plannerDateFormat">
+                <button id="plannerCalendar" class="btn-outline" type="button" aria-label="Choose target date"><span class="glyph glyph-calendar" aria-hidden="true"></span></button>
+              </div>
+              <span id="plannerDateFormat" class="hint sr-only">DD-MM-YYYY</span>
+            </div>
+          </div>
+          <p class="hint planner-subhint">Uses your income, down payment, fees and insurance above. Monthly contributions start one month from today.</p>
+        </div>
+
+        <details class="planner-saved">
+          <summary><span><span class="glyph glyph-bookmark" aria-hidden="true"></span> Saved Goals</span><span class="glyph glyph-chevron-down planner-chevron" aria-hidden="true"></span></summary>
+          <div class="planner-saved-body">
+            <div class="planner-saved-row">
+              <div class="planner-saved-field">
+                <label for="plannerName">Goal Name</label>
+                <input id="plannerName" type="text" maxlength="80" placeholder="My next car">
+              </div>
+              <button class="btn-outline" id="plannerSave" type="button"><span class="glyph glyph-save" aria-hidden="true"></span> Save Goal</button>
+            </div>
+            <div class="planner-saved-row">
+              <div class="planner-saved-field">
+                <label for="plannerScenarios">Load a Goal</label>
+                <select id="plannerScenarios"><option value="">Saved goals</option></select>
+              </div>
+              <button class="link-btn" id="plannerDelete" type="button">Remove Goal</button>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div id="plannerResult" class="planner-result" aria-live="polite"></div>
+    </div>
   </section>
+</main>
 
   <footer class="foot">
     <div class="foot-cols">
@@ -235,14 +562,14 @@
         <p><span id="priceAsOf">Confirm prices and stock with the seller.</span> This is not financial advice.</p>
       </section>
     </div>
-    <nav class="site-links" aria-label="Information"><a href="about.html">About</a><a href="catalogue.html">Catalogue</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a></nav><p class="copyright">© 2026 Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+    <nav class="site-links" aria-label="Information"><a href="index.html" aria-current="page">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav><p class="copyright">© 2026 Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
+      <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>
       <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
-      <span>VahanaIQ v<span id="appVersion">2.11.3</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.11.5</span></span>
     </p>
   </footer>
-</main>
 
 <div class="budget-bar" id="budgetBar" aria-hidden="true" hidden></div>
 
@@ -250,13 +577,15 @@
 
 <div class="modal-bg" id="catalogueModal" role="dialog" aria-modal="true" aria-labelledby="catalogueTitle" inert>
   <div class="modal catalogue-modal">
-    <div class="modal-header"><h2 id="catalogueTitle">Find Your Next Car</h2><button class="close-btn" id="closeCatalogueBtn" type="button" aria-label="Close catalogue">&times;</button></div>
+    <div class="modal-header"><h2 id="catalogueTitle">Add a Vehicle</h2><button class="close-btn" id="closeCatalogueBtn" type="button" aria-label="Close catalogue">&times;</button></div>
     <p class="catalogue-intro">Compare passenger vehicles and pickups in Sri Lanka.</p>
     <div class="catalogue-search">
-      <label for="catalogueSearch">Search Make or Model</label>
-      <input id="catalogueSearch" type="search" placeholder="e.g. Toyota, electric, SUV" autocomplete="off">
+      <label for="catalogueSearch" class="sr-only">Search Make or Model</label>
+      <div class="catalogue-search-row">
+        <input id="catalogueSearch" type="search" placeholder="Search make, model, or body (e.g. Toyota, electric, SUV)" autocomplete="off">
+        <button class="btn-outline catalogue-filters-toggle" id="catalogueFiltersToggle" type="button" aria-expanded="false" aria-controls="catalogueFilters"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span>Filter and Sort <span id="catalogueFiltersCount"></span></button>
+      </div>
     </div>
-    <button class="btn-outline catalogue-filters-toggle" id="catalogueFiltersToggle" type="button" aria-expanded="false" aria-controls="catalogueFilters">Filter and Sort <span id="catalogueFiltersCount"></span></button>
     <div class="catalogue-filters collapsed" id="catalogueFilters">
       <div><label for="catalogueSort">Sort By</label><select id="catalogueSort"><option value="priced">Prices first</option><option value="price-asc">Price, low to high</option><option value="price-desc">Price, high to low</option><option value="name">Name, A to Z</option></select></div>
       <div><label for="cataloguePriceFilter">Price</label><select id="cataloguePriceFilter"><option value="">Any</option><option value="priced">Published only</option></select></div><div><label for="catalogueAffordability">Monthly Budget</label><select id="catalogueAffordability"><option value="">All vehicles</option><option value="within">Within my monthly budget</option></select></div>
@@ -265,9 +594,12 @@
       <div><label for="catalogueFuel">Fuel</label><select id="catalogueFuel"><option value="">All fuels</option></select></div>
       <div><label for="catalogueRoute">Sold By</label><select id="catalogueRoute"><option value="">Any seller</option><option value="Official">Official agent</option><option value="Grey">Importer</option><option value="Unknown">Independent seller</option></select></div>
     </div>
-    <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear Search and Filters</button></div>
+    <div class="catalogue-toolbar">
+      <div class="catalogue-status"><p class="hint" id="catalogueCount" role="status" tabindex="-1"></p><button class="link-btn" id="catalogueClearFilters" type="button" hidden>Clear Search and Filters</button></div>
+      <div class="bulk-actions" aria-label="Add multiple vehicles"><button class="btn-outline" id="catalogueAddAll" type="button" aria-label="Add all catalogue vehicles with usable prices"><span class="glyph glyph-layers" aria-hidden="true"></span>All <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddSearch" type="button" aria-label="Add all vehicles found by the search"><span class="glyph glyph-search" aria-hidden="true"></span>Search <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddFiltered" type="button" aria-label="Add all vehicles matching the filters"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span>Filtered <span class="bulk-count"></span></button><details class="bulk-hint"><summary title="How Bulk Add Works">?</summary><p class="hint">Adds matches across every page and skips existing selections. Missing or conflicting prices need a quote.</p></details></div>
+    </div>
     <p class="hint catalogue-per-million" id="cataloguePerMillion"></p>
-    <div class="bulk-actions" aria-label="Add multiple vehicles"><button class="btn-outline" id="catalogueAddAll" type="button" aria-label="Add all catalogue vehicles with usable prices"><span class="glyph glyph-layers" aria-hidden="true"></span>All <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddSearch" type="button" aria-label="Add all vehicles found by the search"><span class="glyph glyph-search" aria-hidden="true"></span>Search <span class="bulk-count"></span></button><button class="btn-outline" id="catalogueAddFiltered" type="button" aria-label="Add all vehicles matching the filters"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span>Filtered <span class="bulk-count"></span></button></div><details class="bulk-hint"><summary>How Bulk Add Works</summary><p class="hint">Adds matches across every page and skips existing selections. Unverified amounts stay labelled; missing or conflicting prices need a quote.</p></details><div id="catalogueResults" class="catalogue-grid"></div>
+    <div id="catalogueResults" class="catalogue-grid"></div>
     <div class="catalogue-pagination"><button class="btn-outline" id="cataloguePrev" type="button">Previous</button><span id="cataloguePage"></span><button class="btn-outline" id="catalogueNext" type="button">Next</button></div>
     <p class="catalogue-more">Can't find your car? <button class="link-btn" id="openAiModalBtn" type="button"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search with AI</button> or <button class="link-btn" id="openManualBtn" type="button">Enter It Yourself</button>.</p>
     <p class="hint catalogue-coverage" id="catalogueCoverage"></p>
@@ -277,6 +609,10 @@
 <div class="modal-bg" id="catalogueAddModal" role="dialog" aria-modal="true" aria-labelledby="catalogueAddTitle" inert>
   <form class="modal" id="catalogueAddForm" novalidate>
     <div class="modal-header"><h2 id="catalogueAddTitle">Set Up Comparison</h2><button class="close-btn" id="closeCatalogueAddBtn" type="button" aria-label="Close vehicle setup">&times;</button></div>
+    <div id="catalogueTrimWrap" hidden>
+      <label for="catalogueTrimSelect">Trim or Variant</label>
+      <select id="catalogueTrimSelect"></select>
+    </div>
     <label for="catalogueName">Vehicle Name, Trim and Year</label>
     <input id="catalogueName" type="text" maxlength="200" required autocomplete="off" aria-describedby="catalogueNameNote">
     <p class="hint" id="catalogueNameNote">Add the exact trim and year if known. Your calculation uses the price you enter below.</p>
@@ -304,36 +640,153 @@
 
 <div class="modal-bg" id="accountModal" role="dialog" aria-modal="true" aria-labelledby="accountTitle" inert>
   <div class="modal account-modal">
-    <div class="modal-header"><h2 id="accountTitle">Your Account</h2><button class="close-btn" id="closeAccountBtn" type="button" aria-label="Close account">&times;</button></div>
-    <div id="accountSignedOut">
-      <p>Sign in with Google to keep your loan terms, income and comparison on every device you use.</p>
-      <p class="hint">They're stored with Firebase, Google's database service, where only you can read them. You can delete them at any time. Signing out removes them from this browser; without signing in, they stay in this browser only.</p>
-      <div class="google-sign-in" id="googleSignIn">Loading Google sign-in…</div>
-      <button class="btn" id="signInBtn" type="button" hidden disabled>Loading…</button>
-      <p class="hint warn" id="accountError" role="alert" hidden></p>
-      <div class="modal-actions"><button class="btn-outline" id="cancelAccountBtn" type="button">Not Now</button></div>
-    </div>
-    <div id="accountSignedIn" hidden>
-      <p>Signed in as <strong id="accountEmail"></strong></p>
-      <p class="hint" id="syncStatus" role="status"></p>
-      <div class="sync-conflict" id="syncConflict" hidden>
-        <p><strong>Your account and this browser have different inputs or vehicles.</strong> Choose which to keep; the other is replaced.</p>
-        <p class="hint" id="syncConflictCounts"></p>
-        <div class="modal-actions"><button class="btn-outline" id="keepLocalBtn" type="button">Keep This Browser's</button><button class="btn" id="useCloudBtn" type="button">Use My Account's</button></div>
+    <div class="modal-header account-modal-header">
+      <div class="account-header-lockup">
+        <div class="account-badge-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <div>
+          <h2 id="accountTitle">Your Account</h2>
+          <p class="account-subtitle">Sync calculations across all your devices</p>
+        </div>
       </div>
-      <div class="modal-actions account-actions"><button class="link-btn danger" id="deleteDataBtn" type="button">Delete My Saved Data</button><button class="btn-outline" id="signOutBtn" type="button">Sign Out</button></div>
-      <div class="sync-conflict" id="deleteConfirm" hidden>
-        <p>This deletes your saved inputs and vehicles from your account and from this browser. It can't be undone.</p>
-        <div class="modal-actions"><button class="btn-outline" id="cancelDeleteBtn" type="button">Cancel</button><button class="btn btn-danger" id="confirmDeleteBtn" type="button">Delete</button></div>
+      <button class="close-btn" id="closeAccountBtn" type="button" aria-label="Close account">&times;</button>
+    </div>
+
+    <div id="accountSignedOut">
+      <p class="account-intro">Sign in with Google to securely sync your loan terms, income, and vehicle comparisons on every device you use.</p>
+
+      <div class="account-benefits">
+        <div class="benefit-item">
+          <div class="benefit-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+            </svg>
+          </div>
+          <div class="benefit-text">
+            <strong>Cross-Device Sync</strong>
+            <span>Pick up where you left off on phone, tablet, or desktop.</span>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <div class="benefit-text">
+            <strong>Private &amp; Secure</strong>
+            <span>Stored in your isolated Firebase Firestore space. Only you can read or edit your data.</span>
+          </div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
+            </svg>
+          </div>
+          <div class="benefit-text">
+            <strong>No Passwords or Spam</strong>
+            <span>Instant one-tap Google sign-in. Erase your cloud data anytime with one click.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="account-cta-wrap">
+        <div class="google-sign-in" id="googleSignIn">Loading Google sign-in…</div>
+        <button class="btn btn-full" id="signInBtn" type="button" hidden disabled>Sign In with Google</button>
+        <p class="hint warn" id="accountError" role="alert" hidden></p>
+      </div>
+
+      <div class="modal-actions account-modal-actions">
+        <button class="btn-outline btn-full" id="cancelAccountBtn" type="button">Continue as Guest</button>
+      </div>
+      <p class="account-footnote">Without signing in, your calculations stay in this browser only.</p>
+    </div>
+
+    <div id="accountSignedIn" hidden>
+      <div class="account-profile-card">
+        <div class="account-avatar-wrap">
+          <div class="account-avatar" id="accountAvatar" aria-hidden="true">A</div>
+        </div>
+        <div class="account-info">
+          <div class="account-email-row">
+            <strong id="accountEmail"></strong>
+          </div>
+          <div class="account-sync-badge">
+            <span class="sync-dot" id="syncDot" aria-hidden="true"></span>
+            <span class="sync-status-text" id="syncStatus" role="status">Synced</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="account-data-summary">
+        <div class="summary-item">
+          <span class="summary-label">Storage</span>
+          <span class="summary-val">Firebase Firestore (Private)</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Sync Scope</span>
+          <span class="summary-val">Terms, Income &amp; Vehicles</span>
+        </div>
+      </div>
+
+      <div class="sync-conflict" id="syncConflict" hidden>
+        <div class="conflict-head">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="conflict-icon" aria-hidden="true">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <strong>Sync Conflict Detected</strong>
+        </div>
+        <p>Your account and this browser have different inputs or vehicles. Choose which to keep; the other is replaced.</p>
+        <p class="hint" id="syncConflictCounts"></p>
+        <div class="modal-actions conflict-actions">
+          <button class="btn-outline" id="keepLocalBtn" type="button">Keep This Browser's</button>
+          <button class="btn" id="useCloudBtn" type="button">Use My Account's</button>
+        </div>
+      </div>
+
+      <div class="account-danger-zone">
+        <div class="modal-actions account-actions">
+          <button class="btn-outline" id="signOutBtn" type="button">Sign Out</button>
+          <button class="link-btn danger" id="deleteDataBtn" type="button">Delete Saved Data</button>
+        </div>
+      </div>
+
+      <div class="sync-conflict delete-confirm-card" id="deleteConfirm" hidden>
+        <p><strong>Are you sure?</strong> This permanently deletes all your saved inputs, vehicles, and budget plans from your cloud account and this browser. It cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="btn-outline" id="cancelDeleteBtn" type="button">Cancel</button>
+          <button class="btn btn-danger" id="confirmDeleteBtn" type="button">Delete Everything</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal-bg" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle" inert>
-  <div class="modal">
+  <div class="modal detail-modal">
     <div class="modal-header"><h2 id="detailTitle">Lease Details</h2><button class="close-btn" id="closeDetailBtn" type="button" aria-label="Close lease details">&times;</button></div>
     <div id="detailBody"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="h2hModal" role="dialog" aria-modal="true" aria-labelledby="h2hTitle" inert>
+  <div class="modal detail-modal h2h-modal">
+    <div class="modal-header">
+      <div>
+        <p class="eyebrow">Side-by-Side Finalists</p>
+        <h2 id="h2hTitle">Head-to-Head Comparison</h2>
+      </div>
+      <button class="close-btn" id="closeH2hBtn" type="button" aria-label="Close head-to-head comparison">&times;</button>
+    </div>
+    <div id="h2hBody"></div>
   </div>
 </div>
 
@@ -483,6 +936,8 @@
     <div class="credits-list" id="photoCreditsList"></div>
   </div>
 </div>
+
+<dialog id="guide" aria-labelledby="guideTitle"><header class="dialog-head"><h2 id="guideTitle">Source Guide</h2><button id="closeGuide" class="close" aria-label="Close Source Guide">✕</button></header><div class="guide-body"><h3>Images</h3><p>Selected visually from manufacturer and authorised distributor websites. Sri Lankan sources are preferred. Manuals, promotional graphics, wrong models and repeated colour views are excluded. Every frame uses the same 8:5 proportion.</p><h3>Prices</h3><dl><dt>Distributor Price</dt><dd>A published Sri Lankan manufacturer or authorised distributor amount. Starting prices, offers and stock-specific prices retain their source conditions.</dd><dt>Dealer Asking Price</dt><dd>A local dealer’s offer for the stated vehicle, year and condition. It may differ from an official distributor price.</dd><dt>Published Launch Price</dt><dd>A dated manufacturer announcement. Introductory availability must be reconfirmed.</dd><dt>Estimated Price</dt><dd>An indicative market calculation based on customs tariff, CIF, and distributor bracket where a custom quote is required.</dd><dt>Price on Request</dt><dd>A matching numerical price has not been substantiated. No amount has been invented to fill the gap.</dd></dl><p>Counts and price ranges are calculated from this catalogue’s records. Vehicle prices come from the cited sources. The collection is a review edition, not an exhaustive record of every vehicle available in Sri Lanka.</p><p>Photo credits identify the source and rights holder; they do not transfer ownership or establish a licence for commercial reuse.</p></div></dialog>
 
 </body>
 </html>

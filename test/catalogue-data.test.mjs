@@ -58,7 +58,9 @@ for (const group of [identity.brands, identity.models]) {
 }
 
 // A page that still reached into docs/ would 404 once docs/ is excluded from the build.
-for (const file of ["index.html", "catalogue.html", "about.html", "privacy.html", "terms.html", "sw.js", "js/curated-catalogue.js"]) {
+for (const file of ["index.html", "catalogue.html", "studio.html", "about.html", "privacy.html", "terms.html", "sw.js",
+  "js/curated-catalogue.js", "js/catalogue-studio.js", "js/catalogue-photo-overlay.js", "js/catalogue-photos.js",
+  "js/catalogue-photo-store.js", "js/photo-frame.js"]) {
   assert.ok(!/["'(]\.?\/?docs\//.test(fs.readFileSync(href(file), "utf8")),
     `${file} must not reference the unpublished docs/ tree`);
 }

@@ -2,29 +2,90 @@
 <html lang="en-GB">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#103e36">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Vehicle Catalogue · VahanaIQ</title>
   <meta name="description" content="Explore passenger vehicles and pickups with curated official imagery and clearly sourced Sri Lankan prices.">
-  <link rel="icon" href="assets/icons/favicon.svg">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#103e36">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+  <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} try { var now = Date.now() / 1000; var rootStyle = document.documentElement.style; rootStyle.setProperty("--aurora-delay-1", "-" + (now % 44).toFixed(2) + "s"); rootStyle.setProperty("--aurora-delay-2", "-" + (now % 56).toFixed(2) + "s"); } catch (e) {}</script>
+  <script>
+    // js/catalogue-photo-overlay.js fills this in with the photos saved by the Photo Studio. The
+    // promise is made here, before any deferred script runs, so the page can wait for the overlay
+    // whichever of the two finishes first.
+    window.__VAHANAIQ_PHOTOS__ = { apply: null, resolve: null };
+    window.__VAHANAIQ_PHOTOS__.ready = new Promise(function (resolve) { window.__VAHANAIQ_PHOTOS__.resolve = resolve; });
+  </script>
+  <link rel="stylesheet" href="css/tokens.css?v=2.11.5">
   <link rel="stylesheet" href="css/curated-catalogue.css">
-  <script src="js/catalogue-data.js?v=2.11.3" defer></script>
+  <script src="js/page-transitions.js" defer></script>
+  <script src="js/catalogue-data.js?v=2.11.5" defer></script>
+  <script type="module" src="js/catalogue-photo-overlay.js?v=2.11.5"></script>
   <script src="js/curated-catalogue.js" defer></script>
 </head>
 <body>
   <a class="skip" href="#vehicles">Skip to Vehicles</a>
-  <header class="site-header"><a class="brand" href="index.html"><img src="assets/icons/logo-option-1-apex.svg" width="34" height="34" alt=""><span>VahanaIQ</span></a><nav aria-label="Main"><a href="index.html">Calculator</a><a href="catalogue.html" aria-current="page">Catalogue</a></nav><button id="sourceGuide" class="quiet">Source Guide <span aria-hidden="true">↗</span></button></header>
+    <header class="site-header">
+    <div class="header-brand-group">
+      <a class="brand" href="index.html">
+        <img src="assets/icons/logo-v-mark-transparent-light.svg" alt="" class="brand-logo logo-light" width="36" height="36">
+        <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" class="brand-logo logo-dark" width="36" height="36">
+        <div class="brand-text">
+          <span class="brand-title">Vahana<span class="brand-iq">IQ</span></span>
+          <span class="brand-tagline">Sri Lanka Vehicle Finance Intelligence</span>
+        </div>
+      </a>
+      <nav aria-label="Main">
+        <a href="index.html">Calculator</a>
+        <a href="catalogue.html" aria-current="page">Catalogue</a>
+        <a href="studio.html">Studio</a>
+      </nav>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
+      <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
+      <fieldset class="theme-switch" id="themeSwitch">
+        <legend class="sr-only">Theme</legend>
+        <label title="System: match this device"><input type="radio" name="theme" value="system" checked><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="sr-only">System</span></label>
+        <label title="Light"><input type="radio" name="theme" value="light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="sr-only">Light</span></label>
+        <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
+      </fieldset>
+      <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign In</button>
+    </div>
+  </header>
   <main>
     <section class="hero"><div><p class="eyebrow">The Vehicle Collection</p><h1>Find Your<br>Next Vehicle.</h1><p class="intro">Official imagery. Local prices. A clearer starting point.</p></div><div class="hero-aside"><span class="edition">Sri Lanka · October 2026</span><div class="metrics" id="metrics" aria-live="polite"></div><p class="small">Published prices and dealer offers are labelled separately.</p></div></section>
-    <section class="filters" aria-label="Filter Vehicles"><label class="search-field"><span class="sr-only">Search Vehicles</span><img src="assets/icons/lucide/search.svg" alt="" width="20" height="20"><input id="search" type="search" placeholder="Search make, model or trim…" autocomplete="off"></label><div class="filter-row"><label>Make<select id="make"><option value="">All Makes</option></select></label><label>Body Type<select id="body"><option value="">All Body Types</option></select></label><label>Price Source<select id="priceType"><option value="">All Vehicles</option><option value="priced">Published Prices</option><option value="official">Distributor Prices</option><option value="dealer">Dealer Asking Prices</option><option value="estimated">Estimated Prices</option><option value="quote">Price on Request</option></select></label><label>Sort By<select id="sort"><option value="make">Make &amp; Model</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option></select></label><button id="clear" class="quiet">Reset Filters</button></div></section>
+    <section class="filters" aria-label="Filter Vehicles"><label class="search-field"><span class="sr-only">Search Vehicles</span><img src="assets/icons/lucide/search.svg" alt="" width="20" height="20"><input id="search" type="search" placeholder="Search make, model or trim…" autocomplete="off"></label><div class="filter-row"><label>Make<select id="make"><option value="">All Makes</option></select></label><label>Body Type<select id="body"><option value="">All Body Types</option></select></label><label>Price Source<select id="priceType"><option value="">All Vehicles</option><option value="priced">Published Prices</option><option value="official">Distributor Prices</option><option value="dealer">Dealer Asking Prices</option><option value="estimated">Estimated Prices</option><option value="quote">Price on Request</option></select></label><label>Sort By<select id="sort"><option value="make" selected>Make (A to Z)</option><option value="make-desc">Make (Z to A)</option><option value="model">Model (A to Z)</option><option value="model-desc">Model (Z to A)</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option><option value="year-desc">Year: Newest First</option><option value="year-asc">Year: Oldest First</option></select></label><button id="clear" class="quiet">Reset Filters</button></div></section>
     <div class="results-line"><p id="resultCount" role="status">Loading the collection…</p><button id="reviewFilter" class="quiet" aria-pressed="false">My Review <span id="reviewCount"></span></button></div>
     <section id="vehicles" class="grid" aria-label="Vehicle Catalogue" tabindex="-1"></section>
     <nav class="pagination" aria-label="Catalogue Pages"><button id="previous" disabled>← Previous</button><span id="pageCount"></span><button id="next" disabled>Next →</button></nav>
     <section class="review-bar"><div><strong>Your Catalogue Review</strong><p>Mark vehicles to revisit. Your review stays in this browser.</p></div><button id="export">Export Review <img src="assets/icons/lucide/download.svg" width="16" height="16" alt=""></button></section>
   </main>
-  <footer><p>Manufacturer images are representative; equipment, colour and appearance may vary by year, trim and market. Prices are published amounts or asking prices, checked on the dates shown. They are not binding quotations.</p><p>© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle imagery and brand marks belong to their respective owners. VahanaIQ is an independent personal project.</p><div><a href="about.html">About</a><a href="terms.html">Terms &amp; Disclaimers</a><a href="privacy.html">Privacy</a><a href="data/catalogue.json" download>Catalogue Data</a></div></footer>
+      <footer class="foot">
+    <div class="foot-cols">
+      <section aria-labelledby="footImages">
+        <h2 class="foot-h" id="footImages">Representative Imagery</h2>
+        <p>Manufacturer images are representative; equipment, colour and appearance may vary by year, trim and market. All display frames use standardized 8:5 proportions.</p>
+      </section>
+      <section aria-labelledby="footPricing">
+        <h2 class="foot-h" id="footPricing">Pricing Transparency</h2>
+        <p>Prices are published amounts or asking prices, checked on the dates shown. They are indicative starting points and not binding quotations.</p>
+      </section>
+      <section aria-labelledby="footProject">
+        <h2 class="foot-h" id="footProject">Independent Research</h2>
+        <p>Counts and price ranges are calculated from cited sources. VahanaIQ is an independent personal project.</p>
+      </section>
+    </div>
+    <nav class="site-links" aria-label="Information"><a href="index.html">Calculator</a><a href="catalogue.html" aria-current="page">Catalogue</a><a href="studio.html">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+      <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
+      <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
+      <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>
+      <span>VahanaIQ v2.11.5</span>
+    </p>
+  </footer>
   <dialog id="detail" aria-labelledby="detailTitle"><header class="dialog-head"><div><p id="detailMake" class="eyebrow"></p><h2 id="detailTitle"></h2></div><button id="closeDetail" aria-label="Close Vehicle Details" class="close">✕</button></header><div id="detailBody"></div></dialog>
-  <dialog id="guide" aria-labelledby="guideTitle"><header class="dialog-head"><h2 id="guideTitle">Source Guide</h2><button id="closeGuide" class="close" aria-label="Close Source Guide">✕</button></header><div class="guide-body"><h3>Images</h3><p>Selected visually from manufacturer and authorised distributor websites. Sri Lankan sources are preferred. Manuals, promotional graphics, wrong models and repeated colour views are excluded. Every frame uses the same 8:5 proportion.</p><h3>Prices</h3><dl><dt>Distributor Price</dt><dd>A published Sri Lankan manufacturer or authorised distributor amount. Starting prices, offers and stock-specific prices retain their source conditions.</dd><dt>Dealer Asking Price</dt><dd>A local dealer’s offer for the stated vehicle, year and condition. It may differ from an official distributor price.</dd><dt>Published Launch Price</dt><dd>A dated manufacturer announcement. Introductory availability must be reconfirmed.</dd><dt>Estimated Price</dt><dd>An indicative market calculation based on customs tariff, CIF, and distributor bracket where a custom quote is required.</dd><dt>Price on Request</dt><dd>A matching numerical price has not been substantiated. No amount has been invented to fill the gap.</dd></dl><p>Counts and price ranges are calculated from this catalogue’s records. Vehicle prices come from the cited sources. The collection is a review edition, not an exhaustive record of every vehicle available in Sri Lanka.</p><p>Photo credits identify the source and rights holder; they do not transfer ownership or establish a licence for commercial reuse.</p></div></dialog>
+  <dialog id="guide" aria-labelledby="guideTitle"><header class="dialog-head"><h2 id="guideTitle">Source Guide</h2><button id="closeGuide" class="close" aria-label="Close Source Guide">✕</button></header><div class="guide-body"><h3>Images</h3><p>Selected visually from manufacturer and authorised distributor websites. Sri Lankan sources are preferred. Manuals, promotional graphics, wrong models and repeated colour views are excluded. Every frame uses the same 8:5 proportion.</p><p>A card marked <strong>Your Photo</strong> shows a photo or a frame arranged in the <a href="studio.html">Photo Studio</a>, which is kept in this browser alone. Those photos are not part of the published catalogue and are not covered by the manufacturer credits above.</p><h3>Prices</h3><dl><dt>Distributor Price</dt><dd>A published Sri Lankan manufacturer or authorised distributor amount. Starting prices, offers and stock-specific prices retain their source conditions.</dd><dt>Dealer Asking Price</dt><dd>A local dealer’s offer for the stated vehicle, year and condition. It may differ from an official distributor price.</dd><dt>Published Launch Price</dt><dd>A dated manufacturer announcement. Introductory availability must be reconfirmed.</dd><dt>Estimated Price</dt><dd>An indicative market calculation based on customs tariff, CIF, and distributor bracket where a custom quote is required.</dd><dt>Price on Request</dt><dd>A matching numerical price has not been substantiated. No amount has been invented to fill the gap.</dd></dl><p>Counts and price ranges are calculated from this catalogue’s records. Vehicle prices come from the cited sources. The collection is a review edition, not an exhaustive record of every vehicle available in Sri Lanka.</p><p>Photo credits identify the source and rights holder; they do not transfer ownership or establish a licence for commercial reuse.</p></div></dialog>
   <p class="toast" id="toast" role="status" hidden></p>
   <noscript><p class="load-error">Enable JavaScript to search the catalogue, or <a href="data/catalogue.json">read the source data</a>.</p></noscript>
 </body></html>

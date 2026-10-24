@@ -16,18 +16,22 @@ const DELAY_MS = Number(process.env.SMOKE_DELAY_MS || 15000);
 const version = fs.readFileSync(path.join(ROOT, "js/config.js"), "utf8").match(/APP_VERSION = "([^"]+)"/)?.[1];
 if (!version) { console.error("Could not read APP_VERSION from js/config.js"); process.exit(1); }
 
-const PAGES = ["catalogue.html", "about.html", "privacy.html", "terms.html"];
+const PAGES = ["catalogue.html", "studio.html", "about.html", "privacy.html", "terms.html"];
 const ASSETS = [
-  "css/tokens.css", "css/style.css", "css/curated-catalogue.css", "js/app.js", "js/config.js",
-  "js/catalogue-data.js", "js/curated-catalogue.js", "js/official-photo-data.js", "sw.js",
+  "css/tokens.css", "css/style.css", "css/curated-catalogue.css", "css/catalogue-studio.css", "js/app.js", "js/config.js",
+  "js/catalogue-data.js", "js/curated-catalogue.js", "js/catalogue-studio.js", "js/catalogue-photo-overlay.js",
+  "js/catalogue-photos.js", "js/catalogue-photo-store.js", "js/photo-frame.js", "js/official-photo-data.js", "sw.js",
   "manifest.json", "sitemap.xml", "robots.txt", "data/catalogue.json", "data/identity.json",
-  "assets/icons/favicon.svg", "assets/icons/og-image.png"
+  "assets/icons/favicon.svg", "assets/icons/og-image.png",
+  "assets/icons/logo-v-mark-transparent-light.svg", "assets/icons/logo-v-mark-transparent-dark.svg"
 ];
 const BLOCKED = [
   "docs/catalogue-review.html", "docs/catalogue-rebuild/catalogue.json", "docs/photo-review.html",
-  "docs/catalogue-rebuild/sources", "test/verify.mjs", "scripts/smoke-deploy.mjs",
-  "serverless/gcp-cloud-function/index.js", "README.md", "firestore.rules",
-  "design-system/tokens.json", ".github/workflows/test.yml", "_config.yml"
+  "docs/catalogue-rebuild/sources", "test/verify.mjs", "scripts/apply-studio-photos.mjs",
+  "scripts/smoke-deploy.mjs", "serverless/gcp-cloud-function/index.js", "README.md", "firestore.rules",
+  "design-system/tokens.json", ".github/workflows/test.yml", "_config.yml",
+  // A Photo Studio export carries photo pixels inline, so it must never be served.
+  "vahanaiq-studio-photos-2026-10-23.json"
 ];
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));

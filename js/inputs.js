@@ -1,6 +1,6 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.11.3";
-import { notifySaved } from "./storage.js?v=2.11.3";
+import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.11.5";
+import { notifySaved } from "./storage.js?v=2.11.5";
 
 export const STORE_KEY = "vahanaiq_inputs_v1";
 
@@ -11,7 +11,7 @@ export const FIELDS = {
   tenure: { param: "n", def: "84" },
   down: { param: "down", def: "60" },
   income: { param: "inc", def: "" },
-  debt: { param: "debt", def: "0" },
+  debt: { param: "debt", def: "" },
   dti: { param: "dti", def: "0.4" },
   insurance: { param: "ins", def: "" },
   fees: { param: "fees", def: "" },

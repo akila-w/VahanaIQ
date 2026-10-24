@@ -1,4 +1,4 @@
-import { notifySaved } from './storage.js?v=2.11.3';
+import { notifySaved } from './storage.js?v=2.11.5';
 export const PLANNER_KEY = 'vahanaiq_planner_v1';
 const DRAFT_FIELDS = ['plannerVehicle','plannerGoal','plannerSaved','plannerMode','plannerPercent','plannerMonthly','plannerDate'];
 const cleanDraft = value => value && typeof value === 'object' && !Array.isArray(value)

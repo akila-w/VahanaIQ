@@ -1,6 +1,6 @@
 // Manufacturer / authorised distributor photos only. No community-photo fallback.
-import { OFFICIAL_PHOTOS } from './official-photo-data.js?v=2.11.3';
-import { esc } from './calculator.js?v=2.11.3';
+import { OFFICIAL_PHOTOS } from './official-photo-data.js?v=2.11.5';
+import { esc } from './calculator.js?v=2.11.5';
 export const PHOTO_CREDITS = OFFICIAL_PHOTOS;
 const tokens = name => String(name || '').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const records = Object.entries(OFFICIAL_PHOTOS).sort(([a],[b])=>b.length-a.length);
