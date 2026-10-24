@@ -273,6 +273,8 @@ async function renderStage(token) {
     $("cropHint").hidden = false;
     $("frameItem").textContent = "No photo selected";
     $("frameStatus").textContent = "";
+    $("zoomRange").value = "1";
+    $("zoomValue").textContent = "1.00×";
     for (const id of controls) $(id).disabled = true;
     const ctx = $("cropStage").getContext("2d");
     ctx.clearRect(0, 0, $("cropStage").width, $("cropStage").height);
@@ -605,9 +607,20 @@ $("resetModelBtn").addEventListener("click", async () => {
   if (!model || !state.records.has(model.id)) return;
   const record = state.records.get(model.id);
   state.records.delete(model.id);
-  state.itemId = null;
   forgetPhotos(record.items);
   await deleteEdit(model.id);
+
+  // Restore the selected photo to the published cover or keep if still present
+  const publishedRecord = recordFor(model);
+  const items = orderedItems(publishedRecord);
+  if (!items.some(item => item.id === state.itemId)) {
+    state.itemId = items.length ? items[0].id : null;
+  }
+
+  // Fully reset Photo Studio view state on undo, restoring zoom control & readout
+  $("zoomRange").value = "1";
+  $("zoomValue").textContent = "1.00×";
+
   renderModelList();
   await renderEditor();
   toast("This entry is back to the published photos.");
