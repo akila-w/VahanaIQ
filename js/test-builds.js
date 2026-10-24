@@ -10,6 +10,9 @@
 
 (function () {
   if (typeof window === "undefined" || typeof document === "undefined") return;
+  // Safety guard: Test build transformations and switcher bar must never mount
+  // unless explicitly enabled via ?test_build=1 query param or test flag.
+  if (!window.location.search.includes("test_build=1") && !window.__VAHANAIQ_ENABLE_TEST_BUILDS__) return;
 
   const LAYOUT_KEY = "vahanaiq_tb_layout";
   const BUDGET_KEY = "vahanaiq_tb_budget";
