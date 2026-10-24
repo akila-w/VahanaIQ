@@ -1332,3 +1332,306 @@ dialog {
   background: var(--accent-bright, #5eead4);
   border-color: var(--accent-bright, #5eead4);
 }
+
+/* Comparison Controls & Affordability Panel */
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.compare-btn, .btn-compare {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 8px 14px;
+  min-height: 44px;
+  border: 1px solid var(--accent, #103e36);
+  background: transparent;
+  color: var(--accent, #103e36);
+  transition: all 0.15s ease;
+}
+
+.compare-btn:hover, .btn-compare:hover {
+  background: var(--hover-bg, #edf4ef);
+  border-color: var(--accent-bright, #168265);
+}
+
+.compare-btn[aria-pressed="true"], .btn-compare[aria-pressed="true"], .btn-compare.in-comparison {
+  background: var(--accent, #103e36);
+  color: #ffffff;
+  border-color: var(--accent, #103e36);
+}
+
+.compare-btn[aria-pressed="true"]:hover, .btn-compare[aria-pressed="true"]:hover {
+  background: var(--accent-bright, #168265);
+  border-color: var(--accent-bright, #168265);
+}
+
+.dialog-compare-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--chip, #f0f4f1);
+  border: 1px solid var(--line, #dce3db);
+  border-radius: 12px;
+}
+
+.dialog-compare-bar .btn-compare {
+  min-height: 42px;
+  padding: 8px 18px;
+}
+
+.offer-actions {
+  margin: 10px 0;
+}
+
+.offer-compare-btn {
+  font-size: 12px;
+  padding: 6px 12px;
+  min-height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.offer-compare-btn[aria-pressed="true"] {
+  background: var(--accent, #103e36);
+  color: #ffffff;
+  border-color: var(--accent, #103e36);
+}
+
+.review-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  border-top: 1px solid var(--line, #dce3db);
+  padding: 32px 0;
+  margin-top: 20px;
+}
+
+.review-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.view-calc-btn {
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--control-border, #a9b6af);
+  color: var(--ink, #142a25);
+}
+
+.view-calc-btn:hover {
+  background: var(--hover-bg, #edf4ef);
+  border-color: var(--accent, #103e36);
+  color: var(--accent, #103e36);
+}
+
+.affordability-panel {
+  width: 100%;
+}
+
+.affordability-card {
+  background: var(--panel, #ffffff);
+  border: 1px solid var(--line, #dce3db);
+  border-radius: 14px;
+  padding: 22px 24px;
+  box-shadow: 0 1px 4px rgba(30, 50, 35, 0.06);
+}
+
+.affordability-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.affordability-title-group h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--ink, #142a25);
+}
+
+.affordability-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line, #eef2ed);
+  border-bottom: 1px solid var(--line, #eef2ed);
+}
+
+.afford-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.afford-stat-label {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--mute, #586b62);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.afford-stat-val {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink, #142a25);
+}
+
+.affordability-summary-line {
+  margin: 14px 0 0;
+  font-size: 13.5px;
+  color: var(--mute, #586b62);
+  line-height: 1.45;
+}
+
+.affordability-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.switcher-label {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--mute, #586b62);
+}
+
+.switcher-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip-btn {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  min-height: 30px;
+  border: 1px solid var(--line, #dce3db);
+  background: var(--bg, #f5f6f3);
+  color: var(--ink, #142a25);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip-btn:hover {
+  background: var(--hover-bg, #edf4ef);
+  border-color: var(--accent, #103e36);
+}
+
+.chip-btn.active {
+  background: var(--accent, #103e36);
+  color: #ffffff;
+  border-color: var(--accent, #103e36);
+}
+
+.detail-affordability {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line, #eef2ed);
+}
+
+.detail-affordability h3 {
+  margin-bottom: 14px;
+}
+
+[data-theme="dark"] .dialog-compare-bar {
+  background: var(--panel, #1e293b);
+  border-color: var(--line, #334155);
+}
+
+[data-theme="dark"] .compare-btn, [data-theme="dark"] .btn-compare {
+  border-color: var(--accent, #2dd4bf);
+  color: var(--accent, #2dd4bf);
+}
+
+[data-theme="dark"] .compare-btn:hover, [data-theme="dark"] .btn-compare:hover {
+  background: rgba(45, 212, 191, 0.12);
+  border-color: var(--accent-bright, #5eead4);
+}
+
+[data-theme="dark"] .compare-btn[aria-pressed="true"], [data-theme="dark"] .btn-compare[aria-pressed="true"] {
+  background: var(--accent, #2dd4bf);
+  color: #0f172a;
+  border-color: var(--accent, #2dd4bf);
+}
+
+[data-theme="dark"] .affordability-card {
+  background: var(--panel, #1e293b);
+  border-color: var(--line, #334155);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"] .affordability-title-group h4 {
+  color: var(--ink, #f1f5f9);
+}
+
+[data-theme="dark"] .afford-stat-val {
+  color: var(--ink, #f1f5f9);
+}
+
+[data-theme="dark"] .affordability-metrics {
+  border-color: var(--line, #334155);
+}
+
+[data-theme="dark"] .chip-btn {
+  background: var(--bg, #0f172a);
+  border-color: var(--line, #334155);
+  color: var(--ink, #f1f5f9);
+}
+
+[data-theme="dark"] .chip-btn.active {
+  background: var(--accent, #2dd4bf);
+  color: #0f172a;
+  border-color: var(--accent, #2dd4bf);
+}
+
+[data-theme="dark"] .view-calc-btn {
+  border-color: var(--line, #334155);
+  color: var(--ink, #f1f5f9);
+}
+
+[data-theme="dark"] .view-calc-btn:hover {
+  background: var(--hover-bg, #253346);
+  border-color: var(--accent, #2dd4bf);
+  color: var(--accent, #2dd4bf);
+}
+
+@media (max-width: 650px) {
+  .affordability-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}

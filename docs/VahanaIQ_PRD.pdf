@@ -1,0 +1,224 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+3 0 obj
+<< /Type /Pages /Kids [5 0 R 7 0 R 9 0 R 11 0 R] /Count 4 >>
+endobj
+4 0 obj
+<< /Length 4752 >>
+stream
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 706.00 Tm /F2 22 Tf (Product Specification: VahanaIQ Frontend) Tj ET
+0.88 0.88 0.88 RG 0.75 w 72 683.84 m 540 683.84 l S
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 646.84 Tm /F2 15 Tf (1. Product Overview) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 622.14 Tm /F2 10.5 Tf (Product Name: ) Tj /F1 10.5 Tf (VahanaIQ) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 604.23 Tm /F2 10.5 Tf (Tagline: ) Tj /F1 10.5 Tf (Sri Lanka Vehicle Finance Intelligence & Lease Affordability Discovery Platform) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 581.32 Tm /F2 10.5 Tf (Description:) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 563.41 Tm /F1 10.5 Tf (VahanaIQ is an interactive web platform that automates Sri Lankan vehicle lease calculations,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 548.50 Tm /F1 10.5 Tf (regulatory down-payment compliance, market catalogue discovery, and deposit savings planning.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 533.59 Tm /F1 10.5 Tf (Designed around Central Bank of Sri Lanka \(CBSL\) Directions No. 01 of 2026 \(clause 2.1\), it delivers) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 518.68 Tm /F1 10.5 Tf (the capabilities of a financial planning and vehicle comparison workstation — calculating) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 503.77 Tm /F1 10.5 Tf (reducing-balance and flat-rate lease rentals, visualising Debt-to-Income \(DTI\) affordability,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 488.86 Tm /F1 10.5 Tf (comparing curated and AI-extracted vehicles side by side, and planning upfront deposit savings with) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 473.95 Tm /F1 10.5 Tf (zero server-side tracking by default.) Tj ET
+0.88 0.88 0.88 RG 0.75 w 72 453.54 m 540 453.54 l S
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 416.54 Tm /F2 15 Tf (2. Goals & Objectives) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 391.84 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 391.84 Tm /F2 10.5 Tf (Automate ) Tj /F1 10.5 Tf (statutory lease down-payment and Loan-to-Value \(LTV\) calculations under CBSL) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 376.93 Tm /F1 10.5 Tf (Directions No. 01 of 2026 \(60% minimum deposit for brand-new, reconditioned, and <1-year) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 362.02 Tm /F1 10.5 Tf (registered passenger vehicles; 40% minimum deposit for >1-year registered used vehicles and) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 347.11 Tm /F1 10.5 Tf (commercial D-class minibuses\).) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 326.20 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 326.20 Tm /F2 10.5 Tf (Enhance ) Tj /F1 10.5 Tf (buyer financial clarity with real-time Debt-to-Income \(DTI\) telemetry, interactive) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 311.29 Tm /F1 10.5 Tf (SVG speedometer gauges, cashflow spectrum bars, and annual amortisation schedules.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 290.38 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 290.38 Tm /F2 10.5 Tf (Empower ) Tj /F1 10.5 Tf (prospective buyers to discover, filter, and compare 227 Sri Lankan vehicle models) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 275.47 Tm /F1 10.5 Tf (across 38 makes using sourced pricing, official 8:5 photography, AI-assisted classified ad) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 260.56 Tm /F1 10.5 Tf (extraction, and 3-vehicle Head-to-Head matrices.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 239.65 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 239.65 Tm /F2 10.5 Tf (Support ) Tj /F1 10.5 Tf (end-to-end purchase preparation through an integrated Deposit & Cash Savings) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 224.74 Tm /F1 10.5 Tf (Planner, on-device Catalogue Photo Studio, privacy-safe shareable links, A4 bank-style print) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 209.83 Tm /F1 10.5 Tf (quotations, and optional Google account synchronisation.) Tj ET
+0.88 0.88 0.88 RG 0.75 w 72 189.42 m 540 189.42 l S
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 152.42 Tm /F2 15 Tf (3. Target Users) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 127.72 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 127.72 Tm /F1 10.5 Tf (Individual prospective car buyers and lessees in Sri Lanka evaluating monthly affordability) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 106.81 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 106.81 Tm /F1 10.5 Tf (Vehicle researchers comparing official distributor models against grey-import and used options) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 85.90 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 85.90 Tm /F1 10.5 Tf (Household financial planners modelling upfront deposit targets and debt-to-income) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 70.99 Tm /F1 10.5 Tf (commitments) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 4138 >>
+stream
+0.88 0.88 0.88 RG 0.75 w 72 718.00 m 540 718.00 l S
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 681.00 Tm /F2 15 Tf (4. Core Features) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 648.80 Tm /F2 12 Tf (4.1 CBSL Regulatory Lease Calculator & Strategy Presets) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 628.94 Tm /F1 10.5 Tf (Calculates monthly rentals, required deposits, total interest, and total outlay across tenures of 6 to 84) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 614.03 Tm /F1 10.5 Tf (months and interest rates of 0% to 40%. Supports reducing-balance and flat-rate quotes, one-tap) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 599.12 Tm /F1 10.5 Tf (strategy presets \(Lowest Rental, Fast Payoff, Minimum Cash, 100% Cash\), and a live CBSL LTV) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 584.21 Tm /F1 10.5 Tf (Split Bar.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 553.80 Tm /F2 12 Tf (4.2 Interactive Budget & DTI Telemetry Console) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 533.94 Tm /F1 10.5 Tf (Visualises borrower affordability in real time using an interactive SVG speedometer dial \(0% to 60%) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 519.03 Tm /F1 10.5 Tf (DTI\) and a stacked Net Income Cashflow Spectrum bar against standard 40% and stretch 50% DTI) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 504.12 Tm /F1 10.5 Tf (ceilings.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 473.71 Tm /F2 12 Tf (4.3 Multi-Vehicle Comparison Table & Head-to-Head Finalists) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 453.85 Tm /F1 10.5 Tf (Provides a sortable, filterable comparison table with quick Sri Lankan market segment chips \(Under) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 438.94 Tm /F1 10.5 Tf (LKR 15M, Hybrid & EV, High Clearance >=170mm, 40% Min Down, Official Agent\), inline LKR price) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 424.03 Tm /F1 10.5 Tf (editing, inline condition cycling, per-vehicle down-payment overrides, per-vehicle lease detail) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 409.12 Tm /F1 10.5 Tf (modals \(donut chart and amortisation curve\), and a sticky 3-vehicle Side-by-Side Head-to-Head) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 394.21 Tm /F1 10.5 Tf (comparison modal.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 363.80 Tm /F2 12 Tf (4.4 Curated Sri Lankan Vehicle Catalogue) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 343.94 Tm /F1 10.5 Tf (Offers a dedicated catalogue \(catalogue.html and in-app modal\) covering 227 models across 38) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 329.03 Tm /F1 10.5 Tf (makes and 504 official 8:5 gallery images. Labels price provenance \(Distributor, Dealer, Launch,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 314.12 Tm /F1 10.5 Tf (Estimated, or Price on Request\), supports bulk comparison selection \(All, Search, Filtered\), and) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 299.21 Tm /F1 10.5 Tf (includes personal review bookmarking and export.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 268.80 Tm /F2 12 Tf (4.5 AI-Powered Vehicle Search & Ad Extraction) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 248.94 Tm /F1 10.5 Tf (Integrates with Google Gemini via a serverless proxy to look up single vehicles, resolve multi-vehicle) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 234.03 Tm /F1 10.5 Tf (comparative queries, extract prices and conditions from pasted classified ads or uploaded Japanese) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 219.12 Tm /F1 10.5 Tf (auction sheet screenshots, and validate Sri Lankan market availability.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 188.71 Tm /F2 12 Tf (4.6 Deposit & Cash Purchase Savings Planner) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 168.85 Tm /F1 10.5 Tf (Calculates forward time-to-goal \(months required\) and reverse target-date pacing \(DD-MM-YYYY\)) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 153.94 Tm /F1 10.5 Tf (for a vehicle's statutory deposit plus insurance and upfront fees \(or full cash purchase\). Includes an) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 139.03 Tm /F1 10.5 Tf (interactive SVG accumulation trajectory curve, upfront cost composition bar, and named saved) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 124.12 Tm /F1 10.5 Tf (scenarios.) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 5355 >>
+stream
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 710.00 Tm /F2 12 Tf (4.7 On-Device Catalogue Photo Studio) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 690.14 Tm /F1 10.5 Tf (Provides a browser-based canvas studio \(studio.html\) to upload custom vehicle photos, frame them) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 675.23 Tm /F1 10.5 Tf (to standardized 8:5 proportions \(Automatic, Vehicle on a white plate, or Fill the frame\), adjust zoom) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 660.32 Tm /F1 10.5 Tf (and nudging, set cover order, and preview changes immediately via IndexedDB.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 629.91 Tm /F2 12 Tf (4.8 Unified Cross-Device Sync, Sharing & Statutory Print Quotation) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 610.05 Tm /F1 10.5 Tf (Supports guest-first local persistence, privacy-safe shareable URLs \(excluding income and debt) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 595.14 Tm /F1 10.5 Tf (unless explicitly ticked\), optional Google Sign-In with Firebase Firestore synchronisation and conflict) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 580.23 Tm /F1 10.5 Tf (resolution, system/light/dark themes, and an A4 statutory print stylesheet.) Tj ET
+0.88 0.88 0.88 RG 0.75 w 72 557.82 m 540 557.82 l S
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 520.82 Tm /F2 15 Tf (5. Architecture Overview) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 496.12 Tm /F1 10.5 Tf (VahanaIQ follows a modular, zero-build static web architecture paired with serverless cloud) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 481.21 Tm /F1 10.5 Tf (endpoints, optimized for instant load times, offline resilience, and strict client-side privacy. The) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 466.30 Tm /F1 10.5 Tf (system is composed of the following high-level components:) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 443.39 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 443.39 Tm /F2 10.5 Tf (Frontend Web App: ) Tj /F1 10.5 Tf (Built with semantic HTML5, CSS3 design-system tokens) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 428.48 Tm /F1 10.5 Tf (\(css/tokens.css\), and native ES6 JavaScript modules across index.html, catalogue.html,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 413.57 Tm /F1 10.5 Tf (studio.html, about.html, privacy.html, and terms.html.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 392.66 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 392.66 Tm /F2 10.5 Tf (Actuarial & Regulatory Engine: ) Tj /F1 10.5 Tf (Client-side calculation modules \(js/calculator.js,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 377.75 Tm /F1 10.5 Tf (js/savings.js, js/money-input.js\) enforcing CBSL Direction No. 01 of 2026 LTV floors,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 362.84 Tm /F1 10.5 Tf (flat-to-reducing rate conversion, and two-decimal LKR currency formatting.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 341.93 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 341.93 Tm /F2 10.5 Tf (Curated Data & Asset Layer: ) Tj /F1 10.5 Tf (Static JSON and pre-baked JavaScript data) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 327.02 Tm /F1 10.5 Tf (\(data/catalogue.json, data/identity.json, js/catalogue-data.js\) serving 227 vehicle models, 38) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 312.11 Tm /F1 10.5 Tf (brand marks, and 504 standardized 8:5 gallery assets.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 291.20 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 291.20 Tm /F2 10.5 Tf (On-Device Storage & Offline Layer: ) Tj /F1 10.5 Tf (Uses localStorage for loan terms, comparisons, and) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 276.29 Tm /F1 10.5 Tf (savings scenarios; IndexedDB for Photo Studio imagery; and a Service Worker \(sw.js\) for) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 261.38 Tm /F1 10.5 Tf (network-first offline caching.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 240.47 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 240.47 Tm /F2 10.5 Tf (Serverless AI Proxy Gateway: ) Tj /F1 10.5 Tf (A Cloud Run / Cloudflare Worker service \(serverless/\) that) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 225.56 Tm /F1 10.5 Tf (holds the Gemini API key \(gemini-3.6-flash\), enforces origin allowlists and rate limits, and) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 210.65 Tm /F1 10.5 Tf (routes search and ad extraction requests.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 189.74 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 189.74 Tm /F2 10.5 Tf (Authentication and Cloud Datastore: ) Tj /F1 10.5 Tf (Optional Google Identity Services OAuth login coupled) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 174.83 Tm /F1 10.5 Tf (with Firebase Firestore \(js/account.js, firestore.rules\) storing per-user documents) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 159.92 Tm /F1 10.5 Tf (\(users/{uid}\) with pre-write conflict detection.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 139.01 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 139.01 Tm /F2 10.5 Tf (Automated Price Refresh Pipeline: ) Tj /F1 10.5 Tf (A monthly GitHub Actions workflow and scraper/validator) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 124.10 Tm /F1 10.5 Tf (suite \(scripts/scan-prices.mjs, scripts/refresh-prices.mjs\) that scans permitted Sri Lankan) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 109.19 Tm /F1 10.5 Tf (distributor and importer listings.) Tj ET
+0.88 0.88 0.88 RG 0.75 w 72 88.78 m 540 88.78 l S
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 5201 >>
+stream
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 709.00 Tm /F2 15 Tf (6. Requirements) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 678.80 Tm /F2 12 Tf (6.1 Functional Requirements) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 656.94 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 656.94 Tm /F1 10.5 Tf (Users can configure loan parameters \(Rate Type, Interest Rate 0-40%, Tenure 6-84m, Down) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 642.03 Tm /F1 10.5 Tf (Payment 40-100%\) via inputs, steppers, sliders, or strategy presets.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 621.12 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 621.12 Tm /F1 10.5 Tf (The system enforces CBSL minimum deposits \(60% for New/Reconditioned/Recent; 40% for) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 606.21 Tm /F1 10.5 Tf (Used >1yr and commercial D-class minibuses\) and clamps out-of-range inputs with warning) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 591.30 Tm /F1 10.5 Tf (hints.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 570.39 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 570.39 Tm /F1 10.5 Tf (Users can enter Net Monthly Income, Existing Debt, DTI limit \(40% or 50%\), Insurance, and) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 555.48 Tm /F1 10.5 Tf (Fees to update the SVG DTI speedometer, cashflow bar, and row affordability badges.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 534.57 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 534.57 Tm /F1 10.5 Tf (Users can search, filter, sort, and bulk-add vehicles from the 227-model catalogue, requiring a) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 519.66 Tm /F1 10.5 Tf (valid positive LKR quote for Price on Request models.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 498.75 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 498.75 Tm /F1 10.5 Tf (Users can edit prices inline, cycle conditions inline, override down-payment % per vehicle,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 483.84 Tm /F1 10.5 Tf (inspect Lease Details \(donut chart & amortisation curve\), and remove rows with Undo.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 462.93 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 462.93 Tm /F1 10.5 Tf (Users can pin up to 3 vehicles to the Head-to-Head tray and compare them side by side in the) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 448.02 Tm /F1 10.5 Tf (Head-to-Head modal.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 427.11 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 427.11 Tm /F1 10.5 Tf (Users can add vehicles via AI Search \(single query, comparative query, or ad screenshot) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 412.20 Tm /F1 10.5 Tf (upload\) or via Manual Entry.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 391.29 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 391.29 Tm /F1 10.5 Tf (Users can plan deposit or cash purchase goals in the Savings Planner \(by income % or fixed) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 376.38 Tm /F1 10.5 Tf (LKR\), validate DD-MM-YYYY target dates, and save/load/delete scenarios.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 355.47 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 355.47 Tm /F1 10.5 Tf (Users can upload, frame at 8:5, reorder, and export custom vehicle photos in the Photo Studio) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 340.56 Tm /F1 10.5 Tf (\(studio.html\).) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 319.65 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 319.65 Tm /F1 10.5 Tf (Users can switch themes \(System/Light/Dark\), generate shareable links, print A4 statutory) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 304.74 Tm /F1 10.5 Tf (quotations, and sign in with Google to sync or delete cloud data.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 72.00 274.33 Tm /F2 12 Tf (6.2 Non-Functional Requirements) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 252.47 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 252.47 Tm /F1 10.5 Tf (The system should provide real-time, zero-reload feedback for all user-initiated calculations,) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 237.56 Tm /F1 10.5 Tf (sliders, filters, and sort actions.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 216.65 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 216.65 Tm /F1 10.5 Tf (Every currency value must display with thousands separators and two decimal places \(.00\),) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 201.74 Tm /F1 10.5 Tf (supporting mid-keystroke comma re-grouping and South Asian numbering.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 180.83 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 180.83 Tm /F1 10.5 Tf (All modal dialogs must enforce keyboard focus trapping, inert background isolation, Escape) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 165.92 Tm /F1 10.5 Tf (dismissal, and WCAG AA contrast across light and dark themes.) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 90.00 145.01 Tm /F2 10.5 Tf (•) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 145.01 Tm /F1 10.5 Tf (Client-side privacy must be preserved: no browser API keys, local-only IndexedDB for studio) Tj ET
+BT 0.16 0.16 0.16 rg 1 0 0 1 100.00 130.10 Tm /F1 10.5 Tf (photos, and opt-in income sharing.) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Type /Catalog /Pages 3 0 R >>
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000009 00000 n 
+0000000106 00000 n 
+0000000208 00000 n 
+0000000284 00000 n 
+0000005088 00000 n 
+0000005224 00000 n 
+0000009414 00000 n 
+0000009550 00000 n 
+0000014957 00000 n 
+0000015093 00000 n 
+0000020347 00000 n 
+0000020485 00000 n 
+trailer
+<< /Size 13 /Root 12 0 R >>
+startxref
+20535
+%%EOF

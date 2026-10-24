@@ -326,9 +326,9 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
 }
 
 function render() {
-  // The shared deposit control permits 40% only when a selected vehicle can use it.
+  // The shared deposit control permits 40% only when a selected vehicle can use it, or 40% is selected.
   const eligibleForForty = cars.some(c => !c.hidden && minDownFor(c.cond, c.financeClass, c.firstRegisteredOn) === 40);
-  if ($('down')) $('down').min = String(eligibleForForty ? 40 : 60);
+  if ($('down')) $('down').min = String(eligibleForForty || num($("down")) <= 40 ? 40 : 60);
   const settings = readSettings();
   syncSegmentedAndSteppers();
   const { s, f, rows: allRows, room } = computeLeaseTable(cars, settings);
@@ -835,10 +835,8 @@ function syncSegmentedAndSteppers() {
       active = (tenureVal === 36 && downVal === 60 && rateTypeVal === "reducing");
     } else if (strat === "min-cash") {
       active = (tenureVal === 84 && downVal === 40 && rateTypeVal === "reducing");
-      btn.disabled = !canForty;
-      btn.title = canForty
-        ? "CBSL minimum 40% deposit (for vehicles registered over 1 year)"
-        : "Requires an eligible vehicle registered over 1 year in comparison";
+      btn.disabled = false;
+      btn.title = "CBSL minimum 40% deposit (for vehicles registered over 1 year)";
     } else if (strat === "cash-purchase") {
       active = (downVal === 100);
     }
@@ -928,9 +926,11 @@ document.addEventListener("click", e => {
       if ($("down")) $("down").value = "60";
       if ($("rateType")) $("rateType").value = "reducing";
     } else if (strat === "min-cash") {
-      const minDown = Number($("down")?.min) || 40;
       if ($("tenure")) $("tenure").value = "84";
-      if ($("down")) $("down").value = String(minDown);
+      if ($("down")) {
+        $("down").min = "40";
+        $("down").value = "40";
+      }
       if ($("rateType")) $("rateType").value = "reducing";
     } else if (strat === "cash-purchase") {
       if ($("down")) $("down").value = "100";

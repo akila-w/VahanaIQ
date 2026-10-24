@@ -60,7 +60,19 @@
     <div class="results-line"><p id="resultCount" role="status">Loading the collection…</p><button id="reviewFilter" class="quiet" aria-pressed="false">My Review <span id="reviewCount"></span></button></div>
     <section id="vehicles" class="grid" aria-label="Vehicle Catalogue" tabindex="-1"></section>
     <nav class="pagination" aria-label="Catalogue Pages"><button id="previous" disabled>← Previous</button><span id="pageCount"></span><button id="next" disabled>Next →</button></nav>
-    <section class="review-bar"><div><strong>Your Catalogue Review</strong><p>Mark vehicles to revisit. Your review stays in this browser.</p></div><button id="export">Export Review <img src="assets/icons/lucide/download.svg" width="16" height="16" alt=""></button></section>
+    <section class="review-bar" id="reviewBar" aria-labelledby="reviewHeading">
+      <div class="review-head">
+        <div>
+          <strong id="reviewHeading">Your Catalogue Review</strong>
+          <p>Mark vehicles to revisit and compare against your budget. Your review stays in this browser.</p>
+        </div>
+        <div class="review-actions">
+          <a href="index.html#comparisonPanel" class="btn-outline view-calc-btn">Open Comparison in Calculator <span aria-hidden="true">↗</span></a>
+          <button id="export" type="button">Export Review <img src="assets/icons/lucide/download.svg" width="16" height="16" alt=""></button>
+        </div>
+      </div>
+      <div id="affordabilityPanel" class="affordability-panel" aria-label="Affordability Summary"></div>
+    </section>
   </main>
       <footer class="foot">
     <div class="foot-cols">

@@ -1,0 +1,51 @@
+{
+  "meta": {
+    "project": "VahanaIQ — Sri Lanka Vehicle Lease Calculator & Affordability Discovery Platform",
+    "version": "2.11.5",
+    "date": "2026-10-24",
+    "prepared_by": "Antigravity for TestSprite",
+    "live_url": "https://akila-w.github.io/vahanaiq/",
+    "local_url": "http://localhost:8000",
+    "qa_fixture_url": "http://127.0.0.1:8765"
+  },
+  "product_overview": "VahanaIQ is a Sri Lankan vehicle lease calculator, curated 227-model market catalogue, on-device photo studio, and deposit savings planner. It calculates monthly lease rentals (reducing-balance and flat-rate), enforces Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026 (cl. 2.1) statutory down-payment floors (60% for Brand New/Reconditioned/Recent passenger vehicles; 40% for Registered Used >1 year and commercial D-class minibuses), visualises Debt-to-Income (DTI) affordability via an interactive SVG speedometer and cashflow console, supports AI-assisted vehicle discovery via a serverless Gemini proxy, and plans deposit or cash savings goals.",
+  "core_goals": [
+    "Enforce statutory CBSL Directions No. 01 of 2026 (cl. 2.1) minimum down-payment floors automatically per vehicle condition and finance class (60% vs 40%) across global terms and per-vehicle overrides.",
+    "Calculate accurate actuarial monthly lease rentals, total interest, total outlay, and annual amortisation schedules for both reducing-balance and flat-rate quotes, formatted to two decimal places (LKR X,XXX.XX).",
+    "Provide real-time affordability telemetry against 40% Standard and 50% Stretch DTI ceilings using an interactive SVG speedometer gauge, net income cashflow bar, and per-row DTI badges.",
+    "Enable vehicle discovery and comparison across 227 Sri Lankan market models (with search, segment filters, bulk add, 3-vehicle Head-to-Head comparison, AI extraction, and manual entry).",
+    "Help buyers plan upfront deposit or full cash purchases with a Savings Planner featuring an SVG accumulation trajectory curve, upfront cost split bar, target-date feasibility checks, and saved scenarios.",
+    "Maintain a privacy-first local-storage architecture with optional shareable comparison links, A4 statutory print quotations, on-device IndexedDB Photo Studio framing, and optional Google account sync."
+  ],
+  "key_features": [
+    "Loan Terms & CBSL LTV Split Bar (index.html): Strategy preset pills (Lowest Rental, Fast Payoff, Minimum Cash, 100% Cash), Rate Type toggle (reducing vs flat), Interest Rate (0-40%), Tenure (6-84 months), Down Payment (40-100%), Income/Debt/DTI inputs, Insurance/Fees inputs, and live LTV split bar (#ltvSplitContainer).",
+    "Budget Telemetry Console (#budgetPanel): Interactive SVG DTI speedometer (#budgetNeedle), DTI hero readout (#budgetDtiHero), and stacked Net Income Cashflow Spectrum bar (#budgetCashflowBar).",
+    "Comparison Table & Head-to-Head (#comparisonPanel): Quick market segment filter chips (#quickFilterChips), collapsible Filters & Sort (#toolsPanel), inline LKR price editing, inline condition cycling, per-vehicle down-payment override (startDpEdit), row removal with Undo toast (#toast), and up to 3-vehicle side-by-side Head-to-Head comparison modal (#headToHeadTray, #h2hModal).",
+    "Lease Details Modal (#detailModal): Per-vehicle cost composition donut chart and interactive SVG annual amortisation paydown curve with year-by-year balance schedule.",
+    "Catalogue Browser & Quote Setup Modals (#catalogueModal, #catalogueAddModal): Search, multi-criteria filtering (make, body type, fuel, seller route, monthly budget), bulk add (All, Search, Filtered), and quote setup validation for multi-trim or Price on Request vehicles.",
+    "AI Search & Manual Entry Modal (#aiModal): Gemini proxy vehicle search (#aiSearchQuery), ad/auction-sheet screenshot upload (#aiAdFile), Sri Lankan market availability gatekeeper (#aiUnavailBox), multi-vehicle comparative discovery checklist (#aiDiscoveryBox), single-vehicle year/trim/condition selector (#aiResultForm), and manual vehicle entry form (#paneManual).",
+    "Savings Planner (#savingsPanel): Vehicle goal selector (#plannerVehicle), deposit vs cash goal (#plannerGoal), existing savings (#plannerSaved), percentage vs fixed monthly contribution (#plannerMode), DD-MM-YYYY target date (#plannerDate), SVG trajectory curve, upfront cost split bar, and named saved scenarios (#plannerScenarios).",
+    "Curated Catalogue Page (catalogue.html): Standalone browsable grid of 227 models with search (#search), make/body/price-source filters (#make, #body, #priceType), sorting (#sort), detail dialog (#detail), and personal review bookmarking/export (#reviewFilter, #export).",
+    "Catalogue Photo Studio (studio.html): On-device IndexedDB photo uploader (#photoFiles, drag-and-drop, clipboard paste), 8:5 interactive HTML5 canvas crop stage (#cropStage) with zoom/pan/nudge and framing modes (auto, plate, scene), cover/order controls, and JSON export (#exportDialog).",
+    "Cross-Cutting Platform Capabilities: System/Light/Dark theme switcher (#themeSwitch), privacy-safe shareable URL generator (#shareModal), A4 statutory print stylesheet (#printBtn / ?qa-print), Google Sign-In & Firestore sync (#accountModal), and public information pages (about.html, privacy.html, terms.html)."
+  ],
+  "user_flows": [
+    "Flow 1 (Lease Terms & Clamping): Open /index.html -> Click strategy presets (.strategy-pill) -> Enter out-of-range tenure (<6 or >84) and down payment (<40) -> Verify automatic clamping to 6..84 months and >=40% down payment with warning hints -> Toggle Rate Type between Reducing Balance and Flat Rate and verify rental recalculation.",
+    "Flow 2 (Currency Input & Zero Handling): Focus #debt (0.00) -> Press Backspace or type a digit and verify 0.00 is replaced cleanly -> Type 400000 into #income and verify live thousands comma grouping (400,000) and two-decimal formatting on blur (400,000.00) -> Enter South Asian format 1,50,00,000 and verify normalisation to 15,000,000.00.",
+    "Flow 3 (Affordability Telemetry): Enter Net Monthly Income (#income = 500,000.00) and Existing Debt (#debt = 50,000.00) -> Verify SVG speedometer needle (#budgetNeedle), DTI hero readout (#budgetDtiHero), cashflow bar (#budgetCashflowBar), and row affordability badges update when toggling DTI limit between 40% and 50%.",
+    "Flow 4 (Catalogue Browse & Quote Validation): Click #addVehicleBtn -> Search and filter in #catalogueModal -> Select a vehicle requiring quote setup (#catalogueAddModal) -> Submit with empty/zero price and verify #catalogueAddError blocks submission -> Enter valid LKR price and condition -> Submit and verify vehicle row appears in #rows.",
+    "Flow 5 (Comparison Table, Custom Deposit Override & Head-to-Head): In #rows, edit a vehicle price inline -> Cycle its condition badge -> Override its down payment % and verify CBSL floor clamping -> Pin 2-3 vehicles to #headToHeadTray and open #h2hModal to verify side-by-side deltas -> Remove a row and click Undo in #toast to restore it.",
+    "Flow 6 (AI Search & Manual Entry): Open #aiModal -> Run unavailable query ('unavailable' on QA fixture server) to verify #aiUnavailBox alternatives -> Run comparative query ('compare Toyota and Honda') to verify #aiDiscoveryBox checklist and bulk addition -> Switch to #tabManualBtn, validate empty form error (#mErr), then add a custom vehicle.",
+    "Flow 7 (Savings Planner): In #savingsPanel, select a vehicle in #plannerVehicle -> Enter #plannerSaved and toggle #plannerMode between percent and fixed -> Verify SVG trajectory curve and cost split bar render -> Test invalid (<1 month) vs valid future DD-MM-YYYY target date in #plannerDate -> Save scenario (#plannerSave), reset, and reload from #plannerScenarios.",
+    "Flow 8 (Standalone Catalogue & Photo Studio): Open /catalogue.html -> Filter by make, body, and price source -> Open #detail dialog for a model -> Bookmark models and filter by #reviewFilter -> Open /studio.html -> Select a model in #modelList -> Adjust zoom/framing on #cropStage canvas -> Open #exportDialog."
+  ],
+  "validation_criteria": [
+    "All currency values across inputs (on blur), tables, modals, and planner outputs must display with comma thousands separators and exactly two decimal places (.00).",
+    "Brand New, Reconditioned, and Registered <1 Year passenger vehicles must enforce at least a 60% down payment (<=40% LTV), while Registered Used (>1 year) vehicles and D-class commercial minibuses enforce at least a 40% down payment (<=60% LTV).",
+    "Tenure inputs below 6 months must clamp to 6, and inputs above 84 months must clamp to 84, displaying corresponding warning hints in #tenureHint.",
+    "Unpriced catalogue vehicles (Price on Request / price: null) must never be added with a 0 price or treated as affordable without a user-supplied positive quote (> 0 and < 1e12).",
+    "All modal dialogs must manage focus accessibility (removing inert when open, trapping Tab focus, closing on Escape, and restoring focus to the opener).",
+    "Share links generated in #shareModal must exclude income and debt values unless #shareIncome is explicitly checked.",
+    "Photo Studio uploads on /studio.html must reject non-image files or files >12 MB, cap at 12 photos per model, and persist exclusively in browser IndexedDB."
+  ]
+}

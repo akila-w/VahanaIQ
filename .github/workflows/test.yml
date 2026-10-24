@@ -37,5 +37,6 @@ jobs:
           node test/print.test.mjs
           node test/scan-prices.test.mjs
           node test/savings-bulk.test.mjs
+          node test/e2e-journeys.test.mjs
       - name: Check the repository keeps only published assets
         run: node scripts/prune-thumbnails.mjs --check
