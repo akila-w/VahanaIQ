@@ -2,9 +2,34 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-globalThis.document = { addEventListener() {}, getElementById: () => null };
+let lastToast = null;
+globalThis.document = {
+  addEventListener() {},
+  getElementById: (id) => {
+    if (id === 'toast') {
+      return {
+        classList: { add() {}, remove() {}, contains: () => false },
+        textContent: '',
+        contains: () => false,
+        matches: () => false,
+        appendChild(child) {
+          if (child && child.textContent) lastToast = child.textContent;
+        },
+        addEventListener() {}
+      };
+    }
+    return null;
+  },
+  createElement: (tag) => ({
+    tagName: tag.toUpperCase(),
+    textContent: '',
+    classList: { add() {}, remove() {} },
+    appendChild() {},
+    addEventListener() {}
+  })
+};
 globalThis.window = {};
-const { cloudCopy, parseCloud, isEmptyCopy, fingerprint, syncDirection } = await import('../js/account.js');
+const { cloudCopy, parseCloud, isEmptyCopy, fingerprint, syncDirection, upload, MAX_SIZE } = await import('../js/account.js');
 
 // Photos made in the browser stay on the device; other fields are copied as they are
 const car = { id: 'user-a', name: 'Toyota Raize', price: 9000000, img: 'https://example.com/raize.jpg' };
@@ -50,7 +75,7 @@ assert.match(rules, /hasOnly\(\["version", "data", "updatedAt"\]\)/);
 assert.doesNotMatch(rules, /allow read, write: if true/);
 const account = fs.readFileSync(new URL('../js/account.js', import.meta.url), 'utf8');
 assert.match(account, /setDoc\(userDoc\(ctx\), \{ version: 1, data, updatedAt: ctx\.firebase\.F\.serverTimestamp\(\) \}\)/);
-assert.match(account, /MAX_SIZE = 900000/);
+assert.match(account, /MAX_SIZE = 700000/);
 assert.match(rules, /data\.size\(\) <= 900000/);
 
 console.log('Account sync checks passed');
@@ -61,3 +86,75 @@ assert.ok(!isEmptyCopy(planned));
 assert.deepEqual(parseCloud({ data: JSON.stringify(planned) }).planner, planner);
 assert.notEqual(fingerprint(planned), fingerprint(empty));
 assert.equal(syncDirection(empty, planned, null), 'download');
+
+// Sinhala and Tamil-sized payload testing (3 UTF-8 bytes per character)
+// Budget is 700,000 UTF-8 bytes.
+const baseVehicle = { id: 'car-sl', name: 'Toyota Aqua', price: 8500000, img: '' };
+function makePayload(targetBytes) {
+  const enc = new TextEncoder();
+  let notes = '';
+  let copy = cloudCopy({ notes }, { version: 3, cars: [baseVehicle] });
+  let currentBytes = enc.encode(JSON.stringify(copy)).length;
+  const diff = targetBytes - currentBytes;
+  if (diff > 0) {
+    const mix = 'සිංහල' + 'தமிழ்'; // 10 chars, 30 bytes
+    const blocks = Math.floor(diff / 30);
+    notes = mix.repeat(blocks);
+    currentBytes = enc.encode(JSON.stringify(cloudCopy({ notes }, { version: 3, cars: [baseVehicle] }))).length;
+    const remaining = targetBytes - currentBytes;
+    notes += 'A'.repeat(remaining);
+  }
+  return cloudCopy({ notes }, { version: 3, cars: [baseVehicle] });
+}
+
+// Just under budget: target 699,950 UTF-8 bytes
+const underCopy = makePayload(699950);
+const underEncodedLen = new TextEncoder().encode(JSON.stringify(underCopy)).length;
+
+assert.equal(underEncodedLen, 699950);
+assert.ok(underEncodedLen <= MAX_SIZE, `Under payload must be <= ${MAX_SIZE} bytes (got ${underEncodedLen})`);
+// In UTF-16 character length, it is ~233,000 characters, well within Firestore rules character limit (900,000)
+assert.ok(JSON.stringify(underCopy).length < 900000, 'UTF-16 char length is well under 900,000');
+
+// Under budget payload syncs without throwing
+let writtenData = null;
+const mockCtxUnder = {
+  uid: 'test-user',
+  generation: 1,
+  firebase: {
+    db: {},
+    F: {
+      doc: () => 'users/test-user',
+      setDoc: async (_doc, data) => { writtenData = data; },
+      serverTimestamp: () => 12345
+    }
+  }
+};
+await upload(underCopy, mockCtxUnder);
+assert.ok(writtenData, 'Under budget payload was written successfully');
+
+// Just over budget: target 700,050 UTF-8 bytes
+const overCopy = makePayload(700050);
+const overEncodedLen = new TextEncoder().encode(JSON.stringify(overCopy)).length;
+
+assert.equal(overEncodedLen, 700050);
+assert.ok(overEncodedLen > MAX_SIZE, `Over payload must be > ${MAX_SIZE} bytes (got ${overEncodedLen})`);
+// But notice: in UTF-16 character length, it is STILL under 900,000 characters!
+assert.ok(JSON.stringify(overCopy).length < 900000, 'UTF-16 char length is still under 900,000, showing byte-vs-char divergence');
+
+// Over budget payload throws and shows the visible toast message
+lastToast = null;
+await assert.rejects(
+  () => upload(overCopy, mockCtxUnder),
+  /Comparison too large to sync/
+);
+assert.equal(lastToast, 'Too large to sync; photos stay on this device', 'Visible toast message shown on size failure');
+
+// Verifying syncDirection does not mark it agreed:
+// Since upload failed, agreed fingerprint remains that of the underCopy
+const agreedFingerprint = fingerprint(underCopy);
+assert.equal(syncDirection(overCopy, underCopy, agreedFingerprint), 'upload', 'syncDirection remains upload and is not marked agreed');
+
+// Clear any toast timeouts so Node process exits immediately
+const { clearToast } = await import('../js/toast.js?v=2.11.6');
+clearToast();

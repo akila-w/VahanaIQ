@@ -38,6 +38,7 @@ jobs:
       - name: Scan the price sites and apply the changes
         env:
           DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+          PRICE_TOKEN: ${{ secrets.PRICE_TOKEN }}
         run: |
           # The reports go on the run's summary page even when a step fails
           status=0

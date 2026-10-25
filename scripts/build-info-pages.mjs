@@ -1,4 +1,23 @@
 import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// The CSP and the referrer policy are defined once, in index.html. The generated
+// information pages copy them verbatim, so regenerating them cannot silently strip
+// either meta tag; test/csp.test.mjs asserts all six pages carry the same policy.
+function shippedMeta() {
+  const index = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const csp = index.match(/<meta http-equiv="Content-Security-Policy" content="([^"]+)">/);
+  const referrer = index.match(/<meta name="referrer" content="([^"]+)">/);
+  if (!csp || !referrer) throw new Error('index.html is missing its Content-Security-Policy or referrer meta tag');
+  return {
+    csp: `<meta http-equiv="Content-Security-Policy" content="${csp[1]}">`,
+    referrer: `<meta name="referrer" content="${referrer[1]}">`
+  };
+}
+
 const pages={
  about:{title:'About VahanaIQ',intro:'A clearer view of your next car.',sections:[
   ['Built for Sri Lankan car buyers','Browse cars, SUVs, MPVs, passenger vans, minibuses and pickups, compare lease estimates and plan a deposit using your own income, commitments and savings. Guest mode works without an account.'],
@@ -24,4 +43,23 @@ const pages={
   ['Copyright and attribution','© 2026 Akila Wickramasinghe for original site material. This notice does not claim ownership of third-party photos, logos, icons or source documents. Official photo source links and ownership notices are retained in Photo Credits. Vehicle images come only from manufacturers or authorised distributors and use consistent 8:5 display frames. Brand marks include assets from <a href="https://simpleicons.org/" target="_blank" rel="noopener">Simple Icons</a>; glyphs are from <a href="https://lucide.dev/license" target="_blank" rel="noopener">Lucide</a>. Bundled licence notices are retained with their assets. Check the applicable rights before reusing third-party material.'],
   ['Availability and changes','Features, data and external services may change or become unavailable. Keep your own record of important quotes and plans. These notices describe the current app; the last review date is shown below. Nothing here removes rights that applicable law does not permit to be excluded.']]}
 };
-for(const [slug,p] of Object.entries(pages))fs.writeFileSync(`${slug}.html`,`<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="${p.intro}"><title>${p.title} · VahanaIQ</title><link rel="icon" href="assets/icons/favicon.svg"><link rel="stylesheet" href="css/tokens.css?v=2.11.5"><link rel="stylesheet" href="css/style.css?v=2.11.5"></head><body><main class="info-page"><header class="info-header"><a href="index.html"><img src="assets/icons/logo-option-1-apex.svg" alt="" width="36" height="36"><strong>VahanaIQ</strong></a><a class="btn-outline" href="index.html">Back to calculator</a></header><p class="info-eyebrow">VAHANAIQ · INFORMATION</p><h1>${p.title}</h1><p class="info-intro">${p.intro}</p><div class="info-sections">${p.sections.map(([h,t])=>`<section><h2>${h}</h2><p>${t}</p></section>`).join('')}</div><footer class="foot"><nav class="site-links" aria-label="Information"><a href="index.html">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; notices</a></nav><p>Last reviewed: ${p.reviewed||'21 Oct 2026'} · © 2026 Akila Wickramasinghe</p></footer></main></body></html>`);
+const render = (p, meta) =>`<!doctype html><html lang="en-GB"><head><meta charset="utf-8">${meta.csp}<meta name="viewport" content="width=device-width,initial-scale=1">${meta.referrer}<meta name="description" content="${p.intro}"><title>${p.title} · VahanaIQ</title><link rel="icon" href="assets/icons/favicon.svg"><link rel="stylesheet" href="css/tokens.css?v=2.11.6"><link rel="stylesheet" href="css/style.css?v=2.11.6"></head><body><main class="info-page"><header class="info-header"><a href="index.html"><img src="assets/icons/logo-option-1-apex.svg" alt="" width="36" height="36"><strong>VahanaIQ</strong></a><a class="btn-outline" href="index.html">Back to calculator</a></header><p class="info-eyebrow">VAHANAIQ · INFORMATION</p><h1>${p.title}</h1><p class="info-intro">${p.intro}</p><div class="info-sections">${p.sections.map(([h,t])=>`<section><h2>${h}</h2><p>${t}</p></section>`).join('')}</div><footer class="foot"><nav class="site-links" aria-label="Information"><a href="index.html">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; notices</a></nav><p>Last reviewed: ${p.reviewed||'21 Oct 2026'} · © 2026 Akila Wickramasinghe</p></footer></main></body></html>`;
+
+const meta = shippedMeta();
+const check = process.argv.includes('--check');
+let drift = 0;
+for (const [slug, p] of Object.entries(pages)) {
+  const expected = render(p, meta);
+  const file = path.join(ROOT, `${slug}.html`);
+  if (check) {
+    const current = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+    if (current !== expected) { console.error(`${slug}.html does not match the generator; run node scripts/build-info-pages.mjs`); drift += 1; }
+  } else {
+    fs.writeFileSync(file, expected);
+  }
+}
+if (check) {
+  if (drift > 0) process.exit(1);
+  console.log('Information pages are up to date.');
+}
+

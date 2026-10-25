@@ -1,7 +1,7 @@
 // The Photo Studio's record for one catalogue entry: which photos it shows, in what order, which one
 // is the cover, and how each photo is framed. Pure data handling, shared by the studio page, the
 // catalogue overlay and scripts/apply-studio-photos.mjs, and checked in Node.
-import { defaultFrame, isDefaultFrame, normaliseFrame } from "./photo-frame.js";
+import { defaultFrame, isDefaultFrame, normaliseFrame } from "./photo-frame.js?v=2.11.6";
 
 export const RECORD_VERSION = 1;
 export const MANIFEST_VERSION = 1;

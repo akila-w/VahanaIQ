@@ -8,12 +8,12 @@
 import {
   FRAME_HEIGHT, FRAME_WIDTH, THUMB_HEIGHT, THUMB_WIDTH, bakePhoto, canvasDataUrl, loadPhoto,
   measurePhoto, renderFrame, resolveMode, dragFrame, zoomFrame, fillFrame, defaultFrame
-} from "./photo-frame.js?v=2.11.3";
+} from "./photo-frame.js?v=2.11.6";
 import {
   UPLOAD, OFFICIAL, newRecord, uploadItem, addItem, removeItem, setCover, updateFrame,
   normaliseRecord, orderedItems, recordIsEdited
-} from "./catalogue-photos.js?v=2.11.3";
-import { readEdit, writeEdit, deleteEdit, readEditsWithin } from "./catalogue-photo-store.js?v=2.11.3";
+} from "./catalogue-photos.js?v=2.11.6";
+import { readEdit, writeEdit, deleteEdit, readEditsWithin } from "./catalogue-photo-store.js?v=2.11.6";
 
 const STUDIO_NOTE = "Framed in the VAHANAIQ Photo Studio on this device.";
 const STUDIO_CAPTION = "Photo added in the Photo Studio";

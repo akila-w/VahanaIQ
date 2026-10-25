@@ -23,8 +23,12 @@ jobs:
           node test/verify-graphics.test.mjs
           node test/qa-regressions.test.mjs
           node test/catalogue.test.mjs
+          node test/client-ip.test.mjs
           node test/proxy-search.test.mjs
           node test/proxy-price-mode.test.mjs
+          node test/security.test.mjs
+          node test/csp.test.mjs
+          node test/module-versions.test.mjs
           node test/refresh-prices.test.mjs
           node test/tokens.test.mjs
           node test/calculator.test.mjs
@@ -41,3 +45,30 @@ jobs:
           node test/e2e-journeys.test.mjs
       - name: Check the repository keeps only published assets
         run: node scripts/prune-thumbnails.mjs --check
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Serve the site and wait until it answers
+        run: |
+          python3 -m http.server 8123 --bind 127.0.0.1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8123/index.html; then
+              echo "Server is answering on 127.0.0.1:8123"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "The local server did not start" >&2
+          exit 1
+      - name: Run browser spec
+        run: npx playwright test test/browser/csp.spec.mjs

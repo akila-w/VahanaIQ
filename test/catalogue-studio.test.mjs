@@ -222,7 +222,7 @@ const manifest = buildManifest({
   models: [{ record: exportRecord, model: TEST_MODEL, encoded }],
   capturedAt: "2026-10-23T10:00:00.000Z",
   catalogueDate: "2026-10-23",
-  appVersion: "2.11.3"
+  appVersion: "2.11.6"
 });
 const manifestImages = manifest.models[0].images;
 assert.equal(manifest.manifestVersion, 1);
@@ -383,18 +383,20 @@ for (const id of ["photoFiles", "filmstrip", "cropStage", "zoomRange", "frameMod
 }
 assert.match(studioHtml, /type="file"[^>]*multiple/, "The upload control must accept several files at once");
 assert.match(studioHtml, /accept="image\/\*"/);
-assert.match(studioHtml, /type="module" src="js\/catalogue-studio\.js\?v=2\.11\.5"/, "studio.html must load the studio script");
+assert.match(studioHtml, /type="module" src="js\/catalogue-studio\.js\?v=2\.11\.6"/, "studio.html must load the studio script");
 assert.match(studioHtml, /href="css\/catalogue-studio\.css"/);
-assert.match(studioHtml, /href="css\/tokens\.css\?v=2\.11\.5"/, "studio.html must load the design tokens");
+assert.match(studioHtml, /href="css\/tokens\.css\?v=2\.11\.6"/, "studio.html must load the design tokens");
 assert.match(studioHtml, /id="cropStage"[^>]*aspect|role="img"/, "The crop stage is described to assistive technology");
 assert.ok(!/[\"'(]\.?\/?docs\//.test(studioHtml), "studio.html must not reach into the unpublished docs/ tree");
 
 // The catalogue page hands the overlay a promise before any deferred script runs.
 const catalogueHtml = fs.readFileSync(path.join(ROOT, "catalogue.html"), "utf8");
-assert.match(catalogueHtml, /window\.__VAHANAIQ_PHOTOS__ = \{ apply: null, resolve: null \};/,
-  "catalogue.html must set up the studio hand-off before its scripts run");
-assert.match(catalogueHtml, /src="js\/catalogue-photo-overlay\.js\?v=2\.11\.5"/);
-assert.ok(catalogueHtml.indexOf("__VAHANAIQ_PHOTOS__") < catalogueHtml.indexOf("js/curated-catalogue.js"),
+const bootJs = fs.readFileSync(path.join(ROOT, "js/boot.js"), "utf8");
+assert.match(bootJs, /window\.__VAHANAIQ_PHOTOS__ = \{ apply: null, resolve: null \};/,
+  "js/boot.js must set up the studio hand-off before scripts run");
+assert.match(catalogueHtml, /src="js\/boot\.js\?v=2\.11\.6"/, "catalogue.html must load js/boot.js");
+assert.match(catalogueHtml, /src="js\/catalogue-photo-overlay\.js\?v=2\.11\.6"/);
+assert.ok(catalogueHtml.indexOf("js/boot.js") < catalogueHtml.indexOf("js/curated-catalogue.js"),
   "The hand-off must come before the script that waits on it");
 assert.match(fs.readFileSync(path.join(ROOT, "js/catalogue-photo-overlay.js"), "utf8"),
   /globalThis\.__VAHANAIQ_PHOTOS__/, "The overlay must resolve the hand-off promise");

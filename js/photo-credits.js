@@ -1,7 +1,7 @@
 // Manufacturer / authorised distributor photos only. No community-photo fallback.
 // The Curated Catalogue is the canonical authority over vehicle imagery.
-import { OFFICIAL_PHOTOS } from './official-photo-data.js?v=2.11.5';
-import { esc } from './calculator.js?v=2.11.5';
+import { OFFICIAL_PHOTOS } from './official-photo-data.js?v=2.11.6';
+import { esc, safeUrl } from './calculator.js?v=2.11.6';
 
 export const PHOTO_CREDITS = OFFICIAL_PHOTOS;
 
@@ -149,8 +149,9 @@ export const photoForModel = value => creditFor(value)?.img || '';
 
 export function formatCreditHtml(credit, compact = true) {
   if (!credit) return '';
-  if (credit.sourceUrl && /^https:\/\//.test(credit.sourceUrl)) {
-    return `<a class="photo-source" href="${esc(credit.sourceUrl)}" target="_blank" rel="noopener noreferrer" title="${esc(`Photo: ${credit.author || 'Official'} · ${credit.licence || 'Official source'}`)}">${compact ? 'Photo Source' : esc(credit.author || 'Official')}<span class="${compact ? 'sr-only' : 'photo-rights'}">: ${esc(credit.author || 'Official')} · ${esc(credit.licence || 'Official source')}</span> ↗</a>`;
+  const safeSource = credit.sourceUrl ? safeUrl(credit.sourceUrl) : '#';
+  if (safeSource !== '#') {
+    return `<a class="photo-source" href="${safeSource}" target="_blank" rel="noopener noreferrer" title="${esc(`Photo: ${credit.author || 'Official'} · ${credit.licence || 'Official source'}`)}">${compact ? 'Photo Source' : esc(credit.author || 'Official')}<span class="${compact ? 'sr-only' : 'photo-rights'}">: ${esc(credit.author || 'Official')} · ${esc(credit.licence || 'Official source')}</span> ↗</a>`;
   }
   if (credit.origin === 'owner-upload' || (credit.isStudio && !credit.sourceUrl)) {
     return `<span class="studio-credit">Photo Studio · This Device</span>`;

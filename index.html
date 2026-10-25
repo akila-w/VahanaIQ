@@ -2,11 +2,19 @@
 <html lang="en-GB">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://accounts.google.com https://vahanaiq-search-71962876227.asia-south1.run.app; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self';">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>VahanaIQ — Sri Lanka Vehicle Lease Calculator</title>
   <meta name="description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.">
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#103e36">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://apis.google.com">
+  <link rel="dns-prefetch" href="https://accounts.google.com">
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+  <link rel="dns-prefetch" href="https://vahanaiq-search-71962876227.asia-south1.run.app">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <meta property="og:title" content="VahanaIQ — Sri Lanka Vehicle Lease Calculator">
@@ -20,17 +28,17 @@
   <link rel="canonical" href="https://akila-w.github.io/VahanaIQ/">
   <meta property="og:url" content="https://akila-w.github.io/VahanaIQ/">
   <link rel="manifest" href="manifest.json">
-  <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} try { var now = Date.now() / 1000; var rootStyle = document.documentElement.style; rootStyle.setProperty("--aurora-delay-1", "-" + (now % 44).toFixed(2) + "s"); rootStyle.setProperty("--aurora-delay-2", "-" + (now % 56).toFixed(2) + "s"); } catch (e) {}</script>
-  <script>
-    window.__VAHANAIQ_PHOTOS__ = { apply: null, resolve: null };
-    window.__VAHANAIQ_PHOTOS__.ready = new Promise(function (resolve) { window.__VAHANAIQ_PHOTOS__.resolve = resolve; });
-  </script>
-  <link rel="stylesheet" href="css/tokens.css?v=2.11.5">
-  <link rel="stylesheet" href="css/style.css?v=2.11.5">
+  <script src="js/boot.js?v=2.11.6"></script>
+  <link rel="preload" href="css/tokens.css?v=2.11.6" as="style">
+  <link rel="preload" href="css/style.css?v=2.11.6" as="style">
+  <link rel="preload" href="js/catalogue-data.js?v=2.11.6" as="script">
+  <link rel="modulepreload" href="js/app.js?v=2.11.6">
+  <link rel="stylesheet" href="css/tokens.css?v=2.11.6">
+  <link rel="stylesheet" href="css/style.css?v=2.11.6">
   <script src="js/page-transitions.js" defer></script>
-  <script src="js/catalogue-data.js?v=2.11.5" defer></script>
-  <script type="module" src="js/catalogue-photo-overlay.js?v=2.11.5"></script>
-  <script type="module" src="js/app.js?v=2.11.5"></script>
+  <script src="js/catalogue-data.js?v=2.11.6" defer></script>
+  <script type="module" src="js/catalogue-photo-overlay.js?v=2.11.6"></script>
+  <script type="module" src="js/app.js?v=2.11.6"></script>
 </head>
 <body>
 <a class="skip" href="#h-terms">Skip to Calculator</a>
@@ -69,7 +77,7 @@
   <section class="hero">
     <div>
       <p class="eyebrow">Sri Lanka Vehicle Finance</p>
-      <h1>Know Your<br>Monthly Rental.</h1>
+      <h1>Know Your Monthly Rental.</h1>
       <p class="intro">Set your terms, add the cars you are considering, and see what you can genuinely afford — before you walk into a showroom.</p>
     </div>
     <div class="hero-aside">
@@ -212,7 +220,11 @@
           </div>
         </div>
 
-        <div class="terms-subcard terms-subcard-costs">
+        <button type="button" class="drawer-toggle" id="toggleCostsDrawer" aria-expanded="false" aria-controls="termsSubcardCosts">
+          <span class="drawer-toggle-label">+ Optional Incidental Costs (Insurance &amp; Up-front Fees)</span>
+          <span class="drawer-toggle-meta" id="costsDrawerMeta">Optional</span>
+        </button>
+        <div class="terms-subcard terms-subcard-costs drawer-collapsed" id="termsSubcardCosts">
           <div class="terms-subcard-head">
             <span class="terms-subcard-title"><span class="glyph glyph-layers" aria-hidden="true"></span> Incidental Costs</span>
             <span class="tag">Optional</span>
@@ -237,7 +249,11 @@
           </div>
         </div>
       </div>
-      <div class="ltv-split-container" id="ltvSplitContainer">
+      <button type="button" class="drawer-toggle" id="toggleLtvDrawer" aria-expanded="false" aria-controls="ltvSplitContainer">
+        <span class="drawer-toggle-label">+ Vehicle Valuation Financing Structure (CBSL Directions No. 01 of 2026)</span>
+        <span class="drawer-toggle-meta" id="ltvDrawerMeta">60% Deposit &middot; 40% LTV</span>
+      </button>
+      <div class="ltv-split-container drawer-collapsed" id="ltvSplitContainer">
         <div class="ltv-header-row">
           <div>
             <strong class="ltv-title">Vehicle Valuation Financing Structure</strong>
@@ -356,7 +372,7 @@
   <section class="panel" id="comparisonPanel" aria-labelledby="h-list">
     <div class="panel-head">
       <div><p class="eyebrow">Comparison</p><h2 id="h-list" tabindex="-1">Vehicles</h2></div>
-      <div class="comparison-tools"><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add Another Vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button"><span class="glyph glyph-share-2" aria-hidden="true"></span> Share</button><button class="link-btn" id="resetCatalogBtn" type="button"><span class="glyph glyph-trash-2" aria-hidden="true"></span> Remove All Vehicles</button></span></div>
+      <div class="comparison-tools"><button class="btn-outline" id="toggleColsBtn" type="button" aria-pressed="false">Show Full Columns</button><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add Another Vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button"><span class="glyph glyph-share-2" aria-hidden="true"></span> Share</button><button class="link-btn" id="resetCatalogBtn" type="button"><span class="glyph glyph-trash-2" aria-hidden="true"></span> Remove All Vehicles</button></span></div>
     </div>
     <div class="empty-state" id="emptyState" hidden>
       <h3>Start Your Comparison</h3>
@@ -450,7 +466,11 @@
 
   <section class="panel savings-panel" id="savingsPanel" aria-labelledby="h-savings">
     <div class="panel-head"><div><p class="eyebrow">Target</p><h2 id="h-savings">Savings Planner</h2></div><span class="tag">Plan Your Deposit</span></div>
-    <div class="planner-layout">
+    <button type="button" class="drawer-toggle" id="toggleSavingsDrawer" aria-expanded="false" aria-controls="savingsPlannerLayout">
+      <span class="drawer-toggle-label">Expand Deposit &amp; Savings Trajectory Planner</span>
+      <span class="drawer-toggle-meta" id="savingsDrawerMeta">Optional deposit &amp; pace calculator</span>
+    </button>
+    <div class="planner-layout drawer-collapsed" id="savingsPlannerLayout">
       <div class="planner-inputs">
         <div class="planner-card">
           <div class="planner-card-head">
@@ -572,7 +592,7 @@
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
       <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>
       <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
-      <span>VahanaIQ v<span id="appVersion">2.11.5</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.11.6</span></span>
     </p>
   </footer>
 

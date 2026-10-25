@@ -1,15 +1,15 @@
-import { formatDate as displayDate } from "./dates.js?v=2.11.5";
-import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.11.5";
-import { fmt, esc, minDownFor } from "./calculator.js?v=2.11.5";
-import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.11.5";
-import { validPrice } from "./vehicle-validation.js?v=2.11.5";
-import { newVehicleId } from "./storage.js?v=2.11.5";
-import { openModal, closeModal } from "./modal.js?v=2.11.5";
-import { searchCatalogue } from "./catalogue-search.js?v=2.11.5";
-import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.11.5";
-import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.11.5";
-import { identity as fallbackIdentity } from "./identity-data.js?v=2.11.5";
-import { prepareBulkSelection } from "./bulk-selection.js?v=2.11.5";
+import { formatDate as displayDate } from "./dates.js?v=2.11.6";
+import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.11.6";
+import { fmt, esc, minDownFor, safeUrl } from "./calculator.js?v=2.11.6";
+import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.11.6";
+import { validPrice } from "./vehicle-validation.js?v=2.11.6";
+import { newVehicleId } from "./storage.js?v=2.11.6";
+import { openModal, closeModal } from "./modal.js?v=2.11.6";
+import { searchCatalogue } from "./catalogue-search.js?v=2.11.6";
+import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.11.6";
+import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.11.6";
+import { identity as fallbackIdentity } from "./identity-data.js?v=2.11.6";
+import { prepareBulkSelection } from "./bulk-selection.js?v=2.11.6";
 
 const getIdentity = () => (typeof window !== "undefined" && window.__VAHANAIQ_IDENTITY__) || fallbackIdentity;
 
@@ -84,7 +84,6 @@ export function getUnifiedCatalogue(fallbackList = fallbackCatalogue) {
 
 const routeLabel = v => v.w === "Official" ? "Official agent range" : v.w === "Grey" ? "Importer listing" : "Independent seller listing";
 const availabilityLabel = v => ({ "used-listed": "Used listing: confirm registration age", "import-service": "Past import example: enquire about availability", "brochure-listed": "Local brochure: enquire about availability", "configurator-listed": "Local configurator: enquire about availability" }[v.availability] || "Confirm stock with seller");
-const safeUrl = url => /^https:\/\//.test(url || "") ? url : "";
 const bodyLabel = body => body === "Passenger car" ? "Car" : body;
 const FUELS = { Petrol: "Petrol", Diesel: "Diesel", HEV: "Hybrid", PHEV: "Plug-in hybrid", BEV: "Electric" };
 const UNKNOWN_SPEC = "Specifications to confirm";
@@ -175,7 +174,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
           <span class="catalogue-category">${ident.brands?.[v.make]?.localPath ? `<img class="brand-mark" src="${esc(ident.brands[v.make].localPath.startsWith("../") ? ident.brands[v.make].localPath.slice(3) : ident.brands[v.make].localPath)}" alt="">` : ""}${esc(bodyLabel(v.body))} · ${esc(v.make)}</span>
           ${ident.models?.[`${v.make} ${v.model}`]?.localPath ? `<img class="model-mark" src="${esc(ident.models[`${v.make} ${v.model}`].localPath.startsWith("../") ? ident.models[`${v.make} ${v.model}`].localPath.slice(3) : ident.models[`${v.make} ${v.model}`].localPath)}" alt="">` : ""}
         </div>
-        <h3>${esc(v.name)}${v.year ? ` (${v.year})` : ""}</h3>
+        <h3>${esc(v.name)}${v.year ? ` (${esc(v.year)})` : ""}</h3>
         ${specs ? `<p class="hint catalogue-specs-line">${esc(specs)}</p>` : ""}
         ${pills.length ? `<div class="catalogue-spec-pills">${pills.map(p => `<span class="spec-pill">${esc(p)}</span>`).join("")}</div>` : ""}
         <div class="catalogue-price-block">
@@ -185,7 +184,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
         ${detailRows.length ? `<details class="catalogue-spec-details"><summary>Specifications &amp; trim details</summary><dl class="catalogue-spec-grid">${detailRows.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join("")}</dl></details>` : ""}
         <div class="catalogue-card-foot">
           <p class="hint catalogue-provenance">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${v.priceVerifiedOn ? ` · Verified ${displayDate(v.priceVerifiedOn)}` : ""}</p>
-          <div class="source-links"><a href="${esc(safeUrl(link.href))}" target="_blank" rel="noopener noreferrer">${link.text}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>${credit ? formatCreditHtml(credit) : ""}</div>
+          <div class="source-links"><a href="${safeUrl(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.text)}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>${credit ? formatCreditHtml(credit) : ""}</div>
           <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In Comparison ✓" : "Choose & Add"}</button>
         </div>
       </article>`;
@@ -262,6 +261,40 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   });
   for (const [id, delta] of [["cataloguePrev", -1], ["catalogueNext", 1]]) $(id).addEventListener("click", () => { page += delta; render(); $("catalogueCount").focus(); });
 
+  function getSelectedOffer() {
+    if (!pending?.offers?.length) return null;
+    if ($("catalogueTrimWrap") && !$("catalogueTrimWrap").hidden && $("catalogueTrimSelect")) {
+      return pending.offers[Number($("catalogueTrimSelect").value)] || pending.offers[0];
+    }
+    return pending.offers[0];
+  }
+
+  function syncCatalogueModalPriceForCondition(focusPrice = false) {
+    if (!pending) return;
+    const cond = $("catalogueCondition").value || "New";
+    const o = getSelectedOffer();
+    if (cond !== "New") {
+      $("cataloguePrice").value = "";
+      $("cataloguePriceNote").textContent = "Catalogue prices are for Brand New vehicles only. Enter your quotation or marketplace listing price for this condition.";
+      $("catalogueAddError").textContent = "";
+      if (focusPrice) $("cataloguePrice").focus();
+      return;
+    }
+    const brandNewPrice = o && validPrice(o.amount) ? o.amount : (validPrice(pending.price) && pending.priceBasis !== "conflicting" ? pending.price : null);
+    $("cataloguePrice").value = brandNewPrice ? formatMoneyText(String(brandNewPrice)) : "";
+    if (o && o.amount && $("catalogueTrimWrap") && !$("catalogueTrimWrap").hidden) {
+      $("cataloguePriceNote").textContent = `Source-backed Brand New amount (${o.kind || "published"}), checked ${displayDate(o.checkedOn || pending.checkedOn)}. Confirm current quote.`;
+    } else {
+      $("cataloguePriceNote").textContent = pending.priceBasis === "conflicting"
+        ? "The source does not establish a reliable price for this variant. Enter a confirmed quote."
+        : publishedPrice(pending)
+        ? "Source-backed asking/starting amount, checked " + displayDate(pending.priceVerifiedOn || pending.checkedOn) + ". Confirm the exact specification and current quote."
+        : validPrice(pending.price)
+        ? "Unverified catalogue estimate. Replace it with a seller quote before relying on the calculation."
+        : "No verified price is published here. Enter your quote to calculate a lease.";
+    }
+  }
+
   $("catalogueResults").addEventListener("click", event => {
     const button = event.target.closest("button[data-catalogue-id]");
     if (!button) return;
@@ -269,9 +302,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     if (!pending || isSelected(pending.id)) return;
     $("catalogueAddTitle").textContent = `Compare ${pending.name}`;
     $("catalogueName").value = pending.name + (pending.year ? ` (${pending.year})` : "");
-    $("catalogueCondition").value = pending.cond || "";
-    $("cataloguePrice").value = validPrice(pending.price) && pending.priceBasis !== 'conflicting' ? formatMoneyText(String(pending.price)) : "";
-    $("cataloguePriceNote").textContent = pending.priceBasis === "conflicting" ? "The source does not establish a reliable price for this variant. Enter a confirmed quote." : publishedPrice(pending) ? "Source-backed asking/starting amount, checked " + displayDate(pending.priceVerifiedOn || pending.checkedOn) + ". Confirm the exact specification and current quote." : validPrice(pending.price) ? "Unverified catalogue estimate. Replace it with a seller quote before relying on the calculation." : "No verified price is published here. Enter your quote to calculate a lease.";
+    $("catalogueCondition").value = "New";
     $("catalogueAddError").textContent = "";
 
     if ($("catalogueTrimWrap") && $("catalogueTrimSelect")) {
@@ -279,7 +310,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       if (offers.length > 1) {
         $("catalogueTrimWrap").hidden = false;
         $("catalogueTrimSelect").innerHTML = offers.map((o, idx) =>
-          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${fmt(o.amount)}` : ""}${o.condition ? ` (${esc(o.condition)})` : ""}</option>`
+          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${fmt(o.amount)}` : ""} (Brand New)</option>`
         ).join("");
         $("catalogueTrimSelect").value = "0";
       } else {
@@ -287,18 +318,23 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       }
     }
 
+    syncCatalogueModalPriceForCondition(false);
     openModal($("catalogueAddModal"), button, $("cataloguePrice"));
   });
 
   if ($("catalogueTrimSelect")) {
     $("catalogueTrimSelect").addEventListener("change", () => {
       if (!pending?.offers) return;
-      const o = pending.offers[Number($("catalogueTrimSelect").value)];
+      const o = getSelectedOffer();
       if (!o) return;
       $("catalogueName").value = o.name || (pending.name + (o.trim ? ` ${o.trim}` : ""));
-      $("catalogueCondition").value = o.condition || pending.cond || "New";
-      $("cataloguePrice").value = validPrice(o.amount) ? formatMoneyText(String(o.amount)) : "";
-      $("cataloguePriceNote").textContent = o.amount ? `Source-backed amount (${o.kind || "published"}), checked ${displayDate(o.checkedOn || pending.checkedOn)}. Confirm current quote.` : "No published price for this variant; enter quote.";
+      syncCatalogueModalPriceForCondition(false);
+    });
+  }
+
+  if ($("catalogueCondition")) {
+    $("catalogueCondition").addEventListener("change", () => {
+      syncCatalogueModalPriceForCondition(true);
     });
   }
 
@@ -312,14 +348,18 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     const name = $("catalogueName").value.trim();
     const cond = $("catalogueCondition").value;
     if (!name || !validPrice(price) || !["New", "Recond", "Recent", "Used"].includes(cond)) {
-      $("catalogueAddError").textContent = "Enter a vehicle name, a price greater than zero and a condition.";
+      $("catalogueAddError").textContent = cond && cond !== "New" && !validPrice(price)
+        ? "Enter your custom quotation or marketplace listing price for this condition."
+        : "Enter a vehicle name, a price greater than zero and a condition.";
       return;
     }
-    const published = price === pending.price && cond === pending.cond;
+    const o = getSelectedOffer();
+    const refPrice = o && validPrice(o.amount) ? o.amount : pending.price;
+    const published = cond === "New" && price === refPrice;
     const vehicle = { ...pending, id: newVehicleId(), catalogueId: pending.id, name, price, cond,
       img: pending.img || photoFor(pending),
       custom: true, legacy: false, priceBasis: published ? pending.priceBasis : "user-entered",
-      priceSourceUrl: published ? pending.priceSourceUrl : null, priceCheckedMonth: published ? pending.priceCheckedMonth : null };
+      priceSourceUrl: published ? (o?.sourceUrl || pending.priceSourceUrl) : null, priceCheckedMonth: published ? pending.priceCheckedMonth : null };
     if (!onAdd(vehicle)) return;
     closeModal($("catalogueAddModal"));
     closeModal($("catalogueModal"));
