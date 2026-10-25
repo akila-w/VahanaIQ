@@ -1,5 +1,5 @@
-import { minDownFor } from './calculator.js?v=2.11.5';
-import { DEFAULT_DOWN, DOWN_MAX } from './constants.js?v=2.11.5';
+import { minDownFor } from './calculator.js?v=2.11.6';
+import { DEFAULT_DOWN, DOWN_MAX } from './constants.js?v=2.11.6';
 
 export function addMonths(date, months) {
   const d = new Date(date.getFullYear(), date.getMonth() + months, 1);

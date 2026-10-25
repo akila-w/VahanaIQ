@@ -1,18 +1,18 @@
 // The Photo Studio: arrange, frame and upload the photos of an entry in the Vehicle Catalogue.
 // Everything happens in the browser — the photos live in this device's IndexedDB — and the export
 // hands the framed pixels to scripts/apply-studio-photos.mjs when the catalogue itself should change.
-import { APP_VERSION } from "./config.js?v=2.11.3";
+import { APP_VERSION } from "./config.js?v=2.11.6";
 import {
   FRAME_HEIGHT, FRAME_WIDTH, THUMB_HEIGHT, THUMB_WIDTH,
   bakePhoto, canvasDataUrl, dragFrame, fillFrame, loadPhoto, measurePhoto, renderFrame,
   resolveMode, zoomFrame, zoomRange
-} from "./photo-frame.js?v=2.11.3";
+} from "./photo-frame.js?v=2.11.6";
 import {
   UPLOAD, addItem, buildManifest, itemById, manifestFileName, manifestProblems, moveItem, newRecord,
   normaliseRecord, orderedItems, recordIsEdited, removeItem, resetFrame, setCover, updateFrame,
   uploadItem
-} from "./catalogue-photos.js?v=2.11.3";
-import { clearEdits, deleteEdit, readEdits, writeEdit } from "./catalogue-photo-store.js?v=2.11.3";
+} from "./catalogue-photos.js?v=2.11.6";
+import { clearEdits, deleteEdit, readEdits, writeEdit } from "./catalogue-photo-store.js?v=2.11.6";
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

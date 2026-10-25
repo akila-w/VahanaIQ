@@ -3,7 +3,7 @@
 // Dynamically transforms the live DOM across:
 //   - Layout Options: option1 (Progressive Disclosure), option2 (Tabbed Views),
 //                     option3 (Split-Pane Dashboard), hybrid (Summary + Tabs),
-//                     baseline (Original v2.11.5)
+//                     baseline (Original v2.11.6)
 //   - Budget Modes:   gauge (Compact DTI Speedometer), inline (Slim Inline Bar)
 //   - All 3 Pages:    index.html, catalogue.html, studio.html
 // ==========================================================================
@@ -273,7 +273,7 @@
           <button type="button" class="tb-btn" data-tb-layout="option2" title="Focused 3-tab workspace switcher">Opt 2: Tabbed Views</button>
           <button type="button" class="tb-btn" data-tb-layout="option3" title="Two-column split-pane dashboard">Opt 3: Split-Pane</button>
           <button type="button" class="tb-btn" data-tb-layout="hybrid" title="Sticky live summary ribbon + tabbed main views">Hybrid: Summary + Tabs</button>
-          <button type="button" class="tb-btn" data-tb-layout="baseline" title="Compare against original v2.11.5 layout">Original Baseline</button>
+          <button type="button" class="tb-btn" data-tb-layout="baseline" title="Compare against original v2.11.6 layout">Original Baseline</button>
         </div>
       </div>
       <div class="tb-group">

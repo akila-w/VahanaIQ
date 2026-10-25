@@ -8,7 +8,7 @@
 // -------------------------------------------------------------
 // AI vehicle search goes through a serverless proxy (see /serverless) that
 // holds the Gemini API key and model choice, so no key is ever in the browser.
-const APP_VERSION = "2.11.5";
+const APP_VERSION = "2.11.6";
 
 const config = {
   proxyUrl: "https://vahanaiq-search-71962876227.asia-south1.run.app"

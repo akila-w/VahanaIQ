@@ -217,7 +217,7 @@ assert.ok(!elements.get('plannerResult').innerHTML.includes('Map Your Savings Jo
 let undoFn = null;
 elements.get('toast').lastToast = null;
 // Mock showToast callback capture
-const originalShowToast = (await import('../js/toast.js?v=2.11.3')).showToast;
+const originalShowToast = (await import('../js/toast.js?v=2.11.6')).showToast;
 elements.get('plannerDelete').dispatchEvent('click');
 const afterDeleteStore = JSON.parse(localStorage.getItem('vahanaiq_planner_v1'));
 assert.equal(afterDeleteStore.scenarios.length, 0, 'Scenario should be removed after delete');

@@ -1,5 +1,5 @@
-import { formatDate } from "./dates.js?v=2.11.5";
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor, safeUrl } from "./calculator.js?v=2.11.5";
+import { formatDate } from "./dates.js?v=2.11.6";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor, safeUrl } from "./calculator.js?v=2.11.6";
 import {
   DOWN_MIN,
   DOWN_MIN_UNREG,
@@ -10,23 +10,23 @@ import {
   DTI_STANDARD_PCT,
   DTI_STRETCH_PCT,
   STRATEGY_PRESETS
-} from "./constants.js?v=2.11.5";
-import { baseVehicles } from "./catalog.js?v=2.11.5";
-import { initCatalogue } from "./catalogue-browser.js?v=2.11.5";
-import { APP_VERSION } from "./config.js?v=2.11.5";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.11.5";
-import { searchVehicle } from "./gemini.js?v=2.11.5";
-import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.11.5";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.11.5";
-import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.5";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.11.5";
-import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.11.5";
-import { showToast, clearToast } from "./toast.js?v=2.11.5";
-import { initAccount } from "./account.js?v=2.11.5";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.11.5";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.11.5";
-import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.11.5";
-import { initPlanner } from "./planner.js?v=2.11.5";
+} from "./constants.js?v=2.11.6";
+import { baseVehicles } from "./catalog.js?v=2.11.6";
+import { initCatalogue } from "./catalogue-browser.js?v=2.11.6";
+import { APP_VERSION } from "./config.js?v=2.11.6";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.11.6";
+import { searchVehicle } from "./gemini.js?v=2.11.6";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.11.6";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.11.6";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.6";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.11.6";
+import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.11.6";
+import { showToast, clearToast } from "./toast.js?v=2.11.6";
+import { initAccount } from "./account.js?v=2.11.6";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.11.6";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.11.6";
+import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.11.6";
+import { initPlanner } from "./planner.js?v=2.11.6";
 
 clearLegacyKeys();
 

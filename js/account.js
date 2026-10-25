@@ -5,12 +5,12 @@
 // owner read, change or delete it. Before every write the account's copy is read and compared
 // with the copy both sides last agreed on, so a change made on another device is never
 // overwritten without asking.
-import { firebaseConfig, FIREBASE_SDK, GOOGLE_CLIENT_ID, GOOGLE_SIGN_IN_SRC } from "./config.js?v=2.11.5";
-import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.5";
-import { showToast } from "./toast.js?v=2.11.5";
-import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.11.5";
-import { STORE_KEY } from "./inputs.js?v=2.11.5";
-import { PLANNER_KEY, cleanPlanner } from "./planner-store.js?v=2.11.5";
+import { firebaseConfig, FIREBASE_SDK, GOOGLE_CLIENT_ID, GOOGLE_SIGN_IN_SRC } from "./config.js?v=2.11.6";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.6";
+import { showToast } from "./toast.js?v=2.11.6";
+import { COMPARISON_KEY, SAVED_EVENT } from "./storage.js?v=2.11.6";
+import { STORE_KEY } from "./inputs.js?v=2.11.6";
+import { PLANNER_KEY, cleanPlanner } from "./planner-store.js?v=2.11.6";
 
 const SIGNED_IN_KEY = "vahanaiq_account_v1"; // set while signed in, so the next visit restores the session
 const AGREED_KEY = "vahanaiq_synced_v1"; // fingerprint of the copy this browser and the account last agreed on
