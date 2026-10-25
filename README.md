@@ -365,6 +365,8 @@ The `GEMINI_API_KEY` environment variable (or secret) must already be set on the
 
 The hardened revision is `vahanaiq-search-00038-dm6`, deployed 25/10/2026.
 
+There is **no automatic deployment**. Pushing to `main` updates GitHub Pages but does not rebuild or redeploy the proxy; the Cloud Build trigger that once did was deleted on 25/10/2026 after it stopped firing, so the block above is the only route and must be run deliberately after a change to `serverless/`.
+
 ### Proxy environment variables
 
 | Variable | Default | Description |
