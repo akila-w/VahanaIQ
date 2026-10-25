@@ -134,13 +134,6 @@ if (shouldRun("Reset studio changes for an entry") || shouldRun("studio")) {
   assert.ok(studioJs.includes('$("zoomRange").value = "1"'), "Undo must restore zoom range value to 1");
   assert.ok(studioJs.includes('This entry is back to the published photos.'), "Undo must toast published photo confirmation");
 
-  // Verify fallback script also matches if present
-  if (fs.existsSync("js/studio-file-fallback.js")) {
-    const fallbackJs = fs.readFileSync("js/studio-file-fallback.js", "utf8");
-    assert.ok(fallbackJs.includes('$("zoomValue").textContent = "1.00×"'), "Fallback must restore zoom display to 1.00×");
-    assert.ok(fallbackJs.includes('$("zoomRange").value = "1"'), "Fallback must restore zoom range value to 1");
-  }
-
   console.log("  ✓ Reset studio changes for an entry PASSED: undo restores entry state and fully resets zoom to 1.00×.\n");
 }
 

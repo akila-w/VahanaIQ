@@ -26,7 +26,7 @@
 - **Interactive Lease Details & Amortisation Curve:** Vehicle details modal with interactive hover inspection for the cost composition donut chart (monthly vs lifetime outlay) and annual amortisation paydown curve.
 - **Smart Multi-Input AI Extraction:** Analyzes vehicle names, comparative queries, raw classified ad text (Ikman, Riyasewana, Patpat, FB Marketplace), or uploaded/clipboard screenshots of Japanese auction sheets via Google Gemini.
 - **Official-source & Catalogue-Superior Imagery:** The Curated Catalogue serves as the canonical authority for vehicle photography across both the catalogue and calculator, with automatic fallback and Photo Studio overlay integration.
-- **Catalogue Photo Studio:** [studio.html](studio.html) arranges photos for any catalogue entry by hand: upload your own pictures (file picker, drag-and-drop, or clipboard paste), frame each at 8:5 (*Automatic*, *Vehicle on a white plate*, *Fill the frame*), adjust zoom and nudging, set cover order, and preview changes immediately across the catalogue via IndexedDB.
+- **Catalogue Photo Studio:** The Photo Studio (`studio.html`, served over HTTP) arranges photos for any catalogue entry by hand: upload your own pictures (file picker, drag-and-drop, or clipboard paste), frame each at 8:5 (*Automatic*, *Vehicle on a white plate*, *Fill the frame*), adjust zoom and nudging, set cover order, and preview changes immediately across the catalogue via IndexedDB.
 - **Savings planner:** Plan a deposit or cash purchase using current vehicle prices and your entered income, savings, monthly contributions, fees and insurance. Features an interactive SVG accumulation horizon curve, upfront cost composition bar, target date pacing (`DD-MM-YYYY`), and saved named scenarios.
 - **Inline Table Editing:** Quick-edit LKR prices inline and cycle conditions (Brand New ⇄ Reconditioned ⇄ Registered under a year ⇄ Registered Used) with live recalculation.
 - **Two-Decimal & South Asian Currency Engine:** Dynamic input formatting with comma grouping, two decimal places (`LKR 12,500,000.00`), and South Asian numbering notation (`1,50,00,000`).
@@ -161,7 +161,7 @@ vahanaiq/
 
 ## Catalogue Photo Studio
 
-[studio.html](studio.html) is where the catalogue's pictures are arranged by hand. Open it from the
+The Photo Studio (`studio.html`) is where the catalogue's pictures are arranged by hand. Like the rest of the application, it relies on ES modules and must be served over HTTP (via `python3 -m http.server 8000` or `node test/serve-qa-fixtures.mjs`); opening directly from disk over `file://` is not supported. Open it from the
 catalogue's header (**Photo Studio**) or its footer, pick an entry, and:
 
 - **Add photos** with the *Add Photos* button (any number at once), by dragging files onto the strip,
@@ -384,7 +384,7 @@ node test/catalogue-studio.test.mjs
 
 ## Current review and ownership
 
-[Photo Studio](studio.html) is the manual counterpart to the automated build: it uploads, frames, orders and covers an entry's photos, and `scripts/apply-studio-photos.mjs` publishes the result.
+Photo Studio (`studio.html`) is the manual counterpart to the automated build: it uploads, frames, orders and covers an entry's photos, and `scripts/apply-studio-photos.mjs` publishes the result.
 
 The live curated catalogue serves **227 models across 38 makes** with **504 standardized 8:5 WebP gallery assets** (252 full + 252 thumbnails) and 281 market catalogue entries, specified in the official [Product Requirements Document](docs/PRD.md). The earlier October 21 review interface ([docs/catalogue-review.html](docs/catalogue-review.html)) and [review notes](docs/review-findings.md) remain preserved as internal working artefacts with 144 model groups, 191 trim entries and 77 substantiated prices.
 
