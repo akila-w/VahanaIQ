@@ -406,6 +406,11 @@ export async function main(argv = process.argv.slice(2)) {
   });
   const catalogPath = path.resolve(opts.catalog || path.join(ROOT, "js/market-catalogue.js"));
   const fromFile = opts["from-file"] && path.resolve(opts["from-file"]);
+  if (!fromFile && !process.env.PRICE_TOKEN) {
+    console.error("PRICE_TOKEN is unset. Price mode requires the PRICE_TOKEN secret configured in the Refresh catalogue prices workflow (.github/workflows/refresh-prices.yml).");
+    process.exitCode = 1;
+    return 1;
+  }
   const proxy = fromFile ? null : opts.proxy || process.env.PROXY_URL ||
     (await import(pathToFileURL(path.join(ROOT, "js/config.js")).href)).config.proxyUrl;
   const month = opts.month || new Date().toISOString().slice(0, 7);

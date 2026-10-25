@@ -22,6 +22,7 @@ fs.copyFileSync(path.join(ROOT, "serverless/shared/proxy-logic.js"), path.join(t
 fs.copyFileSync(path.join(ROOT, "serverless/gcp-cloud-function/index.js"), path.join(tmp, "index.js"));
 
 process.env.GEMINI_API_KEY = "test-key";
+process.env.PRICE_TOKEN = "test-price-token";
 const calls = [];
 let replies = [];
 const realFetch = globalThis.fetch;
@@ -36,13 +37,14 @@ console.error = console.warn = () => {};
 createRequire(path.join(tmp, "index.js"))("./index.js");
 const handler = globalThis.__proxyHandler;
 
-const call = async body => {
+const call = async (body, headers = {}) => {
   const res = {
     statusCode: 200, body: undefined,
     set() {}, status(c) { this.statusCode = c; return this; },
     json(b) { this.body = b; }, send(b) { this.body = b; }
   };
-  await handler({ method: "POST", body }, res);
+  const defaultHeaders = process.env.PRICE_TOKEN ? { "x-price-token": process.env.PRICE_TOKEN } : {};
+  await handler({ method: "POST", body, headers: { ...defaultHeaders, ...headers } }, res);
   return res;
 };
 const geminiReply = (text, grounding) => ({
@@ -133,23 +135,59 @@ try {
   console.log("✓ Search mode unchanged PASSED\n");
 
   // -------------------------------------------------------------
-  console.log("TEST 5: Price mode needs PRICE_TOKEN once it is set");
-  process.env.PRICE_TOKEN = "monthly-secret";
-  const withHeaders = async (body, headers) => {
+  console.log("TEST 5: Price mode authentication gate (four cases)");
+  const withHeaders = async (body, headers = {}) => {
     const res = { statusCode: 200, body: undefined, set() {}, status(c) { this.statusCode = c; return this; }, json(b) { this.body = b; }, send(b) { this.body = b; } };
     await handler({ method: "POST", body, headers }, res);
     return res;
   };
+
+  // Case 1: no token configured -> 503
+  delete process.env.PRICE_TOKEN;
   calls.length = 0;
   res = await withHeaders({ mode: "price", queries }, {});
-  assert.deepEqual([res.statusCode, res.body.error, calls.length], [401, "unauthorised", 0], "No token, no Gemini call");
+  assert.deepEqual([res.statusCode, res.body.error, calls.length], [503, "price_mode_disabled", 0], "No token configured: 503 and no Gemini call");
+  assert.equal(res.body.detail, "Price mode is disabled on this deployment");
+  console.log("  1. No token configured -> 503 (price_mode_disabled) passed");
+
+  // Case 2: token configured and absent -> 401
+  process.env.PRICE_TOKEN = "monthly-secret";
+  calls.length = 0;
+  res = await withHeaders({ mode: "price", queries }, {});
+  assert.deepEqual([res.statusCode, res.body.error, calls.length], [401, "unauthorised", 0], "Token configured but absent: 401 and no Gemini call");
+  assert.equal(res.body.detail, "Price mode needs the X-Price-Token header");
+  console.log("  2. Token configured and absent -> 401 (unauthorised) passed");
+
+  // Case 3: token configured and wrong -> 401
+  calls.length = 0;
   res = await withHeaders({ mode: "price", queries }, { "x-price-token": "wrong" });
-  assert.equal(res.statusCode, 401);
+  assert.deepEqual([res.statusCode, res.body.error, calls.length], [401, "unauthorised", 0], "Token configured and wrong: 401 and no Gemini call");
+  assert.equal(res.body.detail, "Price mode needs the X-Price-Token header");
+  console.log("  3. Token configured and wrong -> 401 (unauthorised) passed");
+
+  // Case 4: token configured and correct -> past the gate (validation error or success, not 401/503)
   replies = [geminiReply(JSON.stringify(priceJson), grounding)];
   res = await withHeaders({ mode: "price", queries }, { "x-price-token": "monthly-secret" });
-  assert.equal(res.statusCode, 200, "The right token gets an answer");
+  assert.equal(res.statusCode, 200, "The right token gets past the gate to 200 success");
+  assert.deepEqual(res.body.vehicles, priceJson.vehicles);
+  res = await withHeaders({ mode: "price", queries: [] }, { "x-price-token": "monthly-secret" });
+  assert.equal(res.statusCode, 400, "Validation error past the gate is 400, not 401 or 503");
+  assert.equal(res.body.error, "bad_request");
+  console.log("  4. Token configured and correct -> past the gate (200 success & 400 validation error) passed");
+
   delete process.env.PRICE_TOKEN;
-  console.log("✓ Price token PASSED\n");
+  console.log("✓ Price token gate (four cases) PASSED\n");
+
+  // -------------------------------------------------------------
+  console.log("TEST 6: Cloudflare Worker rejects price mode");
+  const worker = (await import("../serverless/cloudflare-worker.js")).default;
+  const cfRes = await worker.fetch(new Request("https://fixture.invalid", {
+    method: "POST",
+    body: JSON.stringify({ mode: "price", queries })
+  }), { GEMINI_API_KEY: "test-key" });
+  assert.equal(cfRes.status, 400);
+  assert.deepEqual(await cfRes.json(), { error: "price_mode_unsupported" });
+  console.log("✓ Cloudflare Worker rejects price mode with 400 price_mode_unsupported PASSED\n");
 } finally {
   delete process.env.PRICE_TOKEN;
   globalThis.fetch = realFetch;

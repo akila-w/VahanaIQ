@@ -69,6 +69,9 @@ export default {
 
     try {
       const body = await request.json();
+      if (body?.mode === "price") {
+        return json({ error: "price_mode_unsupported" }, 400, origin);
+      }
       const validation = validateSearchRequest(body);
       if (!validation.valid) {
         return json({ error: validation.error, detail: validation.detail }, validation.status, origin);

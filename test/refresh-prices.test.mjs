@@ -16,6 +16,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SCRIPT = path.join(ROOT, "scripts/refresh-prices.mjs");
 const CATALOG = path.join(ROOT, "js/catalog.js");
 
+process.env.PRICE_TOKEN = process.env.PRICE_TOKEN || "test-price-token";
+
 console.log("=== REFRESH-PRICES TESTS ===\n");
 
 // Builds a proxy answer in the VEHICLE_RESPONSE_SCHEMA shape
@@ -231,6 +233,14 @@ const run = (...extra) => promisify(execFile)(process.execPath, [
 const failedRun = (...extra) => run(...extra).then(() => null, e => e);
 
 try {
+  // If PRICE_TOKEN is unset, refresh-prices.mjs must exit 1 before making a request
+  const unauthed = await promisify(execFile)(process.execPath, [
+    SCRIPT, "--proxy", proxy, "--catalog", tmpCatalog, "--dry-run"
+  ], { env: { ...process.env, PRICE_TOKEN: "" } }).then(() => null, e => e);
+  assert.equal(unauthed?.code, 1);
+  assert.match(unauthed?.stderr, /PRICE_TOKEN/);
+  assert.match(unauthed?.stderr, /refresh-prices\.yml/);
+
   // Dry run: prints the diff and report, writes nothing. Batch 2 hits a per-minute limit once.
   behaviour = "blip";
   const dry = await run("--dry-run", "--report", path.join(tmp, "report.md"));

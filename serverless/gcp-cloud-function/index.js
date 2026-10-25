@@ -116,8 +116,12 @@ functions.http('vehicleSearch', async (req, res) => {
   }
 
   if (req.body?.mode === 'price') {
-    // Price mode is for the monthly refresh only: when PRICE_TOKEN is set, callers must send it
-    if (process.env.PRICE_TOKEN && !safeCompareTokens(header('x-price-token'), process.env.PRICE_TOKEN)) {
+    // Price mode is closed unless PRICE_TOKEN is configured on this deployment
+    if (!process.env.PRICE_TOKEN || !process.env.PRICE_TOKEN.trim()) {
+      res.status(503).json({ error: 'price_mode_disabled', detail: 'Price mode is disabled on this deployment' });
+      return;
+    }
+    if (!safeCompareTokens(header('x-price-token'), process.env.PRICE_TOKEN)) {
       res.status(401).json({ error: 'unauthorised', detail: 'Price mode needs the X-Price-Token header' });
       return;
     }

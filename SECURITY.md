@@ -86,6 +86,13 @@ The platform employs defense-in-depth across client, serverless proxy, and cloud
 ## Handling of secrets
 
 No API keys, tokens or credentials are stored in this repository. A `GEMINI_API_KEY` must be
-set as an environment variable on the proxy host, and an optional `PRICE_TOKEN` guards the
-proxy's price mode. `scripts/smoke-deploy.mjs` checks that the working folders which contain
-scraped publisher pages and internal review material are not published by GitHub Pages.
+set as an environment variable on the proxy host.
+
+Price mode is closed unless `PRICE_TOKEN` is configured on the proxy deployment. If `PRICE_TOKEN`
+is missing or empty, price mode requests are rejected with HTTP 503 (`price_mode_disabled`).
+When configured, callers must supply the token in the `X-Price-Token` header, which is compared
+in constant time to prevent timing side-channel attacks. The monthly price refresh workflow
+(`.github/workflows/refresh-prices.yml`) requires the matching `PRICE_TOKEN` repository secret.
+
+`scripts/smoke-deploy.mjs` checks that the working folders which contain scraped publisher pages
+and internal review material are not published by GitHub Pages.
