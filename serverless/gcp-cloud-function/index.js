@@ -87,8 +87,10 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  // Rate limiting runs before the body is parsed or re-serialised, so a client that
-  // has spent its quota is rejected without paying for JSON work first.
+  // Rate limiting runs before validation and re-serialisation, so a client that has
+  // spent its quota is rejected without that work. It cannot run before parsing:
+  // @google-cloud/functions-framework parses the JSON body (and answers malformed
+  // syntax with its own plain 400) before this handler is invoked.
   // Cloud Run appends one entry per hop to X-Forwarded-For, meaning earlier entries
   // are untrusted. Count trusted hops from the right when TRUSTED_PROXY=true;
   // fall back to socket IP if untrusted.
@@ -113,6 +115,9 @@ functions.http('vehicleSearch', async (req, res) => {
     }
   }
 
+  // In Cloud Run the functions framework parses the body first and answers invalid
+  // JSON syntax with its own plain 400, so in production this branch covers
+  // valid-but-non-object JSON such as `[]`, `123` or `"text"`.
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     res.status(400).json({ error: 'bad_request', detail: 'Malformed JSON body' });
     return;

@@ -340,22 +340,30 @@ Because `serverless/gcp-cloud-function/index.js` loads `./shared/proxy-logic.js`
 ```bash
 cd serverless
 
-# Build the container image locally from the serverless/ build context
-docker build -f gcp-cloud-function/Dockerfile -t vahanaiq-search .
+# The project ID, not the project number: 71962876227 is only the number that
+# appears in the service URL, and `--project 71962876227` fails to resolve.
+export PROJECT_ID=gen-lang-client-0189736840
+export IMAGE=asia-south1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/vahanaiq-search:latest
 
-# Build, push, and deploy to Cloud Run with the proxy environment variables
-docker build -f gcp-cloud-function/Dockerfile \
-  -t asia-south1-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/vahanaiq-search:latest .
-docker push asia-south1-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/vahanaiq-search:latest
+# On Apple Silicon the default build is an arm64 OCI index, which Cloud Run
+# rejects with "must support amd64/linux"; build a single amd64 manifest instead.
+docker buildx build --platform linux/amd64 --provenance=false --sbom=false --push \
+  -f gcp-cloud-function/Dockerfile -t "$IMAGE" .
 
 gcloud run deploy vahanaiq-search \
-  --image asia-south1-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/vahanaiq-search:latest \
+  --project "$PROJECT_ID" \
+  --image "$IMAGE" \
   --region asia-south1 \
   --allow-unauthenticated \
+  --remove-env-vars PRICE_TOKEN \
   --update-env-vars "^@^ALLOWED_ORIGINS=https://akila-w.github.io@GEMINI_MODEL=gemini-3.6-flash@RATE_LIMIT=30@TRUSTED_PROXY=true@TRUSTED_PROXY_HOPS=1" \
   --set-secrets PRICE_TOKEN=PRICE_TOKEN:latest
 ```
-The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. `PRICE_TOKEN` is read from Secret Manager (`--set-secrets`) so the token never appears in shell history, the deploy command, or the revision's plain environment. Create the secret once with `printf '%s' '<price-token>' | gcloud secrets create PRICE_TOKEN --data-file=-`, grant the Cloud Run service account `roles/secretmanager.secretAccessor`, then add the same value as the `PRICE_TOKEN` secret in the GitHub repository settings for the monthly price refresh. Upstream errors are written to the Cloud Run logs.
+`--remove-env-vars PRICE_TOKEN` is only needed while the service still holds `PRICE_TOKEN` as a plain variable: Cloud Run refuses to change a variable from a literal to a secret reference in one update (`Cannot update environment variable [PRICE_TOKEN] to the given type because it has already been set with a different type`). Drop the flag once the secret reference is in place.
+
+The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service; `--update-env-vars` merges, so existing variables such as `GEMINI_API_KEY` and `PRICE_MODEL` survive the deploy. `PRICE_TOKEN` is read from Secret Manager (`--set-secrets`) so the token never appears in shell history, the deploy command, or the revision's plain environment. The Secret Manager API must be enabled on the project (`gcloud services enable secretmanager.googleapis.com`) before the secret can be created. Create the secret once with `printf '%s' '<price-token>' | gcloud secrets create PRICE_TOKEN --data-file=- --replication-policy=automatic`, grant the Cloud Run service account (`71962876227-compute@developer.gserviceaccount.com`) `roles/secretmanager.secretAccessor`, then add the same value as the `PRICE_TOKEN` secret in the GitHub repository settings for the monthly price refresh. Upstream errors are written to the Cloud Run logs.
+
+The hardened revision is `vahanaiq-search-00038-dm6`, deployed 25/10/2026.
 
 ### Proxy environment variables
 

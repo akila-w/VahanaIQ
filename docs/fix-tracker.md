@@ -38,7 +38,8 @@ This document records the actual state of each item from the October 2026 securi
 | **SEC-CI-02** — Pin GitHub Actions (`actions/checkout`, `actions/setup-node`) to full commit SHAs across all workflows | Fixed | `4c5e69f` | `grep -n "uses:" .github/workflows/*.yml` |
 | **SEC-CI-03** — Verify unpublished paths (`docs/`, `test/`, `scripts/`, `README.md`, `firestore.rules`) return HTTP 404 in `scripts/smoke-deploy.mjs` | Fixed | `022429c` | `SITE_URL=http://127.0.0.1:8765 SMOKE_ATTEMPTS=1 node scripts/smoke-deploy.mjs` |
 | **SEC-TST-01** — Add unit and browser regression suites for security controls (`test/security.test.mjs`, `test/csp.test.mjs`, `test/client-ip.test.mjs`, `test/module-versions.test.mjs`, `test/browser/csp.spec.mjs`) | Fixed | `4c5e69f`, `1d13ad6`, `7d69a65`, `dcca22a`, `fc9ea53` | `node test/security.test.mjs && node test/csp.test.mjs && node test/client-ip.test.mjs && node test/module-versions.test.mjs && npx playwright test test/browser/csp.spec.mjs` |
-| **SEC-OPS-01** — Deploy hardened `serverless/` container to Cloud Run and merge `2.11.6` to `main` (production Cloud Run still runs revision `vahanaiq-search-00011-bvf` from 20/10/2026, which predates this branch) | Open | `—` | `gcloud run services describe vahanaiq-search --region asia-south1 --format='value(status.latestReadyRevisionName)'` |
+| **SEC-OPS-01** — Deploy the hardened `serverless/` container to Cloud Run and merge `2.11.6` to `main` | Fixed | `b543d23` | Revision `vahanaiq-search-00038-dm6` (25/10/2026, project `gen-lang-client-0189736840`) serves 100% of traffic with `TRUSTED_PROXY=true`, `TRUSTED_PROXY_HOPS=1` and `PRICE_TOKEN` from Secret Manager; no `Origin` → `403 forbidden`, foreign origin → `403`, missing or wrong `X-Price-Token` → `401`, 7,000,000-byte body → `413`, 31st request → `429`, real search → `200`. GitHub Pages serves `2.11.6`. |
+| **SEC-OPS-02** — Move `GEMINI_API_KEY` from a literal environment variable to Secret Manager, as `PRICE_TOKEN` already is, so the key is not readable in the revision configuration by anyone with viewer access | Open | `—` | `gcloud run services describe vahanaiq-search --region asia-south1 --format=json \| jq '.spec.template.spec.containers[0].env'` |
 
 ---
 
@@ -51,10 +52,31 @@ Verifying this branch against the audit IDs above found five defects that the ea
 | `style-src 'self' 'unsafe-inline'` omitted `https://accounts.google.com` on all six pages | Google Identity Services injects `<link href="https://accounts.google.com/gsi/style">`; CSP blocked it, so the Sign in with Google button rendered unstyled while the iframe still attached | Added the origin to `style-src` and to the canonical policy in `test/csp.test.mjs` | `node test/csp.test.mjs`; the GIS case in `test/browser/csp.spec.mjs` fails without the fix and passes with it |
 | Post-parse body cap compared `JSON.stringify(body).length` (UTF-16 units) with `MAX_IMAGE_BYTES` (4,194,304) | Any screenshot above roughly 3 MiB was refused with `413 image_too_large`, although `validateImage()` allows 4 MiB; multi-byte text was under-counted | New `MAX_BODY_BYTES` (6,000,000 UTF-8 bytes) measured with `Buffer.byteLength`, shared with the worker and the `Content-Length` guard | `node test/security.test.mjs` covers a full-size 4 MiB image passing the gate, one group over the image limit failing, and 3.1 million two-byte characters (6.2 MB) being refused |
 | `scripts/build-info-pages.mjs` emitted no CSP and no referrer meta | One run stripped both from `about.html`, `privacy.html` and `terms.html`, breaking the identical-policy assertion | Generator copies both meta tags from `index.html` and gains `--check`, which fails on drift | `node scripts/build-info-pages.mjs --check` and TEST 5 of `node test/csp.test.mjs` |
-| Rate limiting ran after `JSON.parse` and a second `JSON.stringify` | A client over quota still cost a full parse and re-serialise before the `429` | IP resolution and quota check moved ahead of body parsing (the `Content-Length` guard stays first) | `node test/proxy-search.test.mjs`, `node test/security.test.mjs` |
+| Rate limiting ran after `JSON.parse` and a second `JSON.stringify` | A client over quota still cost a full parse and re-serialise before the `429` | IP resolution and quota check moved ahead of validation and re-serialisation (the `Content-Length` guard stays first). It cannot precede parsing: the functions framework parses the JSON body before the handler is invoked | `node test/proxy-search.test.mjs`, `node test/security.test.mjs` |
 | `safeImageUrl()` allowed `data:image/svg+xml` while SEC-DOM-05 said SVG data URLs were blocked | Documentation overstated the guard | `safeImageUrl()` now rejects `data:image/svg` (case-insensitive); ordinary `data:image/jpeg` uploads still pass | `node test/security.test.mjs`, TEST 2.6 |
 
 Also in `1b92cec`: the README deploys `PRICE_TOKEN` with `--set-secrets` instead of an inline `--update-env-vars` value (which exposed the token in shell history and the revision's plain environment), the `browser` CI job polls the local server before Playwright starts, and the GIS browser test asserts that no CSP console message mentions `style-src` or `accounts.google.com`.
+
+---
+
+## Production deployment verification (25/10/2026)
+
+`2.11.6` merged to `main` as `b543d23` and GitHub Pages serves it (`?v=2.11.6` on every asset, `sw.js` caching `vahanaiq-v2.11.6`, `style-src` carrying `https://accounts.google.com`). The proxy was deployed by hand as `vahanaiq-search-00038-dm6` in project `gen-lang-client-0189736840` (project number `71962876227`), and every control was then probed against the live URL:
+
+| Probe | Result |
+| :--- | :--- |
+| `POST /` with no `Origin` | `403 forbidden` — "Search requests must come from the VahanaIQ site" |
+| `POST /` with `Origin: https://evil.example` | `403 forbidden` — "This origin may not use the VahanaIQ search proxy" |
+| `{"mode":"price"}` with no or a wrong `X-Price-Token` | `401 unauthorised` (the token is configured, so the `503 price_mode_disabled` path no longer applies) |
+| 6,200,000-byte and 7,000,000-byte bodies | `413 image_too_large`, before any Gemini call |
+| 5,720,000-byte body (approximately a 4 MiB screenshot in base64) | parsed, then rejected only by image-type validation, so the byte ceiling does not refuse a legitimate 4 MiB screenshot |
+| 31st request from one client IP | `429 rate_limited` with `Access-Control-Allow-Origin` preserved |
+| Real search from the site origin | `200` with a schema-valid response |
+
+Two behaviours differ from what the audit text implied, and both are now recorded rather than fixed:
+
+1. **Rate limiting cannot precede parsing.** `@google-cloud/functions-framework` parses the JSON body before the handler runs, so the quota check saves validation and re-serialisation, not the parse itself. The body ceiling is still enforced: `Content-Length` is checked first, then the post-parse UTF-8 byte count.
+2. **Malformed JSON is answered by the framework, not by `index.js`.** Invalid syntax returns the framework's plain `400 Bad Request` HTML before the handler sees it; the handler's JSON `400 {"detail":"Malformed JSON body"}` covers valid-but-non-object bodies such as `[]` or `123`. Both refuse the request, but only the second carries the documented JSON error shape.
 
 ---
 
