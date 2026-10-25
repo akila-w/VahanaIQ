@@ -2,7 +2,7 @@
 
 **Branch:** `fix/csp-and-proxy-hardening`  
 **Base commit:** `f60c302` (`main`)  
-**Updated:** 25/10/2026  
+**Updated:** 25/10/2026 (review follow-up in `1b92cec`)  
 
 This document records the actual state of each item from the October 2026 security review and hardening pass, the commit SHA that implements it on this branch, the test or command that verifies it locally, and the residual risks that remain by design or pending deployment.
 
@@ -39,6 +39,22 @@ This document records the actual state of each item from the October 2026 securi
 | **SEC-CI-03** — Verify unpublished paths (`docs/`, `test/`, `scripts/`, `README.md`, `firestore.rules`) return HTTP 404 in `scripts/smoke-deploy.mjs` | Fixed | `022429c` | `SITE_URL=http://127.0.0.1:8765 SMOKE_ATTEMPTS=1 node scripts/smoke-deploy.mjs` |
 | **SEC-TST-01** — Add unit and browser regression suites for security controls (`test/security.test.mjs`, `test/csp.test.mjs`, `test/client-ip.test.mjs`, `test/module-versions.test.mjs`, `test/browser/csp.spec.mjs`) | Fixed | `4c5e69f`, `1d13ad6`, `7d69a65`, `dcca22a`, `fc9ea53` | `node test/security.test.mjs && node test/csp.test.mjs && node test/client-ip.test.mjs && node test/module-versions.test.mjs && npx playwright test test/browser/csp.spec.mjs` |
 | **SEC-OPS-01** — Deploy hardened `serverless/` container to Cloud Run and merge `2.11.6` to `main` (production Cloud Run still runs revision `vahanaiq-search-00011-bvf` from 20/10/2026, which predates this branch) | Open | `—` | `gcloud run services describe vahanaiq-search --region asia-south1 --format='value(status.latestReadyRevisionName)'` |
+
+---
+
+## Review follow-up (25/10/2026)
+
+Verifying this branch against the audit IDs above found five defects that the earlier passes had missed. All are fixed in `1b92cec` and covered by tests.
+
+| Defect | Effect before the fix | Fix | Proof |
+| :--- | :--- | :--- | :--- |
+| `style-src 'self' 'unsafe-inline'` omitted `https://accounts.google.com` on all six pages | Google Identity Services injects `<link href="https://accounts.google.com/gsi/style">`; CSP blocked it, so the Sign in with Google button rendered unstyled while the iframe still attached | Added the origin to `style-src` and to the canonical policy in `test/csp.test.mjs` | `node test/csp.test.mjs`; the GIS case in `test/browser/csp.spec.mjs` fails without the fix and passes with it |
+| Post-parse body cap compared `JSON.stringify(body).length` (UTF-16 units) with `MAX_IMAGE_BYTES` (4,194,304) | Any screenshot above roughly 3 MiB was refused with `413 image_too_large`, although `validateImage()` allows 4 MiB; multi-byte text was under-counted | New `MAX_BODY_BYTES` (6,000,000 UTF-8 bytes) measured with `Buffer.byteLength`, shared with the worker and the `Content-Length` guard | `node test/security.test.mjs` covers a full-size 4 MiB image passing the gate, one group over the image limit failing, and 3.1 million two-byte characters (6.2 MB) being refused |
+| `scripts/build-info-pages.mjs` emitted no CSP and no referrer meta | One run stripped both from `about.html`, `privacy.html` and `terms.html`, breaking the identical-policy assertion | Generator copies both meta tags from `index.html` and gains `--check`, which fails on drift | `node scripts/build-info-pages.mjs --check` and TEST 5 of `node test/csp.test.mjs` |
+| Rate limiting ran after `JSON.parse` and a second `JSON.stringify` | A client over quota still cost a full parse and re-serialise before the `429` | IP resolution and quota check moved ahead of body parsing (the `Content-Length` guard stays first) | `node test/proxy-search.test.mjs`, `node test/security.test.mjs` |
+| `safeImageUrl()` allowed `data:image/svg+xml` while SEC-DOM-05 said SVG data URLs were blocked | Documentation overstated the guard | `safeImageUrl()` now rejects `data:image/svg` (case-insensitive); ordinary `data:image/jpeg` uploads still pass | `node test/security.test.mjs`, TEST 2.6 |
+
+Also in `1b92cec`: the README deploys `PRICE_TOKEN` with `--set-secrets` instead of an inline `--update-env-vars` value (which exposed the token in shell history and the revision's plain environment), the `browser` CI job polls the local server before Playwright starts, and the GIS browser test asserts that no CSP console message mentions `style-src` or `accounts.google.com`.
 
 ---
 
