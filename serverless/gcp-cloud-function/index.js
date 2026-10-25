@@ -33,7 +33,8 @@ const {
   buildVehicleSearchRequestBody,
   callGemini,
   parseVehicleResponse,
-  priceLookup
+  priceLookup,
+  resolveClientIp
 } = proxyLogic;
 
 // The one place the Gemini model is chosen. Override with the GEMINI_MODEL env var.
@@ -46,53 +47,13 @@ const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
 
 // Rate limiting configuration
 // Quota per client IP on each instance: RATE_LIMIT requests per 10 minutes.
-// Forwarded headers (X-Forwarded-For) can be spoofed by callers to bypass rate limits
-// unless the function runs behind a trusted reverse proxy (e.g. Google Cloud Load Balancing
-// or Cloud Run) that normalises or manages headers.
-// Set environment variable TRUSTED_PROXY=true when deployed behind such a proxy.
+// Cloud Run appends one entry per hop to X-Forwarded-For, meaning earlier entries
+// are attacker-controlled and untrusted. Client IP resolution counts trusted proxy
+// hops from the right when TRUSTED_PROXY=true (TRUSTED_PROXY_HOPS, default 1).
 // When TRUSTED_PROXY is false or unset, the proxy falls back strictly to req.socket.remoteAddress
 // (or 'shared-proxy') to prevent spoofed header rate-limit rotation.
 const RATE_LIMIT = Number(process.env.RATE_LIMIT) || DEFAULT_RATE_LIMIT;
 const rateLimited = createRateLimiter({ defaultLimit: RATE_LIMIT });
-
-/**
- * Resolves the client IP for per-client rate limiting.
- *
- * Behind Cloud Load Balancer / Cloud Run, req.socket.remoteAddress represents the internal
- * proxy or load-balancer IP rather than the true client.
- *
- * To extract the client IP safely without opening spoofing vulnerabilities:
- * 1. Only trust X-Forwarded-For if TRUSTED_PROXY=true is set in the environment.
- * 2. When TRUSTED_PROXY is enabled and X-Forwarded-For exists, take the first IP.
- * 3. Log extraction details for debugging and auditability.
- * 4. Fall back to socket IP (req.socket.remoteAddress) or 'shared-proxy' if untrusted or missing.
- */
-function extractClientIp(req) {
-  const socketIp = req?.socket?.remoteAddress;
-  const isTrusted = process.env.TRUSTED_PROXY === 'true';
-
-  if (isTrusted) {
-    let rawForwarded = '';
-    if (typeof req?.get === 'function') {
-      rawForwarded = req.get('x-forwarded-for') || '';
-    }
-    if (!rawForwarded && req?.headers) {
-      rawForwarded = req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For'] || '';
-    }
-    const forwarded = Array.isArray(rawForwarded) ? rawForwarded.join(',') : String(rawForwarded || '');
-    if (forwarded) {
-      const firstIp = forwarded.split(',')[0].trim();
-      if (firstIp) {
-        console.log(`[RateLimit] Extracted client IP ${firstIp} from X-Forwarded-For (socket: ${socketIp || 'unknown'})`);
-        return firstIp;
-      }
-    }
-    console.log(`[RateLimit] TRUSTED_PROXY enabled but X-Forwarded-For missing; falling back to socket IP: ${socketIp || 'shared-proxy'}`);
-  }
-
-  const fallbackIp = socketIp || 'shared-proxy';
-  return fallbackIp;
-}
 
 /**
  * Constant-time comparison for authentication tokens to prevent timing side-channel attacks.
@@ -133,7 +94,15 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  const ip = extractClientIp(req);
+  // Rate limiting: Cloud Run appends one entry per hop to X-Forwarded-For,
+  // meaning earlier entries are untrusted. Count trusted hops from the right
+  // when TRUSTED_PROXY=true; fall back to socket IP if untrusted.
+  const ip = resolveClientIp({
+    forwardedFor: req.headers && (req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For']),
+    socketIp: req.socket?.remoteAddress,
+    trusted: process.env.TRUSTED_PROXY === 'true',
+    hops: Number(process.env.TRUSTED_PROXY_HOPS) || 1
+  });
   if (rateLimited(ip)) {
     res.status(429).json({ error: 'rate_limited', detail: 'Too many searches. Try again in a few minutes.' });
     return;

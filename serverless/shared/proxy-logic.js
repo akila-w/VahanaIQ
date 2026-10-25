@@ -350,6 +350,63 @@ async function priceLookup(apiKey, queries, model = PRICE_MODEL) {
   return formatPriceResponse(r.data.candidates?.[0], model);
 }
 
+/**
+ * Resolves the client IP for per-client rate limiting behind reverse proxies.
+ *
+ * Cloud Run and Google Cloud Load Balancing append one entry per hop to the
+ * X-Forwarded-For header, which means earlier entries are caller-supplied and
+ * untrusted. Taking the first IP (leftmost entry) allows callers to spoof
+ * headers and rotate rate-limit quotas at will.
+ *
+ * To safely resolve the client IP:
+ * - If trusted !== true, ignore X-Forwarded-For and fall back to socketIp || 'shared-proxy'.
+ * - When trusted === true, count `hops` from the right (list[list.length - hops])
+ *   so only the entry appended by the trusted proxy hop is considered.
+ * - If the header chain has fewer entries than expected hops, fall back to socketIp || 'shared-proxy'.
+ * - Normalise the candidate (strip brackets, strip IPv4 :port suffix, leave IPv6 intact).
+ * - Reject candidates containing characters outside valid IPv4/IPv6 literals.
+ *
+ * Dependency-free (no node:net) to ensure compatibility with Cloudflare Workers.
+ *
+ * @param {Object} options
+ * @param {string|string[]} [options.forwardedFor] X-Forwarded-For header value
+ * @param {string} [options.socketIp] Underlying socket remote address
+ * @param {boolean} [options.trusted] Whether the reverse proxy is trusted
+ * @param {number} [options.hops=1] Number of trusted proxy hops from the right
+ * @returns {string} The resolved client IP address or fallback
+ */
+function resolveClientIp({ forwardedFor, socketIp, trusted, hops = 1 } = {}) {
+  const fallback = socketIp || "shared-proxy";
+  if (trusted !== true) return fallback;
+
+  const hopCount = Number(hops) >= 1 ? Math.floor(Number(hops)) : 1;
+  const raw = Array.isArray(forwardedFor) ? forwardedFor.join(",") : (typeof forwardedFor === "string" ? forwardedFor : "");
+  const entries = raw.split(",").map(s => s.trim()).filter(Boolean);
+
+  if (entries.length < hopCount) return fallback;
+
+  let candidate = entries[entries.length - hopCount];
+
+  // Normalise: strip surrounding brackets (e.g. [2001:db8::1] -> 2001:db8::1)
+  if (candidate.startsWith("[") && candidate.endsWith("]")) {
+    candidate = candidate.slice(1, -1);
+  } else if (/^\[[^\]]+\]:\d+$/.test(candidate)) {
+    candidate = candidate.replace(/^\[([^\]]+)\]:\d+$/, "$1");
+  }
+
+  // Normalise: strip IPv4 :port suffix (e.g. 203.0.113.7:8080 -> 203.0.113.7), leaving IPv6 intact
+  if (/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/.test(candidate)) {
+    candidate = candidate.replace(/:\d+$/, "");
+  }
+
+  // Accept only characters valid in an IPv4/IPv6 literal (digits, a-f, A-F, ":", ".")
+  if (!candidate || !/^[0-9a-fA-F:.]+$/.test(candidate)) {
+    return fallback;
+  }
+
+  return candidate;
+}
+
 // Export object with literal properties so Node.js static CJS module lexer exposes named exports in ESM
 module.exports = {
   DEFAULT_MODEL,
@@ -384,5 +441,6 @@ module.exports = {
   parseJsonText,
   parseVehicleResponse,
   formatPriceResponse,
-  priceLookup
+  priceLookup,
+  resolveClientIp
 };

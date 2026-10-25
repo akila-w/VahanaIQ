@@ -23,6 +23,7 @@ jobs:
           node test/verify-graphics.test.mjs
           node test/qa-regressions.test.mjs
           node test/catalogue.test.mjs
+          node test/client-ip.test.mjs
           node test/proxy-search.test.mjs
           node test/proxy-price-mode.test.mjs
           node test/security.test.mjs

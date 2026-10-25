@@ -86,7 +86,7 @@ try {
   r = { statusCode: 200 };
   for (let i = 0; i < 4 && r.statusCode !== 429; i++) r = await cloudflareWith({ query: 'Toyota' }, { 'CF-Connecting-IP': '203.0.113.10' }, { RATE_LIMIT: '2' });
   assert.equal(r.statusCode, 429, 'Cloudflare honours RATE_LIMIT');
-  // Forged forwarded headers cannot rotate the quota for a single transport peer.
+  // Forged forwarded headers cannot rotate the quota for a single transport peer when TRUSTED_PROXY is unset.
   upstreamStatus = 200;
   for (let i = 0; i < 30; i++) assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': `198.51.100.${i}, 203.0.113.9`, 'x-real-ip': `198.51.100.${i}` }, '192.0.2.1')).statusCode, 200);
   for (const body of [{query:'Toyota'}, {image:{mimeType:'image/png',data:'AAAA'}}, {mode:'price',queries:['Toyota']}]) {
@@ -94,27 +94,28 @@ try {
     assert.equal(r.statusCode,429);
   }
   assert.equal((await cloudRunWith({query:'Toyota'}, {}, '192.0.2.2')).statusCode,200,'Another transport peer has its own budget');
-  console.log('Both proxies: origins, screenshots and rate limits passed; forged IP prefixes cannot bypass the Cloud Run quota');
+  console.log('Both proxies: origins, screenshots and rate limits passed; socket IP binds quota when TRUSTED_PROXY is unset');
 
-  // When TRUSTED_PROXY=true is set, the first IP from X-Forwarded-For is trusted for client rate limiting
+  // When TRUSTED_PROXY=true is set, Cloud Run appends the client IP to the right of X-Forwarded-For.
+  // The rightmost entry is used for client rate limiting, preventing forged prefixes from rotating quota.
   process.env.TRUSTED_PROXY = 'true';
   const savedLog = console.log;
   console.log = () => {};
   try {
     for (let i = 0; i < 30; i++) {
-      assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': '198.51.100.200, 192.0.2.99' }, '192.0.2.99')).statusCode, 200);
+      assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': `forged.${i}, 198.51.100.200` }, '192.0.2.99')).statusCode, 200);
     }
-    // 31st request from same client IP behind proxy is rate limited
-    assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': '198.51.100.200, 192.0.2.99' }, '192.0.2.99')).statusCode, 429);
+    // 31st request from same client IP behind proxy is rate limited even with a new forged prefix
+    assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': 'new-forged, 198.51.100.200' }, '192.0.2.99')).statusCode, 429);
     // Distinct client IP behind the same proxy peer has its own quota
-    assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': '198.51.100.201, 192.0.2.99' }, '192.0.2.99')).statusCode, 200);
+    assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': 'forged.0, 198.51.100.201' }, '192.0.2.99')).statusCode, 200);
     // Fallback to socket IP when X-Forwarded-For is missing
     assert.equal((await cloudRunWith({ query: 'Toyota' }, {}, '192.0.2.88')).statusCode, 200);
   } finally {
     console.log = savedLog;
     delete process.env.TRUSTED_PROXY;
   }
-  console.log('TRUSTED_PROXY=true: correctly isolates client quotas behind shared proxy via X-Forwarded-For');
+  console.log('TRUSTED_PROXY=true: correctly isolates client quotas behind shared proxy via rightmost X-Forwarded-For entry');
 } finally {
   globalThis.fetch = realFetch; console.error = realError;
   if (previousKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = previousKey;
