@@ -72,8 +72,11 @@ vahanaiq/
 │   ├── catalogue-studio.css  # Styles for studio.html (tokens only, no literals)
 │   └── test-builds.css   # Diagnostic badge styles for automated testing
 ├── js/
+│   ├── boot.js           # Early theme and photo-overlay bootstrap loaded before stylesheets
 │   ├── app.js            # Main application UI, telemetry gauges and event coordinator
 │   ├── calculator.js     # Actuarial lease formulas, CBSL floors, DTI & budget room
+│   ├── constants.js      # Centralised CBSL regulatory floors, tenures, DTI limits & presets
+│   ├── safe-url.js       # Shared safeUrl() and safeImageUrl() scheme and data-URI validators
 │   ├── catalog.js        # Frozen original 12 estimates, used for legacy migration
 │   ├── market-catalogue.js # Current source-backed model and variant catalogue (281 vehicles)
 │   ├── catalogue-data.js # Generated: catalogue.html records (mirrors data/catalogue.json)
@@ -81,7 +84,6 @@ vahanaiq/
 │   ├── catalogue-browser.js # Browse, review a quote and select comparison vehicles
 │   ├── bulk-selection.js # Bulk add, filter-match, clear and comparison coordinator
 │   ├── catalogue-search.js  # Search indexing and filter queries across catalogue entries
-│   ├── pricing-engine.js # Dynamic condition and trim valuation engine
 │   ├── vehicle-validation.js # Sri Lankan market availability and CBSL compliance rules
 │   ├── catalogue-studio.js   # Photo Studio page: uploads, crop stage, arrangement, export
 │   ├── catalogue-photo-overlay.js # Applies studio's saved photos across the app
@@ -123,7 +125,7 @@ vahanaiq/
 │   ├── catalogue-calculator-imagery.test.mjs # Catalogue canonical imagery authority tests
 │   ├── e2e-journeys.test.mjs     # Automated end-to-end user journeys (14 test journeys)
 │   ├── tokens.test.mjs           # Design tokens are in sync and only source of CSS variables
-│   ├── account.test.mjs          # Firebase sync decisions and Firestore rules structure
+│   ├── account.test.mjs          # Firebase sync decisions, UTF-8 byte budget & Firestore rules
 │   ├── account-session.test.mjs  # Google Sign-In session lifecycle and conflict detection
 │   ├── catalogue.test.mjs        # Catalogue model grouping, filters, sorting and detail dialogs
 │   ├── catalogue-data.test.mjs   # data/catalogue.json, baked copy and published image tree agree
@@ -136,16 +138,23 @@ vahanaiq/
 │   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
 │   ├── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
 │   ├── proxy-search.test.mjs     # Proxy AI search schema and fallback verification
+│   ├── client-ip.test.mjs        # Hop-counted X-Forwarded-For client IP resolution tests
+│   ├── csp.test.mjs              # Content Security Policy and js/boot.js verification
+│   ├── module-versions.test.mjs  # Unified APP_VERSION query string & service worker cache checks
+│   ├── security.test.mjs         # XSS, URL schemes, rate limits, magic bytes & proxy security
 │   └── qa-regressions.test.mjs   # Historical bug fixes and edge-case regression suite
 ├── .github/workflows/
-│   ├── test.yml                  # Continuous integration: runs all 20 test suites on PR/push
+│   ├── test.yml                  # Continuous integration: runs 24 Node suites + Chromium CSP spec
 │   ├── smoke-deploy.yml          # Post-deployment live asset and version smoke tests
 │   └── refresh-prices.yml        # Monthly price scan and pull request
 ├── serverless/
 │   ├── shared/
-│   │   └── proxy-logic.js           # Shared schemas, prompts, rate limiting & validation
-│   ├── cloudflare-worker.js         # Cloudflare Worker proxy ($0 / 100k req/day)
-│   └── gcp-cloud-function/index.js  # Google Cloud Run / Cloud Function proxy
+│   │   └── proxy-logic.js                  # Shared schemas, prompts, rate limiting & validation
+│   ├── cloudflare-worker.js                # Cloudflare Worker proxy ($0 / 100k req/day)
+│   └── gcp-cloud-function/
+│       ├── Dockerfile                      # Node 22 slim non-root image (built from serverless/)
+│       ├── index.js                        # Google Cloud Run / Cloud Function proxy
+│       └── package.json, package-lock.json # Pinned @google-cloud/functions-framework 3.4.0
 └── assets/
     ├── icons/
     │   ├── logo-full-lockup.svg              # Universal vector lockup & social preview
@@ -163,7 +172,7 @@ vahanaiq/
 
 ## Catalogue Photo Studio
 
-The Photo Studio (`studio.html`) is where the catalogue's pictures are arranged by hand. Like the rest of the application, it relies on ES modules and must be served over HTTP (via `python3 -m http.server 8000` or `node test/serve-qa-fixtures.mjs`); opening directly from disk over `file://` is not supported. Open it from the
+The Photo Studio (`studio.html`) is where the catalogue's pictures are arranged by hand. Serve the site over HTTP (`python3 -m http.server 8000` or `node test/serve-qa-fixtures.mjs`), open it from the
 catalogue's header (**Photo Studio**) or its footer, pick an entry, and:
 
 - **Add photos** with the *Add Photos* button (any number at once), by dragging files onto the strip,
@@ -219,24 +228,28 @@ Run the regression suites with:
 ```bash
 node test/verify.mjs
 node test/verify-graphics.test.mjs
-node test/calculator.test.mjs
-node test/catalogue-calculator-imagery.test.mjs
-node test/e2e-journeys.test.mjs
-node test/planner.test.mjs
-node test/print.test.mjs
-node test/tokens.test.mjs
+node test/qa-regressions.test.mjs
 node test/catalogue.test.mjs
-node test/catalogue-data.test.mjs
-node test/catalogue-studio.test.mjs
+node test/client-ip.test.mjs
+node test/proxy-search.test.mjs
+node test/proxy-price-mode.test.mjs
+node test/security.test.mjs
+node test/csp.test.mjs
+node test/module-versions.test.mjs
+node test/refresh-prices.test.mjs
+node test/tokens.test.mjs
+node test/calculator.test.mjs
 node test/account.test.mjs
 node test/account-session.test.mjs
 node test/copy-privacy.test.mjs
-node test/savings-bulk.test.mjs
+node test/catalogue-data.test.mjs
+node test/catalogue-calculator-imagery.test.mjs
+node test/catalogue-studio.test.mjs
+node test/planner.test.mjs
+node test/print.test.mjs
 node test/scan-prices.test.mjs
-node test/refresh-prices.test.mjs
-node test/proxy-search.test.mjs
-node test/proxy-price-mode.test.mjs
-node test/qa-regressions.test.mjs
+node test/savings-bulk.test.mjs
+node test/e2e-journeys.test.mjs
 ```
 
 ### Browser Integration Testing (Playwright)
@@ -289,7 +302,7 @@ It waits for `js/config.js`'s `APP_VERSION` to appear in the served `index.html`
 page and asset returns 200 and that `docs/`, `test/`, `scripts/`, `README.md` and `firestore.rules`
 are **not** published. `.github/workflows/smoke-deploy.yml` runs the same check on every push, so a
 successful-but-stale deployment (which previously occurred when the site sat on v2.10.1 while the checkout was
-v2.11.3, now v2.11.5) fails the build instead of passing quietly.
+v2.11.3, now v2.11.6) fails the build instead of passing quietly.
 
 ## Repository size and working artefacts
 
@@ -320,31 +333,41 @@ them; deleting the refs and running `git gc --prune=now` brought `.git` to ~99 M
 recreate them, and never add one back "just in case" — it re-inflates the repository.
 
 ## Deploying the search proxy (Cloud Run)
-The proxy runs containerised on Node 22 (`node:22-slim`) as a non-root user (`node`, UID 1000) with `@google-cloud/functions-framework` pinned to `3.4.0`.
+The proxy runs containerised on Node 22 (`node:22-slim`) as a non-root user (`node`, UID 1000) with `@google-cloud/functions-framework` pinned to `3.4.0` and a committed `package-lock.json`.
 
-Build the container image from `serverless/`:
+Because `serverless/gcp-cloud-function/index.js` loads `./shared/proxy-logic.js` and `serverless/gcp-cloud-function/Dockerfile` copies both `gcp-cloud-function/` and `shared/` into `/app`, the Docker build context is **`serverless/`** (not `serverless/gcp-cloud-function/`):
+
 ```bash
+cd serverless
+
+# Build the container image locally from the serverless/ build context
 docker build -f gcp-cloud-function/Dockerfile -t vahanaiq-search .
-```
 
-Or deploy to Cloud Run from `serverless/`:
-```bash
-gcloud run deploy vahanaiq-search --source . --region asia-south1 --allow-unauthenticated --update-env-vars GEMINI_MODEL=gemini-3.6-flash
+# Build, push, and deploy to Cloud Run with the proxy environment variables
+docker build -f gcp-cloud-function/Dockerfile \
+  -t asia-south1-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/vahanaiq-search:latest .
+docker push asia-south1-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/vahanaiq-search:latest
+
+gcloud run deploy vahanaiq-search \
+  --image asia-south1-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/vahanaiq-search:latest \
+  --region asia-south1 \
+  --allow-unauthenticated \
+  --update-env-vars "^@^ALLOWED_ORIGINS=https://akila-w.github.io@GEMINI_MODEL=gemini-3.6-flash@RATE_LIMIT=30@TRUSTED_PROXY=true@TRUSTED_PROXY_HOPS=1@PRICE_TOKEN=<price-token>"
 ```
 The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. Upstream errors are written to the Cloud Run logs.
 
-The Cloud Run proxy deliberately ignores forwarded client-IP headers unless `TRUSTED_PROXY=true` is set, applying a conservative quota to each transport peer (or a shared bucket when unavailable). Behind a shared proxy, legitimate users may share that quota. This is a per-instance safeguard; deployment-wide limits still need infrastructure controls.
+### Proxy environment variables
 
-The proxy configuration is controlled via environment variables:
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `ALLOWED_ORIGINS` | `https://akila-w.github.io` | Comma-separated origins permitted to call the proxy. Search requests without an `Origin` header or from unlisted origins receive HTTP `403 forbidden`. Add `http://localhost:8000` when testing locally against a proxy instance. |
+| `GEMINI_MODEL` | `gemini-3.6-flash` | Gemini model used for vehicle search queries. |
+| `RATE_LIMIT` | `30` | Maximum requests per client IP per 10-minute sliding window on each instance (up to 5,000 tracked IPs). Requests over the limit receive HTTP `429 rate_limited`. |
+| `TRUSTED_PROXY` | unset (`false`) | When set to `"true"`, `resolveClientIp()` extracts the client IP from `X-Forwarded-For` by counting `TRUSTED_PROXY_HOPS` from the right. When unset or anything other than `"true"`, `X-Forwarded-For` is ignored and rate limiting keys on `req.socket.remoteAddress` (or `"shared-proxy"`). |
+| `TRUSTED_PROXY_HOPS` | `1` | Number of trusted reverse-proxy hops appended to the right of `X-Forwarded-For` when `TRUSTED_PROXY=true`. If the header chain has fewer entries than `TRUSTED_PROXY_HOPS` or contains invalid characters, the proxy falls back to the socket IP. |
+| `PRICE_TOKEN` | unset (disabled) | Secret token required in the `X-Price-Token` header for `{"mode": "price"}` requests, compared in constant time (`safeCompareTokens`). When unset or blank, price mode is closed and returns HTTP `503 price_mode_disabled`. |
 
-- `ALLOWED_ORIGINS`: comma-separated sites whose browsers may call it (default `https://akila-w.github.io`). Requests from any other site's pages get 403. Add e.g. `http://localhost:8000` to test against the real proxy locally.
-- `GEMINI_MODEL`: the Gemini model used for vehicle search queries (default `gemini-3.6-flash`).
-- `TRUSTED_PROXY`: when `true`, proxy counts trusted proxy hops from the right in `X-Forwarded-For` to resolve client IP. When `false` or unset, falls back strictly to socket IP.
-- `TRUSTED_PROXY_HOPS`: number of trusted proxy hops from the right when `TRUSTED_PROXY=true` (default: 1).
-- `PRICE_TOKEN`: when set, price mode answers only requests with a matching `X-Price-Token` header. The direct proxy lookup in `scripts/refresh-prices.mjs` sends the `PRICE_TOKEN` environment variable. If missing or unset, price mode returns 503 `price_mode_disabled`.
-- `RATE_LIMIT`: requests per client IP per 10 minutes on each instance (default 30). Over the limit, the proxy answers 429 `rate_limited`.
-
-Screenshots must be JPEG, PNG, WebP or GIF and under about 4 MB, and error details sent to the browser are shortened.
+Request bodies declaring `Content-Length > 6000000` or serialising to more than 4 MiB (`4,194,304` bytes) after JSON parsing are rejected with HTTP `413 image_too_large`. Attached screenshots must be JPEG, PNG, WebP or GIF, match their magic bytes, and decode to at most 4 MiB (`4,194,304` bytes). Error details sent to the browser are stripped of credentials and shortened to 200 characters.
 
 The same service has a second, **price mode** (`POST {"mode": "price", "queries": ["...", "..."]}`, up to 12 vehicles), used only by the monthly price refresh. It turns on Grounding with Google Search, so Gemini looks up current Sri Lankan prices instead of relying on its training data. It runs on its own model, set with the `PRICE_MODEL` environment variable (`gemini-2.5-flash-lite` by default), whose free daily allowance is separate from the app's. It returns `{ vehicles[], sources[], search_queries[], model }`, where each vehicle lists its trims with price, model year, basis, month and the site the price came from, and `sources` are the web pages Gemini cited. A quota error says whether the daily or per-minute limit was hit (`"quota": "daily"`). Requests without `mode` are handled exactly as before. To use a different model for the refresh, add `PRICE_MODEL=<model>` to `--update-env-vars`. On the free tier it has to be a Gemini 2.x or 2.5 model: AI Studio gives Gemini 3 and newer no free Google Search grounding, and `gemini-2.5-flash` is closed to new users. If Gemini refuses the model, the refresh stops after one request and says so.
 
