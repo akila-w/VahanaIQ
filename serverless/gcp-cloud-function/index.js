@@ -102,10 +102,25 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
+  let body = req.body;
+  if (typeof body === 'string' || Buffer.isBuffer(body)) {
+    try {
+      body = JSON.parse(body.toString('utf8'));
+    } catch {
+      res.status(400).json({ error: 'bad_request', detail: 'Malformed JSON body' });
+      return;
+    }
+  }
+
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    res.status(400).json({ error: 'bad_request', detail: 'Malformed JSON body' });
+    return;
+  }
+
   // After parsing, reject when the serialised body exceeds the documented 4 MB limit.
   // Note: Memory is already spent parsing the request body, but reject here if Content-Length was missing or bypassed.
   // Cloud Run's 32 MiB cap is the outer bound.
-  const serializedBody = JSON.stringify(req.body || {});
+  const serializedBody = JSON.stringify(body);
   if (serializedBody.length > MAX_IMAGE_BYTES) {
     res.status(413).json({ error: 'image_too_large', detail: 'The screenshot is too large; attach one under 4 MB' });
     return;
@@ -132,7 +147,7 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  if (req.body?.mode === 'price') {
+  if (body.mode === 'price') {
     // Price mode is closed unless PRICE_TOKEN is configured on this deployment
     if (!process.env.PRICE_TOKEN || !process.env.PRICE_TOKEN.trim()) {
       res.status(503).json({ error: 'price_mode_disabled', detail: 'Price mode is disabled on this deployment' });
@@ -142,12 +157,12 @@ functions.http('vehicleSearch', async (req, res) => {
       res.status(401).json({ error: 'unauthorised', detail: 'Price mode needs the X-Price-Token header' });
       return;
     }
-    const val = validatePriceRequest(req.body);
+    const val = validatePriceRequest(body);
     if (!val.valid) {
       res.status(val.status).json({ error: val.error, detail: val.detail });
       return;
     }
-    const queries = req.body.queries;
+    const queries = body.queries;
     const priceModel = process.env.PRICE_MODEL || PRICE_MODEL;
     try {
       res.json(await priceLookup(apiKey, queries, priceModel));
@@ -169,14 +184,14 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  const val = validateSearchRequest(req.body);
+  const val = validateSearchRequest(body);
   if (!val.valid) {
     res.status(val.status).json({ error: val.error, detail: val.detail });
     return;
   }
 
-  const { query, image } = req.body || {};
-  const comparison = isComparisonQuery(query, req.body?.comparison);
+  const { query, image } = body;
+  const comparison = isComparisonQuery(query, body.comparison);
   const reqBody = buildVehicleSearchRequestBody(query, image, comparison, VEHICLE_RESPONSE_SCHEMA);
 
   try {

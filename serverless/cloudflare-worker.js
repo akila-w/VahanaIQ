@@ -80,7 +80,11 @@ export default {
       return json({ error: "bad_request", detail: "Malformed JSON body" }, 400, origin);
     }
 
-    if (body?.mode === "price") {
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return json({ error: "bad_request", detail: "Malformed JSON body" }, 400, origin);
+    }
+
+    if (body.mode === "price") {
       return json({ error: "price_mode_unsupported" }, 400, origin);
     }
 

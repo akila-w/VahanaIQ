@@ -27,7 +27,7 @@ const calls = [];
 let replies = [];
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (url, init) => {
-  calls.push({ url, body: JSON.parse(init.body) });
+  calls.push({ url, headers: init.headers, body: JSON.parse(init.body) });
   const { status = 200, json } = replies.shift();
   return { ok: status < 300, status, json: async () => json };
 };
@@ -84,7 +84,9 @@ try {
   assert.deepEqual(res.body.search_queries, grounding.webSearchQueries);
   assert.equal(res.body.model, "gemini-2.5-flash-lite");
   assert.equal(calls.length, 1, "One Gemini request for the whole batch");
-  assert.match(calls[0].url, /\/models\/gemini-2\.5-flash-lite:generateContent/, "Price mode uses PRICE_MODEL, not the app's model");
+  assert.match(calls[0].url, /\/models\/gemini-2\.5-flash-lite:generateContent$/, "Price mode uses PRICE_MODEL, not the app's model");
+  assert.equal(calls[0].headers["x-goog-api-key"], "test-key", "Price mode sends key in x-goog-api-key header");
+  assert.ok(!calls[0].url.includes("key="), "Price mode upstream URL has no key parameter");
   const sent = calls[0].body;
   assert.deepEqual(sent.tools, [{ google_search: {} }], "Price mode turns on Google Search");
   assert.equal(sent.generationConfig.responseSchema, undefined, "No response schema, so any model with Google Search works");
@@ -133,7 +135,9 @@ try {
   res = await call({ query: "Toyota Aqua 2024" });
   assert.deepEqual(res.body, search);
   assert.equal(calls[0].body.tools, undefined, "Search mode does not use Google Search");
-  assert.match(calls[0].url, /\/models\/gemini-3\.6-flash:generateContent/, "Search mode keeps the app's model");
+  assert.match(calls[0].url, /\/models\/gemini-3\.6-flash:generateContent$/, "Search mode keeps the app's model");
+  assert.equal(calls[0].headers["x-goog-api-key"], "test-key", "Search mode sends key in x-goog-api-key header");
+  assert.ok(!calls[0].url.includes("key="), "Search mode upstream URL has no key parameter");
   assert.ok(calls[0].body.generationConfig.responseSchema.properties.model_years, "Search mode keeps VEHICLE_RESPONSE_SCHEMA");
   console.log("✓ Search mode unchanged PASSED\n");
 

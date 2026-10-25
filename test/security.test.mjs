@@ -616,11 +616,11 @@ console.log('✓ Malformed JSON Handling & Resilient Parsing PASSED\n');
 // ============================================================================
 console.log('TEST 7: safeDetail Stripping Keys & Credential Sanitization');
 
-// 7.1 Strips Google API key in URL parameter
+// 7.1 Strips Google API key in error detail
 assert.equal(
-  safeDetail('API error at https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyD_TEST_SECRET_KEY_12345'),
-  'API error at https://generativelanguage.googleapis.com/v1beta/models?key=[removed]',
-  'Google API key in URL query parameter must be replaced with key=[removed]'
+  safeDetail('API error at https://generativelanguage.googleapis.com/v1beta/models key=AIzaSyD_TEST_SECRET_KEY_12345'),
+  'API error at https://generativelanguage.googleapis.com/v1beta/models key=[removed]',
+  'Google API key must be replaced with key=[removed]'
 );
 
 // 7.2 Strips key parameter surrounded by other query parameters
@@ -759,8 +759,11 @@ const realFetch = globalThis.fetch;
 const realError = console.error;
 let upstreamStatus = 200;
 let upstreamBody = { candidates: [{ content: { parts: [{ text: '{"is_available_in_sri_lanka": true}' }] } }] };
+let lastUpstreamUrl = '', lastUpstreamHeaders = {};
 
-globalThis.fetch = async () => {
+globalThis.fetch = async (url, init) => {
+  lastUpstreamUrl = url;
+  lastUpstreamHeaders = init?.headers || {};
   return new Response(JSON.stringify(upstreamBody), { status: upstreamStatus });
 };
 console.error = () => {};
@@ -822,11 +825,15 @@ try {
   assert.equal(crGoodOrigin.statusCode, 200, 'Cloud Run accepts trusted origin');
   assert.notEqual(crGoodOrigin.statusCode, 403, 'Cloud Run trusted origin must not be 403');
   assert.equal(crGoodOrigin.headers['Access-Control-Allow-Origin'], 'https://akila-w.github.io');
+  assert.equal(lastUpstreamHeaders['x-goog-api-key'], 'test-placeholder-key', 'Cloud Run sends key in x-goog-api-key header');
+  assert.ok(!lastUpstreamUrl.includes('key='), 'Cloud Run upstream URL has no key parameter');
 
   const cfGoodOrigin = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfGoodOrigin.statusCode, 200, 'Cloudflare Worker accepts trusted origin');
   assert.notEqual(cfGoodOrigin.statusCode, 403, 'Cloudflare Worker trusted origin must not be 403');
   assert.equal(cfGoodOrigin.allow, 'https://akila-w.github.io');
+  assert.equal(lastUpstreamHeaders['x-goog-api-key'], 'test-placeholder-key', 'Cloudflare Worker sends key in x-goog-api-key header');
+  assert.ok(!lastUpstreamUrl.includes('key='), 'Cloudflare Worker upstream URL has no key parameter');
 
   // Explicit cases: no Origin -> 403 in search mode
   const crNoOrigin = await cloudRunWith({ query: 'Toyota' }, {});
@@ -867,6 +874,13 @@ try {
   assert.equal(cfMalformed.statusCode, 400, 'Cloudflare Worker catches malformed JSON body safely with 400');
   assert.equal(cfMalformed.body.error, 'bad_request');
   assert.equal(cfMalformed.body.detail, 'Malformed JSON body');
+  assert.ok(!JSON.stringify(cfMalformed.body).includes('broken_json'), 'Cloudflare Worker must never echo the malformed body');
+
+  const crMalformed = await cloudRunWith('{"broken_json": ', { origin: 'https://akila-w.github.io', 'content-type': 'application/json' });
+  assert.equal(crMalformed.statusCode, 400, 'Cloud Run catches malformed JSON body safely with 400');
+  assert.equal(crMalformed.body.error, 'bad_request');
+  assert.equal(crMalformed.body.detail, 'Malformed JSON body');
+  assert.ok(!JSON.stringify(crMalformed.body).includes('broken_json'), 'Cloud Run must never echo the malformed body');
 
   const cfBadContentType = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'text/plain' });
   assert.equal(cfBadContentType.statusCode, 400, 'Cloudflare Worker rejects non-JSON Content-Type with 400');
@@ -935,6 +949,7 @@ try {
   const cfAllowHeaders = cfOptionsRes.headers.get('Access-Control-Allow-Headers') || '';
   assert.ok(cfAllowHeaders.includes('X-Price-Token'), 'Cloudflare OPTIONS includes X-Price-Token');
   assert.ok(cfAllowHeaders.includes('Content-Type'), 'Cloudflare OPTIONS includes Content-Type');
+  assert.equal(cfOptionsRes.headers.get('Access-Control-Max-Age'), '86400', 'Cloudflare OPTIONS includes Access-Control-Max-Age');
   assert.equal(cfOptionsRes.headers.get('Vary'), 'Origin', 'Cloudflare OPTIONS includes Vary: Origin');
 
   console.log('✓ Serverless Proxy Security Integration PASSED\n');

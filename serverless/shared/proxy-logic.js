@@ -335,9 +335,12 @@ function buildPriceRequestBody(queries, today) {
 
 // Calls upstream Google Generative Language API
 async function callGemini(apiKey, model, body) {
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": apiKey
+    },
     body: JSON.stringify(body)
   });
   const data = await r.json().catch(() => ({}));

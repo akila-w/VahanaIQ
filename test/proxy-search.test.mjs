@@ -16,9 +16,11 @@ fs.copyFileSync(new URL('../serverless/gcp-cloud-function/index.js', import.meta
 const previousKey = process.env.GEMINI_API_KEY;
 process.env.GEMINI_API_KEY = 'test-placeholder';
 const realFetch = globalThis.fetch, realError = console.error;
-let upstreamStatus = 200, sent;
+let upstreamStatus = 200, sent, lastUrl, lastHeaders;
 const answer = { is_available_in_sri_lanka: true, is_multi_vehicle: true, discovered_vehicles: [{ model_name: 'Toyota Yaris Cross' }, { model_name: 'Honda Vezel' }] };
-globalThis.fetch = async (_url, init) => {
+globalThis.fetch = async (url, init) => {
+  lastUrl = url;
+  lastHeaders = init.headers;
   sent = JSON.parse(init.body);
   return new Response(JSON.stringify(upstreamStatus === 200
     ? { candidates: [{ content: { parts: [{ text: JSON.stringify(answer) }] } }] }
@@ -39,6 +41,9 @@ try {
   for (const [name, call] of [['Cloud Run', cloudRun], ['Cloudflare', cloudflare]]) {
     upstreamStatus = 200;
     assert.equal((await call({ query: 'Compare Toyota Yaris Cross and Honda Vezel' })).status, 200);
+    assert.match(lastUrl, /\/models\/gemini-3\.6-flash:generateContent$/, `${name} URL targets gemini-3.6-flash without query string`);
+    assert.equal(lastHeaders['x-goog-api-key'], 'test-placeholder', `${name} sends key in x-goog-api-key header`);
+    assert.ok(!lastUrl.includes('key='), `${name} upstream URL has no key parameter`);
     assert.ok(sent.contents[0].parts[0].text.includes('This is a comparison request.'));
     assert.ok(sent.contents[0].parts[0].text.includes('every requested model'));
     assert.ok(sent.generationConfig.responseSchema.required.includes('is_multi_vehicle'));
@@ -178,6 +183,7 @@ try {
   const cfAllowHeaders = cfOptRes.headers.get('Access-Control-Allow-Headers') || '';
   assert.ok(cfAllowHeaders.includes('X-Price-Token'), 'Cloudflare OPTIONS response must include X-Price-Token in allowed headers');
   assert.ok(cfAllowHeaders.includes('Content-Type'), 'Cloudflare OPTIONS response must include Content-Type in allowed headers');
+  assert.equal(cfOptRes.headers.get('Access-Control-Max-Age'), '86400', 'Cloudflare OPTIONS response must include Access-Control-Max-Age: 86400');
   assert.equal(cfOptRes.headers.get('Vary'), 'Origin', 'Cloudflare OPTIONS response must keep Vary: Origin');
   console.log('OPTIONS preflight: X-Price-Token and Content-Type in Access-Control-Allow-Headers verified on both proxies');
 } finally {
