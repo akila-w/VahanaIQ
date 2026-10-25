@@ -4,6 +4,7 @@
 // at most 60% financed for cars registered over a year (40% down).
 
 import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.11.6";
+import { safeUrl, safeImageUrl } from "./safe-url.js?v=2.11.6";
 import {
   DOWN_MIN,
   DOWN_MIN_UNREG,
@@ -64,22 +65,7 @@ export function minDownFor(cond, financeClass, firstRegisteredOn, today = new Da
 export const fmt = formatMoneyAmount;
 export const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-export const safeUrl = value => {
-  try {
-    const raw = String(value ?? "").trim();
-    if (!raw) return "#";
-    const u = new URL(raw);
-    return (u.protocol === "https:" || u.protocol === "http:") ? esc(u.href) : "#";
-  } catch {
-    return "#";
-  }
-};
-
-export const safeImageUrl = value => {
-  const raw = String(value ?? "").trim();
-  if (!raw || /^(javascript:|vbscript:|data:text\/html)/i.test(raw)) return "";
-  return esc(raw);
-};
+export { safeUrl, safeImageUrl };
 
 // Parses a numeric/currency value from an element ID, an element reference, or a primitive.
 // Sanitizes non-numeric strings, NaNs, and infinities, enforcing reasonable precision bounds.

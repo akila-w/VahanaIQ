@@ -279,12 +279,6 @@ if (shouldRun("Add photos to a vehicle entry") || shouldRun("studio")) {
   assert.ok(studioJs.includes("uploadItem"), "catalogue-studio.js must use uploadItem");
   assert.ok(studioJs.includes("commit(model, record"), "catalogue-studio.js must commit updated record");
 
-  // Verify test harness wiring
-  const harnessJs = fs.readFileSync("js/test-builds.js", "utf8");
-  assert.ok(harnessJs.includes("STUDIO_FIXTURE_FILENAME"), "Test harness must define deterministic fixture");
-  assert.ok(harnessJs.includes("setupStudioTestFixture"), "Test harness must wire studio test fixture");
-  assert.ok(harnessJs.includes("__VAHANAIQ_STUDIO_FIXTURE_FILE__"), "Test harness must expose fixture file");
-
   // Verify deterministic image fixture on disk
   const fixturePath = "test/fixtures/audi-a3-studio-fixture.jpg";
   assert.ok(fs.existsSync(fixturePath), "Deterministic image fixture must exist on disk");

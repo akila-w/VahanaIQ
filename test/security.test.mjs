@@ -9,7 +9,8 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 
 // Import client-side security functions
-import { esc, safeUrl, safeImageUrl } from '../js/calculator.js';
+import { esc } from '../js/calculator.js';
+import { safeUrl, safeImageUrl } from '../js/safe-url.js';
 
 // Import serverless proxy security and domain logic
 import {

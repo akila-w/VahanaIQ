@@ -1,4 +1,6 @@
 'use strict';
+import { safeUrl, safeImageUrl } from './safe-url.js?v=2.11.6';
+
 (() => {
   const {
     DEFAULT_RATE = 16,
@@ -13,8 +15,7 @@
 
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const safeUrl = value => { try { const u = new URL(String(value ?? '').trim()); return (u.protocol === 'https:' || u.protocol === 'http:') ? esc(u.href) : '#'; } catch { return '#'; } };
-  const safeImgUrl = value => { const raw = String(value ?? '').trim(); if (!raw || /^(javascript:|vbscript:|data:text\/html)/i.test(raw)) return ''; return esc(raw); };
+  const safeImgUrl = safeImageUrl;
   const money = n => 'LKR ' + n.toLocaleString('en-LK', {maximumFractionDigits:0});
   const date = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? new Date(value+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Date Not Specified';
   const fmt = n => Number(n).toLocaleString('en-LK', {minimumFractionDigits:2, maximumFractionDigits:2});

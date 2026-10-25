@@ -138,6 +138,7 @@ node test/security.test.mjs
   - *Component:* `js/app.js`, `js/catalogue-browser.js`, `js/curated-catalogue.js`, `js/photo-credits.js`, `js/calculator.js`
   - *Finding:* Dynamic image `src` and link `href` injection must strictly reject dangerous schemes (`javascript:`, `vbscript:`, `data:text/html`, active `data:image/svg+xml`).
   - *Fix:* Standardized `safeUrl()` and `safeImageUrl()` in `calculator.js`; integrated into `photo-credits.js`, `curated-catalogue.js`, and `catalogue-browser.js`; hardened regex to reject `data:text/html` without requiring trailing colons. Verified with 20+ attack vector test fixtures in `test/security.test.mjs`.
+  - *Refactor:* Consolidated `safeUrl` and `safeImageUrl` into shared module `js/safe-url.js`, eliminating duplication between `calculator.js` and `curated-catalogue.js`.
   - *Status:* `[resolved]`
 
 - [x] **SEC-DOM-06** (Medium): **Photo Studio file upload & device-local boundary verification**
