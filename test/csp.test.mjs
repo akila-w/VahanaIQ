@@ -59,30 +59,35 @@ const directives = Object.fromEntries(
     })
 );
 
+// Sources are compared as exact tokens of the directive, not as substrings, so a
+// lookalike such as https://accounts.google.com.example cannot satisfy the check.
+const allows = (directive, source) => new Set(directives[directive] || []).has(source);
+
 // script-src contains 'self' and https://accounts.google.com, and contains neither 'unsafe-inline' nor 'unsafe-eval'
 assert.ok(directives['script-src'], 'script-src must be defined in CSP');
-assert.ok(directives['script-src'].includes("'self'"), "script-src must contain 'self'");
-assert.ok(directives['script-src'].includes('https://accounts.google.com'), 'script-src must contain https://accounts.google.com');
-assert.ok(!directives['script-src'].includes("'unsafe-inline'"), "script-src must not contain 'unsafe-inline'");
-assert.ok(!directives['script-src'].includes("'unsafe-eval'"), "script-src must not contain 'unsafe-eval'");
+assert.ok(allows('script-src', "'self'"), "script-src must contain 'self'");
+assert.ok(allows('script-src', 'https://accounts.google.com'), 'script-src must contain https://accounts.google.com');
+assert.ok(!allows('script-src', "'unsafe-inline'"), "script-src must not contain 'unsafe-inline'");
+assert.ok(!allows('script-src', "'unsafe-eval'"), "script-src must not contain 'unsafe-eval'");
 console.log("✓ script-src contains 'self' and Google Identity Services, without unsafe-inline or unsafe-eval");
 
 // frame-src contains https://accounts.google.com and is not 'none'
 assert.ok(directives['frame-src'], 'frame-src must be defined in CSP');
-assert.ok(directives['frame-src'].includes('https://accounts.google.com'), 'frame-src must contain https://accounts.google.com');
-assert.ok(!directives['frame-src'].includes("'none'"), "frame-src must not be 'none'");
+assert.ok(allows('frame-src', 'https://accounts.google.com'), 'frame-src must contain https://accounts.google.com');
+assert.ok(!allows('frame-src', "'none'"), "frame-src must not be 'none'");
 console.log("✓ frame-src allows https://accounts.google.com and is not 'none'");
 
 // connect-src contains https://accounts.google.com and the Cloud Run proxy origin
 assert.ok(directives['connect-src'], 'connect-src must be defined in CSP');
-assert.ok(directives['connect-src'].includes('https://accounts.google.com'), 'connect-src must contain https://accounts.google.com');
-assert.ok(directives['connect-src'].includes(CLOUD_RUN_PROXY_ORIGIN), `connect-src must contain ${CLOUD_RUN_PROXY_ORIGIN}`);
+assert.ok(allows('connect-src', 'https://accounts.google.com'), 'connect-src must contain https://accounts.google.com');
+assert.ok(allows('connect-src', CLOUD_RUN_PROXY_ORIGIN), `connect-src must contain ${CLOUD_RUN_PROXY_ORIGIN}`);
 console.log('✓ connect-src contains https://accounts.google.com and Cloud Run proxy origin');
 
 // style-src allows the Google Identity Services stylesheet, which GIS injects
 // into the document as <link href="https://accounts.google.com/gsi/style">
 assert.ok(directives['style-src'], 'style-src must be defined in CSP');
-assert.ok(directives['style-src'].includes('https://accounts.google.com'), 'style-src must contain https://accounts.google.com so the GIS stylesheet loads');
+assert.ok(allows('style-src', 'https://accounts.google.com'), 'style-src must contain https://accounts.google.com so the GIS stylesheet loads');
+assert.ok(!allows('style-src', 'https://accounts.google.com.example'), 'style-src must not accept a lookalike host');
 console.log('✓ style-src allows the Google Identity Services stylesheet');
 
 // object-src 'none', base-uri 'self', form-action 'self' are present
