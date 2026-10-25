@@ -302,19 +302,29 @@ them; deleting the refs and running `git gc --prune=now` brought `.git` to ~99 M
 recreate them, and never add one back "just in case" — it re-inflates the repository.
 
 ## Deploying the search proxy (Cloud Run)
-From `serverless/gcp-cloud-function/`:
+The proxy runs containerised on Node 22 (`node:22-slim`) as a non-root user (`node`, UID 1000) with `@google-cloud/functions-framework` pinned to `3.4.0`.
+
+Build the container image from `serverless/`:
+```bash
+docker build -f gcp-cloud-function/Dockerfile -t vahanaiq-search .
+```
+
+Or deploy to Cloud Run from `serverless/`:
 ```bash
 gcloud run deploy vahanaiq-search --source . --region asia-south1 --allow-unauthenticated --update-env-vars GEMINI_MODEL=gemini-3.6-flash
 ```
 The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. Upstream errors are written to the Cloud Run logs.
 
-The Cloud Run proxy deliberately ignores forwarded client-IP headers and applies a conservative quota to each transport peer (or a shared bucket when unavailable). Behind a shared proxy, legitimate users may share that quota. This is a per-instance safeguard; deployment-wide limits still need infrastructure controls.
+The Cloud Run proxy deliberately ignores forwarded client-IP headers unless `TRUSTED_PROXY=true` is set, applying a conservative quota to each transport peer (or a shared bucket when unavailable). Behind a shared proxy, legitimate users may share that quota. This is a per-instance safeguard; deployment-wide limits still need infrastructure controls.
 
-The proxy protects its free Gemini allowance with three settings (the Cloudflare Worker reads the first two as Worker variables):
+The proxy configuration is controlled via environment variables:
 
 - `ALLOWED_ORIGINS`: comma-separated sites whose browsers may call it (default `https://akila-w.github.io`). Requests from any other site's pages get 403. Add e.g. `http://localhost:8000` to test against the real proxy locally.
+- `GEMINI_MODEL`: the Gemini model used for vehicle search queries (default `gemini-3.6-flash`).
+- `TRUSTED_PROXY`: when `true`, proxy counts trusted proxy hops from the right in `X-Forwarded-For` to resolve client IP. When `false` or unset, falls back strictly to socket IP.
+- `TRUSTED_PROXY_HOPS`: number of trusted proxy hops from the right when `TRUSTED_PROXY=true` (default: 1).
+- `PRICE_TOKEN`: when set, price mode answers only requests with a matching `X-Price-Token` header. The direct proxy lookup in `scripts/refresh-prices.mjs` sends the `PRICE_TOKEN` environment variable. If missing or unset, price mode returns 503 `price_mode_disabled`.
 - `RATE_LIMIT`: requests per client IP per 10 minutes on each instance (default 30). Over the limit, the proxy answers 429 `rate_limited`.
-- `PRICE_TOKEN`: when set, price mode answers only requests with a matching `X-Price-Token` header. The direct proxy lookup in `scripts/refresh-prices.mjs` sends the `PRICE_TOKEN` environment variable. The current monthly workflow uses the non-AI scanner and `--from-file`.
 
 Screenshots must be JPEG, PNG, WebP or GIF and under about 4 MB, and error details sent to the browser are shortened.
 

@@ -27,6 +27,19 @@ The platform employs defense-in-depth across client, serverless proxy, and cloud
 
 2. **Serverless Search Proxy (`serverless/`)**
    - Consolidated shared proxy logic (`serverless/shared/proxy-logic.js`) enforces strict OpenAPI schemas, rate limiting, and request validation across both Cloud Run and Cloudflare Worker.
+   - Pinned dependencies (`@google-cloud/functions-framework: 3.4.0`), committed lockfile, and reproducible builds (`npm ci --omit=dev`) running on Node >=22 (`node:22-slim`).
+   - Non-root container execution (`USER node`, UID 1000) dropping root privileges in the Docker image.
+   - Container build executed from `serverless/`:
+     ```bash
+     docker build -f gcp-cloud-function/Dockerfile -t vahanaiq-search .
+     ```
+   - Configuration via environment variables:
+     - `ALLOWED_ORIGINS`: Comma-separated allowlist of origins permitted to use the search endpoint (default: `https://akila-w.github.io`). Requests without an Origin or from unlisted origins receive 403.
+     - `GEMINI_MODEL`: Gemini model for vehicle search (default: `gemini-3.6-flash`).
+     - `TRUSTED_PROXY`: When `true`, proxy counts trusted proxy hops from the right in `X-Forwarded-For` to resolve client IP. When `false` or unset, falls back strictly to `req.socket.remoteAddress` or `shared-proxy` to prevent spoofed header rotation.
+     - `TRUSTED_PROXY_HOPS`: Number of trusted proxy hops from the right when `TRUSTED_PROXY=true` (default: 1).
+     - `PRICE_TOKEN`: Secret token required for price mode via the `X-Price-Token` header. When missing or empty, price mode requests are rejected with HTTP 503 (`price_mode_disabled`).
+     - `RATE_LIMIT`: Per-instance client IP request limit per 10-minute sliding window (default: 30).
    - Client IP resolution behind reverse proxies is guarded via `TRUSTED_PROXY=true` in `serverless/gcp-cloud-function/index.js`, preventing forged `X-Forwarded-For` rate-limit rotation.
    - Sliding-window rate limiting (30 requests / 10 minutes) with in-memory map bounding (5,000 max entries) protects against memory exhaustion.
    - Gateway-level payload inspection rejects payloads exceeding 6 MB (`413 image_too_large`).

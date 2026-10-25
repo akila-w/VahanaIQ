@@ -1,22 +1,7 @@
 const functions = require('@google-cloud/functions-framework');
 const crypto = require('crypto');
-const path = require('path');
 
-// Resolve shared proxy logic supporting local development, containerized builds, and testing harnesses
-let proxyLogic;
-try {
-  proxyLogic = require('../shared/proxy-logic.js');
-} catch (e) {
-  try {
-    proxyLogic = require('./shared/proxy-logic.js');
-  } catch (e2) {
-    try {
-      proxyLogic = require('./proxy-logic.js');
-    } catch (e3) {
-      proxyLogic = require(path.resolve(process.cwd(), 'serverless/shared/proxy-logic.js'));
-    }
-  }
-}
+const proxyLogic = require('./shared/proxy-logic.js');
 
 const {
   DEFAULT_MODEL,
