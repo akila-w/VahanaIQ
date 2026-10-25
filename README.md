@@ -333,7 +333,7 @@ them; deleting the refs and running `git gc --prune=now` brought `.git` to ~99 M
 recreate them, and never add one back "just in case" — it re-inflates the repository.
 
 ## Deploying the search proxy (Cloud Run)
-The proxy runs containerised on Node 22 (`node:22-slim`) as a non-root user (`node`, UID 1000) with `@google-cloud/functions-framework` pinned to `3.4.0` and a committed `package-lock.json`.
+The proxy runs containerised on Node 22 (`node:22-slim`) as a non-root user (`node`, UID 1000) with `@google-cloud/functions-framework` pinned to `3.4.0` and a committed `package-lock.json`. An `overrides` entry pins `uuid` to `^11.1.1`, because `cloudevents` still declares `uuid ^8.3.2` and that version carries `GHSA-w5hq-g745-h8pq`; `cloudevents` only ever calls `v4()`, so the newer major is safe here.
 
 Because `serverless/gcp-cloud-function/index.js` loads `./shared/proxy-logic.js` and `serverless/gcp-cloud-function/Dockerfile` copies both `gcp-cloud-function/` and `shared/` into `/app`, the Docker build context is **`serverless/`** (not `serverless/gcp-cloud-function/`):
 
@@ -354,12 +354,9 @@ gcloud run deploy vahanaiq-search \
   --project "$PROJECT_ID" \
   --image "$IMAGE" \
   --region asia-south1 \
-  --allow-unauthenticated \
-  --remove-env-vars PRICE_TOKEN \
-  --update-env-vars "^@^ALLOWED_ORIGINS=https://akila-w.github.io@GEMINI_MODEL=gemini-3.6-flash@RATE_LIMIT=30@TRUSTED_PROXY=true@TRUSTED_PROXY_HOPS=1" \
-  --set-secrets PRICE_TOKEN=PRICE_TOKEN:latest
+  --allow-unauthenticated
 ```
-`--remove-env-vars PRICE_TOKEN` is only needed while the service still holds `PRICE_TOKEN` as a plain variable: Cloud Run refuses to change a variable from a literal to a secret reference in one update (`Cannot update environment variable [PRICE_TOKEN] to the given type because it has already been set with a different type`). Drop the flag once the secret reference is in place.
+A routine deploy needs nothing else: `--image` with `--allow-unauthenticated` keeps every literal variable and both secret references, and `--update-env-vars` merges when one changes. `IMAGE` is tagged `:latest`, so rebuild and push before deploying, or the revision silently rolls back to the previous image.
 
 Both `PRICE_TOKEN` and `GEMINI_API_KEY` are read from Secret Manager, so neither appears in shell history, the deploy command, or the revision's plain environment. Create each secret once and grant the Cloud Run service account (`71962876227-compute@developer.gserviceaccount.com`) `roles/secretmanager.secretAccessor`; the Secret Manager API must be enabled first (`gcloud services enable secretmanager.googleapis.com`):
 
@@ -378,14 +375,9 @@ for secret in PRICE_TOKEN GEMINI_API_KEY; do
 done
 ```
 
-`--update-env-vars` merges, so variables such as `GEMINI_MODEL` and `PRICE_MODEL` survive a deploy. Add the `PRICE_TOKEN` value to the GitHub repository settings as the `PRICE_TOKEN` secret for the monthly price refresh; the Gemini key is needed only by the service. A routine redeploy needs neither `--set-secrets` nor `--remove-env-vars` — the secret references persist — and `--update-secrets` merges when a secret must change:
+Add the `PRICE_TOKEN` value to the GitHub repository settings as the `PRICE_TOKEN` secret for the monthly price refresh; the Gemini key is needed only by the service.
 
-```bash
-gcloud run deploy vahanaiq-search --project "$PROJECT_ID" --region asia-south1 \
-  --image "$IMAGE" --allow-unauthenticated
-```
-
-Converting an existing literal to a secret reference is the one case that needs both flags, as it did for `GEMINI_API_KEY` on 25/10/2026: `--remove-env-vars GEMINI_API_KEY --update-secrets GEMINI_API_KEY=GEMINI_API_KEY:latest`.
+Converting an existing literal into a secret reference is the one case that needs both flags in a single update, as `PRICE_TOKEN` and `GEMINI_API_KEY` each did once: `--remove-env-vars GEMINI_API_KEY --update-secrets GEMINI_API_KEY=GEMINI_API_KEY:latest`. Cloud Run refuses to change a variable's type otherwise (`Cannot update environment variable [...] to the given type because it has already been set with a different type`).
 
 To rotate the Gemini key, create a new one in Google AI Studio, then add it as a new secret version and roll a revision — `read -s` keeps the value out of shell history:
 
