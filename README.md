@@ -392,7 +392,7 @@ gcloud run services update vahanaiq-search --project "$PROJECT_ID" --region asia
 
 Delete the superseded version afterwards (`gcloud secrets versions destroy <version> --secret GEMINI_API_KEY`). Upstream errors are written to the Cloud Run logs.
 
-The live revision is `vahanaiq-search-00040-8kd`, deployed 26/10/2026, carrying the `uuid` override; it was preceded by `00039-h7w` (both secrets in Secret Manager) and `00038-dm6` (the hardened deploy).
+The live revision is `vahanaiq-search-00043-v65`, deployed 26/10/2026 after rotating `GEMINI_API_KEY` to secret version `3` (created in free-tier project `gen-lang-client-0537485762`, because `gen-lang-client-0189736840` has prepaid billing attached with a zero balance and new keys created there return HTTP `402`) and destroying versions `1` and `2`; it was preceded by `00040-8kd` (the `uuid` override), `00039-h7w` (both secrets in Secret Manager) and `00038-dm6` (the hardened deploy).
 
 There is **no automatic deployment**. Pushing to `main` updates GitHub Pages but does not rebuild or redeploy the proxy; the Cloud Build trigger that once did was deleted on 25/10/2026 after it stopped firing, so the block above is the only route and must be run deliberately after a change to `serverless/`.
 
