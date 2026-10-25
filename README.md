@@ -115,6 +115,8 @@ vahanaiq/
 │   ├── open-price-pr.sh          # Opens the monthly prices pull request
 │   └── price-research-task.md    # Instructions for monthly Claude research task
 ├── test/
+│   ├── browser/
+│   │   └── csp.spec.mjs          # Browser integration suite: zero CSP violations, GIS & photo overlay
 │   ├── verify.mjs                # App verification suite (actuarial, edge cases, deduplication)
 │   ├── verify-graphics.test.mjs  # Telemetry gauges, CBSL split bar, SVG speedometer & curves
 │   ├── calculator.test.mjs       # Rentals, flat-rate conversion, legal down payments & schedules
@@ -236,6 +238,22 @@ node test/proxy-search.test.mjs
 node test/proxy-price-mode.test.mjs
 node test/qa-regressions.test.mjs
 ```
+
+### Browser Integration Testing (Playwright)
+
+To assert zero Content Security Policy violations, verify Google Identity Services iframe attachment, and validate runtime photo overlay initialization in a real headless browser:
+
+```bash
+# Install Playwright test runner and Chromium browser (one-time setup)
+npm install
+npx playwright install chromium
+
+# Start the local web server on port 8123 in the background and run the browser spec
+python3 -m http.server 8123 &
+npx playwright test test/browser/csp.spec.mjs
+```
+
+The browser suite starts nothing itself and assumes a local web server at `BASE_URL` (defaulting to `http://127.0.0.1:8123`).
 
 ### Changing colours, spacing, radii, shadows, sizes and timings
 Edit `design-system/tokens.json`, then run `node scripts/build-tokens.mjs` to regenerate `css/tokens.css`. Don't edit `css/tokens.css` by hand, don't declare custom properties in `css/style.css`, and style new markup with a class rather than a `style` attribute; `test/tokens.test.mjs` checks all three. See `docs/brand-guide.md` for the palette and usage rules.
