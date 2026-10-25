@@ -1,38 +1,50 @@
 <p align="center">
-  <img src="assets/icons/logo-full-lockup.svg" alt="VahanaIQ Logo" width="360">
+  <a href="https://akila-w.github.io/VahanaIQ/">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/icons/logo-full-lockup-dark.svg">
+      <source media="(prefers-color-scheme: light)" srcset="assets/icons/logo-full-lockup-light.svg">
+      <img src="assets/icons/logo-full-lockup.svg" alt="VahanaIQ Logo" width="380">
+    </picture>
+  </a>
 </p>
 
 # VahanaIQ
 
 **VahanaIQ** is a Sri Lankan vehicle lease calculator and affordability discovery platform. Its down-payment rules follow Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026, clause 2.1.
 
-🔗 **Live Public App:** [https://akila-w.github.io/vahanaiq/](https://akila-w.github.io/vahanaiq/)
+🔗 **Live Public App:** [https://akila-w.github.io/VahanaIQ/](https://akila-w.github.io/VahanaIQ/)
 
 ## Features
 - **CBSL Regulatory Engine:** 60% minimum down payment (40% maximum LTV) for brand new, reconditioned and recently registered cars and 40% for cars registered over a year, applied to each car automatically; 40%/50% DTI ceilings; terms of up to 84 months (the Direction itself sets no tenure limit).
+- **CBSL Regulatory LTV Split Bar:** Real-time visual split between statutory down-payment floors (60% / 40%) and maximum financed amounts, with dynamic regulatory compliance badges.
+- **Interactive Budget & DTI Telemetry Console:** Real-time SVG speedometer gauge (`0%` to `60%` DTI) and stacked Net Income Cashflow Spectrum bar measuring against standard `40%` and stretch `50%` DTI ceilings.
+- **Synchronised Range Sliders & Financing Strategy Presets:** Two-way reactive sliders for Interest Rate, Tenure, and Down Payment with instant real-time calculation, plus one-tap financing strategy presets (*Lowest Rental*, *Fast Payoff*, *Minimum Cash*, *100% Cash Purchase*).
 - **Flat or reducing rates:** Lessors often quote flat rates. Choose the rate type and a flat rate is converted to its reducing-balance equivalent, so rentals, interest and the yearly schedule are right either way.
-- **Catalogue with photos, trims, specs and filters:** 191 entries across 144 models spanning cars, SUVs, MPVs, passenger vans, minibuses and pickups, including the BYD Shark. Filter and search by make, body, fuel, trim, specification, seller and your calculated budget.
-- **Lease details:** Each vehicle's down payment, amount financed, rental, interest, total paid and a year-by-year balance, plus optional insurance and up-front fees.
-- **Smart Multi-Input AI Extraction:** Analyzes vehicle names, comparative queries, raw classified ad text (Ikman, Riyasewana, Patpat, FB Marketplace), or uploaded/clipboard screenshots of Japanese auction sheets.
-- **Official-source photographs:** A local manufacturer/distributor manifest supplies representative images in consistent 8:5 frames. Missing images use a placeholder. The separate review catalogue contains full galleries with approval, cover selection, notes and export; no candidate is automatically approved.
-- **Catalogue Photo Studio:** [studio.html](studio.html) arranges the photos of any catalogue entry by hand: upload your own pictures (several at once, by drag-and-drop or ⌘V paste), frame each one at 8:5 with drag, wheel and slider zoom, a Fit/Plate/Fill choice, arrow-key nudging and a per-photo reset, then set the running order and the cover. Photos stay in this browser's own database and the catalogue page shows them immediately, marked **Your Photo**; exporting and running `node scripts/apply-studio-photos.mjs` publishes them to the live catalogue. See "Catalogue Photo Studio" below.
-- **Bulk comparison:** Add the whole eligible catalogue, all search matches or all filtered matches across pages. Remove all and Undo are available. Comparisons render progressively to keep large selections responsive.
-- **Savings planner:** Plan a deposit or cash purchase using current vehicle prices and your entered income, savings, monthly contributions, fees and insurance. Save named goals or work backwards from a target date.
+- **Curated Catalogue with photos, trims, specs and filters:** 227 models across 38 makes spanning cars, SUVs, MPVs, passenger vans, minibuses and pickups, backed by 504 standardized 8:5 official gallery assets. Filter and search by make, body, fuel, trim, specification, seller route, price status, and calculated budget fit.
+- **Quick Sri Lankan Market Segment Filters:** Instant one-tap filter chips (*Under LKR 15M*, *Hybrid & EV*, *High Clearance ≥170mm*, *40% Min Down*, *Official Agent*).
+- **Bulk comparison & Head-to-Head Shortlist:** Add the whole eligible catalogue, all search matches or all filtered matches across pages. Pin up to 3 finalists to a sticky Head-to-Head comparison modal with rental, cash upfront, interest, and outlay deltas. Remove all and Undo are available.
+- **Interactive Lease Details & Amortisation Curve:** Vehicle details modal with interactive hover inspection for the cost composition donut chart (monthly vs lifetime outlay) and annual amortisation paydown curve.
+- **Smart Multi-Input AI Extraction:** Analyzes vehicle names, comparative queries, raw classified ad text (Ikman, Riyasewana, Patpat, FB Marketplace), or uploaded/clipboard screenshots of Japanese auction sheets via Google Gemini.
+- **Official-source & Catalogue-Superior Imagery:** The Curated Catalogue serves as the canonical authority for vehicle photography across both the catalogue and calculator, with automatic fallback and Photo Studio overlay integration.
+- **Catalogue Photo Studio:** [studio.html](studio.html) arranges photos for any catalogue entry by hand: upload your own pictures (file picker, drag-and-drop, or clipboard paste), frame each at 8:5 (*Automatic*, *Vehicle on a white plate*, *Fill the frame*), adjust zoom and nudging, set cover order, and preview changes immediately across the catalogue via IndexedDB.
+- **Savings planner:** Plan a deposit or cash purchase using current vehicle prices and your entered income, savings, monthly contributions, fees and insurance. Features an interactive SVG accumulation horizon curve, upfront cost composition bar, target date pacing (`DD-MM-YYYY`), and saved named scenarios.
 - **Inline Table Editing:** Quick-edit LKR prices inline and cycle conditions (Brand New ⇄ Reconditioned ⇄ Registered under a year ⇄ Registered Used) with live recalculation.
+- **Two-Decimal & South Asian Currency Engine:** Dynamic input formatting with comma grouping, two decimal places (`LKR 12,500,000.00`), and South Asian numbering notation (`1,50,00,000`).
+- **A4 Statutory Lease Financing Quotation:** Unified `@media print` stylesheet formatted as an official bank quotation under CBSL Direction No. 01 of 2026.
 - **Google Gemini AI search via a serverless proxy:** The browser never holds an API key. The proxy (`serverless/`) calls `gemini-3.6-flash` by default, set with the `GEMINI_MODEL` environment variable. The monthly price refresh uses a separate model, `PRICE_MODEL` (`gemini-2.5-flash-lite` by default), so it never uses the app's daily free allowance. Everything runs on the Gemini free tier.
 - **Sri Lankan Market Availability Gatekeeper:** Validates if searched vehicles are actively traded in Sri Lanka or road-legal (RHD, tax brackets), suggesting local alternatives if not.
 - **Hierarchical Selector:** Multi-tier Model Year and Trim selector with condition grading.
 - **Dynamic LKR Pricing:** Market valuations automatically update as condition or trim changes.
 - **HTML5 Canvas Studio Normaliser:** Automatically centres, scales, and pads any car photo onto an 8:5 pure white plate (`#FFFFFF`) with tyre contact shadow.
 - **Private by default, shareable on request:** Loan terms, income, sort and filters are saved in this browser unless you sign in. **Share** builds a link with the terms, filters and vehicles; income and existing payments are left out unless you tick the box. The address bar is cleaned after a shared link opens.
-- **Optional Google sign-in and sync:** Signing in keeps your inputs and comparison in your account (Firebase), so another device picks them up. Each change is checked against the account's copy first, so an edit made elsewhere is never overwritten without asking. Signing out normally clears the local copy; unsynchronised edits are retained with a warning. **Delete my saved data** removes the account copy.
+- **Optional Google sign-in and sync:** Signing in keeps your inputs and comparison in your account (Firebase Firestore), so another device picks them up with pre-write conflict detection.
 - **Works offline:** A service worker (`sw.js`) keeps the app's own files, so the calculator opens without a connection. AI search needs one.
 
 ## Folder Structure
 ```
 vahanaiq/
-├── index.html            # Main web application entry point
-├── catalogue.html        # Curated catalogue with photos, trims and sourced prices
+├── index.html            # Main web application entry point (Calculator & Planner)
+├── catalogue.html        # Curated catalogue with photos, trims, specs and sourced prices
 ├── studio.html           # Photo Studio: upload, crop, zoom, order and cover for catalogue photos
 ├── about.html, privacy.html, terms.html   # Public information pages (generated by scripts/build-info-pages.mjs)
 ├── manifest.json         # PWA manifest (192 and 512px PNG icons)
@@ -46,69 +58,105 @@ vahanaiq/
 ├── data/                 # Published catalogue records (catalogue.json, identity.json)
 ├── design-system/
 │   └── tokens.json       # Design tokens: colours, type, spacing, radii, shadows (source of truth)
-├── docs/                 # Working artefacts: brand guide, research, review pages. NOT published.
-│   └── brand-guide.md    # Brand identity, design system & typography specs
+├── docs/                 # Working artefacts: PRD, brand guide, research, review pages. NOT published.
+│   ├── PRD.md            # Product Requirements Document for VahanaIQ v2.11.5
+│   ├── VahanaIQ_PRD.pdf  # Compiled PDF Product Requirements Document
+│   ├── testsprite-standard-prd.json # Standardized machine-readable PRD
+│   ├── brand-guide.md    # Brand identity, design system & typography specs
+│   ├── catalogue-review.html # Review page for vehicle candidates and pricing evidence
+│   └── review-findings.md# Substantiated price evidence and research logs
 ├── css/
 │   ├── tokens.css        # Generated from design-system/tokens.json (do not edit)
-│   ├── style.css         # Responsive styles, reading the token variables
+│   ├── style.css         # Responsive styles & consolidated A4 statutory print stylesheet
 │   ├── curated-catalogue.css # Styles for catalogue.html
-│   └── catalogue-studio.css  # Styles for studio.html (tokens only, no literals)
+│   ├── catalogue-studio.css  # Styles for studio.html (tokens only, no literals)
+│   └── test-builds.css   # Diagnostic badge styles for automated testing
 ├── js/
-│   ├── app.js            # Main application UI and event coordinator
-│   ├── calculator.js     # Actuarial lease formulas, DTI & budget room
+│   ├── app.js            # Main application UI, telemetry gauges and event coordinator
+│   ├── calculator.js     # Actuarial lease formulas, CBSL floors, DTI & budget room
 │   ├── catalog.js        # Frozen original 12 estimates, used for legacy migration
-│   ├── market-catalogue.js # Current source-backed model and variant catalogue
-│   ├── catalogue-data.js # Generated: the catalogue.html records (mirrors data/catalogue.json)
+│   ├── market-catalogue.js # Current source-backed model and variant catalogue (281 vehicles)
+│   ├── catalogue-data.js # Generated: catalogue.html records (mirrors data/catalogue.json)
 │   ├── curated-catalogue.js # Catalogue page: filters, sorting, detail dialog and review
 │   ├── catalogue-browser.js # Browse, review a quote and select comparison vehicles
-│   ├── catalogue-studio.js   # Photo Studio page: list, uploads, crop stage, arrangement, export
-│   ├── catalogue-photo-overlay.js # Catalogue page: applies the studio's saved photos
-│   ├── catalogue-photos.js   # The record for one entry: photos, order, cover, frames, manifest
-│   ├── catalogue-photo-store.js # IndexedDB storage for the studio's photos (this device only)
-│   ├── photo-frame.js        # 8:5 frame geometry, shared with the bake script and the build
-│   ├── planner.js, planner-store.js, savings.js # Savings planner and its saved goals
+│   ├── bulk-selection.js # Bulk add, filter-match, clear and comparison coordinator
+│   ├── catalogue-search.js  # Search indexing and filter queries across catalogue entries
+│   ├── pricing-engine.js # Dynamic condition and trim valuation engine
+│   ├── vehicle-validation.js # Sri Lankan market availability and CBSL compliance rules
+│   ├── catalogue-studio.js   # Photo Studio page: uploads, crop stage, arrangement, export
+│   ├── catalogue-photo-overlay.js # Applies studio's saved photos across the app
+│   ├── catalogue-photos.js   # Photo record management: order, cover, frames, manifest
+│   ├── catalogue-photo-store.js # IndexedDB storage for studio photos (this device only)
+│   ├── photo-credits.js  # Canonical vehicle imagery authority, credits and fallbacks
+│   ├── official-photo-data.js # Pre-baked manufacturer candidate photo catalog
+│   ├── photo-frame.js    # 8:5 frame geometry, shared with bake script and studio
+│   ├── planner.js, planner-store.js, savings.js # Savings planner, target dates and saved goals
 │   ├── canvas-utils.js   # 8:5 white studio plate image normaliser
 │   ├── gemini.js         # Proxy search call & response schema
 │   ├── image-fetcher.js  # Official local photo-manifest resolver
-│   ├── storage.js        # Saved vehicles and legacy-key cleanup
+│   ├── storage.js        # Saved vehicles, comparisons, and legacy-key cleanup
 │   ├── account.js        # Google sign-in and sync with Firebase (loaded only when used)
 │   ├── inputs.js         # Input validation, saved inputs and shareable URL
-│   ├── modal.js          # Accessible modal focus handling
-│   ├── money-input.js    # Rupee inputs with thousands separators
-│   ├── toast.js          # Undo toast
-│   └── config.js         # Cloud proxy, Firebase web config and endpoints
+│   ├── modal.js          # Accessible modal focus trapping and keyboard handling
+│   ├── money-input.js    # Currency inputs with thousands separators and South Asian notation
+│   ├── dates.js, date-picker.js # Date formatting (DD-MM-YYYY) and target-date controls
+│   ├── page-transitions.js # View transition coordination
+│   ├── toast.js          # Undo toast notifications
+│   └── config.js         # Cloud proxy, Firebase web config, APP_VERSION and endpoints
 ├── scripts/
 │   ├── build-tokens.mjs          # Builds css/tokens.css from design-system/tokens.json
 │   ├── smoke-deploy.mjs          # Checks the live site really is this release
-│   ├── prune-thumbnails.mjs      # Keeps the review thumbnails to the ones the site uses
-│   ├── scan-prices.mjs           # Reads the price sites and writes a prices file and a review report
+│   ├── prune-thumbnails.mjs      # Keeps review thumbnails to the ones the site uses
+│   ├── scan-prices.mjs           # Reads price sites and writes a prices file and review report
 │   ├── price-matches.json        # Which site listing belongs to which catalogue entry
-│   ├── refresh-prices.mjs        # Applies researched prices to the catalogue, with checks
+│   ├── refresh-prices.mjs        # Applies researched prices to catalogue, with checks
 │   ├── apply-studio-photos.mjs   # Publishes a Photo Studio export into the catalogue
 │   ├── build-info-pages.mjs      # Generates about.html, privacy.html and terms.html
 │   ├── open-price-pr.sh          # Opens the monthly prices pull request
-│   └── price-research-task.md    # Instructions for the monthly Claude research task
+│   └── price-research-task.md    # Instructions for monthly Claude research task
 ├── test/
-│   ├── verify.mjs                # App verification suite
-│   ├── tokens.test.mjs           # Design tokens are in sync and the only source of CSS variables
-│   ├── calculator.test.mjs       # Rentals, flat-rate conversion, legal down payments and schedules
-│   ├── account.test.mjs          # Sync decisions, what is uploaded and the Firestore rules' shape
-│   ├── catalogue-data.test.mjs   # data/catalogue.json, the baked copy and the published image tree agree
-│   ├── catalogue-studio.test.mjs # Photo Studio frames, records, export and the bake script
+│   ├── verify.mjs                # App verification suite (actuarial, edge cases, deduplication)
+│   ├── verify-graphics.test.mjs  # Telemetry gauges, CBSL split bar, SVG speedometer & curves
+│   ├── calculator.test.mjs       # Rentals, flat-rate conversion, legal down payments & schedules
+│   ├── catalogue-calculator-imagery.test.mjs # Catalogue canonical imagery authority tests
+│   ├── e2e-journeys.test.mjs     # Automated end-to-end user journeys (14 test journeys)
+│   ├── tokens.test.mjs           # Design tokens are in sync and only source of CSS variables
+│   ├── account.test.mjs          # Firebase sync decisions and Firestore rules structure
+│   ├── account-session.test.mjs  # Google Sign-In session lifecycle and conflict detection
+│   ├── catalogue.test.mjs        # Catalogue model grouping, filters, sorting and detail dialogs
+│   ├── catalogue-data.test.mjs   # data/catalogue.json, baked copy and published image tree agree
+│   ├── catalogue-studio.test.mjs # Photo Studio frames, records, export and bake script
+│   ├── planner.test.mjs          # Savings planner formulas, trajectory curves & target-date pacing
+│   ├── print.test.mjs            # A4 statutory quotation print layout & noise suppression
+│   ├── copy-privacy.test.mjs     # Privacy safeguards, link stripping & local storage limits
+│   ├── savings-bulk.test.mjs     # Bulk catalogue selection & calendar boundary conditions
+│   ├── scan-prices.test.mjs      # Monthly price scraping parser verification
 │   ├── refresh-prices.test.mjs   # Price refresh tests against a mocked proxy
-│   └── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
+│   ├── proxy-price-mode.test.mjs # Proxy price mode tests with Gemini stubbed
+│   ├── proxy-search.test.mjs     # Proxy AI search schema and fallback verification
+│   └── qa-regressions.test.mjs   # Historical bug fixes and edge-case regression suite
 ├── .github/workflows/
+│   ├── test.yml                  # Continuous integration: runs all 20 test suites on PR/push
+│   ├── smoke-deploy.yml          # Post-deployment live asset and version smoke tests
 │   └── refresh-prices.yml        # Monthly price scan and pull request
 ├── serverless/
+│   ├── shared/
+│   │   └── proxy-logic.js           # Shared schemas, prompts, rate limiting & validation
 │   ├── cloudflare-worker.js         # Cloudflare Worker proxy ($0 / 100k req/day)
 │   └── gcp-cloud-function/index.js  # Google Cloud Run / Cloud Function proxy
 └── assets/
     ├── icons/
+    │   ├── logo-full-lockup.svg              # Universal vector lockup & social preview
+    │   ├── logo-full-lockup-light.svg        # Clean vector lockup for light backgrounds
+    │   ├── logo-full-lockup-dark.svg         # High-contrast vector lockup for dark backgrounds
+    │   ├── logo-v-mark-transparent-light.svg # V-mark brand symbol (light theme)
+    │   ├── logo-v-mark-transparent-dark.svg  # V-mark brand symbol (dark theme)
     │   ├── favicon.svg                       # 64x64 Vector brand icon & favicon
-    │   ├── logo-option-1-apex.svg            # 120x120 Standalone brand mark
-    │   ├── logo-option-1-apex-transparent.svg# Clean vector mark (transparent)
-    │   └── logo-full-lockup.svg              # Full brand lockup & social preview
-    └── images/                               # High-resolution studio press photos (12 vehicles)
+    │   ├── apple-touch-icon.png              # Full-bleed iOS touch icon
+    │   └── lucide/                           # Bundled vector glyphs
+    └── images/
+        ├── curated-catalogue/                # Published 8:5 WebP vehicle photography (504 assets)
+        └── review-thumbnails/                # 140 official candidate cover thumbnails
 ```
 
 ## Catalogue Photo Studio
@@ -168,12 +216,25 @@ Search retries a transient upstream failure once on the same model and bounds ea
 Run the regression suites with:
 ```bash
 node test/verify.mjs
-node test/qa-regressions.test.mjs
-node test/proxy-price-mode.test.mjs
-node test/proxy-search.test.mjs
-node test/refresh-prices.test.mjs
-node test/tokens.test.mjs
+node test/verify-graphics.test.mjs
 node test/calculator.test.mjs
+node test/catalogue-calculator-imagery.test.mjs
+node test/e2e-journeys.test.mjs
+node test/planner.test.mjs
+node test/print.test.mjs
+node test/tokens.test.mjs
+node test/catalogue.test.mjs
+node test/catalogue-data.test.mjs
+node test/catalogue-studio.test.mjs
+node test/account.test.mjs
+node test/account-session.test.mjs
+node test/copy-privacy.test.mjs
+node test/savings-bulk.test.mjs
+node test/scan-prices.test.mjs
+node test/refresh-prices.test.mjs
+node test/proxy-search.test.mjs
+node test/proxy-price-mode.test.mjs
+node test/qa-regressions.test.mjs
 ```
 
 ### Changing colours, spacing, radii, shadows, sizes and timings
@@ -209,8 +270,8 @@ SITE_URL=http://127.0.0.1:8765 SMOKE_ATTEMPTS=1 node scripts/smoke-deploy.mjs   
 It waits for `js/config.js`'s `APP_VERSION` to appear in the served `index.html`, then asserts every
 page and asset returns 200 and that `docs/`, `test/`, `scripts/`, `README.md` and `firestore.rules`
 are **not** published. `.github/workflows/smoke-deploy.yml` runs the same check on every push, so a
-successful-but-stale deployment (which is how the site sat on v2.10.1 while the checkout was
-v2.11.3) fails the build instead of passing quietly.
+successful-but-stale deployment (which previously occurred when the site sat on v2.10.1 while the checkout was
+v2.11.3, now v2.11.5) fails the build instead of passing quietly.
 
 ## Repository size and working artefacts
 
@@ -325,6 +386,6 @@ node test/catalogue-studio.test.mjs
 
 [Photo Studio](studio.html) is the manual counterpart to the automated build: it uploads, frames, orders and covers an entry's photos, and `scripts/apply-studio-photos.mjs` publishes the result.
 
-[Catalogue review](docs/catalogue-review.html) contains 144 model groups, 191 trim/variant entries and 2,547 deduplicated official photo candidates (from 2,555 official gallery assets) with each model's official web listing hero image set as its default cover. [Review notes](docs/review-findings.md) explain the 77 substantiated prices and the remaining evidence gaps. Original photographs are retained for inspection; the interface loads small 8:5 WebP thumbnails lazily.
+The live curated catalogue serves **227 models across 38 makes** with **504 standardized 8:5 WebP gallery assets** (252 full + 252 thumbnails) and 281 market catalogue entries, specified in the official [Product Requirements Document](docs/PRD.md). The earlier October 21 review interface ([docs/catalogue-review.html](docs/catalogue-review.html)) and [review notes](docs/review-findings.md) remain preserved as internal working artefacts with 144 model groups, 191 trim entries and 77 substantiated prices.
 
-VahanaIQ is Akila Wickramasinghe’s personal project. © 2026 Akila Wickramasinghe for original site material; third-party photo, logo and icon rights remain with their owners. See About, Privacy, Terms & notices and Photo Credits in the site. Human-readable dates use friendly British-English dates (for example 21 Oct 2026); storage uses ISO values.
+VahanaIQ is Akila Wickramasinghe’s personal project. © 2026 Akila Wickramasinghe for original site material; third-party photo, logo and icon rights remain with their owners. See About, Privacy, Terms & notices and Photo Credits in the site. Human-readable dates use friendly British-English dates (for example 24 Oct 2026); storage uses ISO values.

@@ -163,8 +163,10 @@ if (shouldRun("Change the catalogue price source")) {
   const a3 = catData.models.find(m => m.id === "audi-a3");
   const a4 = catData.models.find(m => m.id === "audi-a4");
   const a5 = catData.models.find(m => m.id === "audi-a5");
+  const yarisCross = catData.models.find(m => m.id === "toyota-yaris-cross");
 
-  assert.ok(a3 && a4 && a5, "Audi models must be present in catalogue");
+  assert.ok(a3 && a4 && a5 && yarisCross, "Audi and Toyota Yaris Cross models must be present in catalogue");
+  assert.ok(catData.models.every(m => m.offers.every(o => o.condition === "New")), "All catalogue offers must be Brand New");
 
   // Re-evaluate getOfferForCard logic from curated-catalogue.js
   const funcMatch = catalogueJs.match(/function getOfferForCard[\s\S]*?return \{ offer: best, count: matching\.length \};\s*\}/);
@@ -179,10 +181,11 @@ if (shouldRun("Change the catalogue price source")) {
   assert.equal(a4Priced.offer.kind, "launch", "Audi A4 must display Published Launch Price under Published Prices filter");
   assert.equal(a5Priced.offer.kind, "launch", "Audi A5 must display Published Launch Price under Published Prices filter");
 
-  // Under dealer filter, Audi A3 correctly shows dealer asking price
-  const a3Dealer = evalFunc(a3, "dealer");
-  assert.equal(a3Dealer.offer.kind, "dealer", "Audi A3 must display Dealer Asking Price under Dealer filter");
-  assert.equal(a3Dealer.offer.amount, 18500000, "Audi A3 dealer amount must be 18,500,000");
+  // Under dealer filter, Toyota Yaris Cross shows its Brand New dealer asking price
+  const ycDealer = evalFunc(yarisCross, "dealer");
+  assert.equal(ycDealer.offer.kind, "dealer", "Toyota Yaris Cross must display Dealer Asking Price under Dealer filter");
+  assert.equal(ycDealer.offer.condition, "New", "Dealer offer must be Brand New");
+  assert.equal(ycDealer.offer.amount, 17200000, "Toyota Yaris Cross dealer amount must be 17,200,000");
 
   console.log("  ✓ Change the catalogue price source PASSED: all vehicle cards render consistent pricing from selected source.\n");
 }

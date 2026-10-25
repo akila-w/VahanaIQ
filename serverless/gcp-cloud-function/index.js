@@ -1,221 +1,107 @@
 const functions = require('@google-cloud/functions-framework');
+const crypto = require('crypto');
+const path = require('path');
+
+// Resolve shared proxy logic supporting local development, containerized builds, and testing harnesses
+let proxyLogic;
+try {
+  proxyLogic = require('../shared/proxy-logic.js');
+} catch (e) {
+  try {
+    proxyLogic = require('./shared/proxy-logic.js');
+  } catch (e2) {
+    try {
+      proxyLogic = require('./proxy-logic.js');
+    } catch (e3) {
+      proxyLogic = require(path.resolve(process.cwd(), 'serverless/shared/proxy-logic.js'));
+    }
+  }
+}
+
+const {
+  DEFAULT_MODEL,
+  PRICE_MODEL,
+  DEFAULT_RATE_LIMIT,
+  VEHICLE_RESPONSE_SCHEMA,
+  errorCode,
+  safeDetail,
+  parseAllowedOrigins,
+  createRateLimiter,
+  validateSearchRequest,
+  validatePriceRequest,
+  isComparisonQuery,
+  buildVehicleSearchRequestBody,
+  callGemini,
+  parseVehicleResponse,
+  priceLookup
+} = proxyLogic;
 
 // The one place the Gemini model is chosen. Override with the GEMINI_MODEL env var.
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-
-// Maps an upstream Gemini HTTP status to a short code the front end can act on.
-const errorCode = status => status === 429 ? 'quota' : status === 400 ? 'bad_request' : 'upstream_unavailable';
+const MODEL = process.env.GEMINI_MODEL || DEFAULT_MODEL;
 
 // Browsers on other sites may not use this proxy: ALLOWED_ORIGINS is a comma-separated list
 // (default: the GitHub Pages site). Requests without an Origin header (servers, the monthly
 // price script) are allowed but still rate limited.
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://akila-w.github.io').split(',').map(o => o.trim()).filter(Boolean);
-// Conservative quota per transport peer on each instance. Forwarded headers are
-// client-controlled unless a separately verified trusted proxy normalises them.
-// Cloud Run peers may be shared, so this can be an aggregate quota behind its proxy.
-const RATE_LIMIT = Number(process.env.RATE_LIMIT) || 30;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const hits = new Map();
-// Screenshots: these types only, and at most about 4 MB of image data
-const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-const MAX_IMAGE_BASE64 = 5600000;
-// Upstream messages are passed on for the client's retry logic, short and without key-like text
-const safeDetail = text => String(text || '').replace(/key=[^&\s]+/gi, 'key=[removed]').slice(0, 200);
+const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
 
-function rateLimited(ip) {
-  const now = Date.now();
-  const recent = (hits.get(ip) || []).filter(t => now - t < RATE_WINDOW_MS);
-  recent.push(now);
-  hits.set(ip, recent);
-  if (hits.size > 5000) hits.delete(hits.keys().next().value);
-  return recent.length > RATE_LIMIT;
-}
+// Rate limiting configuration
+// Quota per client IP on each instance: RATE_LIMIT requests per 10 minutes.
+// Forwarded headers (X-Forwarded-For) can be spoofed by callers to bypass rate limits
+// unless the function runs behind a trusted reverse proxy (e.g. Google Cloud Load Balancing
+// or Cloud Run) that normalises or manages headers.
+// Set environment variable TRUSTED_PROXY=true when deployed behind such a proxy.
+// When TRUSTED_PROXY is false or unset, the proxy falls back strictly to req.socket.remoteAddress
+// (or 'shared-proxy') to prevent spoofed header rate-limit rotation.
+const RATE_LIMIT = Number(process.env.RATE_LIMIT) || DEFAULT_RATE_LIMIT;
+const rateLimited = createRateLimiter({ defaultLimit: RATE_LIMIT });
 
-const VEHICLE_RESPONSE_SCHEMA = {
-  type: 'OBJECT',
-  properties: {
-    is_available_in_sri_lanka: { type: 'BOOLEAN' },
-    is_multi_vehicle: {
-      type: 'BOOLEAN',
-      description: 'Set to true if user asked to compare multiple vehicles or find best vehicles in a budget'
-    },
-    discovered_vehicles: {
-      type: 'ARRAY',
-      description: 'List of discovered or compared vehicles when is_multi_vehicle is true',
-      items: {
-        type: 'OBJECT',
-        properties: {
-          model_name: { type: 'STRING' },
-          year: { type: 'INTEGER' },
-          trim_name: { type: 'STRING' },
-          powertrain: { type: 'STRING' },
-          fuel_economy_kml: { type: 'STRING' },
-          condition: { type: 'STRING', enum: ['New', 'Recond', 'Used'] },
-          warranty_type: { type: 'STRING', enum: ['Official', 'Grey'] },
-          price_lkr: { type: 'INTEGER' },
-          wikipedia_slug: { type: 'STRING' }
-        },
-        required: ['model_name', 'year', 'trim_name', 'powertrain', 'condition', 'warranty_type', 'price_lkr']
-      }
-    },
-    model_name: {
-      type: 'STRING',
-      description: 'Canonical make + model without year, e.g. Toyota Yaris Cross'
-    },
-    wikipedia_slug: {
-      type: 'STRING',
-      description: 'Canonical English Wikipedia page title for image lookup, e.g. Toyota_Yaris_Cross'
-    },
-    availability_notes: { type: 'STRING' },
-    import_route: {
-      type: 'STRING',
-      enum: ['Official Agent', 'Grey Import', 'Registered Fleet']
-    },
-    seller_price_lkr: {
-      type: 'INTEGER',
-      description: 'Seller asking price in LKR if extracted from classified ad text, listing, or auction sheet, else 0'
-    },
-    detected_condition: {
-      type: 'STRING',
-      enum: ['New', 'Recond', 'Used']
-    },
-    reason: {
-      type: 'STRING',
-      description: 'Reason if vehicle is unavailable or not road-legal in Sri Lanka'
-    },
-    alternatives: {
-      type: 'ARRAY',
-      items: { type: 'STRING' }
-    },
-    model_years: {
-      type: 'ARRAY',
-      items: {
-        type: 'OBJECT',
-        properties: {
-          year: { type: 'INTEGER' },
-          trims: {
-            type: 'ARRAY',
-            items: {
-              type: 'OBJECT',
-              properties: {
-                trim_name: { type: 'STRING' },
-                powertrain: { type: 'STRING' },
-                fuel_economy_kml: { type: 'STRING' },
-                warranty_type: {
-                  type: 'STRING',
-                  enum: ['Official', 'Grey']
-                },
-                condition_prices: {
-                  type: 'OBJECT',
-                  properties: {
-                    brand_new: { type: 'INTEGER' },
-                    recond: { type: 'INTEGER' },
-                    used_low: { type: 'INTEGER' },
-                    used_med: { type: 'INTEGER' }
-                  },
-                  required: ['brand_new', 'recond', 'used_low', 'used_med']
-                }
-              },
-              required: ['trim_name', 'powertrain', 'fuel_economy_kml', 'warranty_type', 'condition_prices']
-            }
-          }
-        },
-        required: ['year', 'trims']
+/**
+ * Resolves the client IP for per-client rate limiting.
+ *
+ * Behind Cloud Load Balancer / Cloud Run, req.socket.remoteAddress represents the internal
+ * proxy or load-balancer IP rather than the true client.
+ *
+ * To extract the client IP safely without opening spoofing vulnerabilities:
+ * 1. Only trust X-Forwarded-For if TRUSTED_PROXY=true is set in the environment.
+ * 2. When TRUSTED_PROXY is enabled and X-Forwarded-For exists, take the first IP.
+ * 3. Log extraction details for debugging and auditability.
+ * 4. Fall back to socket IP (req.socket.remoteAddress) or 'shared-proxy' if untrusted or missing.
+ */
+function extractClientIp(req) {
+  const socketIp = req?.socket?.remoteAddress;
+  const isTrusted = process.env.TRUSTED_PROXY === 'true';
+
+  if (isTrusted) {
+    let rawForwarded = '';
+    if (typeof req?.get === 'function') {
+      rawForwarded = req.get('x-forwarded-for') || '';
+    }
+    if (!rawForwarded && req?.headers) {
+      rawForwarded = req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For'] || '';
+    }
+    const forwarded = Array.isArray(rawForwarded) ? rawForwarded.join(',') : String(rawForwarded || '');
+    if (forwarded) {
+      const firstIp = forwarded.split(',')[0].trim();
+      if (firstIp) {
+        console.log(`[RateLimit] Extracted client IP ${firstIp} from X-Forwarded-For (socket: ${socketIp || 'unknown'})`);
+        return firstIp;
       }
     }
-  },
-  required: [
-    'is_available_in_sri_lanka',
-    'is_multi_vehicle',
-    'discovered_vehicles',
-    'model_name',
-    'wikipedia_slug',
-    'availability_notes',
-    'import_route',
-    'model_years'
-  ]
-};
-
-// Price mode: a grounded lookup used only by the monthly catalogue refresh
-// (scripts/refresh-prices.mjs), requested with POST { mode: 'price', queries: [...] }.
-// It searches Google so prices come from current Sri Lankan sources rather than the
-// model's training data, and returns the web sources it used. Several vehicles go in
-// one request to save quota. It runs on its own model, PRICE_MODEL, so the refresh never
-// uses the app's daily free allowance. The app's search is unchanged.
-// On the free tier, Google Search grounding is only allowed on Gemini 2.x and 2.5 models
-// (AI Studio, 20/10/2026: "Gemini 3 and newer" 0 a day), and gemini-2.5-flash is closed to
-// new users, so the default is gemini-2.5-flash-lite (20 requests a day).
-const PRICE_MODEL = process.env.PRICE_MODEL || 'gemini-2.5-flash-lite';
-const PRICE_BASES = ['dealer price list', 'dealer listing', 'news report', 'estimate'];
-const MAX_PRICE_QUERIES = 12;
-
-const callGemini = async (apiKey, model, body) => {
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  const data = await r.json().catch(() => ({}));
-  return { ok: r.ok, status: r.status, data, detail: data.error?.message || `HTTP ${r.status}` };
-};
-
-// 'daily' or 'minute' for a quota error, from the QuotaFailure details Gemini sends
-const quotaScope = data => {
-  const ids = (data.error?.details || []).flatMap(d => d.violations || []).map(v => v.quotaId || '').join(' ');
-  return /PerDay/i.test(ids) ? 'daily' : /PerMinute/i.test(ids) ? 'minute' : undefined;
-};
-
-// Reads JSON from a reply that may be wrapped in a ```json fence or surrounded by prose
-const parseJsonText = text => {
-  const start = text.indexOf('{');
-  const end = text.lastIndexOf('}');
-  if (start < 0 || end < start) throw new Error('No JSON object in the model reply');
-  return JSON.parse(text.slice(start, end + 1));
-};
-
-// No response schema: not every model accepts one alongside Google Search, so the
-// JSON shape is given in the prompt and the refresh script checks every field.
-async function priceLookup(apiKey, queries) {
-  const today = new Date().toISOString().slice(0, 10);
-  const list = queries.map((q, i) => `${i + 1}. "${q.trim().slice(0, 300)}"`).join('\n');
-  const prompt = `You are a Sri Lankan vehicle pricing researcher. Today is ${today}.
-Use Google Search to find the current brand-new price in Sri Lanka, in LKR, of each of these vehicles:
-${list}
-Prefer official agent price lists, then dealer or importer listings (for example Riyasewana, ikman, Patpat), then recent news reports.
-For each vehicle:
-1. List every trim of that model you found a current brand-new price for, with its model year.
-2. Give brand_new_price_lkr as whole rupees. If a price is given in millions or lakhs, convert it. Use 0 if you found no current price.
-3. Set price_basis to where the price came from: ${PRICE_BASES.map(b => `"${b}"`).join(', ')}. Use "estimate" if it is not taken from a source published in the last 6 months.
-4. Set as_of to the month the source was published, as YYYY-MM.
-5. Set source_site to the website the price was taken from, as a domain such as riyasewana.com.
-6. Do not use prices for reconditioned or used vehicles.
-Reply with only a JSON object, no other text, in this shape:
-{"vehicles": [{"query_index": 1, "model_name": "Make Model", "available_new_in_sri_lanka": true, "trims": [{"trim_name": "Grade", "model_year": 2026, "brand_new_price_lkr": 0, "price_basis": "dealer listing", "as_of": "YYYY-MM", "source_site": "example.lk"}]}]}`;
-
-  const r = await callGemini(apiKey, PRICE_MODEL, {
-    contents: [{ parts: [{ text: prompt }] }],
-    tools: [{ google_search: {} }],
-    generationConfig: { temperature: 0 }
-  });
-  if (!r.ok) {
-    const err = new Error(r.detail);
-    err.status = r.status;
-    err.quota = quotaScope(r.data);
-    throw err;
+    console.log(`[RateLimit] TRUSTED_PROXY enabled but X-Forwarded-For missing; falling back to socket IP: ${socketIp || 'shared-proxy'}`);
   }
-  const candidate = r.data.candidates?.[0];
-  const text = (candidate?.content?.parts || []).map(p => p.text || '').join('');
-  const answer = parseJsonText(text);
-  const meta = candidate?.groundingMetadata || {};
-  return {
-    vehicles: Array.isArray(answer.vehicles) ? answer.vehicles : [],
-    sources: (meta.groundingChunks || [])
-      .map(c => c.web)
-      .filter(w => w && w.uri)
-      .map(w => ({ title: w.title || w.uri, uri: w.uri })),
-    search_queries: meta.webSearchQueries || [],
-    model: PRICE_MODEL
-  };
+
+  const fallbackIp = socketIp || 'shared-proxy';
+  return fallbackIp;
+}
+
+/**
+ * Constant-time comparison for authentication tokens to prevent timing side-channel attacks.
+ */
+function safeCompareTokens(provided, expected) {
+  if (typeof provided !== 'string' || typeof expected !== 'string') return false;
+  const hashProvided = crypto.createHash('sha256').update(provided).digest();
+  const hashExpected = crypto.createHash('sha256').update(expected).digest();
+  return crypto.timingSafeEqual(hashProvided, hashExpected);
 }
 
 functions.http('vehicleSearch', async (req, res) => {
@@ -241,23 +127,15 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  const ip = req.socket?.remoteAddress || 'shared-proxy';
-  if (rateLimited(ip)) {
-    res.status(429).json({ error: 'rate_limited', detail: 'Too many searches. Try again in a few minutes.' });
+  const contentLength = Number(header('content-length') || 0);
+  if (contentLength > 6000000) {
+    res.status(413).json({ error: 'image_too_large', detail: 'Payload too large; keep requests under 6 MB' });
     return;
   }
 
-  const { query, image } = req.body || {};
-  if (!query && !image && req.body?.mode !== 'price') {
-    res.status(400).json({ error: 'bad_request', detail: 'Missing query or image parameter' });
-    return;
-  }
-  if (image && (typeof image.data !== 'string' || !IMAGE_TYPES.includes(image.mimeType || 'image/jpeg'))) {
-    res.status(400).json({ error: 'bad_request', detail: 'Attach a JPEG, PNG, WebP or GIF screenshot' });
-    return;
-  }
-  if (image && image.data.length > MAX_IMAGE_BASE64) {
-    res.status(413).json({ error: 'image_too_large', detail: 'The screenshot is too large; attach one under 4 MB' });
+  const ip = extractClientIp(req);
+  if (rateLimited(ip)) {
+    res.status(429).json({ error: 'rate_limited', detail: 'Too many searches. Try again in a few minutes.' });
     return;
   }
 
@@ -270,21 +148,22 @@ functions.http('vehicleSearch', async (req, res) => {
 
   if (req.body?.mode === 'price') {
     // Price mode is for the monthly refresh only: when PRICE_TOKEN is set, callers must send it
-    if (process.env.PRICE_TOKEN && header('x-price-token') !== process.env.PRICE_TOKEN) {
+    if (process.env.PRICE_TOKEN && !safeCompareTokens(header('x-price-token'), process.env.PRICE_TOKEN)) {
       res.status(401).json({ error: 'unauthorised', detail: 'Price mode needs the X-Price-Token header' });
       return;
     }
-    const queries = req.body.queries;
-    if (!Array.isArray(queries) || !queries.length || queries.length > MAX_PRICE_QUERIES ||
-        !queries.every(q => typeof q === 'string' && q.trim())) {
-      res.status(400).json({ error: 'bad_request', detail: `Price mode needs queries: 1 to ${MAX_PRICE_QUERIES} vehicle names` });
+    const val = validatePriceRequest(req.body);
+    if (!val.valid) {
+      res.status(val.status).json({ error: val.error, detail: val.detail });
       return;
     }
+    const queries = req.body.queries;
+    const priceModel = process.env.PRICE_MODEL || PRICE_MODEL;
     try {
-      res.json(await priceLookup(apiKey, queries));
+      res.json(await priceLookup(apiKey, queries, priceModel));
     } catch (e) {
       if (e.status) {
-        console.error(`Gemini ${PRICE_MODEL} price lookup failed: HTTP ${e.status}: ${e.message}`);
+        console.error(`Gemini ${priceModel} price lookup failed: HTTP ${e.status}: ${e.message}`);
         res.status(502).json({ error: errorCode(e.status), detail: safeDetail(e.message), upstream_status: e.status, ...(e.quota ? { quota: e.quota } : {}) });
       } else {
         console.error('Price lookup internal error:', e);
@@ -294,63 +173,26 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  const systemPrompt = `You are an expert Sri Lankan automotive market analyst and finance assessor. Evaluate vehicles based on actual Sri Lankan road regulations and active market availability (official franchise dealers like AMW, DIMO, John Keells CG, Stafford; Japanese auction grey market imports; or registered local fleet). Return strictly valid JSON conforming to the requested schema.`;
-  
-  const promptText = `Vehicle query / input: "${(query || '').trim().slice(0, 500)}".
-Instructions:
-1. If the input or attached image is a classified advertisement (e.g. from Ikman, Riyasewana, Patpat, Facebook Marketplace) or Japanese auction sheet:
-   - Extract exact make, model, year, and trim.
-   - Extract the seller's asking price in LKR as seller_price_lkr.
-   - Detect condition as detected_condition ("New", "Recond", or "Used").
-2. If the user asks for a comparative query or budget discovery:
-   - Set is_multi_vehicle: true
-   - Populate discovered_vehicles with an array of at least two distinct vehicles matching the query. Include every requested model; multiple trims of one model must not replace another requested model.
-   - For a single-vehicle query set is_multi_vehicle to false and discovered_vehicles to [].
-3. Availability check:
-   - Determine is_available_in_sri_lanka. If false, provide reason and 2-3 popular Sri Lankan alternatives.
-4. If available:
-   - Return model_name (canonical Make + Model without year).
-   - Return wikipedia_slug (canonical English Wikipedia article title for image lookup).
-   - Return import_route ("Official Agent", "Grey Import", or "Registered Fleet").
-   - Return model_years array with available trims, powertrains, real-world fuel economy in km/l, warranty type, and condition prices in LKR.`;
-
-  const comparison = req.body?.comparison === true || /\b(?:compar(?:e|ing|ison)|versus|vs\.?|alternatives)\b/i.test(query || '');
-  const comparisonPrompt = comparison ? '\nThis is a comparison request. You must set is_multi_vehicle to true and return every requested model in discovered_vehicles. Do not substitute a single-model result.' : '';
-  const parts = [{ text: `${systemPrompt}\n\n${promptText}${comparisonPrompt}` }];
-  if (image && image.data) {
-    parts.push({
-      inlineData: {
-        mimeType: image.mimeType || 'image/jpeg',
-        data: image.data
-      }
-    });
+  const val = validateSearchRequest(req.body);
+  if (!val.valid) {
+    res.status(val.status).json({ error: val.error, detail: val.detail });
+    return;
   }
 
+  const { query, image } = req.body || {};
+  const comparison = isComparisonQuery(query, req.body?.comparison);
+  const reqBody = buildVehicleSearchRequestBody(query, image, comparison, VEHICLE_RESPONSE_SCHEMA);
+
   try {
-    const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: {
-          temperature: 0.2,
-          responseMimeType: 'application/json',
-          responseSchema: VEHICLE_RESPONSE_SCHEMA
-        }
-      })
-    });
+    const geminiRes = await callGemini(apiKey, MODEL, reqBody);
 
     if (!geminiRes.ok) {
-      const errJson = await geminiRes.json().catch(() => ({}));
-      const detail = errJson.error?.message || `HTTP ${geminiRes.status}`;
-      console.error(`Gemini ${MODEL} failed: HTTP ${geminiRes.status}: ${detail}`);
-      res.status(502).json({ error: errorCode(geminiRes.status), detail: safeDetail(detail), upstream_status: geminiRes.status });
+      console.error(`Gemini ${MODEL} failed: HTTP ${geminiRes.status}: ${geminiRes.detail}`);
+      res.status(502).json({ error: errorCode(geminiRes.status), detail: safeDetail(geminiRes.detail), upstream_status: geminiRes.status });
       return;
     }
 
-    const data = await geminiRes.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    res.json(JSON.parse(raw));
+    res.json(parseVehicleResponse(geminiRes.data));
   } catch (e) {
     console.error('Proxy internal error:', e);
     res.status(500).json({ error: 'internal', detail: 'Internal error' });

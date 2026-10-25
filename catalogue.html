@@ -2,11 +2,19 @@
 <html lang="en-GB">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://vahanaiq-search-71962876227.asia-south1.run.app; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Vehicle Catalogue · VahanaIQ</title>
   <meta name="description" content="Explore passenger vehicles and pickups with curated official imagery and clearly sourced Sri Lankan prices.">
   <meta name="theme-color" media="(prefers-color-scheme: light)" content="#103e36">
   <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a">
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://apis.google.com">
+  <link rel="dns-prefetch" href="https://accounts.google.com">
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+  <link rel="dns-prefetch" href="https://vahanaiq-search-71962876227.asia-south1.run.app">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <script>try { var t = localStorage.getItem("vahanaiq_theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} try { var now = Date.now() / 1000; var rootStyle = document.documentElement.style; rootStyle.setProperty("--aurora-delay-1", "-" + (now % 44).toFixed(2) + "s"); rootStyle.setProperty("--aurora-delay-2", "-" + (now % 56).toFixed(2) + "s"); } catch (e) {}</script>
@@ -17,6 +25,10 @@
     window.__VAHANAIQ_PHOTOS__ = { apply: null, resolve: null };
     window.__VAHANAIQ_PHOTOS__.ready = new Promise(function (resolve) { window.__VAHANAIQ_PHOTOS__.resolve = resolve; });
   </script>
+  <link rel="preload" href="css/tokens.css?v=2.11.5" as="style">
+  <link rel="preload" href="css/curated-catalogue.css" as="style">
+  <link rel="preload" href="js/catalogue-data.js?v=2.11.5" as="script">
+  <link rel="preload" href="js/curated-catalogue.js" as="script">
   <link rel="stylesheet" href="css/tokens.css?v=2.11.5">
   <link rel="stylesheet" href="css/curated-catalogue.css">
   <script src="js/page-transitions.js" defer></script>
@@ -29,8 +41,8 @@
     <header class="site-header">
     <div class="header-brand-group">
       <a class="brand" href="index.html">
-        <img src="assets/icons/logo-v-mark-transparent-light.svg" alt="" class="brand-logo logo-light" width="36" height="36">
-        <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" class="brand-logo logo-dark" width="36" height="36">
+        <img src="assets/icons/logo-v-mark-transparent-light.svg" alt="" class="brand-logo logo-light" width="36" height="36" loading="lazy">
+        <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" class="brand-logo logo-dark" width="36" height="36" loading="lazy">
         <div class="brand-text">
           <span class="brand-title">Vahana<span class="brand-iq">IQ</span></span>
           <span class="brand-tagline">Sri Lanka Vehicle Finance Intelligence</span>
@@ -55,8 +67,8 @@
     </div>
   </header>
   <main>
-    <section class="hero"><div><p class="eyebrow">The Vehicle Collection</p><h1>Find Your<br>Next Vehicle.</h1><p class="intro">Official imagery. Local prices. A clearer starting point.</p></div><div class="hero-aside"><span class="edition">Sri Lanka · October 2026</span><div class="metrics" id="metrics" aria-live="polite"></div><p class="small">Published prices and dealer offers are labelled separately.</p></div></section>
-    <section class="filters" aria-label="Filter Vehicles"><label class="search-field"><span class="sr-only">Search Vehicles</span><img src="assets/icons/lucide/search.svg" alt="" width="20" height="20"><input id="search" type="search" placeholder="Search make, model or trim…" autocomplete="off"></label><div class="filter-row"><label>Make<select id="make"><option value="">All Makes</option></select></label><label>Body Type<select id="body"><option value="">All Body Types</option></select></label><label>Price Source<select id="priceType"><option value="">All Vehicles</option><option value="priced">Published Prices</option><option value="official">Distributor Prices</option><option value="dealer">Dealer Asking Prices</option><option value="estimated">Estimated Prices</option><option value="quote">Price on Request</option></select></label><label>Sort By<select id="sort"><option value="make" selected>Make (A to Z)</option><option value="make-desc">Make (Z to A)</option><option value="model">Model (A to Z)</option><option value="model-desc">Model (Z to A)</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option><option value="year-desc">Year: Newest First</option><option value="year-asc">Year: Oldest First</option></select></label><button id="clear" class="quiet">Reset Filters</button></div></section>
+    <section class="hero"><div><p class="eyebrow">The Vehicle Collection</p><h1>Find Your Next Vehicle.</h1><p class="intro">Official imagery. Local prices. A clearer starting point.</p></div><div class="hero-aside"><span class="edition">Sri Lanka · October 2026</span><div class="metrics" id="metrics" aria-live="polite"></div><p class="small">Published prices and dealer offers are labelled separately.</p></div></section>
+    <section class="filters" aria-label="Filter Vehicles"><label class="search-field"><span class="sr-only">Search Vehicles</span><img src="assets/icons/lucide/search.svg" alt="" width="20" height="20" loading="lazy"><input id="search" type="search" placeholder="Search make, model or trim…" autocomplete="off"></label><div class="filter-row"><label>Make<select id="make"><option value="">All Makes</option></select></label><label>Body Type<select id="body"><option value="">All Body Types</option></select></label><label>Price Source<select id="priceType"><option value="">All Vehicles</option><option value="priced">Published Prices</option><option value="official">Distributor Prices</option><option value="dealer">Dealer Asking Prices</option><option value="estimated">Estimated Prices</option><option value="quote">Price on Request</option></select></label><label>Sort By<select id="sort"><option value="make" selected>Make (A to Z)</option><option value="make-desc">Make (Z to A)</option><option value="model">Model (A to Z)</option><option value="model-desc">Model (Z to A)</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option><option value="year-desc">Year: Newest First</option><option value="year-asc">Year: Oldest First</option></select></label><button id="clear" class="quiet">Reset Filters</button></div></section>
     <div class="results-line"><p id="resultCount" role="status">Loading the collection…</p><button id="reviewFilter" class="quiet" aria-pressed="false">My Review <span id="reviewCount"></span></button></div>
     <section id="vehicles" class="grid" aria-label="Vehicle Catalogue" tabindex="-1"></section>
     <nav class="pagination" aria-label="Catalogue Pages"><button id="previous" disabled>← Previous</button><span id="pageCount"></span><button id="next" disabled>Next →</button></nav>
@@ -68,7 +80,7 @@
         </div>
         <div class="review-actions">
           <a href="index.html#comparisonPanel" class="btn-outline view-calc-btn">Open Comparison in Calculator <span aria-hidden="true">↗</span></a>
-          <button id="export" type="button">Export Review <img src="assets/icons/lucide/download.svg" width="16" height="16" alt=""></button>
+          <button id="export" type="button">Export Review <img src="assets/icons/lucide/download.svg" width="16" height="16" alt="" loading="lazy"></button>
         </div>
       </div>
       <div id="affordabilityPanel" class="affordability-panel" aria-label="Affordability Summary"></div>

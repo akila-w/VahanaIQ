@@ -126,9 +126,13 @@ const good = { name: 'Toyota Yaris Cross', price: 12500000 };
 eq(vehicleBatchError([good]), '');
 ok(vehicleBatchError([good, { name: 'Honda Vezel', price: 0 }]).includes('No vehicles were added'));
 const trim = { condition_prices: { brand_new: 0, recond: 15500000, used_low: 12500000 } };
+const newTrim = { condition_prices: { brand_new: 18500000, recond: 15500000, used_low: 12500000 } };
 ok(Number.isNaN(conditionPrice(trim, 'brand_new')));
-ok(Number.isNaN(conditionPrice(trim, 'used_med'))); // No brand-new or depreciation fallback.
-eq(conditionPrice(trim, 'recond'), 15500000);
+eq(conditionPrice(newTrim, 'brand_new'), 18500000);
+ok(Number.isNaN(conditionPrice(newTrim, 'recond'))); // Non-brand-new conditions require custom quote / listing price.
+ok(Number.isNaN(conditionPrice(newTrim, 'recent')));
+ok(Number.isNaN(conditionPrice(newTrim, 'used_low')));
+ok(Number.isNaN(conditionPrice(newTrim, 'used_med')));
 eq(conditionPrice(trim, 'seller_price', 12000000), 12000000);
 
 globalThis.localStorage = {

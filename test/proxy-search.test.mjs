@@ -10,6 +10,8 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vahanaiq-search-test-'));
 const framework = path.join(tmp, 'node_modules/@google-cloud/functions-framework');
 fs.mkdirSync(framework, { recursive: true });
 fs.writeFileSync(path.join(framework, 'index.js'), 'exports.http = (_, fn) => { globalThis.__searchHandler = fn; };');
+fs.mkdirSync(path.join(tmp, 'shared'), { recursive: true });
+fs.copyFileSync(new URL('../serverless/shared/proxy-logic.js', import.meta.url), path.join(tmp, 'shared', 'proxy-logic.js'));
 fs.copyFileSync(new URL('../serverless/gcp-cloud-function/index.js', import.meta.url), path.join(tmp, 'index.js'));
 const previousKey = process.env.GEMINI_API_KEY;
 process.env.GEMINI_API_KEY = 'test-placeholder';
@@ -93,6 +95,26 @@ try {
   }
   assert.equal((await cloudRunWith({query:'Toyota'}, {}, '192.0.2.2')).statusCode,200,'Another transport peer has its own budget');
   console.log('Both proxies: origins, screenshots and rate limits passed; forged IP prefixes cannot bypass the Cloud Run quota');
+
+  // When TRUSTED_PROXY=true is set, the first IP from X-Forwarded-For is trusted for client rate limiting
+  process.env.TRUSTED_PROXY = 'true';
+  const savedLog = console.log;
+  console.log = () => {};
+  try {
+    for (let i = 0; i < 30; i++) {
+      assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': '198.51.100.200, 192.0.2.99' }, '192.0.2.99')).statusCode, 200);
+    }
+    // 31st request from same client IP behind proxy is rate limited
+    assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': '198.51.100.200, 192.0.2.99' }, '192.0.2.99')).statusCode, 429);
+    // Distinct client IP behind the same proxy peer has its own quota
+    assert.equal((await cloudRunWith({ query: 'Toyota' }, { 'x-forwarded-for': '198.51.100.201, 192.0.2.99' }, '192.0.2.99')).statusCode, 200);
+    // Fallback to socket IP when X-Forwarded-For is missing
+    assert.equal((await cloudRunWith({ query: 'Toyota' }, {}, '192.0.2.88')).statusCode, 200);
+  } finally {
+    console.log = savedLog;
+    delete process.env.TRUSTED_PROXY;
+  }
+  console.log('TRUSTED_PROXY=true: correctly isolates client quotas behind shared proxy via X-Forwarded-For');
 } finally {
   globalThis.fetch = realFetch; console.error = realError;
   if (previousKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = previousKey;

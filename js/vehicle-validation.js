@@ -12,7 +12,9 @@ export function vehicleBatchError(vehicles) {
 }
 
 export function conditionPrice(trim, condition, sellerPrice) {
-  const price = condition === "seller_price" ? sellerPrice : trim?.condition_prices?.[condition];
+  if (condition === "seller_price") return validPrice(sellerPrice) ? sellerPrice : NaN;
+  if (condition !== "brand_new") return NaN;
+  const price = trim?.condition_prices?.brand_new;
   return validPrice(price) ? price : NaN;
 }
 

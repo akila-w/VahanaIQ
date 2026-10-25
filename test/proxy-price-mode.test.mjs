@@ -17,6 +17,8 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "vahanaiq-proxy-test-"));
 const fw = path.join(tmp, "node_modules/@google-cloud/functions-framework");
 fs.mkdirSync(fw, { recursive: true });
 fs.writeFileSync(path.join(fw, "index.js"), "exports.http = (name, fn) => { globalThis.__proxyHandler = fn; };");
+fs.mkdirSync(path.join(tmp, "shared"), { recursive: true });
+fs.copyFileSync(path.join(ROOT, "serverless/shared/proxy-logic.js"), path.join(tmp, "shared", "proxy-logic.js"));
 fs.copyFileSync(path.join(ROOT, "serverless/gcp-cloud-function/index.js"), path.join(tmp, "index.js"));
 
 process.env.GEMINI_API_KEY = "test-key";

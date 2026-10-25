@@ -1,5 +1,16 @@
 import { formatDate } from "./dates.js?v=2.11.5";
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor } from "./calculator.js?v=2.11.5";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor, safeUrl } from "./calculator.js?v=2.11.5";
+import {
+  DOWN_MIN,
+  DOWN_MIN_UNREG,
+  DOWN_MAX,
+  MIN_TENURE,
+  MAX_TENURE,
+  MAX_INPUT_RATE,
+  DTI_STANDARD_PCT,
+  DTI_STRETCH_PCT,
+  STRATEGY_PRESETS
+} from "./constants.js?v=2.11.5";
 import { baseVehicles } from "./catalog.js?v=2.11.5";
 import { initCatalogue } from "./catalogue-browser.js?v=2.11.5";
 import { APP_VERSION } from "./config.js?v=2.11.5";
@@ -100,11 +111,11 @@ const cols = [
   ["price", "Price", "n"],
   ["dp", "Down Payment", "n"],
   ["rental", "Monthly Rental", "n"],
-  ["bar", "Share of Your Budget"],
+  ["bar", "Affordability"],
   ["interest", "Total Interest", "n secondary"],
   ["total", "Total Outlay", "n secondary"],
-  ["need", "Income Needed", "n"],
-  ["status", "Status"],
+  ["need", "Income Needed", "n secondary"],
+  ["status", "Status", "secondary"],
   ["actions", "Actions", "actions"]
 ];
 
@@ -138,11 +149,57 @@ function summaryHtml(s, f, room) {
 
 function rowActions(r) {
   const name = esc(r.name);
+  const key = esc(r._key);
   const isPinned = pinnedKeys.has(r._key);
-  return `<button class="row-btn pin-btn${isPinned ? " active" : ""}" type="button" data-act="pin" data-key="${r._key}" aria-pressed="${isPinned}" aria-label="${isPinned ? "Pinned for head-to-head comparison" : "Compare head-to-head"}, ${name}">${isPinned ? "Pinned" : "Compare"}</button><button class="row-btn" type="button" data-act="details" data-key="${r._key}" aria-label="Lease details, ${name}">Details</button><button class="link" type="button" data-act="remove" data-key="${r._key}" aria-label="Remove ${name}">Remove</button>`;
+  return `<button class="row-btn pin-btn${isPinned ? " active" : ""}" type="button" data-act="pin" data-key="${key}" aria-pressed="${isPinned}" title="${isPinned ? "Pinned for head-to-head comparison" : "Pin for head-to-head comparison"}" aria-label="${isPinned ? "Pinned for head-to-head comparison" : "Compare head-to-head"}, ${name}">${isPinned ? "Pinned" : "Compare"}</button><button class="row-btn" type="button" data-act="details" data-key="${key}" aria-label="Lease details, ${name}">Details</button><button class="icon-btn remove-row-btn" type="button" data-act="remove" data-key="${key}" title="Remove ${name}" aria-label="Remove ${name}">&times;</button>`;
 }
 
 const UNKNOWN_SPEC = "Specifications to confirm";
+
+export function cleanVehicleSpecs(r) {
+  const nameLower = String(r.name || "").toLowerCase();
+  const nameWords = new Set(nameLower.replace(/[()]/g, " ").split(/\s+/).filter(Boolean));
+  const rawParts = [r.trim, r.pt, r.power, r.drivetrain, r.km]
+    .filter(t => t && t !== UNKNOWN_SPEC)
+    .flatMap(t => String(t).split(/\s*[·•]\s*/))
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  const hasPureRange = rawParts.some(p => /\b\d[\d,]*\+?\s*km\b/i.test(p) && !/\bpure\s*ev\b/i.test(p));
+  const seen = new Set();
+  const out = [];
+
+  for (let i = 0; i < rawParts.length; i++) {
+    let part = rawParts[i];
+    const lower = part.toLowerCase();
+    if (/^standard(\s+trim)?$/i.test(part)) continue;
+    // Omit trim token if already in vehicle title or generic "Spec" label when engine is present
+    if (i === 0 && r.trim && (nameLower.includes(lower) || lower.split(/\s+/).every(w => nameWords.has(w)) || /\bspec$/i.test(part))) {
+      continue;
+    }
+    // Skip secondary battery pack / transmission / pure-EV sub-range tokens in compact table rows
+    if (/\b(kwh|battery|s\s*tronic|dsg|cvt|e-cvt|at|mt)\b/i.test(part) && rawParts.length > 3) continue;
+    if (hasPureRange && /\bpure\s*ev\b/i.test(part)) continue;
+
+    // Condense verbose powertrain, power, and range phrasing into scannable badge text
+    part = part
+      .replace(/\bPlug-in\s+Hybrid\b/gi, "PHEV")
+      .replace(/\bStrong\s+(?:Hybrid|HEV)\b/gi, "HEV")
+      .replace(/\bMild\s+(?:Hybrid|MHEV)\b/gi, "MHEV")
+      .replace(/\b(\d+\s*HP)\s+combined\b/gi, "$1")
+      .replace(/\s*\(\d+(?:\.\d+)?\s*(?:kW|PS|hp)\)/gi, "")
+      .replace(/,\s*(\d[\d,]*\+?)\s*km\s*range/gi, " · $1 km")
+      .replace(/\b(\d[\d,]*\+?)\s*km\s+(?:combined|range)\b/gi, "$1 km");
+
+    for (const sub of part.split(/\s*·\s*/).map(s => s.trim()).filter(Boolean)) {
+      const subLower = sub.toLowerCase();
+      if (seen.has(subLower)) continue;
+      seen.add(subLower);
+      out.push(sub);
+    }
+  }
+  return out.slice(0, 4);
+}
 
 // Table header is rebuilt only when the sort changes
 let headSig = "";
@@ -167,15 +224,16 @@ const rowEls = new Map();
 function buildRow(key) {
   const tr = document.createElement("tr");
   tr.dataset.key = key;
-  tr.innerHTML = `<td class="name"><div class="car"><span class="thumb"></span><div><div class="v-title-row"><b class="v-name"></b><span class="v-badge-lowest"></span></div><small class="v-spec"></small><div class="warr"><span class="v-warr"></span><button type="button" class="cond-tag" data-act="cond" data-key="${key}" title="Change condition (Brand New, Reconditioned, Registered under a year, Registered Used)"><span class="v-cond"></span> <span class="cycle-icon" aria-hidden="true">⇄</span></button><span class="v-ltv"></span></div></div></div></td>
-<td class="n price-cell" data-label="Price (LKR)"><span class="price-wrap"><span class="price-val"></span><button type="button" class="icon-btn edit-price" data-act="price" data-key="${key}" title="Edit price">✎</button></span></td>
-<td class="n v-dp" data-label="Down payment (LKR)"><div class="cell-metric"><span class="dp-wrap"><span class="v-dp-val"></span><button type="button" class="icon-btn edit-dp" data-act="dp" data-key="${key}" title="Override down payment % for this vehicle">✎</button></span><span class="micro-sub v-dp-sub"></span></div></td>
+  const safeKey = esc(key);
+  tr.innerHTML = `<td class="name"><div class="car"><span class="thumb"></span><div><div class="v-title-row"><b class="v-name"></b><span class="v-badge-lowest"></span></div><small class="v-spec"></small><div class="warr"><span class="v-warr"></span><button type="button" class="cond-tag" data-act="cond" data-key="${safeKey}" title="Change condition (Brand New, Reconditioned, Registered under a year, Registered Used)"><span class="v-cond"></span> <span class="cycle-icon" aria-hidden="true">⇄</span></button><span class="v-ltv"></span></div></div></div></td>
+<td class="n price-cell" data-label="Price (LKR)"><span class="price-wrap"><span class="price-val"></span><button type="button" class="icon-btn edit-price" data-act="price" data-key="${safeKey}" title="Edit price">✎</button></span></td>
+<td class="n v-dp" data-label="Down payment (LKR)"><div class="cell-metric"><span class="dp-wrap"><span class="v-dp-val"></span><button type="button" class="icon-btn edit-dp" data-act="dp" data-key="${safeKey}" title="Override down payment % for this vehicle">✎</button></span><span class="micro-sub v-dp-sub"></span></div></td>
 <td class="n" data-label="Monthly rental (LKR)"><div class="cell-metric"><b class="v-rent"></b><span class="micro-sub v-rent-sub"></span></div></td>
-<td class="v-bar" data-label="Share of your budget"></td>
+<td class="v-bar" data-label="Affordability"></td>
 <td class="n v-interest secondary" data-label="Total Interest (LKR)"></td>
 <td class="n v-total secondary" data-label="Total outlay (LKR)"></td>
-<td class="n v-need" data-label="Income needed (LKR)"><div class="cell-metric"><span class="v-need-val"></span><span class="micro-sub v-need-sub"></span></div></td>
-<td class="v-status" data-label="Status"></td>
+<td class="n v-need secondary" data-label="Income needed (LKR)"><div class="cell-metric"><span class="v-need-val"></span><span class="micro-sub v-need-sub"></span></div></td>
+<td class="v-status secondary" data-label="Status"></td>
 <td class="v-actions"><span class="row-actions"></span></td>`;
   return tr;
 }
@@ -215,7 +273,14 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
       : "");
   }
 
-  setHtml(q(".v-spec"), [r.trim, r.pt, r.power, r.drivetrain, r.km].filter(t => t && t !== UNKNOWN_SPEC).map(t => `<span class="spec">${esc(t)}</span>`).join(" · "));
+  const fullSpecTitle = [r.trim, r.pt, r.power, r.drivetrain, r.km]
+    .filter(t => t && t !== UNKNOWN_SPEC)
+    .join(" · ");
+  const specEl = q(".v-spec");
+  if (specEl) {
+    specEl.setAttribute("title", fullSpecTitle);
+    setHtml(specEl, cleanVehicleSpecs(r).map(t => `<span class="spec">${esc(t)}</span>`).join(""));
+  }
   q(".v-warr").textContent = r.w === "Official" ? "Official agent" : r.w === "Grey" ? "Grey import" : "Route unconfirmed";
   const basis = { "user-entered": "Your Price", "ai-estimate": "AI estimate: confirm with the seller", "seller-listed": "Seller's asking price", "unpublished": "Unverified price estimate", "published": "Source-backed asking price", "starting": "Source-backed starting price" };
   if (r.firstRegisteredOn) q(".v-warr").textContent += " · First registered " + formatDate(r.firstRegisteredOn);
@@ -253,13 +318,36 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
     q(".v-dp").textContent = fmt(r.dp);
   }
   if (q(".v-dp-sub")) {
-    const resetBtn = r.downCustom ? ` · <button type="button" class="dp-reset-btn" data-act="reset-dp" data-key="${r._key}" aria-label="Reset custom down payment for ${esc(r.name)}">Reset</button>` : "";
+    const resetBtn = r.downCustom ? ` · <button type="button" class="dp-reset-btn" data-act="reset-dp" data-key="${esc(r._key)}" aria-label="Reset custom down payment for ${esc(r.name)}">Reset</button>` : "";
     if (r.downPct >= 100) {
       setHtml(q(".v-dp-sub"), `<small class="micro-sub ok">100% paid upfront${resetBtn}</small>`);
     } else if (s.fees) {
       setHtml(q(".v-dp-sub"), `<small class="micro-sub" title="LKR ${fmt(r.dp)} deposit + LKR ${fmt(s.fees)} fees">${r.downPct}%${r.downCustom ? " custom" : " down"} · Upfront: LKR ${fmt(r.upfront)}${resetBtn}</small>`);
     } else {
       setHtml(q(".v-dp-sub"), `<small class="micro-sub">${r.downPct}% ${r.downCustom ? "custom deposit" : "cash deposit"}${resetBtn}</small>`);
+    }
+  }
+
+  const limit = Math.round(s.dti * 100);
+  let statusHtml = '<span class="na">-</span>';
+  if (s.income) {
+    const monthlyCost = r.rental + (s.insurance ? s.insurance / 12 : 0);
+    const carDti = ((monthlyCost + s.debt) / s.income) * 100;
+    const carDtiStr = `${carDti.toFixed(1)}% DTI`;
+    if (r.downPct >= 100) {
+      statusHtml = `<span class="tag ok" title="100% cash purchase — zero monthly lease debt">100% Cash · 0% DTI</span>`;
+    } else if (r.status === "ok") {
+      if (limit === DTI_STRETCH_PCT && carDti > DTI_STANDARD_PCT) {
+        statusHtml = `<span class="tag mid" title="${carDtiStr} of income fits within ${DTI_STRETCH_PCT}% stretch limit (exceeds ${DTI_STANDARD_PCT}% standard limit)">Stretch limit · ${carDtiStr}</span>`;
+      } else {
+        statusHtml = `<span class="tag ok" title="${carDtiStr} of monthly income (Limit: ${limit}%)">Within limit · ${carDtiStr}</span>`;
+      }
+    } else {
+      if (limit === DTI_STANDARD_PCT && carDti <= DTI_STRETCH_PCT) {
+        statusHtml = `<span class="tag mid" title="${carDtiStr} exceeds ${DTI_STANDARD_PCT}% standard limit, but fits within ${DTI_STRETCH_PCT}% stretch limit">Stretch only · ${carDtiStr}</span>`;
+      } else {
+        statusHtml = `<span class="tag bad" title="${carDtiStr} of monthly income (Exceeds ${limit}% limit)">Above limit · ${carDtiStr}</span>`;
+      }
     }
   }
 
@@ -270,14 +358,15 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
     if (r.downPct >= 100) {
       barMicro = `<div class="bar-micro-metric ok">Full room: LKR ${fmt(room)}/mo</div>`;
     } else if (r.rental <= room) {
-      barMicro = `<div class="bar-micro-metric ok">+LKR ${fmt(room - r.rental)}/mo buffer</div>`;
+      barMicro = `<div class="bar-micro-metric ok">+LKR ${fmt(room - r.rental)}/mo left</div>`;
     } else {
-      barMicro = `<div class="bar-micro-metric bad">-LKR ${fmt(r.rental - room)}/mo over limit</div>`;
+      barMicro = `<div class="bar-micro-metric bad">-LKR ${fmt(r.rental - room)}/mo over</div>`;
     }
   }
+  const inlineStatus = s.income ? `<div class="v-bar-status-inline">${statusHtml}</div>` : "";
   setHtml(q(".v-bar"), s.income
-    ? `<div class="v-bar-inner"><div class="track" role="img" aria-label="Rental LKR ${fmt(r.rental)} against your highest affordable rental of LKR ${fmt(room)}"><span class="fill ${r.status}" style="width:${w}%"></span><span class="mark" style="left:${markPos}%" title="Your highest affordable rental"></span></div>${barMicro}</div>`
-    : `<span class="na bar-empty">Add income to compare</span>`);
+    ? `<div class="v-bar-inner">${inlineStatus}<div class="track" role="img" aria-label="Rental LKR ${fmt(r.rental)} against your highest affordable rental of LKR ${fmt(room)}"><span class="fill ${r.status}" style="width:${w}%"></span><span class="mark" style="left:${markPos}%" title="Your highest affordable rental"></span></div>${barMicro}</div>`
+    : `<div class="v-bar-inner v-bar-no-income"><span class="v-bar-need-fallback">Need LKR ${fmt(r.need)}/mo</span><span class="na bar-empty">At ${limit}% limit · Add income</span></div>`);
 
   q(".v-interest").textContent = fmt(r.interest);
   q(".v-total").textContent = fmt(r.total);
@@ -296,32 +385,10 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
         setHtml(q(".v-need-sub"), `<small class="micro-sub bad">+LKR ${fmt(Math.abs(diff))} gap</small>`);
       }
     } else {
-      setHtml(q(".v-need-sub"), `<small class="micro-sub">At ${Math.round(s.dti * 100)}% limit</small>`);
+      setHtml(q(".v-need-sub"), `<small class="micro-sub">At ${limit}% limit</small>`);
     }
   }
 
-  const limit = Math.round(s.dti * 100);
-  let statusHtml = '<span class="na">-</span>';
-  if (s.income) {
-    const monthlyCost = r.rental + (s.insurance ? s.insurance / 12 : 0);
-    const carDti = ((monthlyCost + s.debt) / s.income) * 100;
-    const carDtiStr = `${carDti.toFixed(1)}% DTI`;
-    if (r.downPct >= 100) {
-      statusHtml = `<span class="tag ok" title="100% cash purchase — zero monthly lease debt">100% Cash · 0% DTI</span>`;
-    } else if (r.status === "ok") {
-      if (limit === 50 && carDti > 40) {
-        statusHtml = `<span class="tag mid" title="${carDtiStr} of income fits within 50% stretch limit (exceeds 40% standard limit)">Stretch limit · ${carDtiStr}</span>`;
-      } else {
-        statusHtml = `<span class="tag ok" title="${carDtiStr} of monthly income (Limit: ${limit}%)">Within limit · ${carDtiStr}</span>`;
-      }
-    } else {
-      if (limit === 40 && carDti <= 50) {
-        statusHtml = `<span class="tag mid" title="${carDtiStr} exceeds 40% standard limit, but fits within 50% stretch limit">Stretch only · ${carDtiStr}</span>`;
-      } else {
-        statusHtml = `<span class="tag bad" title="${carDtiStr} of monthly income (Exceeds ${limit}% limit)">Above limit · ${carDtiStr}</span>`;
-      }
-    }
-  }
   setHtml(q(".v-status"), statusHtml);
 }
 
@@ -395,6 +462,10 @@ function render() {
   if ($("emptyState")) $("emptyState").hidden = hasCars;
   if ($("comparisonBody")) $("comparisonBody").hidden = !hasCars;
   if ($("openCatalogueBtn")) $("openCatalogueBtn").hidden = !hasCars;
+  if ($("toggleColsBtn")) $("toggleColsBtn").hidden = !hasCars;
+  if ($("comparisonPanel") && $("comparisonPanel").classList) {
+    $("comparisonPanel").classList.toggle("few-cars", rows.length <= 2);
+  }
   if ($("affordOption")) $("affordOption").textContent = `Only those within my ${Math.round(s.dti * 100)}% limit`;
   refreshCatalogue();
 
@@ -425,6 +496,25 @@ function render() {
   if ($('compactTerms')) $('compactTerms').textContent = `${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing'} · ${s.n} months · ${s.down}% down`;
   if ($('calculationBasis')) $('calculationBasis').textContent = `Calculated from each selected vehicle's price, ${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing-balance'} interest, ${s.n} months and your ${s.down}% deposit (or the vehicle's higher legal minimum). ${s.income ? `Monthly budget uses your LKR ${fmt(s.income)} income, LKR ${fmt(s.debt)} existing payments and ${Math.round(s.dti * 100)}% limit.` : 'Add income to calculate a personal monthly budget.'} Fees and insurance use the amounts you enter. Catalogue prices are sourced amounts or clearly labelled estimates.`;
   refreshPlanner();
+
+  const costsMetaEl = $("costsDrawerMeta");
+  if (costsMetaEl) {
+    const costParts = [];
+    if (s.insurance) costParts.push(`Ins: LKR ${fmt(s.insurance)}/yr`);
+    if (s.fees) costParts.push(`Fees: LKR ${fmt(s.fees)}`);
+    costsMetaEl.textContent = costParts.length ? costParts.join(" · ") : "Optional";
+  }
+  const ltvMetaEl = $("ltvDrawerMeta");
+  if (ltvMetaEl) {
+    const dpPct = Math.min(100, Math.max(0, s.down));
+    const loanPct = Math.max(0, 100 - dpPct);
+    ltvMetaEl.textContent = `${dpPct}% Deposit · ${loanPct}% LTV`;
+  }
+  const savingsMetaEl = $("savingsDrawerMeta");
+  if (savingsMetaEl) {
+    const pvEl = $("plannerVehicle");
+    savingsMetaEl.textContent = pvEl && pvEl.value ? "Goal active · Click to toggle" : "Optional deposit & pace calculator";
+  }
 
   if (list.length === 0) {
     $("empty").textContent = affordVal === "ok" && !s.income
@@ -470,7 +560,7 @@ function updateHeadToHeadTray(rows, s) {
   if ($("h2hTrayCount")) $("h2hTrayCount").textContent = String(pinnedRows.length);
   const pillsEl = $("h2hTrayPills");
   if (pillsEl) {
-    pillsEl.innerHTML = pinnedRows.map(r => `<span class="h2h-pill"><span class="h2h-pill-name">${esc(r.name)}</span><button type="button" class="h2h-pill-remove" data-unpin-key="${r._key}" aria-label="Unpin ${esc(r.name)} from head-to-head">&times;</button></span>`).join("");
+    pillsEl.innerHTML = pinnedRows.map(r => `<span class="h2h-pill"><span class="h2h-pill-name">${esc(r.name)}</span><button type="button" class="h2h-pill-remove" data-unpin-key="${esc(r._key)}" aria-label="Unpin ${esc(r.name)} from head-to-head">&times;</button></span>`).join("");
   }
   const openBtn = $("openHeadToHeadBtn");
   if (openBtn) {
@@ -487,6 +577,17 @@ $("filtersToggle").addEventListener("click", () => {
   $("toolsPanel").classList.toggle("collapsed", !open);
 });
 
+if ($("toggleColsBtn") && typeof $("toggleColsBtn").addEventListener === "function") {
+  $("toggleColsBtn").addEventListener("click", () => {
+    const panel = $("comparisonPanel");
+    if (!panel || !panel.classList) return;
+    const showAll = !panel.classList.contains("show-all-cols");
+    panel.classList.toggle("show-all-cols", showAll);
+    $("toggleColsBtn").setAttribute("aria-pressed", String(showAll));
+    $("toggleColsBtn").textContent = showAll ? "Compact Columns" : "Show Full Columns";
+  });
+}
+
 // Budget legend, sticky mobile summary and the debounced screen-reader sentence
 let liveTimer = null;
 let budgetBarText = "";
@@ -495,8 +596,8 @@ function updateBudgetExtras(s, f, room, rows) {
   const legend = $("budgetLegend");
   legend.hidden = !s.income;
   if (s.income) {
-    legend.innerHTML = `<span><span class="legend-tick" aria-hidden="true"></span>Your limit: ${limit}% of income${s.debt ? " after existing payments" : ""}${s.insurance ? " and monthly insurance" : ""}</span>
-<span>Rental, monthly insurance and existing payments: <span class="tag ok">Within your limit</span> up to ${limit}% · <span class="tag bad">Above your limit</span> over ${limit}%</span>`;
+    legend.innerHTML = `<span><span class="legend-tick" aria-hidden="true"></span>Limit: <strong>${limit}% of income</strong>${s.debt ? " (after existing debt)" : ""}${s.insurance ? " + insurance" : ""}</span>
+<span><span class="tag ok">Within limit</span> &le;${limit}% &middot; <span class="tag bad">Above limit</span> &gt;${limit}%</span>`;
   }
 
   const budgetGraphic = $("budgetGraphic");
@@ -581,15 +682,15 @@ function updateBudgetExtras(s, f, room, rows) {
 
       let statusClass = "ok";
       let statusText = "Within 40% CBSL Limit";
-      if (dtiPct <= 40) {
+      if (dtiPct <= DTI_STANDARD_PCT) {
         statusClass = "ok";
-        statusText = "Within 40% CBSL Limit";
-      } else if (dtiPct <= 50) {
+        statusText = `Within ${DTI_STANDARD_PCT}% CBSL Limit`;
+      } else if (dtiPct <= DTI_STRETCH_PCT) {
         statusClass = "mid";
-        statusText = "Stretching (40 - 50% Cap)";
+        statusText = `Stretching (${DTI_STANDARD_PCT} - ${DTI_STRETCH_PCT}% Cap)`;
       } else {
         statusClass = "bad";
-        statusText = "Limit Exceeded (> 50%)";
+        statusText = `Limit Exceeded (> ${DTI_STRETCH_PCT}%)`;
       }
       const pillEl = $("budgetDtiPill");
       if (pillEl) pillEl.className = "classic-dti-pill " + statusClass;
@@ -781,8 +882,8 @@ function syncSegmentedAndSteppers() {
     const el = $(id);
     if (!el) continue;
     const val = num(el);
-    const min = Number(el.min) || (id === "down" ? 40 : id === "tenure" ? 6 : 0);
-    const max = Number(el.max) || (id === "down" ? 100 : id === "tenure" ? 84 : 40);
+    const min = Number(el.min) || (id === "down" ? DOWN_MIN : id === "tenure" ? MIN_TENURE : 0);
+    const max = Number(el.max) || (id === "down" ? DOWN_MAX : id === "tenure" ? MAX_TENURE : MAX_INPUT_RATE);
     const btns = document.querySelectorAll(`button[data-step-for="${id}"]`);
     btns.forEach(btn => {
       const delta = parseFloat(btn.dataset.stepDelta);
@@ -801,10 +902,10 @@ function syncSegmentedAndSteppers() {
         if (disabled) {
           chip.title = "Eligible only when a vehicle registered over 1 year is added";
         } else {
-          chip.title = chipVal === 40
-            ? "CBSL 40% minimum for vehicles registered over 1 year"
-            : chipVal === 60
-            ? "CBSL 60% minimum for new and reconditioned vehicles"
+          chip.title = chipVal === DOWN_MIN
+            ? `CBSL ${DOWN_MIN}% minimum for vehicles registered over 1 year`
+            : chipVal === DOWN_MIN_UNREG
+            ? `CBSL ${DOWN_MIN_UNREG}% minimum for new and reconditioned vehicles`
             : "Conservative down payment (higher equity)";
         }
       }
@@ -822,23 +923,23 @@ function syncSegmentedAndSteppers() {
   const tenureVal = num($("tenure"));
   const downVal = num($("down"));
   const rateTypeVal = $("rateType")?.value;
-  const minDown = Number($("down")?.min) || 40;
-  const canForty = minDown <= 40;
+  const minDown = Number($("down")?.min) || DOWN_MIN;
+  const canForty = minDown <= DOWN_MIN;
 
   const stratBtns = document.querySelectorAll("button[data-strategy]");
   stratBtns.forEach(btn => {
     const strat = btn.dataset.strategy;
     let active = false;
     if (strat === "lowest-rental") {
-      active = (tenureVal === 84 && downVal === 60 && rateTypeVal === "reducing");
+      active = (tenureVal === STRATEGY_PRESETS.LOWEST_RENTAL.tenure && downVal === STRATEGY_PRESETS.LOWEST_RENTAL.down && rateTypeVal === STRATEGY_PRESETS.LOWEST_RENTAL.rateType);
     } else if (strat === "fast-payoff") {
-      active = (tenureVal === 36 && downVal === 60 && rateTypeVal === "reducing");
+      active = (tenureVal === STRATEGY_PRESETS.FAST_PAYOFF.tenure && downVal === STRATEGY_PRESETS.FAST_PAYOFF.down && rateTypeVal === STRATEGY_PRESETS.FAST_PAYOFF.rateType);
     } else if (strat === "min-cash") {
-      active = (tenureVal === 84 && downVal === 40 && rateTypeVal === "reducing");
+      active = (tenureVal === STRATEGY_PRESETS.MIN_CASH.tenure && downVal === STRATEGY_PRESETS.MIN_CASH.down && rateTypeVal === STRATEGY_PRESETS.MIN_CASH.rateType);
       btn.disabled = false;
-      btn.title = "CBSL minimum 40% deposit (for vehicles registered over 1 year)";
+      btn.title = `CBSL minimum ${DOWN_MIN}% deposit (for vehicles registered over 1 year)`;
     } else if (strat === "cash-purchase") {
-      active = (downVal === 100);
+      active = (downVal === STRATEGY_PRESETS.CASH_PURCHASE.down);
     }
     btn.classList.toggle("active", active);
     btn.setAttribute("aria-pressed", String(active));
@@ -885,8 +986,8 @@ document.addEventListener("click", e => {
     const el = $(id);
     if (el && isFinite(delta)) {
       const cur = isFinite(num(el)) ? num(el) : parseFloat(FIELDS[id]?.def || "0");
-      const min = el.min !== "" && !isNaN(Number(el.min)) ? Number(el.min) : (id === "down" ? 40 : id === "tenure" ? 6 : 0);
-      const max = el.max !== "" && !isNaN(Number(el.max)) ? Number(el.max) : (id === "down" ? 100 : id === "tenure" ? 84 : 40);
+      const min = el.min !== "" && !isNaN(Number(el.min)) ? Number(el.min) : (id === "down" ? DOWN_MIN : id === "tenure" ? MIN_TENURE : 0);
+      const max = el.max !== "" && !isNaN(Number(el.max)) ? Number(el.max) : (id === "down" ? DOWN_MAX : id === "tenure" ? MAX_TENURE : MAX_INPUT_RATE);
       let next = Math.min(max, Math.max(min, Math.round((cur + delta) * 10) / 10));
       if (id !== "rate") next = Math.round(next);
       el.value = String(next);
@@ -918,22 +1019,22 @@ document.addEventListener("click", e => {
   if (stratBtn && !stratBtn.disabled) {
     const strat = stratBtn.dataset.strategy;
     if (strat === "lowest-rental") {
-      if ($("tenure")) $("tenure").value = "84";
-      if ($("down")) $("down").value = "60";
-      if ($("rateType")) $("rateType").value = "reducing";
+      if ($("tenure")) $("tenure").value = String(STRATEGY_PRESETS.LOWEST_RENTAL.tenure);
+      if ($("down")) $("down").value = String(STRATEGY_PRESETS.LOWEST_RENTAL.down);
+      if ($("rateType")) $("rateType").value = STRATEGY_PRESETS.LOWEST_RENTAL.rateType;
     } else if (strat === "fast-payoff") {
-      if ($("tenure")) $("tenure").value = "36";
-      if ($("down")) $("down").value = "60";
-      if ($("rateType")) $("rateType").value = "reducing";
+      if ($("tenure")) $("tenure").value = String(STRATEGY_PRESETS.FAST_PAYOFF.tenure);
+      if ($("down")) $("down").value = String(STRATEGY_PRESETS.FAST_PAYOFF.down);
+      if ($("rateType")) $("rateType").value = STRATEGY_PRESETS.FAST_PAYOFF.rateType;
     } else if (strat === "min-cash") {
-      if ($("tenure")) $("tenure").value = "84";
+      if ($("tenure")) $("tenure").value = String(STRATEGY_PRESETS.MIN_CASH.tenure);
       if ($("down")) {
-        $("down").min = "40";
+        $("down").min = String(STRATEGY_PRESETS.MIN_CASH.down);
         $("down").value = "40";
       }
-      if ($("rateType")) $("rateType").value = "reducing";
+      if ($("rateType")) $("rateType").value = STRATEGY_PRESETS.MIN_CASH.rateType;
     } else if (strat === "cash-purchase") {
-      if ($("down")) $("down").value = "100";
+      if ($("down")) $("down").value = String(STRATEGY_PRESETS.CASH_PURCHASE.down);
     }
     clearSnapNote("tenure");
     clearSnapNote("down");
@@ -1117,12 +1218,21 @@ $("rows").addEventListener("click", e => {
     car.priceSourceUrl = null;
     saveCars(cars);
     render();
-    focusRowControl(key, "cond");
-    // The price was for the old condition, so offer to change it
-    showToast(`${car.name} is now ${condLabel(car.cond)}. Check its price for this condition.`, "Edit Price", () => {
+    if (car.cond !== "New") {
       const edit = $("rows").querySelector(`[data-key="${key}"][data-act="price"]`);
-      if (edit) startPriceEdit(edit, car);
-    });
+      if (edit) {
+        startPriceEdit(edit, car, { clearInitial: true });
+      } else {
+        focusRowControl(key, "cond");
+      }
+      showToast(`${car.name} is now ${condLabel(car.cond)}. Enter your quotation or marketplace listing price.`);
+    } else {
+      focusRowControl(key, "cond");
+      showToast(`${car.name} is now ${condLabel(car.cond)}. Check its price for this condition.`, "Edit Price", () => {
+        const edit = $("rows").querySelector(`[data-key="${key}"][data-act="price"]`);
+        if (edit) startPriceEdit(edit, car);
+      });
+    }
   } else if (act === "price") {
     startPriceEdit(b, car);
   } else if (act === "dp") {
@@ -1188,20 +1298,21 @@ function startDpEdit(btn, car) {
   input.addEventListener("blur", () => finish(true));
 }
 
-function startPriceEdit(btn, car) {
+function startPriceEdit(btn, car, { clearInitial = false } = {}) {
   const wrap = btn.closest(".price-wrap");
   if (!wrap || wrap.hidden) return;
   const input = document.createElement("input");
   input.type = "text";
   input.className = "inline-price-input";
   input.inputMode = "numeric";
-  input.value = formatMoneyText(String(car.price));
+  input.value = clearInitial ? "" : formatMoneyText(String(car.price));
+  input.placeholder = clearInitial ? "Enter quote / listing price" : formatMoneyText(String(car.price));
   input.setAttribute("aria-label", `Price for ${car.name}`);
   wrap.hidden = true;
   wrap.after(input);
   attachMoneyInput(input);
   input.focus();
-  input.select();
+  if (!clearInitial) input.select();
 
   let done = false;
   const finish = save => {
@@ -1774,14 +1885,14 @@ function openHeadToHead(opener) {
         statusPill = `<span class="tag ok">100% Cash · 0% DTI</span>`;
       } else if (r.status === "ok") {
         statusPill = `<span class="tag ok">Within limit · ${carDtiStr}</span>`;
-      } else if (limit === 40 && carDti <= 50) {
+      } else if (limit === DTI_STANDARD_PCT && carDti <= DTI_STRETCH_PCT) {
         statusPill = `<span class="tag mid">Stretch only · ${carDtiStr}</span>`;
       } else {
         statusPill = `<span class="tag bad">Above limit · ${carDtiStr}</span>`;
       }
     }
 
-    html += `<article class="h2h-col-card" data-h2h-key="${r._key}">
+    html += `<article class="h2h-col-card" data-h2h-key="${esc(r._key)}">
       <div class="h2h-col-head">
         <div class="h2h-photo-frame">${photo ? `<img src="${esc(photo)}" alt="${esc(r.name)}" loading="lazy">` : NO_PHOTO}</div>
         <div class="h2h-title-block">
@@ -1848,8 +1959,8 @@ function openHeadToHead(opener) {
       </div>
 
       <div class="h2h-col-foot">
-        <button type="button" class="btn-outline btn-sm" data-h2h-details="${r._key}">Full Lease Schedule</button>
-        <button type="button" class="link" data-unpin-key="${r._key}">Unpin</button>
+        <button type="button" class="btn-outline btn-sm" data-h2h-details="${esc(r._key)}">Full Lease Schedule</button>
+        <button type="button" class="link" data-unpin-key="${esc(r._key)}">Unpin</button>
       </div>
     </article>`;
   }
@@ -2065,7 +2176,7 @@ function showSearchUnavailable(error) {
   const message = error?.code === "incomplete_comparison"
     ? "AI did not return a complete comparison. Search again or add each vehicle separately."
     : "AI search isn't available right now. Try again or add the car yourself.";
-  $("aiSearchMsg").innerHTML = `<span class="msg-error">${message}</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter Details Manually</button>`;
+  $("aiSearchMsg").innerHTML = `<span class="msg-error">${esc(message)}</span> <button type="button" class="btn-outline btn-sm" id="goManualBtn">Enter Details Manually</button>`;
   const manualBtn = $("goManualBtn");
   if (manualBtn) manualBtn.addEventListener("click", () => {
     selectTab("manual");
@@ -2110,7 +2221,7 @@ async function renderAiResults(data) {
   } else {
     $("aiYearSelect").innerHTML = years.map(y => {
       const yVal = typeof y === "object" ? y.year : y;
-      return `<option value="${yVal}">${yVal}</option>`;
+      return `<option value="${esc(yVal)}">${esc(yVal)}</option>`;
     }).join("");
   }
 
@@ -2193,28 +2304,36 @@ function updateConditionAndSpecs() {
   options.push(
     { id: "brand_new", name: "Brand New (unregistered, 0 km)", c: "New" },
     { id: "recond", name: "Reconditioned (grade 4.5+, under 25,000 km)", c: "Recond" },
+    { id: "recent", name: "Registered under a year", c: "Recent" },
     { id: "used_low", name: "Registered Used (under 50,000 km)", c: "Used" },
     { id: "used_med", name: "Registered Used (50,000–100,000 km)", c: "Used" }
   );
   for (const option of options) option.price = conditionPrice(tData, option.id, sellerP);
   const selected = options.find(o => o.selected && validPrice(o.price)) || options.find(o => validPrice(o.price)) || options[0];
-  $("aiCondSelect").innerHTML = options.map(o => `<option value="${o.id}" data-p="${validPrice(o.price) ? o.price : ""}" data-c="${o.c}" ${o === selected ? "selected" : ""}>${o.name}: ${validPrice(o.price) ? "LKR " + fmt(o.price) : "no price, enter one"}</option>`).join("");
-  updateSelectedPrice();
+  $("aiCondSelect").innerHTML = options.map(o => `<option value="${esc(o.id)}" data-p="${validPrice(o.price) ? o.price : ""}" data-c="${esc(o.c)}" ${o === selected ? "selected" : ""}>${esc(o.name)}: ${validPrice(o.price) ? "LKR " + fmt(o.price) : "enter custom quote / listing price"}</option>`).join("");
+  updateSelectedPrice(false);
 }
 
-function updateSelectedPrice() {
+function updateSelectedPrice(focusOnCustom = false) {
   const selOpt = $("aiCondSelect").selectedOptions[0];
   const p = +selOpt?.dataset.p || 0;
   $("aiPriceInput").value = p ? fmt(p) : "";
+  $("aiPriceInput").placeholder = p ? "" : "Enter quotation or marketplace listing price";
   $("aiPriceInput").removeAttribute("aria-invalid");
-  $("aiSearchMsg").textContent = "";
-  $("aiSearchMsg").classList.remove("msg-error");
+  if (!p && selOpt && selOpt.dataset.c && selOpt.dataset.c !== "New") {
+    $("aiSearchMsg").textContent = "Only Brand New prices are estimated automatically. Enter your quotation or marketplace listing price for this condition.";
+    $("aiSearchMsg").classList.remove("msg-error");
+    if (focusOnCustom) $("aiPriceInput").focus();
+  } else {
+    $("aiSearchMsg").textContent = "";
+    $("aiSearchMsg").classList.remove("msg-error");
+  }
 }
 
 $("aiYearSelect").addEventListener("change", updateTrimDropdown);
 $("aiTrimSelect").addEventListener("change", updateConditionAndSpecs);
-$("aiCondSelect").addEventListener("change", updateSelectedPrice);
-$("aiResetPriceBtn").addEventListener("click", updateSelectedPrice);
+$("aiCondSelect").addEventListener("change", () => updateSelectedPrice(true));
+$("aiResetPriceBtn").addEventListener("click", () => updateSelectedPrice(false));
 
 function isValidImageUrl(url) {
   if (!url || typeof url !== "string") return false;
@@ -2595,6 +2714,24 @@ if ($('toggleTerms')) $('toggleTerms').addEventListener('click', () => {
   $('loanTermsGrid').classList.toggle('mobile-collapsed', !open);
   $('toggleTerms').textContent = open ? 'Done' : 'Edit';
 });
+
+for (const [btnId, panelId, closedText, openText] of [
+  ['toggleCostsDrawer', 'termsSubcardCosts', '+ Optional Incidental Costs (Insurance & Up-front Fees)', '− Optional Incidental Costs (Insurance & Up-front Fees)'],
+  ['toggleLtvDrawer', 'ltvSplitContainer', '+ Vehicle Valuation Financing Structure (CBSL Directions No. 01 of 2026)', '− Vehicle Valuation Financing Structure (CBSL Directions No. 01 of 2026)'],
+  ['toggleSavingsDrawer', 'savingsPlannerLayout', 'Expand Deposit & Savings Trajectory Planner', 'Collapse Deposit & Savings Trajectory Planner']
+]) {
+  const btn = $(btnId);
+  if (btn && typeof btn.addEventListener === 'function') {
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(open));
+      const panel = $(panelId);
+      if (panel && panel.classList) panel.classList.toggle('drawer-collapsed', !open);
+      const labelEl = btn.querySelector ? btn.querySelector('.drawer-toggle-label') : null;
+      if (labelEl) labelEl.textContent = open ? openText : closedText;
+    });
+  }
+}
 
 // --- Sharing: a link carries inputs and vehicles (catalogue cars by ID, others in full);
 // income and existing payments only when the person ticks the box

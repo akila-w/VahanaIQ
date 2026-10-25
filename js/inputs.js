@@ -1,18 +1,34 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, flatToEffective, DOWN_MIN } from "./calculator.js?v=2.11.5";
+import { num, getSettings, flatToEffective } from "./calculator.js?v=2.11.5";
+import {
+  DOWN_MIN,
+  DOWN_MIN_UNREG,
+  DOWN_MAX,
+  MIN_TENURE,
+  MAX_TENURE,
+  MIN_RATE,
+  MAX_INPUT_RATE,
+  DEFAULT_RATE,
+  DEFAULT_RATE_TYPE,
+  DEFAULT_TENURE,
+  DEFAULT_DOWN,
+  DEFAULT_DTI,
+  AUTOSAVE_DELAY_MS,
+  MAX_SHARED_CARS
+} from "./constants.js?v=2.11.5";
 import { notifySaved } from "./storage.js?v=2.11.5";
 
 export const STORE_KEY = "vahanaiq_inputs_v1";
 
 // Field id -> URL parameter and default value
 export const FIELDS = {
-  rate: { param: "rate", def: "16" },
-  rateType: { param: "rt", def: "reducing" },
-  tenure: { param: "n", def: "84" },
-  down: { param: "down", def: "60" },
+  rate: { param: "rate", def: String(DEFAULT_RATE) },
+  rateType: { param: "rt", def: DEFAULT_RATE_TYPE },
+  tenure: { param: "n", def: String(DEFAULT_TENURE) },
+  down: { param: "down", def: String(DEFAULT_DOWN) },
   income: { param: "inc", def: "" },
   debt: { param: "debt", def: "" },
-  dti: { param: "dti", def: "0.4" },
+  dti: { param: "dti", def: String(DEFAULT_DTI) },
   insurance: { param: "ins", def: "" },
   fees: { param: "fees", def: "" },
   warr: { param: "warr", def: "all" },
@@ -24,9 +40,9 @@ export const FIELDS = {
 
 // Validated numeric fields: settings key, the check, and the last value that passed it
 const RULES = {
-  rate: { key: "rateInput", check: v => v === "" ? "Enter an interest rate." : !(num(v) >= 0 && num(v) <= 40) ? "Enter a rate between 0 and 40%." : "" },
+  rate: { key: "rateInput", check: v => v === "" ? "Enter an interest rate." : !(num(v) >= MIN_RATE && num(v) <= MAX_INPUT_RATE) ? `Enter a rate between ${MIN_RATE} and ${MAX_INPUT_RATE}%.` : "" },
   tenure: { key: "n", check: v => v === "" || !isFinite(num(v)) ? "Enter a tenure in months." : "", snap: true },
-  down: { key: "down", check: v => v === "" || !isFinite(num(v)) ? "Enter a down payment percentage." : num(v) < (Number($("down")?.min) || 40) || num(v) > 100 ? `Enter a down payment from ${Number($("down")?.min) || 40}% to 100%. New and recent passenger vehicles require at least 60% down (at most 40% financed).` : "", snap: true },
+  down: { key: "down", check: v => v === "" || !isFinite(num(v)) ? "Enter a down payment percentage." : num(v) < (Number($("down")?.min) || DOWN_MIN) || num(v) > DOWN_MAX ? `Enter a down payment from ${Number($("down")?.min) || DOWN_MIN}% to ${DOWN_MAX}%. New and recent passenger vehicles require at least ${DOWN_MIN_UNREG}% down (at most ${100 - DOWN_MIN_UNREG}% financed).` : "", snap: true },
   income: { key: "income", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Income can't be negative." : "" },
   debt: { key: "debt", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Payments can't be negative." : "" },
   insurance: { key: "insurance", check: v => v !== "" && !isFinite(num(v)) ? "Enter rupees with up to two decimal places." : num(v) < 0 ? "Insurance can't be negative." : "" },
@@ -96,11 +112,11 @@ export function snapField(id) {
   const raw = String(el.value).trim();
   if (fieldError(id)) {
     if (id in lastValid) el.value = String(id === "down" ? Math.max(Number(el.min) || DOWN_MIN, lastValid[id]) : lastValid[id]);
-    else if (id === "down") el.value = String(Number(el.min) || 60);
+    else if (id === "down") el.value = String(Number(el.min) || DEFAULT_DOWN);
     snapNotes[id] = "Invalid entry replaced with the last valid value within the current limits.";
     return;
   }
-  const used = id === "tenure" ? Math.min(84, Math.max(6, Math.round(num(raw)))) : Math.min(100, Math.max(Number(el.min) || DOWN_MIN, DOWN_MIN, num(raw)));
+  const used = id === "tenure" ? Math.min(MAX_TENURE, Math.max(MIN_TENURE, Math.round(num(raw)))) : Math.min(DOWN_MAX, Math.max(Number(el.min) || DOWN_MIN, DOWN_MIN, num(raw)));
   if (used !== num(raw)) {
     snapNotes[id] = hint && hint.className.includes("warn") ? hint.textContent : (id === "tenure" ? "Set to the nearest allowed tenure" : "Set to the nearest allowed down payment");
     el.value = String(used);
@@ -138,7 +154,7 @@ export function sharedCarsFromUrl() {
     if (!raw) return [];
     const json = decodeURIComponent(escape(atob(raw.replace(/-/g, "+").replace(/_/g, "/"))));
     const list = JSON.parse(json);
-    return Array.isArray(list) ? list.slice(0, 30) : [];
+    return Array.isArray(list) ? list.slice(0, MAX_SHARED_CARS) : [];
   } catch (e) {
     return [];
   }
@@ -178,7 +194,7 @@ export function saveState(state) {
     }
     try { localStorage.setItem(STORE_KEY, JSON.stringify(diff)); } catch (e) {}
     notifySaved();
-  }, 400);
+  }, AUTOSAVE_DELAY_MS);
 }
 
 export function clearState() {

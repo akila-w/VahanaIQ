@@ -1,4 +1,5 @@
 import { minDownFor } from './calculator.js?v=2.11.5';
+import { DEFAULT_DOWN, DOWN_MAX } from './constants.js?v=2.11.5';
 
 export function addMonths(date, months) {
   const d = new Date(date.getFullYear(), date.getMonth() + months, 1);
@@ -6,12 +7,12 @@ export function addMonths(date, months) {
   return d;
 }
 
-export function savingsPlan({ price, condition, financeClass, firstRegisteredOn, down = 60, cash = false, fees = 0, insurance = 0,
+export function savingsPlan({ price, condition, financeClass, firstRegisteredOn, down = DEFAULT_DOWN, cash = false, fees = 0, insurance = 0,
   saved = 0, income = 0, debt = 0, mode = 'percent', contribution = 20, targetDate = '' }, today = new Date()) {
   const valid = n => Number.isFinite(n) && n >= 0;
   if (!(price > 0) || !valid(price)) return { error: 'Choose a vehicle with a valid price or enter a quote first.' };
-  if (![fees, insurance, saved, income, debt, contribution, down].every(valid) || down > 100 || (mode === 'percent' && contribution > 100)) return { error: 'Enter valid positive amounts and percentages between 0 and 100.' };
-  const downPct = cash ? 100 : Math.max(down, minDownFor(condition, financeClass, firstRegisteredOn, today));
+  if (![fees, insurance, saved, income, debt, contribution, down].every(valid) || down > DOWN_MAX || (mode === 'percent' && contribution > 100)) return { error: 'Enter valid positive amounts and percentages between 0 and 100.' };
+  const downPct = cash ? DOWN_MAX : Math.max(down, minDownFor(condition, financeClass, firstRegisteredOn, today));
   const deposit = price * downPct / 100, target = deposit + fees + insurance;
   const remaining = Math.max(0, target - saved);
   const monthly = mode === 'percent' ? income * contribution / 100 : contribution;

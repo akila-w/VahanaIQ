@@ -15,6 +15,39 @@ issue tracker is fine: https://github.com/akila-w/vahanaiq/issues
 Do not put secrets, account identifiers, financial details or private screenshots in a public
 issue. If you are unsure whether something is sensitive, use private reporting.
 
+## Security architecture & controls
+
+The platform employs defense-in-depth across client, serverless proxy, and cloud storage layers:
+
+1. **Content Security Policy & Browser Headers**
+   - Declarative CSP meta tag (`<meta http-equiv="Content-Security-Policy">`) restricts script execution to `'self'`, Firebase CDN (`https://www.gstatic.com`), and Google APIs (`https://apis.google.com`).
+   - Network connections are restricted strictly to `'self'`, Google APIs (`https://*.googleapis.com`), Firebase endpoints (`https://*.firebaseio.com`, `https://*.firebaseapp.com`), and the Cloud Run proxy (`https://vahanaiq-search-71962876227.asia-south1.run.app`).
+   - Frames and objects are disabled (`frame-src 'none'`, `object-src 'none'`).
+   - Strict referrer policy (`<meta name="referrer" content="strict-origin-when-cross-origin">`) is enforced across all HTML documents.
+
+2. **Serverless Search Proxy (`serverless/`)**
+   - Consolidated shared proxy logic (`serverless/shared/proxy-logic.js`) enforces strict OpenAPI schemas, rate limiting, and request validation across both Cloud Run and Cloudflare Worker.
+   - Client IP resolution behind reverse proxies is guarded via `TRUSTED_PROXY=true` in `serverless/gcp-cloud-function/index.js`, preventing forged `X-Forwarded-For` rate-limit rotation.
+   - Sliding-window rate limiting (30 requests / 10 minutes) with in-memory map bounding (5,000 max entries) protects against memory exhaustion.
+   - Gateway-level payload inspection rejects payloads exceeding 6 MB (`413 image_too_large`).
+   - Upstream Gemini error details are stripped of API keys (`key=[removed]`), authorization tokens (`Bearer [removed]`), and GCP project IDs (`projects/[removed]`).
+   - Price mode authentication (`X-Price-Token`) uses constant-time comparison (`safeCompareTokens` via SHA-256 digests and `crypto.timingSafeEqual`) to prevent timing side-channel attacks.
+
+3. **DOM & Input Sanitization (`js/`)**
+   - Strict escaping via `esc()` across all interpolated user, catalogue, and AI data.
+   - URL scheme validation via `safeUrl()` and `safeImageUrl()`, rejecting dangerous schemes (`javascript:`, `vbscript:`, `data:text/html`, and active SVG).
+   - Dynamic SVG elements clamp coordinates and angles with `Number.isFinite()` to prevent attribute breakouts.
+   - Actuarial calculations in `js/calculator.js` enforce division-by-zero guards in `rental()`, non-negative rate fallbacks, and a 600-month cap in `yearlySchedule()` to prevent memory DoS.
+   - Centralized regulatory constants in `js/constants.js` eliminate magic numbers.
+
+4. **Storage & Device Boundary**
+   - Photo Studio file uploads (`vahanaiq_studio_v1` in IndexedDB) remain 100% device-local and are never transmitted over the network or exposed to AI models.
+   - Cloud synchronization (`firestore.rules`) enforces strict authenticated ownership (`request.auth.uid == uid`), document size limits (`<= 900000` bytes), and key whitelisting.
+
+5. **Automated Security Verification**
+   - Dedicated security test suite (`test/security.test.mjs`) tests 9 critical attack vectors: XSS injection, URL scheme hardening, rate limiter sliding windows & LRU bounding, CORS allowlisting, image MIME/size validation, malformed JSON recovery, credential stripping, price request validation, and proxy integration.
+   - Integrated into continuous integration via `.github/workflows/test.yml`.
+
 ## What is worth testing
 
 - **The search proxy** (`serverless/gcp-cloud-function/index.js`, and the Cloudflare Worker
