@@ -17,9 +17,9 @@ const RATE_WINDOW_MS = 10 * 60 * 1000;
 const DEFAULT_RATE_LIMIT = 30;
 const MAX_RATE_LIMIT_ENTRIES = 5000;
 
-// Screenshots: supported MIME types and max 4 MB raw payload (~5.6 MB base64)
+// Screenshots: supported MIME types and max 4 MB raw payload
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_IMAGE_BASE64 = 5600000;
+const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 // Price mode constants
 const PRICE_BASES = ["dealer price list", "dealer listing", "news report", "estimate"];
@@ -67,14 +67,58 @@ function createRateLimiter({ windowMs = RATE_WINDOW_MS, defaultLimit = DEFAULT_R
   return rateLimiter;
 }
 
+// Decodes up to maxBytes from the beginning of a base64 string
+function decodeFirstBytes(data, maxBytes = 12) {
+  try {
+    const charsNeeded = Math.ceil((maxBytes * 4) / 3);
+    let chunk = data.slice(0, Math.min(data.length, charsNeeded));
+    while (chunk.length % 4 !== 0) {
+      chunk += "=";
+    }
+    const raw = typeof atob === "function" ? atob(chunk) : Buffer.from(chunk, "base64").toString("binary");
+    const bytes = [];
+    for (let i = 0; i < raw.length; i++) {
+      bytes.push(raw.charCodeAt(i));
+    }
+    return bytes;
+  } catch {
+    return [];
+  }
+}
+
+// Detects image MIME type from magic bytes:
+// FF D8 FF = jpeg, 89 50 4E 47 = png, 52 49 46 46 ... 57 45 42 50 = webp, 47 49 46 38 = gif
+function detectImageMimeType(data) {
+  const b = decodeFirstBytes(data, 12);
+  if (b.length >= 3 && b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF) return "image/jpeg";
+  if (b.length >= 4 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47) return "image/png";
+  if (b.length >= 4 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38) return "image/gif";
+  if (b.length >= 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
+      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return "image/webp";
+  return null;
+}
+
 // Validates attached screenshot image
 function validateImage(image) {
   if (!image) return { valid: true };
-  if (typeof image.data !== "string" || !IMAGE_TYPES.includes(image.mimeType || "image/jpeg")) {
+  if (
+    typeof image.data !== "string" ||
+    !image.data ||
+    !/^[A-Za-z0-9+/]+={0,2}$/.test(image.data) ||
+    !IMAGE_TYPES.includes(image.mimeType || "image/jpeg")
+  ) {
     return { valid: false, error: "bad_request", detail: "Attach a JPEG, PNG, WebP or GIF screenshot", status: 400 };
   }
-  if (image.data.length > MAX_IMAGE_BASE64) {
+  const len = image.data.length;
+  const padding = image.data.endsWith("==") ? 2 : image.data.endsWith("=") ? 1 : 0;
+  const decodedBytes = Math.floor((len * 3) / 4) - padding;
+  if (decodedBytes > MAX_IMAGE_BYTES) {
     return { valid: false, error: "image_too_large", detail: "The screenshot is too large; attach one under 4 MB", status: 413 };
+  }
+  const realType = detectImageMimeType(image.data);
+  const declaredMime = image.mimeType || "image/jpeg";
+  if (!realType || realType !== declaredMime) {
+    return { valid: false, error: "bad_request", detail: "Attach a JPEG, PNG, WebP or GIF screenshot", status: 400 };
   }
   return { valid: true };
 }
@@ -416,7 +460,7 @@ module.exports = {
   DEFAULT_RATE_LIMIT,
   MAX_RATE_LIMIT_ENTRIES,
   IMAGE_TYPES,
-  MAX_IMAGE_BASE64,
+  MAX_IMAGE_BYTES,
   PRICE_BASES,
   MAX_PRICE_QUERIES,
   SYSTEM_PROMPT,

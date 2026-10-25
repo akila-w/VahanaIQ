@@ -15,7 +15,7 @@ import { PLANNER_KEY, cleanPlanner } from "./planner-store.js?v=2.11.6";
 const SIGNED_IN_KEY = "vahanaiq_account_v1"; // set while signed in, so the next visit restores the session
 const AGREED_KEY = "vahanaiq_synced_v1"; // fingerprint of the copy this browser and the account last agreed on
 const WRITE_DELAY = 1500;
-const MAX_SIZE = 900000; // firestore.rules refuse anything larger
+export const MAX_SIZE = 700000; // 700,000-byte budget (below firestore.rules 900,000-character limit)
 
 const $ = id => document.getElementById(id);
 const store = {
@@ -161,10 +161,17 @@ function localCopy() {
 
 const agree = copy => store.set(AGREED_KEY, fingerprint(copy));
 
-async function upload(copy, ctx = session()) {
-  if (!current(ctx)) return;
+export async function upload(copy, ctx = session()) {
+  if (fb && !current(ctx)) return;
   const data = JSON.stringify(copy);
-  if (data.length > MAX_SIZE) throw new Error("Comparison too large to sync");
+  const bytes = typeof TextEncoder !== "undefined"
+    ? new TextEncoder().encode(data).length
+    : (typeof Buffer !== "undefined" ? Buffer.byteLength(data, "utf8") : data.length);
+  if (bytes > MAX_SIZE) {
+    showToast("Too large to sync; photos stay on this device");
+    throw new Error("Comparison too large to sync");
+  }
+  if (!ctx?.firebase) return;
   await ctx.firebase.F.setDoc(userDoc(ctx), { version: 1, data, updatedAt: ctx.firebase.F.serverTimestamp() });
   if (current(ctx)) agree(copy);
 }

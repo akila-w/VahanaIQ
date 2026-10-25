@@ -2091,8 +2091,31 @@ $("tabAiBtn").parentNode.addEventListener("keydown", e => {
   selectTab(next, true);
 });
 
+const SUPPORTED_AD_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_AD_IMAGE_BYTES = 4 * 1024 * 1024;
+
 // Classified Ad / Auction Sheet Screenshot Upload & Clipboard Paste
 function setAttachedAdImage(file) {
+  if (!file) return;
+  if (!SUPPORTED_AD_IMAGE_TYPES.includes(file.type)) {
+    $("aiSearchMsg").textContent = "Attach a JPEG, PNG, WebP or GIF screenshot.";
+    $("aiSearchMsg").classList.add("msg-error");
+    pendingAdImage = null;
+    $("aiAttachedAdBox").hidden = true;
+    $("aiAdFile").value = "";
+    return;
+  }
+  if (file.size > MAX_AD_IMAGE_BYTES) {
+    $("aiSearchMsg").textContent = "The screenshot is too large; attach one under 4 MB.";
+    $("aiSearchMsg").classList.add("msg-error");
+    pendingAdImage = null;
+    $("aiAttachedAdBox").hidden = true;
+    $("aiAdFile").value = "";
+    return;
+  }
+  $("aiSearchMsg").textContent = "";
+  $("aiSearchMsg").classList.remove("msg-error");
+
   const token = copyGeneration;
   const reader = new FileReader();
   reader.onload = evt => {

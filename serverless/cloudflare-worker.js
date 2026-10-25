@@ -60,7 +60,7 @@ export default {
 
     const contentLength = Number(request.headers.get("Content-Length") || 0);
     if (contentLength > 6000000) {
-      return json({ error: "image_too_large", detail: "Payload too large; keep requests under 6 MB" }, 413, origin);
+      return json({ error: "image_too_large", detail: "The screenshot is too large; attach one under 4 MB" }, 413, origin);
     }
 
     const contentType = request.headers.get("Content-Type") || "";

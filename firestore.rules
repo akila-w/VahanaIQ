@@ -12,6 +12,10 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(["version", "data", "updatedAt"])
         && request.resource.data.version == 1
         && request.resource.data.data is string
+        // Note: In Common Expression Language (CEL), string.size() measures character count,
+        // not UTF-8 byte length. The client (js/account.js) is deliberately stricter with a
+        // 700,000-byte budget to prevent multi-byte characters (e.g. Sinhala, Tamil) from
+        // breaching Firestore's 1 MiB document limit.
         && request.resource.data.data.size() <= 900000
         && request.resource.data.updatedAt == request.time;
     }

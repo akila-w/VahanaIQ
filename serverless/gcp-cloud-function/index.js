@@ -22,6 +22,7 @@ const {
   DEFAULT_MODEL,
   PRICE_MODEL,
   DEFAULT_RATE_LIMIT,
+  MAX_IMAGE_BYTES,
   VEHICLE_RESPONSE_SCHEMA,
   errorCode,
   safeDetail,
@@ -89,9 +90,24 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
+  const contentType = header('content-type');
+  if (contentType && !contentType.toLowerCase().includes('application/json')) {
+    res.status(415).json({ error: 'unsupported_media_type', detail: 'Content-Type must be application/json' });
+    return;
+  }
+
   const contentLength = Number(header('content-length') || 0);
   if (contentLength > 6000000) {
-    res.status(413).json({ error: 'image_too_large', detail: 'Payload too large; keep requests under 6 MB' });
+    res.status(413).json({ error: 'image_too_large', detail: 'The screenshot is too large; attach one under 4 MB' });
+    return;
+  }
+
+  // After parsing, reject when the serialised body exceeds the documented 4 MB limit.
+  // Note: Memory is already spent parsing the request body, but reject here if Content-Length was missing or bypassed.
+  // Cloud Run's 32 MiB cap is the outer bound.
+  const serializedBody = JSON.stringify(req.body || {});
+  if (serializedBody.length > MAX_IMAGE_BYTES) {
+    res.status(413).json({ error: 'image_too_large', detail: 'The screenshot is too large; attach one under 4 MB' });
     return;
   }
 

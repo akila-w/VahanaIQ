@@ -43,7 +43,7 @@ The platform employs defense-in-depth across client, serverless proxy, and cloud
 
 4. **Storage & Device Boundary**
    - Photo Studio file uploads (`vahanaiq_studio_v1` in IndexedDB) remain 100% device-local and are never transmitted over the network or exposed to AI models.
-   - Cloud synchronization (`firestore.rules`) enforces strict authenticated ownership (`request.auth.uid == uid`), document size limits (`<= 900000` bytes), and key whitelisting.
+   - Cloud synchronization (`firestore.rules`) enforces strict authenticated ownership (`request.auth.uid == uid`), document size limits (`<= 900000` characters, with client-side `700000` UTF-8 byte budget in `js/account.js`), and key whitelisting.
 
 5. **Automated Security Verification**
    - Dedicated security test suite (`test/security.test.mjs`) tests 9 critical attack vectors: XSS injection, URL scheme hardening, rate limiter sliding windows & LRU bounding, CORS allowlisting, image MIME/size validation, malformed JSON recovery, credential stripping, price request validation, and proxy integration.

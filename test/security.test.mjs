@@ -18,7 +18,7 @@ import {
   RATE_WINDOW_MS,
   MAX_RATE_LIMIT_ENTRIES,
   IMAGE_TYPES,
-  MAX_IMAGE_BASE64,
+  MAX_IMAGE_BYTES,
   errorCode,
   safeDetail,
   parseAllowedOrigins,
@@ -383,13 +383,39 @@ console.log('TEST 5: Image Type and Size Validation');
 assert.deepEqual(validateImage(null), { valid: true }, 'Null image is valid (optional parameter)');
 assert.deepEqual(validateImage(undefined), { valid: true }, 'Undefined image is valid');
 
-// 5.2 Allowed MIME types
-for (const mime of ['image/jpeg', 'image/png', 'image/webp', 'image/gif']) {
-  const res = validateImage({ mimeType: mime, data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==' });
-  assert.equal(res.valid, true, `MIME type ${mime} must be accepted`);
+// 5.2 Allowed MIME types with matching magic bytes
+const validImageSamples = {
+  'image/jpeg': '/9j/4AAQSkZJRg==', // FF D8 FF
+  'image/png': 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', // 89 50 4E 47
+  'image/gif': 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // 47 49 46 38
+  'image/webp': Buffer.from([0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]).toString('base64') // 52 49 46 46 ... 57 45 42 50
+};
+
+for (const [mime, b64Data] of Object.entries(validImageSamples)) {
+  const res = validateImage({ mimeType: mime, data: b64Data });
+  assert.equal(res.valid, true, `MIME type ${mime} with matching magic bytes must be accepted`);
 }
 // Default MIME fallback to image/jpeg if mimeType is omitted
-assert.equal(validateImage({ data: 'valid-base64-string' }).valid, true, 'Default MIME type defaults to image/jpeg');
+assert.equal(validateImage({ data: validImageSamples['image/jpeg'] }).valid, true, 'Default MIME type defaults to image/jpeg');
+
+// Mismatched MIME type vs real magic bytes (e.g. PNG labelled as image/jpeg)
+const pngAsJpeg = validateImage({ mimeType: 'image/jpeg', data: validImageSamples['image/png'] });
+assert.equal(pngAsJpeg.valid, false, 'PNG labelled as image/jpeg must be rejected with 400');
+assert.equal(pngAsJpeg.error, 'bad_request');
+assert.equal(pngAsJpeg.status, 400);
+
+const jpegAsPng = validateImage({ mimeType: 'image/png', data: validImageSamples['image/jpeg'] });
+assert.equal(jpegAsPng.valid, false, 'JPEG labelled as image/png must be rejected with 400');
+assert.equal(jpegAsPng.error, 'bad_request');
+assert.equal(jpegAsPng.status, 400);
+
+// Base64 charset check: invalid characters rejected
+for (const badCharset of ['not-valid-base64!', '<svg>bad</svg>', 'valid base64 with spaces', '==AA']) {
+  const res = validateImage({ mimeType: 'image/jpeg', data: badCharset });
+  assert.equal(res.valid, false, `Non-base64 charset must be rejected`);
+  assert.equal(res.error, 'bad_request');
+  assert.equal(res.status, 400);
+}
 
 // 5.3 Dangerous and unsupported MIME types rejected
 const rejectedMimes = [
@@ -417,33 +443,36 @@ for (const badData of [12345, true, null, {}, [], undefined]) {
   assert.equal(res.status, 400);
 }
 
-// 5.5 Size limits: MAX_IMAGE_BASE64 boundary testing
-assert.equal(MAX_IMAGE_BASE64, 5600000, 'MAX_IMAGE_BASE64 must equal 5,600,000 bytes');
+// 5.5 Size limits: MAX_IMAGE_BYTES (4 MB decoded bytes) boundary testing
+assert.equal(MAX_IMAGE_BYTES, 4 * 1024 * 1024, 'MAX_IMAGE_BYTES must equal 4,194,304 bytes');
 
-// Exact maximum size: allowed
-const exactMaxSizeData = 'a'.repeat(MAX_IMAGE_BASE64);
+// Exact maximum size: 4 * 1024 * 1024 decoded bytes (JPEG with FF D8 FF header)
+const headerBuf = Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]);
+const exactRaw = Buffer.concat([headerBuf, Buffer.alloc(MAX_IMAGE_BYTES - 4, 0x41)]);
+const exactMaxSizeData = exactRaw.toString('base64');
 assert.equal(
   validateImage({ mimeType: 'image/jpeg', data: exactMaxSizeData }).valid,
   true,
-  'Image exactly at MAX_IMAGE_BASE64 must be accepted'
+  'Image exactly at MAX_IMAGE_BYTES must be accepted'
 );
 
-// Exceeding maximum size by 1 byte: rejected with 413
-const overMaxSizeData = 'a'.repeat(MAX_IMAGE_BASE64 + 1);
+// Exceeding maximum size by 1 byte: 4,194,305 decoded bytes rejected with 413
+const overRaw = Buffer.concat([headerBuf, Buffer.alloc(MAX_IMAGE_BYTES - 4 + 1, 0x41)]);
+const overMaxSizeData = overRaw.toString('base64');
 const overRes = validateImage({ mimeType: 'image/jpeg', data: overMaxSizeData });
-assert.equal(overRes.valid, false, 'Image exceeding MAX_IMAGE_BASE64 must be rejected');
+assert.equal(overRes.valid, false, 'Image exceeding MAX_IMAGE_BYTES must be rejected');
 assert.equal(overRes.error, 'image_too_large');
 assert.equal(overRes.status, 413);
 
 // 5.6 validateSearchRequest scenarios
 assert.equal(validateSearchRequest({ query: 'Toyota Yaris' }).valid, true, 'Search with query only is valid');
 assert.equal(
-  validateSearchRequest({ image: { mimeType: 'image/jpeg', data: 'valid-data' } }).valid,
+  validateSearchRequest({ image: { mimeType: 'image/jpeg', data: validImageSamples['image/jpeg'] } }).valid,
   true,
   'Search with image only is valid'
 );
 assert.equal(
-  validateSearchRequest({ query: 'Toyota Yaris', image: { mimeType: 'image/jpeg', data: 'valid-data' } }).valid,
+  validateSearchRequest({ query: 'Toyota Yaris', image: { mimeType: 'image/jpeg', data: validImageSamples['image/jpeg'] } }).valid,
   true,
   'Search with both query and image is valid'
 );
@@ -843,12 +872,37 @@ try {
   assert.equal(cfBadContentType.statusCode, 400, 'Cloudflare Worker rejects non-JSON Content-Type with 400');
   assert.equal(cfBadContentType.body.error, 'bad_request');
 
+  const crBadContentType = await cloudRunWith({ query: 'Toyota' }, { origin: 'https://akila-w.github.io', 'content-type': 'text/plain' });
+  assert.equal(crBadContentType.statusCode, 415, 'Cloud Run rejects non-JSON Content-Type with 415');
+  assert.equal(crBadContentType.body.error, 'unsupported_media_type');
+
   // 9.5 Oversized and invalid image rejection through proxy endpoints
   const cfBadMime = await cloudflareWith({ image: { mimeType: 'image/svg+xml', data: 'PHN2Zz4=' } }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfBadMime.statusCode, 400, 'Cloudflare rejects SVG image upload');
   assert.equal(cfBadMime.body.error, 'bad_request');
 
-  const cfOversized = await cloudflareWith({ image: { mimeType: 'image/jpeg', data: 'a'.repeat(MAX_IMAGE_BASE64 + 10) } }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
+  // PNG labelled image/jpeg is refused with 400
+  const crMismatchedMime = await cloudRunWith(
+    { image: { mimeType: 'image/jpeg', data: validImageSamples['image/png'] } },
+    { origin: 'https://akila-w.github.io', 'content-type': 'application/json' }
+  );
+  assert.equal(crMismatchedMime.statusCode, 400, 'Cloud Run rejects PNG labelled image/jpeg with 400');
+  assert.equal(crMismatchedMime.body.error, 'bad_request');
+
+  // A 5 MB base64 payload is refused with 413 before byte check would allow it
+  const fiveMbB64 = '/9j/' + 'A'.repeat(5000000 - 4);
+  const fiveMbDecoded = Math.floor(fiveMbB64.length * 3 / 4);
+  assert.ok(fiveMbDecoded < MAX_IMAGE_BYTES, 'Decoded bytes must be under MAX_IMAGE_BYTES so byte check would allow it');
+  assert.equal(validateImage({ mimeType: 'image/jpeg', data: fiveMbB64 }).valid, true, 'validateImage alone would allow 5 MB base64 payload');
+
+  const crFiveMb = await cloudRunWith(
+    { image: { mimeType: 'image/jpeg', data: fiveMbB64 } },
+    { origin: 'https://akila-w.github.io', 'content-type': 'application/json' }
+  );
+  assert.equal(crFiveMb.statusCode, 413, '5 MB base64 payload refused with 413 by proxy before byte check allows it');
+  assert.equal(crFiveMb.body.error, 'image_too_large');
+
+  const cfOversized = await cloudflareWith({ image: { mimeType: 'image/jpeg', data: '/9j/' + 'A'.repeat(6000000) } }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfOversized.statusCode, 413, 'Cloudflare rejects oversized image upload');
   assert.equal(cfOversized.body.error, 'image_too_large');
 
