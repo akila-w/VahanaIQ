@@ -15,6 +15,7 @@ import {
   errorCode,
   safeDetail,
   parseAllowedOrigins,
+  isOriginAllowed,
   createRateLimiter,
   validateSearchRequest,
   isComparisonQuery,
@@ -37,7 +38,7 @@ export default {
   async fetch(request, env) {
     const allowed = parseAllowedOrigins(env.ALLOWED_ORIGINS || DEFAULT_ORIGINS);
     const origin = request.headers.get("Origin") || "";
-    if (origin && !allowed.includes(origin)) {
+    if (!isOriginAllowed(origin, allowed)) {
       return json({ error: "forbidden", detail: "This origin may not use the VahanaIQ search proxy" }, 403);
     }
 
@@ -47,7 +48,7 @@ export default {
         headers: {
           ...corsHeaders(origin),
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Headers": "Content-Type, X-Price-Token",
           "Access-Control-Max-Age": "86400"
         }
       });
@@ -62,32 +63,48 @@ export default {
       return json({ error: "image_too_large", detail: "Payload too large; keep requests under 6 MB" }, 413, origin);
     }
 
+    const contentType = request.headers.get("Content-Type") || "";
+    if (!contentType.toLowerCase().includes("application/json")) {
+      return json({ error: "bad_request", detail: "Content-Type must be application/json" }, 400, origin);
+    }
+
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
     if (rateLimited(ip, Number(env.RATE_LIMIT) || DEFAULT_RATE_LIMIT)) {
       return json({ error: "rate_limited", detail: "Too many searches. Try again in a few minutes." }, 429, origin);
     }
 
+    let body;
     try {
-      const body = await request.json();
-      if (body?.mode === "price") {
-        return json({ error: "price_mode_unsupported" }, 400, origin);
-      }
-      const validation = validateSearchRequest(body);
-      if (!validation.valid) {
-        return json({ error: validation.error, detail: validation.detail }, validation.status, origin);
-      }
+      body = await request.json();
+    } catch {
+      return json({ error: "bad_request", detail: "Malformed JSON body" }, 400, origin);
+    }
 
-      const apiKey = env.GEMINI_API_KEY;
-      if (!apiKey) {
-        console.error("GEMINI_API_KEY secret is not configured");
-        return json({ error: "internal", detail: "Platform GEMINI_API_KEY secret not configured on proxy" }, 500, origin);
-      }
+    if (body?.mode === "price") {
+      return json({ error: "price_mode_unsupported" }, 400, origin);
+    }
 
-      const { query, image } = body || {};
-      const comparison = isComparisonQuery(query, body?.comparison);
-      const reqBody = buildVehicleSearchRequestBody(query, image, comparison, VEHICLE_RESPONSE_SCHEMA);
+    if (!origin) {
+      return json({ error: "forbidden", detail: "Search requests must come from the VahanaIQ site" }, 403, origin);
+    }
 
-      const model = env.GEMINI_MODEL || DEFAULT_MODEL;
+    const validation = validateSearchRequest(body);
+    if (!validation.valid) {
+      return json({ error: validation.error, detail: validation.detail }, validation.status, origin);
+    }
+
+    const apiKey = env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error("GEMINI_API_KEY secret is not configured");
+      return json({ error: "internal", detail: "Platform GEMINI_API_KEY secret not configured on proxy" }, 500, origin);
+    }
+
+    const { query, image } = body || {};
+    const comparison = isComparisonQuery(query, body?.comparison);
+    const reqBody = buildVehicleSearchRequestBody(query, image, comparison, VEHICLE_RESPONSE_SCHEMA);
+
+    const model = env.GEMINI_MODEL || DEFAULT_MODEL;
+    try {
       const geminiRes = await callGemini(apiKey, model, reqBody);
 
       if (!geminiRes.ok) {

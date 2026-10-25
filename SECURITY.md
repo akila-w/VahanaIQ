@@ -32,6 +32,7 @@ The platform employs defense-in-depth across client, serverless proxy, and cloud
    - Gateway-level payload inspection rejects payloads exceeding 6 MB (`413 image_too_large`).
    - Upstream Gemini error details are stripped of API keys (`key=[removed]`), authorization tokens (`Bearer [removed]`), and GCP project IDs (`projects/[removed]`).
    - Price mode authentication (`X-Price-Token`) uses constant-time comparison (`safeCompareTokens` via SHA-256 digests and `crypto.timingSafeEqual`) to prevent timing side-channel attacks.
+   - Search mode requires an allowlisted `Origin` header (`isOriginAllowed`). Requiring an `Origin` is not authentication (any script can send one); the real cost brakes are the rate limit and the closed price mode, and Firebase App Check is the only real attestation if the proxy is ever abused.
 
 3. **DOM & Input Sanitization (`js/`)**
    - Strict escaping via `esc()` across all interpolated user, catalogue, and AI data.
@@ -70,7 +71,7 @@ The platform employs defense-in-depth across client, serverless proxy, and cloud
   inputs and comparison to their own document.
 - **The app is unauthenticated for guests.** That is the intended behaviour.
 - **The proxy has no authenticated end-user.** It is a public, origin-restricted, rate-limited
-  endpoint. Its per-instance quotas are a safeguard, not a guarantee; abuse resistance beyond
+  endpoint. Requiring an Origin is not authentication (any script can send one); the real cost brakes are the rate limit and the closed price mode, and Firebase App Check is the only real attestation if the proxy is ever abused. Its per-instance quotas are a safeguard, not a guarantee; abuse resistance beyond
   that is a known limitation rather than a defect.
 
 ## Please do not

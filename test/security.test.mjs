@@ -785,63 +785,103 @@ try {
   assert.equal(crBadOrigin.statusCode, 403, 'Cloud Run rejects untrusted origin with 403');
   assert.equal(crBadOrigin.body.error, 'forbidden');
 
-  const cfBadOrigin = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://malicious.example' });
+  const cfBadOrigin = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://malicious.example', 'Content-Type': 'application/json' });
   assert.equal(cfBadOrigin.statusCode, 403, 'Cloudflare Worker rejects untrusted origin with 403');
   assert.equal(cfBadOrigin.body.error, 'forbidden');
 
   const crGoodOrigin = await cloudRunWith({ query: 'Toyota' }, { origin: 'https://akila-w.github.io' });
   assert.equal(crGoodOrigin.statusCode, 200, 'Cloud Run accepts trusted origin');
+  assert.notEqual(crGoodOrigin.statusCode, 403, 'Cloud Run trusted origin must not be 403');
   assert.equal(crGoodOrigin.headers['Access-Control-Allow-Origin'], 'https://akila-w.github.io');
 
-  const cfGoodOrigin = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://akila-w.github.io' });
+  const cfGoodOrigin = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfGoodOrigin.statusCode, 200, 'Cloudflare Worker accepts trusted origin');
+  assert.notEqual(cfGoodOrigin.statusCode, 403, 'Cloudflare Worker trusted origin must not be 403');
   assert.equal(cfGoodOrigin.allow, 'https://akila-w.github.io');
+
+  // Explicit cases: no Origin -> 403 in search mode
+  const crNoOrigin = await cloudRunWith({ query: 'Toyota' }, {});
+  assert.equal(crNoOrigin.statusCode, 403, 'Cloud Run rejects search request with missing Origin with 403');
+  assert.deepEqual(crNoOrigin.body, { error: 'forbidden', detail: 'Search requests must come from the VahanaIQ site' });
+
+  const cfNoOrigin = await cloudflareWith({ query: 'Toyota' }, { 'Content-Type': 'application/json' });
+  assert.equal(cfNoOrigin.statusCode, 403, 'Cloudflare Worker rejects search request with missing Origin with 403');
+  assert.deepEqual(cfNoOrigin.body, { error: 'forbidden', detail: 'Search requests must come from the VahanaIQ site' });
 
   // 9.2 API key leakage prevention on upstream error
   upstreamStatus = 502;
   upstreamBody = { error: { message: 'Gemini upstream error: request failed with key=AIzaSySECRET_API_KEY_NEVER_LEAK' } };
 
-  const crUpstreamErr = await cloudRunWith({ query: 'Toyota' });
+  const crUpstreamErr = await cloudRunWith({ query: 'Toyota' }, { origin: 'https://akila-w.github.io' });
   assert.equal(crUpstreamErr.statusCode, 502);
+  assert.notEqual(crUpstreamErr.statusCode, 403, 'Allowed origin with upstream error is 502, not 403');
   assert.ok(!JSON.stringify(crUpstreamErr.body).includes('AIzaSySECRET_API_KEY_NEVER_LEAK'), 'Cloud Run must mask API key');
   assert.ok(crUpstreamErr.body.detail.includes('key=[removed]'), 'Cloud Run must contain masked key=[removed]');
 
-  const cfUpstreamErr = await cloudflareWith({ query: 'Toyota' });
+  const cfUpstreamErr = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfUpstreamErr.statusCode, 502);
+  assert.notEqual(cfUpstreamErr.statusCode, 403, 'Allowed origin with upstream error is 502, not 403');
   assert.ok(!JSON.stringify(cfUpstreamErr.body).includes('AIzaSySECRET_API_KEY_NEVER_LEAK'), 'Cloudflare must mask API key');
   assert.ok(cfUpstreamErr.body.detail.includes('key=[removed]'), 'Cloudflare must contain masked key=[removed]');
 
   // 9.3 XSS payload within query string processed safely without crashing
   upstreamStatus = 200;
   upstreamBody = { candidates: [{ content: { parts: [{ text: '{"is_available_in_sri_lanka": true}' }] } }] };
-  const crXssQuery = await cloudRunWith({ query: '<script>alert("xss")</script>' });
+  const crXssQuery = await cloudRunWith({ query: '<script>alert("xss")</script>' }, { origin: 'https://akila-w.github.io' });
   assert.equal(crXssQuery.statusCode, 200, 'Proxy accepts query string with script tags safely as text');
 
-  const cfXssQuery = await cloudflareWith({ query: '<img src=x onerror=alert(1)>' });
+  const cfXssQuery = await cloudflareWith({ query: '<img src=x onerror=alert(1)>' }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfXssQuery.statusCode, 200, 'Cloudflare Worker processes XSS query string safely');
 
-  // 9.4 Malformed JSON payload handling
-  const cfMalformed = await cloudflareWith('{"broken_json": ');
-  assert.equal(cfMalformed.statusCode, 500, 'Cloudflare Worker catches malformed JSON body safely');
-  assert.equal(cfMalformed.body.error, 'internal');
+  // 9.4 Malformed JSON payload and Content-Type validation
+  const cfMalformed = await cloudflareWith('{"broken_json": ', { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
+  assert.equal(cfMalformed.statusCode, 400, 'Cloudflare Worker catches malformed JSON body safely with 400');
+  assert.equal(cfMalformed.body.error, 'bad_request');
+  assert.equal(cfMalformed.body.detail, 'Malformed JSON body');
+
+  const cfBadContentType = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'text/plain' });
+  assert.equal(cfBadContentType.statusCode, 400, 'Cloudflare Worker rejects non-JSON Content-Type with 400');
+  assert.equal(cfBadContentType.body.error, 'bad_request');
 
   // 9.5 Oversized and invalid image rejection through proxy endpoints
-  const cfBadMime = await cloudflareWith({ image: { mimeType: 'image/svg+xml', data: 'PHN2Zz4=' } });
+  const cfBadMime = await cloudflareWith({ image: { mimeType: 'image/svg+xml', data: 'PHN2Zz4=' } }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfBadMime.statusCode, 400, 'Cloudflare rejects SVG image upload');
   assert.equal(cfBadMime.body.error, 'bad_request');
 
-  const cfOversized = await cloudflareWith({ image: { mimeType: 'image/jpeg', data: 'a'.repeat(MAX_IMAGE_BASE64 + 10) } });
+  const cfOversized = await cloudflareWith({ image: { mimeType: 'image/jpeg', data: 'a'.repeat(MAX_IMAGE_BASE64 + 10) } }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfOversized.statusCode, 413, 'Cloudflare rejects oversized image upload');
   assert.equal(cfOversized.body.error, 'image_too_large');
 
   // 9.6 Raw Content-Length header guard (> 6 MB)
-  const cfContentLen = await cloudflareWith({ query: 'Toyota' }, { 'Content-Length': '7000000' });
+  const cfContentLen = await cloudflareWith({ query: 'Toyota' }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json', 'Content-Length': '7000000' });
   assert.equal(cfContentLen.statusCode, 413, 'Cloudflare rejects oversized Content-Length');
   assert.equal(cfContentLen.body.error, 'image_too_large');
 
-  const crContentLen = await cloudRunWith({ query: 'Toyota' }, { 'content-length': '7000000' });
+  const crContentLen = await cloudRunWith({ query: 'Toyota' }, { origin: 'https://akila-w.github.io', 'content-length': '7000000' });
   assert.equal(crContentLen.statusCode, 413, 'Cloud Run rejects oversized Content-Length');
   assert.equal(crContentLen.body.error, 'image_too_large');
+
+  // 9.7 OPTIONS preflight & CORS headers validation
+  const crOptionsRes = { statusCode: 200, headers: {}, set(k, v) { this.headers[k] = v; }, status(c) { this.statusCode = c; return this; }, send() {} };
+  await globalThis.__securitySearchHandler({
+    method: 'OPTIONS',
+    headers: { origin: 'https://akila-w.github.io' },
+    get: k => k.toLowerCase() === 'origin' ? 'https://akila-w.github.io' : ''
+  }, crOptionsRes);
+  assert.equal(crOptionsRes.statusCode, 204, 'Cloud Run OPTIONS preflight returns 204');
+  assert.ok(crOptionsRes.headers['Access-Control-Allow-Headers'].includes('X-Price-Token'), 'Cloud Run OPTIONS includes X-Price-Token');
+  assert.ok(crOptionsRes.headers['Access-Control-Allow-Headers'].includes('Content-Type'), 'Cloud Run OPTIONS includes Content-Type');
+  assert.equal(crOptionsRes.headers['Vary'], 'Origin', 'Cloud Run OPTIONS includes Vary: Origin');
+
+  const cfOptionsRes = await worker.fetch(new Request('https://fixture.invalid', {
+    method: 'OPTIONS',
+    headers: { Origin: 'https://akila-w.github.io' }
+  }), { GEMINI_API_KEY: 'test-placeholder-key' });
+  assert.equal(cfOptionsRes.status, 200, 'Cloudflare Worker OPTIONS preflight returns 200');
+  const cfAllowHeaders = cfOptionsRes.headers.get('Access-Control-Allow-Headers') || '';
+  assert.ok(cfAllowHeaders.includes('X-Price-Token'), 'Cloudflare OPTIONS includes X-Price-Token');
+  assert.ok(cfAllowHeaders.includes('Content-Type'), 'Cloudflare OPTIONS includes Content-Type');
+  assert.equal(cfOptionsRes.headers.get('Vary'), 'Origin', 'Cloudflare OPTIONS includes Vary: Origin');
 
   console.log('✓ Serverless Proxy Security Integration PASSED\n');
 } finally {

@@ -26,6 +26,7 @@ const {
   errorCode,
   safeDetail,
   parseAllowedOrigins,
+  isOriginAllowed,
   createRateLimiter,
   validateSearchRequest,
   validatePriceRequest,
@@ -66,14 +67,14 @@ function safeCompareTokens(provided, expected) {
 }
 
 functions.http('vehicleSearch', async (req, res) => {
+  res.set('Vary', 'Origin');
   const header = name => (req.headers && (req.headers[name] || (req.get && req.get(name)))) || '';
   const origin = header('origin');
-  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+  if (!isOriginAllowed(origin, ALLOWED_ORIGINS)) {
     res.status(403).json({ error: 'forbidden', detail: 'This origin may not use the VahanaIQ search proxy' });
     return;
   }
   // CORS configuration
-  res.set('Vary', 'Origin');
   if (origin) res.set('Access-Control-Allow-Origin', origin);
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, X-Price-Token');
@@ -143,6 +144,12 @@ functions.http('vehicleSearch', async (req, res) => {
         res.status(500).json({ error: 'internal', detail: 'Internal error' });
       }
     }
+    return;
+  }
+
+  // Search mode requires a valid allowlisted Origin header (non-browser clients must not relay through search)
+  if (!origin) {
+    res.status(403).json({ error: 'forbidden', detail: 'Search requests must come from the VahanaIQ site' });
     return;
   }
 

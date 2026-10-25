@@ -43,7 +43,10 @@ const call = async (body, headers = {}) => {
     set() {}, status(c) { this.statusCode = c; return this; },
     json(b) { this.body = b; }, send(b) { this.body = b; }
   };
-  const defaultHeaders = process.env.PRICE_TOKEN ? { "x-price-token": process.env.PRICE_TOKEN } : {};
+  const defaultHeaders = {
+    ...(process.env.PRICE_TOKEN ? { "x-price-token": process.env.PRICE_TOKEN } : {}),
+    origin: "https://akila-w.github.io"
+  };
   await handler({ method: "POST", body, headers: { ...defaultHeaders, ...headers } }, res);
   return res;
 };
@@ -183,6 +186,7 @@ try {
   const worker = (await import("../serverless/cloudflare-worker.js")).default;
   const cfRes = await worker.fetch(new Request("https://fixture.invalid", {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ mode: "price", queries })
   }), { GEMINI_API_KEY: "test-key" });
   assert.equal(cfRes.status, 400);
