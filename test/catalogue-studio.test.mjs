@@ -391,10 +391,12 @@ assert.ok(!/[\"'(]\.?\/?docs\//.test(studioHtml), "studio.html must not reach in
 
 // The catalogue page hands the overlay a promise before any deferred script runs.
 const catalogueHtml = fs.readFileSync(path.join(ROOT, "catalogue.html"), "utf8");
-assert.match(catalogueHtml, /window\.__VAHANAIQ_PHOTOS__ = \{ apply: null, resolve: null \};/,
-  "catalogue.html must set up the studio hand-off before its scripts run");
+const bootJs = fs.readFileSync(path.join(ROOT, "js/boot.js"), "utf8");
+assert.match(bootJs, /window\.__VAHANAIQ_PHOTOS__ = \{ apply: null, resolve: null \};/,
+  "js/boot.js must set up the studio hand-off before scripts run");
+assert.match(catalogueHtml, /src="js\/boot\.js\?v=2\.11\.5"/, "catalogue.html must load js/boot.js");
 assert.match(catalogueHtml, /src="js\/catalogue-photo-overlay\.js\?v=2\.11\.5"/);
-assert.ok(catalogueHtml.indexOf("__VAHANAIQ_PHOTOS__") < catalogueHtml.indexOf("js/curated-catalogue.js"),
+assert.ok(catalogueHtml.indexOf("js/boot.js") < catalogueHtml.indexOf("js/curated-catalogue.js"),
   "The hand-off must come before the script that waits on it");
 assert.match(fs.readFileSync(path.join(ROOT, "js/catalogue-photo-overlay.js"), "utf8"),
   /globalThis\.__VAHANAIQ_PHOTOS__/, "The overlay must resolve the hand-off promise");
