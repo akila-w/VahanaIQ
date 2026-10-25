@@ -58,7 +58,17 @@ jobs:
         run: npm ci
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Run browser spec
+      - name: Serve the site and wait until it answers
         run: |
-          python3 -m http.server 8123 &
-          npx playwright test test/browser/csp.spec.mjs
+          python3 -m http.server 8123 --bind 127.0.0.1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8123/index.html; then
+              echo "Server is answering on 127.0.0.1:8123"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "The local server did not start" >&2
+          exit 1
+      - name: Run browser spec
+        run: npx playwright test test/browser/csp.spec.mjs

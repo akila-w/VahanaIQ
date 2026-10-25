@@ -7,7 +7,7 @@ const {
   DEFAULT_MODEL,
   PRICE_MODEL,
   DEFAULT_RATE_LIMIT,
-  MAX_IMAGE_BYTES,
+  MAX_BODY_BYTES,
   VEHICLE_RESPONSE_SCHEMA,
   errorCode,
   safeDetail,
@@ -82,8 +82,24 @@ functions.http('vehicleSearch', async (req, res) => {
   }
 
   const contentLength = Number(header('content-length') || 0);
-  if (contentLength > 6000000) {
+  if (contentLength > MAX_BODY_BYTES) {
     res.status(413).json({ error: 'image_too_large', detail: 'The screenshot is too large; attach one under 4 MB' });
+    return;
+  }
+
+  // Rate limiting runs before the body is parsed or re-serialised, so a client that
+  // has spent its quota is rejected without paying for JSON work first.
+  // Cloud Run appends one entry per hop to X-Forwarded-For, meaning earlier entries
+  // are untrusted. Count trusted hops from the right when TRUSTED_PROXY=true;
+  // fall back to socket IP if untrusted.
+  const ip = resolveClientIp({
+    forwardedFor: req.headers && (req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For']),
+    socketIp: req.socket?.remoteAddress,
+    trusted: process.env.TRUSTED_PROXY === 'true',
+    hops: Number(process.env.TRUSTED_PROXY_HOPS) || 1
+  });
+  if (rateLimited(ip)) {
+    res.status(429).json({ error: 'rate_limited', detail: 'Too many searches. Try again in a few minutes.' });
     return;
   }
 
@@ -102,26 +118,13 @@ functions.http('vehicleSearch', async (req, res) => {
     return;
   }
 
-  // After parsing, reject when the serialised body exceeds the documented 4 MB limit.
-  // Note: Memory is already spent parsing the request body, but reject here if Content-Length was missing or bypassed.
-  // Cloud Run's 32 MiB cap is the outer bound.
+  // Body ceiling, measured in UTF-8 bytes after parsing. The Content-Length guard above
+  // rejects honest callers early; this catches chunked requests that omit the header.
+  // MAX_BODY_BYTES is larger than MAX_IMAGE_BYTES because base64 inflates an image by
+  // 4/3: a 4 MiB screenshot arrives as ~5.6 MB of JSON and must not be refused here.
   const serializedBody = JSON.stringify(body);
-  if (serializedBody.length > MAX_IMAGE_BYTES) {
+  if (Buffer.byteLength(serializedBody, 'utf8') > MAX_BODY_BYTES) {
     res.status(413).json({ error: 'image_too_large', detail: 'The screenshot is too large; attach one under 4 MB' });
-    return;
-  }
-
-  // Rate limiting: Cloud Run appends one entry per hop to X-Forwarded-For,
-  // meaning earlier entries are untrusted. Count trusted hops from the right
-  // when TRUSTED_PROXY=true; fall back to socket IP if untrusted.
-  const ip = resolveClientIp({
-    forwardedFor: req.headers && (req.headers['x-forwarded-for'] || req.headers['X-Forwarded-For']),
-    socketIp: req.socket?.remoteAddress,
-    trusted: process.env.TRUSTED_PROXY === 'true',
-    hops: Number(process.env.TRUSTED_PROXY_HOPS) || 1
-  });
-  if (rateLimited(ip)) {
-    res.status(429).json({ error: 'rate_limited', detail: 'Too many searches. Try again in a few minutes.' });
     return;
   }
 

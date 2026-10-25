@@ -11,6 +11,7 @@ import {
   DEFAULT_MODEL,
   DEFAULT_ORIGINS,
   DEFAULT_RATE_LIMIT,
+  MAX_BODY_BYTES,
   VEHICLE_RESPONSE_SCHEMA,
   errorCode,
   safeDetail,
@@ -59,7 +60,7 @@ export default {
     }
 
     const contentLength = Number(request.headers.get("Content-Length") || 0);
-    if (contentLength > 6000000) {
+    if (contentLength > MAX_BODY_BYTES) {
       return json({ error: "image_too_large", detail: "The screenshot is too large; attach one under 4 MB" }, 413, origin);
     }
 

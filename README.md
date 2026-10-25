@@ -113,7 +113,7 @@ vahanaiq/
 │   ├── price-matches.json        # Which site listing belongs to which catalogue entry
 │   ├── refresh-prices.mjs        # Applies researched prices to catalogue, with checks
 │   ├── apply-studio-photos.mjs   # Publishes a Photo Studio export into the catalogue
-│   ├── build-info-pages.mjs      # Generates about.html, privacy.html and terms.html
+│   ├── build-info-pages.mjs      # Generates about.html, privacy.html and terms.html (--check verifies them)
 │   ├── open-price-pr.sh          # Opens the monthly prices pull request
 │   └── price-research-task.md    # Instructions for monthly Claude research task
 ├── test/
@@ -352,9 +352,10 @@ gcloud run deploy vahanaiq-search \
   --image asia-south1-docker.pkg.dev/<PROJECT_ID>/cloud-run-source-deploy/vahanaiq-search:latest \
   --region asia-south1 \
   --allow-unauthenticated \
-  --update-env-vars "^@^ALLOWED_ORIGINS=https://akila-w.github.io@GEMINI_MODEL=gemini-3.6-flash@RATE_LIMIT=30@TRUSTED_PROXY=true@TRUSTED_PROXY_HOPS=1@PRICE_TOKEN=<price-token>"
+  --update-env-vars "^@^ALLOWED_ORIGINS=https://akila-w.github.io@GEMINI_MODEL=gemini-3.6-flash@RATE_LIMIT=30@TRUSTED_PROXY=true@TRUSTED_PROXY_HOPS=1" \
+  --set-secrets PRICE_TOKEN=PRICE_TOKEN:latest
 ```
-The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. Upstream errors are written to the Cloud Run logs.
+The `GEMINI_API_KEY` environment variable (or secret) must already be set on the service. `PRICE_TOKEN` is read from Secret Manager (`--set-secrets`) so the token never appears in shell history, the deploy command, or the revision's plain environment. Create the secret once with `printf '%s' '<price-token>' | gcloud secrets create PRICE_TOKEN --data-file=-`, grant the Cloud Run service account `roles/secretmanager.secretAccessor`, then add the same value as the `PRICE_TOKEN` secret in the GitHub repository settings for the monthly price refresh. Upstream errors are written to the Cloud Run logs.
 
 ### Proxy environment variables
 
@@ -367,7 +368,7 @@ The `GEMINI_API_KEY` environment variable (or secret) must already be set on the
 | `TRUSTED_PROXY_HOPS` | `1` | Number of trusted reverse-proxy hops appended to the right of `X-Forwarded-For` when `TRUSTED_PROXY=true`. If the header chain has fewer entries than `TRUSTED_PROXY_HOPS` or contains invalid characters, the proxy falls back to the socket IP. |
 | `PRICE_TOKEN` | unset (disabled) | Secret token required in the `X-Price-Token` header for `{"mode": "price"}` requests, compared in constant time (`safeCompareTokens`). When unset or blank, price mode is closed and returns HTTP `503 price_mode_disabled`. |
 
-Request bodies declaring `Content-Length > 6000000` or serialising to more than 4 MiB (`4,194,304` bytes) after JSON parsing are rejected with HTTP `413 image_too_large`. Attached screenshots must be JPEG, PNG, WebP or GIF, match their magic bytes, and decode to at most 4 MiB (`4,194,304` bytes). Error details sent to the browser are stripped of credentials and shortened to 200 characters.
+Request bodies declaring `Content-Length > 6000000` bytes, or serialising to more than 6,000,000 UTF-8 bytes after JSON parsing, are rejected with HTTP `413 image_too_large`. The body ceiling is deliberately larger than the image ceiling because base64 inflates a screenshot by a third: a 4 MiB image arrives as about 5.6 MB of JSON. Attached screenshots must be JPEG, PNG, WebP or GIF, match their magic bytes, and decode to at most 4 MiB (`4,194,304` bytes); one byte over that decoded limit is rejected. Error details sent to the browser are stripped of credentials and shortened to 200 characters.
 
 The same service has a second, **price mode** (`POST {"mode": "price", "queries": ["...", "..."]}`, up to 12 vehicles), used only by the monthly price refresh. It turns on Grounding with Google Search, so Gemini looks up current Sri Lankan prices instead of relying on its training data. It runs on its own model, set with the `PRICE_MODEL` environment variable (`gemini-2.5-flash-lite` by default), whose free daily allowance is separate from the app's. It returns `{ vehicles[], sources[], search_queries[], model }`, where each vehicle lists its trims with price, model year, basis, month and the site the price came from, and `sources` are the web pages Gemini cited. A quota error says whether the daily or per-minute limit was hit (`"quota": "daily"`). Requests without `mode` are handled exactly as before. To use a different model for the refresh, add `PRICE_MODEL=<model>` to `--update-env-vars`. On the free tier it has to be a Gemini 2.x or 2.5 model: AI Studio gives Gemini 3 and newer no free Google Search grounding, and `gemini-2.5-flash` is closed to new users. If Gemini refuses the model, the refresh stops after one request and says so.
 

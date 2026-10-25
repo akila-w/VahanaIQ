@@ -15,6 +15,6 @@ export const safeUrl = value => {
 
 export const safeImageUrl = value => {
   const raw = String(value ?? "").trim();
-  if (!raw || /^(javascript:|vbscript:|data:text\/html)/i.test(raw)) return "";
+  if (!raw || /^(javascript:|vbscript:|data:text\/html|data:image\/svg)/i.test(raw)) return "";
   return esc(raw);
 };

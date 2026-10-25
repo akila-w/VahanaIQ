@@ -21,6 +21,11 @@ const MAX_RATE_LIMIT_ENTRIES = 5000;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
+// Raw request-body ceiling. MAX_IMAGE_BYTES is the *decoded* image limit enforced by
+// validateImage(); a 4 MiB screenshot is ~5.6 MB once base64 encoded, so the JSON body
+// limit must be larger than the image limit or a valid screenshot is refused first.
+const MAX_BODY_BYTES = 6000000;
+
 // Price mode constants
 const PRICE_BASES = ["dealer price list", "dealer listing", "news report", "estimate"];
 const MAX_PRICE_QUERIES = 12;
@@ -464,6 +469,7 @@ module.exports = {
   MAX_RATE_LIMIT_ENTRIES,
   IMAGE_TYPES,
   MAX_IMAGE_BYTES,
+  MAX_BODY_BYTES,
   PRICE_BASES,
   MAX_PRICE_QUERIES,
   SYSTEM_PROMPT,

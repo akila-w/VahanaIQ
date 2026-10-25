@@ -40,6 +40,11 @@ test.describe('Content Security Policy & Browser Integrations', () => {
   }
 
   test('index.html: Google Identity Services iframe exists after opening the Account dialog', async ({ page }) => {
+    const cspErrors = [];
+    page.on('console', (msg) => {
+      if (/Content Security Policy/i.test(msg.text())) cspErrors.push(msg.text());
+    });
+
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
 
     // Open the Account dialog
@@ -48,6 +53,12 @@ test.describe('Content Security Policy & Browser Integrations', () => {
     // The Google Identity Services iframe exists
     const gisIframe = page.locator('#accountModal iframe, #googleSignIn iframe');
     await expect(gisIframe.first()).toBeAttached({ timeout: 15000 });
+
+    // GIS injects its own stylesheet from https://accounts.google.com/gsi/style.
+    // That request must not be blocked, otherwise the button renders unstyled while
+    // the iframe still attaches; only a console assertion catches it.
+    await page.waitForTimeout(1500);
+    expect(cspErrors.filter((text) => /style-src|accounts\.google\.com/i.test(text))).toEqual([]);
   });
 
   test('catalogue.html: photo overlay Apply function is a function', async ({ page }) => {

@@ -20,6 +20,7 @@ import {
   MAX_RATE_LIMIT_ENTRIES,
   IMAGE_TYPES,
   MAX_IMAGE_BYTES,
+  MAX_BODY_BYTES,
   errorCode,
   safeDetail,
   parseAllowedOrigins,
@@ -235,6 +236,8 @@ assert.equal(
 assert.equal(safeImageUrl('javascript:alert(1)'), '', 'safeImageUrl must reject javascript: URI');
 assert.equal(safeImageUrl('vbscript:msgbox(1)'), '', 'safeImageUrl must reject vbscript: URI');
 assert.equal(safeImageUrl('data:text/html,<script>alert(1)</script>'), '', 'safeImageUrl must reject data:text/html URI');
+assert.equal(safeImageUrl('data:image/svg+xml,<svg onload=alert(1)>'), '', 'safeImageUrl must reject SVG data URIs');
+assert.equal(safeImageUrl('DATA:IMAGE/SVG+XML;base64,PHN2Zz4='), '', 'safeImageUrl must reject uppercase SVG data URIs');
 assert.equal(safeImageUrl(null), '', 'safeImageUrl(null) must return empty string');
 assert.equal(safeImageUrl(undefined), '', 'safeImageUrl(undefined) must return empty string');
 assert.equal(safeImageUrl(''), '', 'safeImageUrl("") must return empty string');
@@ -446,6 +449,11 @@ for (const badData of [12345, true, null, {}, [], undefined]) {
 
 // 5.5 Size limits: MAX_IMAGE_BYTES (4 MB decoded bytes) boundary testing
 assert.equal(MAX_IMAGE_BYTES, 4 * 1024 * 1024, 'MAX_IMAGE_BYTES must equal 4,194,304 bytes');
+
+// The request-body ceiling must be larger than the base64 form of a full-size image,
+// otherwise the body gate refuses a screenshot that validateImage would accept.
+assert.equal(MAX_BODY_BYTES, 6000000, 'MAX_BODY_BYTES must equal 6,000,000 bytes');
+assert.ok(MAX_BODY_BYTES > Math.ceil(MAX_IMAGE_BYTES * 4 / 3), 'MAX_BODY_BYTES must exceed the base64 inflation of MAX_IMAGE_BYTES');
 
 // Exact maximum size: 4 * 1024 * 1024 decoded bytes (JPEG with FF D8 FF header)
 const headerBuf = Buffer.from([0xFF, 0xD8, 0xFF, 0xE0]);
@@ -904,18 +912,40 @@ try {
   assert.equal(crMismatchedMime.statusCode, 400, 'Cloud Run rejects PNG labelled image/jpeg with 400');
   assert.equal(crMismatchedMime.body.error, 'bad_request');
 
-  // A 5 MB base64 payload is refused with 413 before byte check would allow it
-  const fiveMbB64 = '/9j/' + 'A'.repeat(5000000 - 4);
-  const fiveMbDecoded = Math.floor(fiveMbB64.length * 3 / 4);
-  assert.ok(fiveMbDecoded < MAX_IMAGE_BYTES, 'Decoded bytes must be under MAX_IMAGE_BYTES so byte check would allow it');
-  assert.equal(validateImage({ mimeType: 'image/jpeg', data: fiveMbB64 }).valid, true, 'validateImage alone would allow 5 MB base64 payload');
+  // A full-size 4 MiB screenshot arrives as ~5.6 MB of base64. It must pass the body
+  // gate (MAX_BODY_BYTES) and be accepted by validateImage (MAX_IMAGE_BYTES).
+  const maxB64 = '/9j/' + 'A'.repeat(5592404 - 4); // decodes to 4,194,303 bytes
+  assert.equal(Math.floor(maxB64.length * 3 / 4), MAX_IMAGE_BYTES - 1, 'fixture decodes to just under 4 MiB');
+  assert.ok(Buffer.byteLength(JSON.stringify({ image: { mimeType: 'image/jpeg', data: maxB64 } }), 'utf8') < MAX_BODY_BYTES,
+    'a full-size screenshot must fit inside the body ceiling');
+  assert.equal(validateImage({ mimeType: 'image/jpeg', data: maxB64 }).valid, true, 'validateImage accepts a 4 MiB screenshot');
 
-  const crFiveMb = await cloudRunWith(
-    { image: { mimeType: 'image/jpeg', data: fiveMbB64 } },
+  const crMaxImage = await cloudRunWith(
+    { image: { mimeType: 'image/jpeg', data: maxB64 } },
     { origin: 'https://akila-w.github.io', 'content-type': 'application/json' }
   );
-  assert.equal(crFiveMb.statusCode, 413, '5 MB base64 payload refused with 413 by proxy before byte check allows it');
-  assert.equal(crFiveMb.body.error, 'image_too_large');
+  assert.notEqual(crMaxImage.statusCode, 413, 'a 4 MiB screenshot must not be refused as too large by the body gate');
+  assert.notEqual(crMaxImage.body && crMaxImage.body.error, 'image_too_large', 'a full-size screenshot must not be refused as too large');
+
+  // One byte-group over the decoded image limit is still refused by validateImage.
+  const overB64 = '/9j/' + 'A'.repeat(5592408 - 4); // decodes to 4,194,306 bytes
+  const crOverImage = await cloudRunWith(
+    { image: { mimeType: 'image/jpeg', data: overB64 } },
+    { origin: 'https://akila-w.github.io', 'content-type': 'application/json' }
+  );
+  assert.equal(crOverImage.statusCode, 413, 'an image above 4 MiB is refused with 413');
+  assert.equal(crOverImage.body.error, 'image_too_large');
+
+  // The body ceiling is measured in UTF-8 bytes, not UTF-16 characters: 3.1 million
+  // two-byte characters serialise to 6.2 MB and must be refused, although the character
+  // count (3,100,000) sits below the old 4,194,304-character check.
+  const wideBody = { query: 'é'.repeat(3100000) };
+  assert.ok(JSON.stringify(wideBody).length < MAX_BODY_BYTES, 'character count is below the ceiling');
+  assert.ok(Buffer.byteLength(JSON.stringify(wideBody), 'utf8') > MAX_BODY_BYTES, 'byte count is above the ceiling');
+  const crWideBody = await cloudRunWith(wideBody, { origin: 'https://akila-w.github.io', 'content-type': 'application/json' });
+  assert.equal(crWideBody.statusCode, 413, 'a body above 6 MB of UTF-8 bytes is refused with 413');
+  assert.equal(crWideBody.body.error, 'image_too_large');
+
 
   const cfOversized = await cloudflareWith({ image: { mimeType: 'image/jpeg', data: '/9j/' + 'A'.repeat(6000000) } }, { Origin: 'https://akila-w.github.io', 'Content-Type': 'application/json' });
   assert.equal(cfOversized.statusCode, 413, 'Cloudflare rejects oversized image upload');
