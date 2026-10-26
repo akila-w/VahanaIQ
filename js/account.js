@@ -13,6 +13,7 @@ import { STORE_KEY } from "./inputs.js?v=2.12.0";
 import { PLANNER_KEY, cleanPlanner } from "./planner-store.js?v=2.12.0";
 
 const SIGNED_IN_KEY = "vahanaiq_account_v1"; // set while signed in, so the next visit restores the session
+const NAME_KEY = "vahanaiq_account_name_v1"; // first name shown on pages that do not load sync (the catalogue)
 const AGREED_KEY = "vahanaiq_synced_v1"; // fingerprint of the copy this browser and the account last agreed on
 const WRITE_DELAY = 1500;
 export const MAX_SIZE = 700000; // 700,000-byte budget (below firestore.rules 900,000-character limit)
@@ -143,9 +144,11 @@ function onUser(u) {
   restoring = false;
   if (u) {
     store.set(SIGNED_IN_KEY, u.uid);
+    store.set(NAME_KEY, (u.displayName || "").trim().split(/\s+/)[0] || "Account");
     syncNow();
   } else {
     store.remove(SIGNED_IN_KEY);
+    store.remove(NAME_KEY);
     store.remove(AGREED_KEY);
     conflict = null;
   }

@@ -821,7 +821,17 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
     else window.location.href = href;
   }
   if ($('addVehicleBtn')) $('addVehicleBtn').addEventListener('click', () => transitionNavigate('index.html#openAdd'));
-  if ($('accountBtn')) $('accountBtn').addEventListener('click', () => transitionNavigate('index.html#account'));
+  if ($('accountBtn')) {
+    $('accountBtn').addEventListener('click', () => transitionNavigate('index.html#account'));
+    // Sync only loads on the calculator, which records the signed-in name for this page to show
+    try {
+      if (localStorage.getItem('vahanaiq_account_v1')) {
+        const name = localStorage.getItem('vahanaiq_account_name_v1') || 'Account';
+        $('accountBtn').textContent = name;
+        $('accountBtn').setAttribute('aria-label', 'Account: ' + name);
+      }
+    } catch (e) {}
+  }
   if ($('printBtn')) $('printBtn').addEventListener('click', () => { window.print(); });
 
   function applyTheme(choice) {

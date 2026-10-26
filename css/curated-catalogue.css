@@ -1022,9 +1022,11 @@ button:active:not(:disabled) {
 }
 
 /* Vibrant Liquid Aurora Background (20% Light, 10% Dark) */
+html { background-color: var(--bg, #f5f6f3); overflow-x: hidden; overscroll-behavior-x: none; }
 body {
   position: relative;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 body::before,
