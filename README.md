@@ -68,6 +68,7 @@ vahanaiq/
 ├── css/
 │   ├── tokens.css        # Generated from design-system/tokens.json (do not edit)
 │   ├── style.css         # Responsive styles & consolidated A4 statutory print stylesheet
+│   ├── style.min.css     # Minified build of style.css that index.html loads (node scripts/build-css.mjs)
 │   ├── curated-catalogue.css # Styles for catalogue.html
 │   ├── catalogue-studio.css  # Styles for studio.html (tokens only, no literals)
 │   └── test-builds.css   # Diagnostic badge styles for automated testing
@@ -107,6 +108,7 @@ vahanaiq/
 │   └── config.js         # Cloud proxy, Firebase web config, APP_VERSION and endpoints
 ├── scripts/
 │   ├── build-tokens.mjs          # Builds css/tokens.css from design-system/tokens.json
+│   ├── build-css.mjs             # Builds css/style.min.css from css/style.css
 │   ├── smoke-deploy.mjs          # Checks the live site really is this release
 │   ├── prune-thumbnails.mjs      # Keeps review thumbnails to the ones the site uses
 │   ├── scan-prices.mjs           # Reads price sites and writes a prices file and review report
@@ -239,6 +241,7 @@ node test/csp.test.mjs
 node test/module-versions.test.mjs
 node test/refresh-prices.test.mjs
 node test/tokens.test.mjs
+node test/style-min.test.mjs
 node test/calculator.test.mjs
 node test/account.test.mjs
 node test/account-session.test.mjs

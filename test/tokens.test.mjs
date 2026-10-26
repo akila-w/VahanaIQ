@@ -45,6 +45,6 @@ for (const file of ['index.html', ...jsFiles]) {
 // The page loads the tokens before the stylesheet that reads them
 const tokensLink = html.indexOf('href="css/tokens.css?v=2.12.0"');
 assert.ok(tokensLink > -1, 'index.html must load css/tokens.css');
-assert.ok(tokensLink < html.indexOf('href="css/style.css?v=2.12.0"'), 'css/tokens.css must load before css/style.css');
+assert.ok(tokensLink < html.indexOf('href="css/style.min.css?v=2.12.0"'), 'css/tokens.css must load before css/style.min.css');
 
 console.log('Design token checks passed');

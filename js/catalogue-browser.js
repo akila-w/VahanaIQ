@@ -371,7 +371,10 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   });
   const checked = catalogue.map(v => v.checkedOn).filter(Boolean).sort().pop();
   $("catalogueCoverage").textContent = `${catalogue.length} vehicles across ${new Set(catalogue.map(v => v.make)).size} makes, sources checked ${displayDate(checked)}. Published prices and unverified estimates are labelled separately. Ask the seller for a current quote. Photos may differ from the exact trim. Pickup/van registration classes and lender valuations need confirmation. Further brands, trims and used models are still being checked.`;
-  render();
+  // The catalogue sits in a dialog that renders itself when opened, so the first pass can wait for
+  // an idle moment instead of holding up the page for ~200 ms at load.
+  if (typeof requestIdleCallback === "function") requestIdleCallback(render, { timeout: 2000 });
+  else render();
   return () => {
     const next = catalogue.filter(v => isSelected(v.id)).map(v => v.id).join("|");
     if (next !== selection) { selection = next; render(); }

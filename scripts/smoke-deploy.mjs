@@ -18,7 +18,7 @@ if (!version) { console.error("Could not read APP_VERSION from js/config.js"); p
 
 const PAGES = ["catalogue.html", "studio.html", "about.html", "privacy.html", "terms.html"];
 const ASSETS = [
-  "css/tokens.css", "css/style.css", "css/curated-catalogue.css", "css/catalogue-studio.css", "js/app.js", "js/config.js",
+  "css/tokens.css", "css/style.css", "css/style.min.css", "css/curated-catalogue.css", "css/catalogue-studio.css", "js/app.js", "js/config.js",
   "js/catalogue-data.js", "js/curated-catalogue.js", "js/catalogue-studio.js", "js/catalogue-photo-overlay.js",
   "js/catalogue-photos.js", "js/catalogue-photo-store.js", "js/photo-frame.js", "js/official-photo-data.js", "sw.js",
   "manifest.json", "sitemap.xml", "robots.txt", "data/catalogue.json", "data/identity.json",
@@ -64,7 +64,7 @@ if (!deployed) {
 console.log(`\nChecking ${BASE} serves ${version}\n`);
 const index = await get(`${BASE}/`);
 note(index.status === 200, "GET / is 200", `HTTP ${index.status}`);
-note(index.text.includes(`style.css?v=${version}`), `index.html requests style.css?v=${version}`);
+note(index.text.includes(`style.min.css?v=${version}`), `index.html requests style.min.css?v=${version}`);
 note(index.text.includes(`tokens.css?v=${version}`), `index.html requests tokens.css?v=${version}`);
 note(!/["'(]\.?\/?docs\//.test(index.text), "index.html does not link the unpublished docs/ tree");
 note(/<h1[^>]*>/.test(index.text), "index.html renders a heading");

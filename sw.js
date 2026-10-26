@@ -10,7 +10,7 @@ const SHELL = [
   "studio.html",
   "manifest.json",
   "css/tokens.css?v=2.12.0",
-  "css/style.css?v=2.12.0",
+  "css/style.min.css?v=2.12.0",
   "css/curated-catalogue.css?v=2.12.0",
   "css/catalogue-studio.css?v=2.12.0",
   "js/boot.js?v=2.12.0",

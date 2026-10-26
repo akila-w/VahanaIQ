@@ -467,7 +467,7 @@ assert(html.includes('<label for="aiImgUrl">'), "index.html must give aiImgUrl a
 assert(html.includes('inputmode="numeric"'), "index.html must have inputmode numeric");
 assert(html.includes('inputmode="decimal"'), "index.html must have inputmode decimal");
 assert(html.includes('js/app.js?v=2.12.0'), "index.html must reference js/app.js?v=2.12.0");
-assert(html.includes('css/style.css?v=2.12.0'), "index.html must reference css/style.css?v=2.12.0");
+assert(html.includes('css/style.min.css?v=2.12.0'), "index.html must reference css/style.min.css?v=2.12.0");
 assert(html.includes('id="budgetGraphic"'), "index.html must include budgetGraphic container");
 assert(html.includes('id="budgetNeedle"'), "index.html must include budgetNeedle SVG element");
 assert(html.includes('id="budgetDtiHero"'), "index.html must include budgetDtiHero readout");

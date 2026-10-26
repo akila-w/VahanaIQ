@@ -888,15 +888,25 @@ function updateLtvBar(s, rows) {
 }
 
 // The bar shows once the budget panel has scrolled out of view
+// An IntersectionObserver reports visibility without measuring layout on every scroll, which
+// was a forced reflow at load. Without one, the panel is measured directly.
+let budgetPanelVisible = null;
 function syncBudgetBar() {
-  const panel = $("budgetPanel");
-  const box = panel.getBoundingClientRect ? panel.getBoundingClientRect() : null;
-  const panelVisible = !box || (box.bottom > 0 && box.top < window.innerHeight);
+  let panelVisible = budgetPanelVisible;
+  if (panelVisible === null) {
+    const box = $("budgetPanel").getBoundingClientRect ? $("budgetPanel").getBoundingClientRect() : null;
+    panelVisible = !box || (box.bottom > 0 && box.top < window.innerHeight);
+  }
   const show = !!budgetBarText && !panelVisible;
   $("budgetBar").hidden = !show;
   if (document.body && document.body.classList) document.body.classList.toggle("has-budget-bar", show);
 }
-if (typeof window.addEventListener === "function") {
+if (typeof IntersectionObserver === "function" && typeof document.getElementById === "function" && $("budgetPanel")) {
+  new IntersectionObserver(entries => {
+    budgetPanelVisible = entries[entries.length - 1].isIntersecting;
+    syncBudgetBar();
+  }).observe($("budgetPanel"));
+} else if (typeof window.addEventListener === "function") {
   window.addEventListener("scroll", syncBudgetBar, { passive: true });
   window.addEventListener("resize", syncBudgetBar);
 }
