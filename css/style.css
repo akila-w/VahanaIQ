@@ -7919,7 +7919,9 @@ tbody tr.is-pinned {
     padding: var(--space-10) var(--space-16) var(--space-12);
     gap: var(--space-10);
   }
-  .header-brand-group { width: 100%; justify-content: space-between; gap: var(--space-12); }
+  /* Brand and page links share a row, and the links drop below the brand rather than leave
+     the screen when the device font is wider than the system fonts (Linux fallbacks, large text). */
+  .header-brand-group { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4) var(--space-12); }
   .site-header nav { gap: var(--space-14); }
   .site-header nav a { display: inline-flex; align-items: center; min-height: var(--touch-target); padding: 0; }
   .header-actions {
@@ -7982,6 +7984,13 @@ tbody tr.is-pinned {
   .header-actions .theme-switch label { min-width: 32px; padding: var(--space-6); }
   .header-actions .account-btn { padding-inline: var(--space-10); font-size: 13px; }
   .page-nav a .glyph { display: none; }
+}
+
+/* A drawer's subtitle may wrap beside its label on phones, so a wider device font cannot push
+   it past the edge of the card. */
+@media screen and (max-width: 650px) {
+  .drawer-toggle-label { min-width: 0; }
+  .drawer-toggle-meta { flex-shrink: 1; min-width: 0; white-space: normal; text-align: right; }
 }
 
 /* UX-05 / UX-07 / UX-19: a compact hero on phones and in landscape, with the

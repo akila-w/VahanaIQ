@@ -45,6 +45,7 @@ UI/UX pass: mobile layout, touch, focus and motion. No calculation, threshold, r
 - Content under the camera housing on iPhones in landscape: page gutters now grow to the safe area there.
 - "Mark for Review" in the catalogue's vehicle dialog was pale text on white in Dark (about 1.1:1); it now follows the theme (13.35:1).
 - On iPhone, the field being typed into (such as Net Monthly Income) could end up behind the keyboard.
+- With a wider device font (Linux's DejaVu Sans, found by the first Firefox and WebKit CI runs), the header's page links and the savings planner's drawer subtitle ran past a 320px screen; the links now wrap below the brand and the subtitle wraps beside its label.
 
 ---
 

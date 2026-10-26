@@ -1790,7 +1790,8 @@ dialog {
 /* UX-05 / UX-06: the same compact two-row phone header as the calculator. */
 @media screen and (max-width: 650px) {
   .site-header { padding: var(--space-10, 10px) var(--space-16, 16px) var(--space-12, 12px); gap: var(--space-10, 10px); }
-  .header-brand-group { width: 100%; justify-content: space-between; gap: var(--space-12, 12px); }
+  /* As on the calculator, the page links wrap below the brand instead of overflowing with a wider font. */
+  .header-brand-group { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: var(--space-4, 4px) var(--space-12, 12px); }
   .site-header nav { gap: var(--space-14, 14px); }
   .site-header nav a { display: inline-flex; align-items: center; min-height: var(--touch-target, 44px); padding: 0; }
   .header-actions { display: flex; flex-wrap: nowrap; width: 100%; gap: var(--space-6, 6px); margin: 0; justify-content: flex-end; }

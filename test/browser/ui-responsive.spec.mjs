@@ -60,6 +60,20 @@ test.describe('Layout: nothing is wider than the screen', () => {
     });
   }
 
+  // Ubuntu has none of the font stack's system fonts and falls back to the wider DejaVu Sans,
+  // which pushed the header links past a 320px screen. Verdana is as wide on a Mac.
+  for (const pageName of ['index', 'catalogue', 'studio']) {
+    test(`${pageName}.html fits 320px with a wide fallback font`, async ({ browser, browserName }) => {
+      const context = await browser.newContext(phone(browserName, { width: 320, height: 568 }));
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
+      await page.addStyleTag({ content: '* { font-family: Verdana, "DejaVu Sans", sans-serif !important; }' });
+      await page.waitForTimeout(300);
+      expect(await pageWidth(page)).toBeLessThanOrEqual(320);
+      await context.close();
+    });
+  }
+
   test('catalogue hero stays stacked on phones (UX-02)', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     const page = await context.newPage();
