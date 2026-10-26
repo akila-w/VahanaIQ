@@ -15,8 +15,9 @@ import { baseVehicles } from "./catalog.js?v=2.12.0";
 import { initCatalogue } from "./catalogue-browser.js?v=2.12.0";
 import { APP_VERSION } from "./config.js?v=2.12.0";
 import { normalizeImageToStudio } from "./canvas-utils.js?v=2.12.0";
-import { searchVehicle } from "./gemini.js?v=2.12.0";
 import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.12.0";
+let geminiModulePromise = null;
+const loadGeminiModule = () => (geminiModulePromise ||= import("./gemini.js?v=2.12.0"));
 import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.12.0";
 import { openModal, closeModal, isOpen } from "./modal.js?v=2.12.0";
 import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.12.0";
@@ -2235,6 +2236,7 @@ $("aiSearchBtn").addEventListener("click", async () => {
   $("aiDiscoveryBox").hidden = true;
 
   try {
+    const { searchVehicle } = await loadGeminiModule();
     const parsed = await searchVehicle(query, pendingAdImage);
     if (token !== copyGeneration) return;
     currentAiData = parsed;
