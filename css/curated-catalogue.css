@@ -133,7 +133,7 @@ main.page-exit{animation:pageFadeOut 0.18s ease-in forwards!important}
 .theme-switch label:has(input:checked){background:var(--panel,#fff);color:var(--ink,#142a25);box-shadow:0 1px 2px rgba(30,50,35,0.08)}
 .theme-switch label:has(input:focus-visible){outline:3px solid var(--accent-bright,#168265);outline-offset:2px}
 
-@media(max-width:480px){.header-actions #printBtn{display:inline-flex;min-width:44px;padding:8px;font-size:0}.header-actions #printBtn .glyph{font-size:16px}.header-actions .account-btn{grid-column:3}.header-actions .theme-switch{grid-column:1/-1;grid-row:2}}
+@media(max-width:480px){.header-actions #printBtn{display:inline-flex;min-width:44px;padding:8px;font-size:0;gap:0}.header-actions #printBtn .glyph{font-size:16px}.header-actions .account-btn{grid-column:3}.header-actions .theme-switch{grid-column:1/-1;grid-row:2}}
 
 [data-theme="dark"] body{background:var(--bg,#0f172a);color:var(--ink,#f1f5f9)}
 [data-theme="dark"] .filters{background:var(--panel,#1e293b);border-color:var(--line,#334155)}

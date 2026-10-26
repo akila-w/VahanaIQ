@@ -5884,7 +5884,7 @@ body.modal-open .budget-bar { display: none !important; }
 [hidden] { display: none !important; }
 @media (max-width: 480px) {
   .header-actions { grid-template-columns: minmax(0, 1fr) 44px auto; }
-  .header-actions #printBtn { display: inline-flex; min-width: 44px; padding: var(--space-8); font-size: 0; }
+  .header-actions #printBtn { display: inline-flex; min-width: 44px; padding: var(--space-8); font-size: 0; gap: 0; }
   .header-actions #printBtn .glyph { font-size: 16px; }
   .header-actions .account-btn { grid-column: 3; }
   .header-actions .theme-switch { grid-column: 1 / -1; grid-row: 2; }
@@ -7977,7 +7977,7 @@ tbody tr.is-pinned {
 
 @media screen and (max-width: 480px) {
   .btn-label-more { display: none; }
-  .header-actions #printBtn { width: var(--touch-target); padding: 0; font-size: 0; }
+  .header-actions #printBtn { width: var(--touch-target); padding: 0; font-size: 0; gap: 0; }
   .header-actions #printBtn .glyph { margin: 0; }
 }
 
@@ -7988,7 +7988,7 @@ tbody tr.is-pinned {
   .header-brand-group { gap: var(--space-18); }
   .site-header nav { gap: var(--space-16); }
   .header-actions { width: auto; margin: 0 0 0 auto; flex-wrap: nowrap; gap: var(--space-6); justify-content: flex-end; }
-  .header-actions #printBtn { width: var(--touch-target); padding: 0; font-size: 0; }
+  .header-actions #printBtn { width: var(--touch-target); padding: 0; font-size: 0; gap: 0; }
   .header-actions #printBtn .glyph { margin: 0; }
   .header-actions > * { flex: 0 0 auto; white-space: nowrap; }
 }
@@ -8543,4 +8543,25 @@ main > #savingsPanel { animation-delay: 180ms; }
     padding-left: max(var(--space-16), env(safe-area-inset-left, 0px));
     padding-right: max(var(--space-16), env(safe-area-inset-right, 0px));
   }
+}
+
+/* Frosted glass surfaces: translucent fill, strong blur and a top-edge highlight so the aurora reads through the cards. */
+@media screen {
+  .panel,
+  .planner-step-card,
+  .planner-progress-card,
+  .planner-breakdown-card {
+    background: var(--glass-bg, var(--panel));
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-color: var(--glass-border, var(--line));
+    box-shadow: var(--glass-shadow, var(--shadow-card)), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  }
+  [data-theme="dark"] .panel,
+  [data-theme="dark"] .planner-step-card,
+  [data-theme="dark"] .planner-progress-card,
+  [data-theme="dark"] .planner-breakdown-card { box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+  .catalogue-card,
+  .filters,
+  .card { backdrop-filter: blur(24px) saturate(180%) !important; -webkit-backdrop-filter: blur(24px) saturate(180%) !important; }
 }

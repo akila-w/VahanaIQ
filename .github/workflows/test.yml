@@ -17,6 +17,8 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
+      - name: Install dev dependencies (esbuild builds css/style.min.css)
+        run: npm ci
       - name: Run regression suites without external services
         run: |
           node test/verify.mjs
@@ -31,6 +33,7 @@ jobs:
           node test/module-versions.test.mjs
           node test/refresh-prices.test.mjs
           node test/tokens.test.mjs
+          node test/style-min.test.mjs
           node test/calculator.test.mjs
           node test/account.test.mjs
           node test/account-session.test.mjs
