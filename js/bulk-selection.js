@@ -1,4 +1,4 @@
-import { validPrice } from './vehicle-validation.js?v=2.11.6';
+import { validPrice } from './vehicle-validation.js?v=2.12.0';
 
 // Bulk selection is independent of pagination and never creates duplicate records.
 export function prepareBulkSelection(vehicles, selectedIds = []) {

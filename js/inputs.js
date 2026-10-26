@@ -1,5 +1,5 @@
 // Loan-term inputs: validation, snapping to the value actually used, and saving/sharing
-import { num, getSettings, flatToEffective } from "./calculator.js?v=2.11.6";
+import { num, getSettings, flatToEffective } from "./calculator.js?v=2.12.0";
 import {
   DOWN_MIN,
   DOWN_MIN_UNREG,
@@ -15,8 +15,8 @@ import {
   DEFAULT_DTI,
   AUTOSAVE_DELAY_MS,
   MAX_SHARED_CARS
-} from "./constants.js?v=2.11.6";
-import { notifySaved } from "./storage.js?v=2.11.6";
+} from "./constants.js?v=2.12.0";
+import { notifySaved } from "./storage.js?v=2.12.0";
 
 export const STORE_KEY = "vahanaiq_inputs_v1";
 

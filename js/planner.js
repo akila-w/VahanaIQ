@@ -1,11 +1,11 @@
-import { dateInputValue, attachDatePicker } from './date-picker.js?v=2.11.6';
-import { formatDate } from './dates.js?v=2.11.6';
-import { savingsPlan, addMonths } from './savings.js?v=2.11.6';
-import { loadPlanner, savePlanner } from './planner-store.js?v=2.11.6';
-import { fmt, esc } from './calculator.js?v=2.11.6';
-import { DOWN_MIN, DOWN_MIN_UNREG, DOWN_MAX, MAX_SAVED_GOALS } from './constants.js?v=2.11.6';
-import { attachMoneyInput, parseMoneyText } from './money-input.js?v=2.11.6';
-import { showToast } from './toast.js?v=2.11.6';
+import { dateInputValue, attachDatePicker } from './date-picker.js?v=2.12.0';
+import { formatDate } from './dates.js?v=2.12.0';
+import { savingsPlan, addMonths } from './savings.js?v=2.12.0';
+import { loadPlanner, savePlanner } from './planner-store.js?v=2.12.0';
+import { fmt, esc } from './calculator.js?v=2.12.0';
+import { DOWN_MIN, DOWN_MIN_UNREG, DOWN_MAX, MAX_SAVED_GOALS } from './constants.js?v=2.12.0';
+import { attachMoneyInput, parseMoneyText } from './money-input.js?v=2.12.0';
+import { showToast } from './toast.js?v=2.12.0';
 
 function fmtM(n) {
   if (!Number.isFinite(n) || n <= 0) return '0.00';

@@ -28,17 +28,17 @@
   <link rel="canonical" href="https://akila-w.github.io/VahanaIQ/">
   <meta property="og:url" content="https://akila-w.github.io/VahanaIQ/">
   <link rel="manifest" href="manifest.json">
-  <script src="js/boot.js?v=2.11.6"></script>
-  <link rel="preload" href="css/tokens.css?v=2.11.6" as="style">
-  <link rel="preload" href="css/style.css?v=2.11.6" as="style">
-  <link rel="preload" href="js/catalogue-data.js?v=2.11.6" as="script">
-  <link rel="modulepreload" href="js/app.js?v=2.11.6">
-  <link rel="stylesheet" href="css/tokens.css?v=2.11.6">
-  <link rel="stylesheet" href="css/style.css?v=2.11.6">
-  <script src="js/page-transitions.js" defer></script>
-  <script src="js/catalogue-data.js?v=2.11.6" defer></script>
-  <script type="module" src="js/catalogue-photo-overlay.js?v=2.11.6"></script>
-  <script type="module" src="js/app.js?v=2.11.6"></script>
+  <script src="js/boot.js?v=2.12.0"></script>
+  <link rel="preload" href="css/tokens.css?v=2.12.0" as="style">
+  <link rel="preload" href="css/style.css?v=2.12.0" as="style">
+  <link rel="preload" href="js/catalogue-data.js?v=2.12.0" as="script">
+  <link rel="modulepreload" href="js/app.js?v=2.12.0">
+  <link rel="stylesheet" href="css/tokens.css?v=2.12.0">
+  <link rel="stylesheet" href="css/style.css?v=2.12.0">
+  <script src="js/page-transitions.js?v=2.12.0" defer></script>
+  <script src="js/catalogue-data.js?v=2.12.0" defer></script>
+  <script type="module" src="js/catalogue-photo-overlay.js?v=2.12.0"></script>
+  <script type="module" src="js/app.js?v=2.12.0"></script>
 </head>
 <body>
 <a class="skip" href="#h-terms">Skip to Calculator</a>
@@ -60,7 +60,7 @@
     </nav>
   </div>
   <div class="header-actions">
-    <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
+    <button class="btn" id="addVehicleBtn" type="button" aria-label="Add a Vehicle"><span class="glyph glyph-plus" aria-hidden="true"></span> Add<span class="btn-label-more"> a Vehicle</span></button>
     <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
     <fieldset class="theme-switch" id="themeSwitch">
       <legend class="sr-only">Theme</legend>
@@ -91,7 +91,7 @@
     </div>
   </section>
 
-  <nav class="page-nav" aria-label="Main sections"><a href="#budgetPanel"><span class="glyph glyph-wallet" aria-hidden="true"></span> Budget</a><a href="#comparisonPanel"><span class="glyph glyph-car" aria-hidden="true"></span> Compare</a><a href="#savingsPanel"><span class="glyph glyph-target" aria-hidden="true"></span> Save</a></nav><section class="panel terms-panel" aria-labelledby="h-terms">
+  <nav class="page-nav" aria-label="Main sections"><a href="#loanTermsHead"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span> Terms</a><a href="#budgetPanel"><span class="glyph glyph-wallet" aria-hidden="true"></span> Budget</a><a href="#comparisonPanel"><span class="glyph glyph-car" aria-hidden="true"></span> Compare</a><a href="#savingsPanel"><span class="glyph glyph-target" aria-hidden="true"></span> Save</a></nav><section class="panel terms-panel" id="loanTermsHead" aria-labelledby="h-terms">
     <div class="panel-head">
       <div><p class="eyebrow">Loan Terms</p><h2 id="h-terms">Loan Terms and Your Income</h2></div><button class="btn-outline mobile-only" id="toggleTerms" type="button" aria-expanded="false" aria-controls="loanTermsGrid">Edit</button>
       <button class="link-btn quiet" id="resetInputsBtn" type="button">Reset Inputs</button>
@@ -325,10 +325,12 @@
               <text x="286" y="86" class="dial-label-bad">50% MAX</text>
               <text x="284" y="154" class="dial-tick-text dial-tick-start">60%</text>
               <g id="budgetNeedle" class="dial-needle" transform="rotate(-90, 160, 150)" filter="url(#needleShadow)">
-                <polygon points="156,150 160,46 164,150" class="dial-needle-body"/>
-                <polygon points="158.5,150 160,46 161.5,150" class="dial-needle-spine"/>
-                <circle cx="160" cy="46" r="3.5" class="dial-needle-tip"/>
-                <polygon points="157,150 160,162 163,150" class="dial-needle-tail"/>
+                <g class="dial-needle-swing">
+                  <polygon points="156,150 160,46 164,150" class="dial-needle-body"/>
+                  <polygon points="158.5,150 160,46 161.5,150" class="dial-needle-spine"/>
+                  <circle cx="160" cy="46" r="3.5" class="dial-needle-tip"/>
+                  <polygon points="157,150 160,162 163,150" class="dial-needle-tail"/>
+                </g>
               </g>
               <circle cx="160" cy="150" r="14" fill="url(#classicHubGrad)" class="dial-hub-outer"/>
               <circle cx="160" cy="150" r="6" class="dial-hub-mid"/>
@@ -592,7 +594,7 @@
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
       <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>
       <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
-      <span>VahanaIQ v<span id="appVersion">2.11.6</span></span>
+      <span>VahanaIQ v<span id="appVersion">2.12.0</span></span>
     </p>
   </footer>
 

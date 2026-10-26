@@ -1,5 +1,5 @@
 'use strict';
-import { safeUrl, safeImageUrl } from './safe-url.js?v=2.11.6';
+import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
 
 (() => {
   const {
@@ -815,10 +815,10 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.11.6';
   $('closeDetail').addEventListener('click',() => $('detail').close());
   $('detail').addEventListener('close',() => { render(); const id = current?.id; current = null; const replacement = [...$('vehicles').querySelectorAll('[data-open]')].find(x => x.dataset.open === id); (replacement || opener || $('reviewFilter')).focus(); });
   $('closeGuide').addEventListener('click',() => $('guide').close());
+  // js/page-transitions.js owns the exit timing, including no delay under reduced motion
   function transitionNavigate(href) {
-    const main = document.querySelector('main');
-    if (main) main.classList.add('page-exit');
-    setTimeout(() => { window.location.href = href; }, 180);
+    if (typeof window.transitionNavigate === 'function') window.transitionNavigate(href);
+    else window.location.href = href;
   }
   if ($('addVehicleBtn')) $('addVehicleBtn').addEventListener('click', () => transitionNavigate('index.html#openAdd'));
   if ($('accountBtn')) $('accountBtn').addEventListener('click', () => transitionNavigate('index.html#account'));

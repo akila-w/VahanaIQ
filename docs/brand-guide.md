@@ -133,7 +133,9 @@ Padding, margins and gaps use the spacing scale (`--space-2` to `--space-40`). T
 
 Disabled buttons (`.btn`, `.btn-outline`) drop to `--opacity-disabled` (0.6), show a not-allowed cursor and skip their hover change.
 
-Motion uses `--duration-fast` (0.15s: modal fade, discovery hover), `--duration-base` (0.2s: toast) and `--duration-spin` (0.8s: spinner), eased with `--easing-standard`. `prefers-reduced-motion: reduce` switches all of it off.
+Motion is short, functional and never decorative on financial figures. Durations: `--duration-instant` (0.1s, press feedback), `--duration-fast` (0.15s, hover and colour changes), `--duration-base` (0.2s, exits and the scrim), `--duration-moderate` (0.26s, drawers, chips and trays), `--duration-slow` (0.32s, dialogs and phone bottom sheets entering), `--duration-chart` (0.45s, the gauge needle and bars easing to a new value), `--duration-enter` (0.42s, one-time entrance of panels and catalogue cards) and `--duration-spin` (0.8s, spinner). Easings: `--easing-out` for entrances and value changes (no overshoot or bounce), `--easing-in` for exits, `--easing-in-out` between two resting states, and `--easing-standard` for colour changes. A figure is always written in full at once: graphics ease from their previous value and a changed figure is briefly tinted, but numbers never count up. `prefers-reduced-motion: reduce` removes all movement and keeps state changes instant. Every effect is catalogued in [`docs/motion-design.md`](motion-design.md).
+
+Touch: under `pointer: coarse` every control is at least `--touch-target` (44px). Range inputs have a `--slider-hit` (28px) hit area on fine pointers and 44px on touch, around a 6px drawn track, with `--slider-thumb` / `--slider-thumb-touch` thumbs.
 
 The print quotation's own colours are Print-theme tokens too: `--print-head-ink` for table headers, `--print-rule` for row dividers and `--print-field-bg` for inputs. The brand badge and rental-bar track take their Print values of `--badge-bg`, `--badge-ink` and `--bar`.
 

@@ -359,7 +359,7 @@ if (shouldRun("Export edited studio photos") || shouldRun("studio")) {
     models: [{ record: exportRecord, model: a3, encoded }],
     capturedAt: new Date().toISOString(),
     catalogueDate: "2026-10-24",
-    appVersion: "2.11.6"
+    appVersion: "2.12.0"
   });
 
   assert.equal(manifest.manifestVersion, 1);

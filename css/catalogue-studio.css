@@ -123,6 +123,21 @@ label.btn{cursor:pointer}
   .filmstrip{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
   .header-actions{width:100%}
 }
+/* UI/UX refinement pass, 26/10/2026 (docs/uiux-audit.md UX-12, UX-17).
+   Touch screens get 44px photo, zoom and guide controls, and a zoom slider whose hit
+   area is taller than its drawn track. */
+.crop-controls input[type="range"]{min-height:var(--slider-hit);accent-color:var(--accent)}
+.crop-controls input[type="range"]:focus-visible{outline:3px solid var(--accent-bright);outline-offset:2px;border-radius:var(--radius-sm)}
+.film{transition:border-color var(--duration-fast) var(--easing-standard),box-shadow var(--duration-fast) var(--easing-standard)}
+.model-row{transition:background var(--duration-fast) var(--easing-standard)}
+@media (pointer:coarse){
+  .film-actions .quiet{min-height:var(--touch-target);min-width:var(--touch-target);font-size:12px}
+  .button-row .btn-outline,.btn-guide,.crop-controls .quiet{min-height:var(--touch-target);min-width:var(--touch-target)}
+  .crop-controls input[type="range"]{min-height:var(--touch-target)}
+}
+@media (prefers-reduced-motion:reduce){
+  .film,.model-row{transition:none}
+}
 @media print{
   .studio-layout,.crop-controls,.film-actions,.header-actions{display:none!important}
 }

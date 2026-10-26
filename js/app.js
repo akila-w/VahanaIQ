@@ -1,5 +1,5 @@
-import { formatDate } from "./dates.js?v=2.11.6";
-import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor, safeUrl } from "./calculator.js?v=2.11.6";
+import { formatDate } from "./dates.js?v=2.12.0";
+import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor, safeUrl } from "./calculator.js?v=2.12.0";
 import {
   DOWN_MIN,
   DOWN_MIN_UNREG,
@@ -10,27 +10,69 @@ import {
   DTI_STANDARD_PCT,
   DTI_STRETCH_PCT,
   STRATEGY_PRESETS
-} from "./constants.js?v=2.11.6";
-import { baseVehicles } from "./catalog.js?v=2.11.6";
-import { initCatalogue } from "./catalogue-browser.js?v=2.11.6";
-import { APP_VERSION } from "./config.js?v=2.11.6";
-import { normalizeImageToStudio } from "./canvas-utils.js?v=2.11.6";
-import { searchVehicle } from "./gemini.js?v=2.11.6";
-import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.11.6";
-import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.11.6";
-import { openModal, closeModal, isOpen } from "./modal.js?v=2.11.6";
-import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.11.6";
-import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.11.6";
-import { showToast, clearToast } from "./toast.js?v=2.11.6";
-import { initAccount } from "./account.js?v=2.11.6";
-import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.11.6";
-import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.11.6";
-import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.11.6";
-import { initPlanner } from "./planner.js?v=2.11.6";
+} from "./constants.js?v=2.12.0";
+import { baseVehicles } from "./catalog.js?v=2.12.0";
+import { initCatalogue } from "./catalogue-browser.js?v=2.12.0";
+import { APP_VERSION } from "./config.js?v=2.12.0";
+import { normalizeImageToStudio } from "./canvas-utils.js?v=2.12.0";
+import { searchVehicle } from "./gemini.js?v=2.12.0";
+import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.12.0";
+import { clearLegacyKeys, loadSavedCars, saveCars, newVehicleId } from "./storage.js?v=2.12.0";
+import { openModal, closeModal, isOpen } from "./modal.js?v=2.12.0";
+import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, saveState, clearState, sharedCarsFromUrl, cleanUrl, buildShareLink } from "./inputs.js?v=2.12.0";
+import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.12.0";
+import { showToast, clearToast } from "./toast.js?v=2.12.0";
+import { initAccount } from "./account.js?v=2.12.0";
+import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.12.0";
+import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.12.0";
+import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.12.0";
+import { initPlanner } from "./planner.js?v=2.12.0";
 
 clearLegacyKeys();
 
 const $ = id => document.getElementById(id);
+
+// Motion (docs/motion-design.md). Figures and bar widths are always written in full at once;
+// these helpers only tint a figure that changed or ease a graphic from where it was. They do
+// nothing under reduced motion, or where the Web Animations API is missing (the Node test doubles).
+const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const canAnimate = el => !!el && typeof el.animate === "function" && !reducedMotion();
+
+// Sets a figure's text; when it changes after the first render, tints it for a moment
+function setFigure(el, text) {
+  if (!el || el.textContent === text) return;
+  const changed = el.textContent !== "";
+  el.textContent = text;
+  if (changed && canAnimate(el)) {
+    el.animate([{ backgroundColor: "var(--callout-info-bg)" }, { backgroundColor: "transparent" }], { duration: 700, easing: EASE_OUT });
+  }
+}
+
+// Points the gauge needle at its new angle at once, then eases the inner group from the old one
+function setNeedle(el, angle) {
+  if (!el) return;
+  const before = parseFloat(String(el.getAttribute("transform") || "").replace(/^rotate\(/, ""));
+  el.setAttribute("transform", `rotate(${angle}, 160, 150)`);
+  const swing = el.querySelector ? el.querySelector(".dial-needle-swing") : null;
+  const delta = before - parseFloat(angle);
+  if (Number.isFinite(delta) && Math.abs(delta) > 0.05 && canAnimate(swing)) {
+    swing.animate([{ rotate: `${delta}deg` }, { rotate: "0deg" }], { duration: 450, easing: EASE_OUT });
+  }
+}
+
+// Replaces a graphic's markup and eases each bar from its previous width to its new width
+function setBars(el, html, barSelector) {
+  if (!el) return;
+  const animate = canAnimate(el) && typeof el.querySelectorAll === "function";
+  const before = animate ? [...el.querySelectorAll(barSelector)].map(b => b.style.width) : [];
+  el.innerHTML = html;
+  if (!before.length) return;
+  [...el.querySelectorAll(barSelector)].forEach((bar, i) => {
+    const from = before[i], to = bar.style.width;
+    if (from && to && from !== to) bar.animate([{ width: from }, { width: to }], { duration: 450, easing: EASE_OUT });
+  });
+}
 
 let invalidSavedCount = 0;
 let cars = loadSavedCars(baseVehicles, count => { invalidSavedCount = count; });
@@ -243,6 +285,11 @@ function setHtml(el, html) {
   if (el._html !== html) { el._html = html; el.innerHTML = html; }
 }
 
+// setHtml for a cell holding a rental bar: the fill eases from its previous width
+function setBarHtml(el, html) {
+  if (el._html !== html) { el._html = html; setBars(el, html, ".fill"); }
+}
+
 function setThumb(tr, r) {
   const slot = tr.querySelector(".thumb");
   const officialPhoto = photoForModel(r);
@@ -296,10 +343,10 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
     ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least ${r.downPct}% down, so this car is calculated at ${r.downPct}% instead of ${s.down}%">${r.downPct}% down (CBSL minimum)</span>`
     : "");
   setHtml(q(".row-actions"), rowActions(r));
-  q(".price-val").textContent = fmt(r.price);
+  setFigure(q(".price-val"), fmt(r.price));
   q(".edit-price").setAttribute("aria-label", `Edit price, ${r.name}`);
   if (q(".edit-dp")) q(".edit-dp").setAttribute("aria-label", `Override down payment percentage, ${r.name}`);
-  q(".v-rent").textContent = fmt(r.rental);
+  setFigure(q(".v-rent"), fmt(r.rental));
 
   if (q(".v-rent-sub")) {
     if (r.downPct >= 100) {
@@ -313,7 +360,7 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
   }
 
   if (q(".v-dp-val")) {
-    q(".v-dp-val").textContent = fmt(r.dp);
+    setFigure(q(".v-dp-val"), fmt(r.dp));
   } else {
     q(".v-dp").textContent = fmt(r.dp);
   }
@@ -364,7 +411,7 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
     }
   }
   const inlineStatus = s.income ? `<div class="v-bar-status-inline">${statusHtml}</div>` : "";
-  setHtml(q(".v-bar"), s.income
+  setBarHtml(q(".v-bar"), s.income
     ? `<div class="v-bar-inner">${inlineStatus}<div class="track" role="img" aria-label="Rental LKR ${fmt(r.rental)} against your highest affordable rental of LKR ${fmt(room)}"><span class="fill ${r.status}" style="width:${w}%"></span><span class="mark" style="left:${markPos}%" title="Your highest affordable rental"></span></div>${barMicro}</div>`
     : `<div class="v-bar-inner v-bar-no-income"><span class="v-bar-need-fallback">Need LKR ${fmt(r.need)}/mo</span><span class="na bar-empty">At ${limit}% limit · Add income</span></div>`);
 
@@ -607,7 +654,7 @@ function updateBudgetExtras(s, f, room, rows) {
 
     if (!s.income) {
       const needleEl = $("budgetNeedle");
-      if (needleEl) needleEl.setAttribute("transform", "rotate(-90.0, 160, 150)");
+      setNeedle(needleEl, "-90.0");
 
       const heroEl = $("budgetDtiHero");
       if (heroEl) heroEl.textContent = "0.0% DTI";
@@ -673,12 +720,12 @@ function updateBudgetExtras(s, f, room, rows) {
       const clampedDti = Math.min(60, Math.max(0, dtiPct));
       const needleAngle = -90 + (clampedDti / 60) * 180;
       const needleEl = $("budgetNeedle");
-      if (needleEl) needleEl.setAttribute("transform", `rotate(${needleAngle.toFixed(1)}, 160, 150)`);
+      setNeedle(needleEl, needleAngle.toFixed(1));
 
       const heroEl = $("budgetDtiHero");
-      if (heroEl) heroEl.textContent = dtiStr + " DTI";
+      setFigure(heroEl, dtiStr + " DTI");
       const subEl = $("budgetDtiSub");
-      if (subEl) subEl.textContent = `LKR ${fmt(totalMonthlyDebt)} / month`;
+      setFigure(subEl, `LKR ${fmt(totalMonthlyDebt)} / month`);
 
       let statusClass = "ok";
       let statusText = "Within 40% CBSL Limit";
@@ -698,7 +745,7 @@ function updateBudgetExtras(s, f, room, rows) {
       if (textEl) textEl.textContent = statusText;
 
       const labelEl = $("budgetCashflowLabel");
-      if (labelEl) labelEl.textContent = `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr})`;
+      setFigure(labelEl, `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr})`);
 
       const barEl = $("budgetCashflowBar");
       if (barEl) {
@@ -718,7 +765,7 @@ function updateBudgetExtras(s, f, room, rows) {
         const roomLabel = roomW >= 10 ? `Buffer ${roomW.toFixed(0)}%` : "";
         const freeLabel = freeW >= 15 ? `Discretionary ${freeW.toFixed(0)}%` : "";
 
-        barEl.innerHTML = `<div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: ${rentalPctOfIncome.toFixed(1)}%">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: ${debtPctOfIncome.toFixed(1)}%">${dLabel}</div><div class="cashflow-seg-room" style="width:${roomW}%" title="Buffer: ${safeRoomPctOfIncome.toFixed(1)}%">${roomLabel}</div><div class="cashflow-seg-free" style="width:${freeW}%" title="Discretionary: ${freeIncomePct.toFixed(1)}%">${freeLabel}</div>`;
+        setBars(barEl, `<div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: ${rentalPctOfIncome.toFixed(1)}%">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: ${debtPctOfIncome.toFixed(1)}%">${dLabel}</div><div class="cashflow-seg-room" style="width:${roomW}%" title="Buffer: ${safeRoomPctOfIncome.toFixed(1)}%">${roomLabel}</div><div class="cashflow-seg-free" style="width:${freeW}%" title="Discretionary: ${freeIncomePct.toFixed(1)}%">${freeLabel}</div>`, "[class^=\"cashflow-seg\"]");
       }
 
       const gridEl = $("budgetTelemetryGrid");
@@ -815,7 +862,7 @@ function updateLtvBar(s, rows) {
   if (!trackEl) return;
   const dpPct = Math.min(100, Math.max(0, s.down));
   const loanPct = Math.max(0, 100 - dpPct);
-  trackEl.innerHTML = `<div class="ltv-bar-dp" id="ltvBarDp" style="width:${dpPct}%"><span id="ltvBarDpText">${dpPct}% Cash Deposit</span></div><div class="ltv-bar-loan" id="ltvBarLoan" style="width:${loanPct}%"><span id="ltvBarLoanText">${loanPct}% Financed Loan</span></div>`;
+  setBars(trackEl, `<div class="ltv-bar-dp" id="ltvBarDp" style="width:${dpPct}%"><span id="ltvBarDpText">${dpPct}% Cash Deposit</span></div><div class="ltv-bar-loan" id="ltvBarLoan" style="width:${loanPct}%"><span id="ltvBarLoanText">${loanPct}% Financed Loan</span></div>`, ".ltv-bar-dp, .ltv-bar-loan");
 
   const badgeEl = $("ltvEligibilityBadge");
   if (badgeEl) {
@@ -1865,6 +1912,19 @@ function openHeadToHead(opener) {
     </div>
   </div>`;
 
+  // Phones: the same figures as the cards, grouped by metric so they can be read side by side
+  const matrix = [["Monthly rental", "rental"], ["Cash up front", "upfront"], ["Total interest", "interest"], ["Total outlay", "total"]].map(([label, key]) => {
+    const low = Math.min(...pinnedRows.map(r => r[key]));
+    const differ = pinnedRows.some(r => r[key] !== low);
+    const rows = pinnedRows.map(r => {
+      const best = differ && r[key] === low;
+      const note = best ? "Lowest" : differ ? `+${fmt(r[key] - low)}` : "";
+      return `<tr${best ? ' class="is-best"' : ""}><th scope="row">${esc(r.name)}</th><td>${fmt(r[key])}${note ? `<span class="h2h-matrix-note">${note}</span>` : ""}</td></tr>`;
+    }).join("");
+    return `<tbody><tr class="h2h-matrix-metric"><th scope="colgroup" colspan="2">${label}</th></tr>${rows}</tbody>`;
+  }).join("");
+  html += `<div class="h2h-matrix-wrap"><table class="h2h-matrix"><caption>At a Glance (LKR)</caption>${matrix}</table></div>`;
+
   html += `<div class="h2h-grid cols-${pinnedRows.length}">`;
   for (const r of pinnedRows) {
     const photo = photoForModel(r);
@@ -2887,7 +2947,7 @@ if (pageNav && typeof pageNav.addEventListener === "function") {
       const target = document.querySelector?.(href);
       if (target) {
         if (typeof e.preventDefault === "function") e.preventDefault();
-        if (typeof target.scrollIntoView === "function") target.scrollIntoView({ behavior: "smooth" });
+        if (typeof target.scrollIntoView === "function") target.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth" });
         if (typeof target.setAttribute === "function") target.setAttribute("tabindex", "-1");
         if (typeof target.focus === "function") target.focus({ preventScroll: true });
       }

@@ -46,9 +46,16 @@ jobs:
       - name: Check the repository keeps only published assets
         run: node scripts/prune-thumbnails.mjs --check
 
+  # One job per engine, so each reports its own status. Firefox runs here because the
+  # Playwright Firefox build does not start on the maintainer's macOS 27 machine.
   browser:
+    name: browser (${{ matrix.browser }})
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit, firefox]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -56,8 +63,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm ci
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install ${{ matrix.browser }} and its system libraries
+        run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Serve the site and wait until it answers
         run: |
           python3 -m http.server 8123 --bind 127.0.0.1 &
@@ -70,5 +77,5 @@ jobs:
           done
           echo "The local server did not start" >&2
           exit 1
-      - name: Run browser spec
-        run: npx playwright test test/browser/csp.spec.mjs
+      - name: Run browser specs in ${{ matrix.browser }}
+        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs --browser=${{ matrix.browser }} --reporter=list
