@@ -1978,3 +1978,7 @@ dialog[open]::backdrop { animation: scrimIn var(--duration-base, 0.2s) ease; }
     padding-right: max(4vw, env(safe-area-inset-right, 0px));
   }
 }
+
+.site-header {
+  view-transition-name: site-header;
+}

@@ -8,9 +8,12 @@ import { openModal, closeModal } from "./modal.js?v=2.12.0";
 import { searchCatalogue } from "./catalogue-search.js?v=2.12.0";
 import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.12.0";
 import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.12.0";
-import { identity as fallbackIdentity } from "./identity-data.js?v=2.12.0";
 import { prepareBulkSelection } from "./bulk-selection.js?v=2.12.0";
 
+let fallbackIdentity = { brands: {} };
+if (typeof window === "undefined" || !window.__VAHANAIQ_IDENTITY__) {
+  import("./identity-data.js?v=2.12.0").then(m => { fallbackIdentity = m.identity; }).catch(() => {});
+}
 const getIdentity = () => (typeof window !== "undefined" && window.__VAHANAIQ_IDENTITY__) || fallbackIdentity;
 
 export function getUnifiedCatalogue(fallbackList = fallbackCatalogue) {

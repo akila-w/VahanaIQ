@@ -83,6 +83,51 @@ test.describe('Layout: nothing is wider than the screen', () => {
     expect(aside.x + aside.width).toBeLessThanOrEqual(390);
     await context.close();
   });
+
+  // In two columns the loan terms card stays pinned at the top with its own split scroll,
+  // and its bottom edge aligns flush with the bottom of the savings panel at the footer;
+  // in one column (up to 1365px) it scrolls with the page as before.
+  for (const [width, height] of [[1366, 768], [1440, 900]]) {
+    test(`loan terms use split scroll and align at the bottom beside results at ${width}px`, async ({ browser }) => {
+      const context = await browser.newContext({ viewport: { width, height } });
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+      await addToyotas(page);
+      const mid = await page.evaluate(() => {
+        const terms = document.getElementById('loanTermsHead');
+        const results = document.getElementById('comparisonPanel').getBoundingClientRect();
+        window.scrollTo({ top: results.top + window.scrollY, behavior: 'instant' });
+        const style = getComputedStyle(terms);
+        return {
+          box: terms.getBoundingClientRect().toJSON(),
+          overflowY: style.overflowY,
+          scrollHeight: terms.scrollHeight,
+          clientHeight: terms.clientHeight
+        };
+      });
+      expect(Math.round(mid.box.top)).toBe(16);
+      expect(mid.box.bottom).toBeLessThanOrEqual(height);
+      expect(mid.overflowY).toBe('auto');
+      if (height <= 800) expect(mid.scrollHeight).toBeGreaterThan(mid.clientHeight);
+
+      const bottomDiff = await page.evaluate(() => {
+        const terms = document.getElementById('loanTermsHead');
+        const savings = document.getElementById('savingsPanel');
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+        return Math.abs(terms.getBoundingClientRect().bottom - savings.getBoundingClientRect().bottom);
+      });
+      expect(bottomDiff).toBeLessThanOrEqual(1);
+      await context.close();
+    });
+  }
+
+  test('loan terms are not sticky in one column at 1365px', async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 1365, height: 768 } });
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+    expect(await page.locator('#loanTermsHead').evaluate(el => getComputedStyle(el).position)).not.toBe('sticky');
+    await context.close();
+  });
 });
 
 test.describe('Touch and focus', () => {

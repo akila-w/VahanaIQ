@@ -805,9 +805,13 @@ $("exportClear").addEventListener("click", async () => {
 async function start() {
   $("copyrightYear").textContent = String(new Date().getFullYear());
   try {
-    const response = await fetch("data/catalogue.json", { cache: "no-cache" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    state.catalogue = await response.json();
+    if (typeof window !== "undefined" && window.__VAHANAIQ_CATALOGUE__?.models?.length) {
+      state.catalogue = window.__VAHANAIQ_CATALOGUE__;
+    } else {
+      const response = await fetch("data/catalogue.json");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      state.catalogue = await response.json();
+    }
   } catch (error) {
     $("modelCount").textContent = "";
     $("editorEmpty").textContent = "The catalogue data could not be loaded. Open the studio from the project folder, or from the live site, and try again.";

@@ -3,12 +3,31 @@
 // across file://, localhost, and production without module CORS constraints.
 'use strict';
 (() => {
-  // No delay when the visitor asks for reduced motion, or when the browser cross-fades the
-  // pages itself (@view-transition { navigation: auto } in the stylesheets).
-  const EXIT_MS = 140;
+  // Navigation starts immediately without artificial JS exit delays; native CSS cross-document
+  // view transitions (@view-transition { navigation: auto }) handle visual smoothing.
+  const EXIT_MS = 0;
   const reducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const nativeTransition = () => typeof window.CSSViewTransitionRule !== 'undefined';
   const exitDelay = () => (reducedMotion() || nativeTransition() ? 0 : EXIT_MS);
+
+  const prefetched = new Set();
+  function prefetchPage(href) {
+    if (!href || typeof document.createElement !== 'function' || !document.head) return;
+    if (window.location && window.location.protocol === 'file:') return;
+    const targetPath = href.split('#')[0].split('?')[0];
+    if (!targetPath || (!targetPath.endsWith('.html') && targetPath !== './')) return;
+    const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+    if (currentPath === targetPath || ((currentPath === 'index.html' || currentPath === '') && (targetPath === 'index.html' || targetPath === './'))) return;
+    if (prefetched.has(targetPath)) return;
+    prefetched.add(targetPath);
+    try {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = targetPath;
+      link.as = 'document';
+      document.head.appendChild(link);
+    } catch (_) {}
+  }
 
   function go(href) {
     const delay = exitDelay();
@@ -31,6 +50,11 @@
   function initLinks() {
     const selector = '.site-header nav a, .site-header .brand, .site-links a, .editor-actions a, a.transition-link';
     document.querySelectorAll(selector).forEach(link => {
+      const warm = () => prefetchPage(link.getAttribute('href'));
+      link.addEventListener('pointerenter', warm, { passive: true, once: true });
+      link.addEventListener('focus', warm, { passive: true, once: true });
+      link.addEventListener('touchstart', warm, { passive: true, once: true });
+
       link.addEventListener('click', e => {
         if (link.hasAttribute('aria-current') || link.getAttribute('aria-current') === 'page') return;
         if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || link.target === '_blank' || link.hasAttribute('download')) return;
@@ -50,16 +74,12 @@
         const isInternalPage = targetPath.endsWith('.html') || targetPath === 'index.html' || targetPath === './';
         if (!isInternalPage) return;
 
-        e.preventDefault();
-
-        // Update header active nav indicator to the destination tab
+        // Update header active nav indicator to the destination tab immediately while letting native navigation proceed
         document.querySelectorAll('.site-header nav a').forEach(a => {
           const aHref = a.getAttribute('href');
           if (aHref === targetPath) a.setAttribute('aria-current', 'page');
           else a.removeAttribute('aria-current');
         });
-
-        go(href);
       });
     });
   }

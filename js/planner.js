@@ -1,5 +1,4 @@
-import { dateInputValue, attachDatePicker } from './date-picker.js?v=2.12.0';
-import { formatDate } from './dates.js?v=2.12.0';
+import { formatDate, dateInputValue } from './dates.js?v=2.12.0';
 import { savingsPlan, addMonths } from './savings.js?v=2.12.0';
 import { loadPlanner, savePlanner } from './planner-store.js?v=2.12.0';
 import { fmt, esc } from './calculator.js?v=2.12.0';
@@ -241,7 +240,25 @@ export function initPlanner({ vehicles, settings }) {
     $('plannerResult').innerHTML = `<div class="planner-hero"><div class="planner-hero-icon"><span class="glyph glyph-target" aria-hidden="true"></span></div><div class="planner-hero-content"><div class="planner-hero-title">${esc(end)}</div><div class="planner-hero-sub">${r.months && date ? 'Estimated completion: '+esc(date) : (r.targetMonths && targetDateStr ? 'Target date: ' + esc(targetDateStr) + ' · Required: LKR ' + fmt(r.required) + ' / mo' : 'No investment growth or future price changes assumed')}</div></div>${r.months !== null && r.months <= 12 ? '<span class="tag ok">Fast Track</span>' : ''}</div><div class="planner-progress-card"><div class="planner-progress-header"><span class="planner-progress-label">Savings Progress</span><span class="planner-progress-pct">${r.progress.toFixed(1)}%</span></div><div class="planner-progress-track"><div class="planner-progress-fill" style="width:${r.progress.toFixed(1)}%"></div></div><div class="planner-progress-sub"><span>LKR ${fmt(savedAmount)} saved</span><span>LKR ${fmt(r.remaining)} remaining</span></div><label class="sr-only" for="savingsProgress">Savings progress</label><progress id="savingsProgress" class="sr-only" max="100" value="${r.progress}">${r.progress.toFixed(1)}%</progress></div><div class="planner-metrics"><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">Target Upfront</span><span class="glyph glyph-wallet" aria-hidden="true"></span></div><div class="telemetry-card-val">LKR ${fmt(r.target)}</div><div class="telemetry-card-sub"><span>Deposit + fees</span></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">Already Saved</span><span class="glyph glyph-circle-check" aria-hidden="true"></span></div><div class="telemetry-card-val">LKR ${fmt(savedAmount)}</div><div class="telemetry-card-sub"><span>${r.progress.toFixed(1)}% of target</span></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">Still to Save</span><span class="glyph glyph-piggy-bank" aria-hidden="true"></span></div><div class="telemetry-card-val val-rental">LKR ${fmt(r.remaining)}</div><div class="telemetry-card-sub"><span>Cash gap needed</span></div></div><div class="telemetry-card highlight"><div class="telemetry-card-top"><span class="telemetry-card-title">Monthly Saving</span><span class="glyph glyph-chart-no-axes-combined" aria-hidden="true"></span></div><div class="telemetry-card-val">LKR ${fmt(r.monthly)}</div><div class="telemetry-card-sub"><span>${r.percent !== null ? r.percent.toFixed(1) + '% of income' : 'Fixed contribution'}</span></div></div></div>${visualTrajectoryHtml}<div class="planner-breakdown-card"><div class="planner-breakdown-header"><span class="planner-breakdown-title">Upfront Cost Composition</span><span class="tag ${cbslBadgeClass}">${cbslBadgeText}</span></div><div class="planner-cost-split-bar" role="progressbar" aria-label="Upfront cost composition"><div class="cost-split-seg seg-deposit" style="width:${depPct}%" title="Statutory Deposit: LKR ${fmt(r.deposit)} (${depPct}%)"></div><div class="cost-split-seg seg-fees" style="width:${feePct}%" title="Fees &amp; Insurance: LKR ${fmt(r.fees+r.insurance)} (${feePct}%)"></div></div><div class="planner-cost-split-legend"><span class="split-legend-item"><span class="legend-swatch swatch-deposit"></span> Statutory Deposit: ${depPct}%</span><span class="split-legend-item"><span class="legend-swatch swatch-fees"></span> Fees &amp; Insurance: ${feePct}%</span></div><dl class="planner-breakdown"><div><dt>${r.downPct===100?'Cash price':'Statutory cash deposit ('+r.downPct+'%)'}</dt><dd>LKR ${fmt(r.deposit)}</dd></div><div><dt>Fees &amp; first-year comprehensive insurance</dt><dd>LKR ${fmt(r.fees+r.insurance)}</dd></div></dl></div>${targetCardHtml}${r.percent !== null ? `<p class="hint planner-insight-hint">${r.percent.toFixed(1)}% of net income saved each month${r.fitsKnownCommitments ? ' · fits income after entered loan payments, before living costs' : ''}.</p>` : '<p class="hint planner-insight-hint">Enter income above to see the percentage saved.</p>'}${r.fitsKnownCommitments === false ? '<p class="bad planner-warn-box">This contribution exceeds income after your existing loan payments.</p>' : ''}${r.targetError ? `<p class="bad planner-warn-box">${esc(r.targetError)}</p>` : ''}<p class="hint planner-disclaimer">${['published','starting','user-entered','seller-listed'].includes(v.priceBasis)?'Using the selected price; confirm it before purchase.':'This vehicle has an unverified estimate. Enter a seller quote before relying on this goal.'} A saved deposit does not guarantee lease approval. Projections assume monthly contributions, no investment growth, and no vehicle price changes.</p>`;
   }
   function changed() { if (restoring) return; store.draft=read(); savePlanner(store); render(); }
-  attachDatePicker($('plannerDate'),$('plannerCalendar'));
+  let datePickerPromise = null;
+  const ensureDatePicker = (openAfter = false) => {
+    if (!datePickerPromise) {
+      datePickerPromise = import('./date-picker.js?v=2.12.0').then(m => {
+        if ($('plannerDate') && $('plannerCalendar')) m.attachDatePicker($('plannerDate'), $('plannerCalendar'));
+        return m;
+      });
+    }
+    if (openAfter) {
+      datePickerPromise.then(() => {
+        const dialog = typeof document.querySelector === 'function' ? document.querySelector('dialog.date-dialog') : null;
+        if (dialog && !dialog.open) $('plannerCalendar')?.click?.();
+      });
+    }
+    return datePickerPromise;
+  };
+  $('toggleSavingsDrawer')?.addEventListener('click', () => ensureDatePicker(false), { once: true });
+  $('plannerDate')?.addEventListener('focus', () => ensureDatePicker(false), { once: true });
+  $('plannerCalendar')?.addEventListener('click', () => ensureDatePicker(true), { once: true });
   restore(); options(); $('plannerVehicle').value=store.draft.plannerVehicle||'';
   for (const id of ['plannerSaved','plannerMonthly']) attachMoneyInput($(id));
   for (const id of fields) $(id).addEventListener('input',changed);

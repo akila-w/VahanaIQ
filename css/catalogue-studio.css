@@ -141,3 +141,9 @@ label.btn{cursor:pointer}
 @media print{
   .studio-layout,.crop-controls,.film-actions,.header-actions{display:none!important}
 }
+@view-transition{
+  navigation:auto;
+}
+.site-header{
+  view-transition-name:site-header;
+}

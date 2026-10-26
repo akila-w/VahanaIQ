@@ -1,11 +1,6 @@
-import { formatDate } from './dates.js?v=2.12.0';
+import { formatDate, dateInputValue } from './dates.js?v=2.12.0';
 import { addMonths } from './savings.js?v=2.12.0';
-export function dateInputValue(value) {
-  const raw=String(value||'').trim();
-  if (!raw) return '';
-  const iso=/^\d{2}-\d{2}-\d{4}$/.test(raw)?raw.split('-').reverse().join('-'):raw;
-  return formatDate(iso)==='Date unavailable'?raw:iso;
-}
+export { dateInputValue } from './dates.js?v=2.12.0';
 const isoDate=d=>[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
 const months=Array.from({length:12},(_,i)=>new Date(2026,i,1).toLocaleDateString('en-GB',{month:'long'}));
 export function attachDatePicker(input, button) {

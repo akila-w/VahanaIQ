@@ -10,3 +10,9 @@ export function formatDate(value, { numeric = false } = {}) {
 export function formatMonth(value) {
   return /^\d{4}-\d{2}$/.test(String(value||'')) ? formatDate(value+'-01').replace(/^1 /,'') : 'Date unavailable';
 }
+export function dateInputValue(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const iso = /^\d{2}-\d{2}-\d{4}$/.test(raw) ? raw.split('-').reverse().join('-') : raw;
+  return formatDate(iso) === 'Date unavailable' ? raw : iso;
+}
