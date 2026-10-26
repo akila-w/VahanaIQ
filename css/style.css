@@ -39,6 +39,10 @@
 .theme-switch label:has(input:focus-visible) { outline: 3px solid var(--accent-bright); outline-offset: 2px; }
 
 html {
+  background-color: var(--bg);
+  /* The aurora layers are larger than the screen; without this iOS Safari lets the page pan sideways into them. */
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
   scroll-behavior: smooth;
   scroll-padding-top: env(safe-area-inset-top, 24px);
 }
@@ -55,6 +59,7 @@ body {
   -webkit-font-smoothing: antialiased;
   position: relative;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 /* Vibrant Liquid Aurora Background (20% Light, 10% Dark) */
