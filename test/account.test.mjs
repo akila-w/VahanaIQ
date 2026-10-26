@@ -156,5 +156,5 @@ const agreedFingerprint = fingerprint(underCopy);
 assert.equal(syncDirection(overCopy, underCopy, agreedFingerprint), 'upload', 'syncDirection remains upload and is not marked agreed');
 
 // Clear any toast timeouts so Node process exits immediately
-const { clearToast } = await import('../js/toast.js?v=2.11.6');
+const { clearToast } = await import('../js/toast.js?v=2.12.0');
 clearToast();

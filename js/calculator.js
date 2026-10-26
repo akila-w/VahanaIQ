@@ -3,8 +3,8 @@
 // at most 40% financed for unregistered cars and cars registered under a year (60% down),
 // at most 60% financed for cars registered over a year (40% down).
 
-import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.11.6";
-import { safeUrl, safeImageUrl } from "./safe-url.js?v=2.11.6";
+import { parseMoneyText, formatMoneyAmount } from "./money-input.js?v=2.12.0";
+import { safeUrl, safeImageUrl } from "./safe-url.js?v=2.12.0";
 import {
   DOWN_MIN,
   DOWN_MIN_UNREG,
@@ -27,7 +27,7 @@ import {
   MAX_SAFE_AMOUNT,
   MAX_SAFE_PRECISION,
   MAX_SCHEDULE_MONTHS
-} from "./constants.js?v=2.11.6";
+} from "./constants.js?v=2.12.0";
 
 // Backward compatibility re-exports
 export {

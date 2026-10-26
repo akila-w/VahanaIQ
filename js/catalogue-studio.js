@@ -1,18 +1,18 @@
 // The Photo Studio: arrange, frame and upload the photos of an entry in the Vehicle Catalogue.
 // Everything happens in the browser — the photos live in this device's IndexedDB — and the export
 // hands the framed pixels to scripts/apply-studio-photos.mjs when the catalogue itself should change.
-import { APP_VERSION } from "./config.js?v=2.11.6";
+import { APP_VERSION } from "./config.js?v=2.12.0";
 import {
   FRAME_HEIGHT, FRAME_WIDTH, THUMB_HEIGHT, THUMB_WIDTH,
   bakePhoto, canvasDataUrl, dragFrame, fillFrame, loadPhoto, measurePhoto, renderFrame,
   resolveMode, zoomFrame, zoomRange
-} from "./photo-frame.js?v=2.11.6";
+} from "./photo-frame.js?v=2.12.0";
 import {
   UPLOAD, addItem, buildManifest, itemById, manifestFileName, manifestProblems, moveItem, newRecord,
   normaliseRecord, orderedItems, recordIsEdited, removeItem, resetFrame, setCover, updateFrame,
   uploadItem
-} from "./catalogue-photos.js?v=2.11.6";
-import { clearEdits, deleteEdit, readEdits, writeEdit } from "./catalogue-photo-store.js?v=2.11.6";
+} from "./catalogue-photos.js?v=2.12.0";
+import { clearEdits, deleteEdit, readEdits, writeEdit } from "./catalogue-photo-store.js?v=2.12.0";
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -593,9 +593,19 @@ $("resetFrameBtn").addEventListener("click", async () => {
 });
 // ---------------------------- the entry list's controls ----------------------------
 
+// On single-column layouts (phones and tablets) the editor sits below the entry list, so a
+// choice there brings the editor into view; focus stays on the list for keyboard users.
+function revealEditor() {
+  if (typeof window.matchMedia !== "function" || !window.matchMedia("(max-width: 1020px)").matches) return;
+  const editor = document.querySelector(".studio-editor");
+  if (!editor || typeof editor.scrollIntoView !== "function") return;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  editor.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+}
+
 $("modelList").addEventListener("click", event => {
   const button = event.target.closest("[data-model]");
-  if (button) selectModel(button.dataset.model);
+  if (button) selectModel(button.dataset.model).then(revealEditor);
 });
 $("modelSearch").addEventListener("input", event => {
   state.query = event.target.value;

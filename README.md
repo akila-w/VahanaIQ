@@ -118,7 +118,8 @@ vahanaiq/
 │   └── price-research-task.md    # Instructions for monthly Claude research task
 ├── test/
 │   ├── browser/
-│   │   └── csp.spec.mjs          # Browser integration suite: zero CSP violations, GIS & photo overlay
+│   │   ├── csp.spec.mjs          # Browser integration suite: zero CSP violations, GIS & photo overlay
+│   │   └── ui-responsive.spec.mjs # Layout at 9 widths, touch, focus, phone journeys, keyboard guard, 16px fields & reduced motion
 │   ├── verify.mjs                # App verification suite (actuarial, edge cases, deduplication)
 │   ├── verify-graphics.test.mjs  # Telemetry gauges, CBSL split bar, SVG speedometer & curves
 │   ├── calculator.test.mjs       # Rentals, flat-rate conversion, legal down payments & schedules
@@ -261,12 +262,12 @@ To assert zero Content Security Policy violations, verify Google Identity Servic
 npm install
 npx playwright install chromium
 
-# Start the local web server on port 8123 in the background and run the browser spec
+# Start the local web server on port 8123 in the background and run the browser specs
 python3 -m http.server 8123 &
-npx playwright test test/browser/csp.spec.mjs
+npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs
 ```
 
-The browser suite starts nothing itself and assumes a local web server at `BASE_URL` (defaulting to `http://127.0.0.1:8123`).
+The browser suites start nothing themselves and assume a local web server at `BASE_URL` (defaulting to `http://127.0.0.1:8123`). `ui-responsive.spec.mjs` checks that no page is wider than the screen at phone, tablet and laptop widths (with and without a filled comparison), 44px touch targets, keyboard focus on the sliders and footer, the phone head-to-head matrix, the date picker, 16px fields on phones, the Photo Studio scroll-to-editor, the iPhone keyboard guard, the phone catalogue sheet and rental bar, dark-theme dialog contrast and reduced motion. CI runs both specs in Chromium, WebKit and Firefox. Both specs also run in WebKit and Firefox with `--browser=webkit` or `--browser=firefox` after `npx playwright install webkit firefox`. It fills the comparison through the catalogue's bulk-add button, so it makes no AI or other external request.
 
 ### Changing colours, spacing, radii, shadows, sizes and timings
 Edit `design-system/tokens.json`, then run `node scripts/build-tokens.mjs` to regenerate `css/tokens.css`. Don't edit `css/tokens.css` by hand, don't declare custom properties in `css/style.css`, and style new markup with a class rather than a `style` attribute; `test/tokens.test.mjs` checks all three. See `docs/brand-guide.md` for the palette and usage rules.
@@ -302,7 +303,7 @@ It waits for `js/config.js`'s `APP_VERSION` to appear in the served `index.html`
 page and asset returns 200 and that `docs/`, `test/`, `scripts/`, `README.md` and `firestore.rules`
 are **not** published. `.github/workflows/smoke-deploy.yml` runs the same check on every push, so a
 successful-but-stale deployment (which previously occurred when the site sat on v2.10.1 while the checkout was
-v2.11.3, now v2.11.6) fails the build instead of passing quietly.
+v2.11.3, now v2.12.0) fails the build instead of passing quietly.
 
 ## Repository size and working artefacts
 

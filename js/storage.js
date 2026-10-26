@@ -1,6 +1,6 @@
 // Storage helpers
-import { config } from "./config.js?v=2.11.6";
-import { vehicleBatchError } from "./vehicle-validation.js?v=2.11.6";
+import { config } from "./config.js?v=2.12.0";
+import { vehicleBatchError } from "./vehicle-validation.js?v=2.12.0";
 
 export const getProxyUrl = () => config.proxyUrl || "";
 

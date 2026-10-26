@@ -3,13 +3,26 @@
 // across file://, localhost, and production without module CORS constraints.
 'use strict';
 (() => {
-  function transitionNavigate(href) {
-    if (!href) return;
+  // No delay when the visitor asks for reduced motion, or when the browser cross-fades the
+  // pages itself (@view-transition { navigation: auto } in the stylesheets).
+  const EXIT_MS = 140;
+  const reducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const nativeTransition = () => typeof window.CSSViewTransitionRule !== 'undefined';
+  const exitDelay = () => (reducedMotion() || nativeTransition() ? 0 : EXIT_MS);
+
+  function go(href) {
+    const delay = exitDelay();
+    if (!delay) { window.location.href = href; return; }
     const main = document.querySelector('main');
     if (main) main.classList.add('page-exit');
     setTimeout(() => {
       window.location.href = href;
-    }, 180);
+    }, delay);
+  }
+
+  function transitionNavigate(href) {
+    if (!href) return;
+    go(href);
   }
 
   // Expose helper globally so buttons (e.g. Add Vehicle, Sign In) can reuse it
@@ -38,8 +51,6 @@
         if (!isInternalPage) return;
 
         e.preventDefault();
-        const main = document.querySelector('main');
-        if (main) main.classList.add('page-exit');
 
         // Update header active nav indicator to the destination tab
         document.querySelectorAll('.site-header nav a').forEach(a => {
@@ -48,9 +59,7 @@
           else a.removeAttribute('aria-current');
         });
 
-        setTimeout(() => {
-          window.location.href = href;
-        }, 180);
+        go(href);
       });
     });
   }
@@ -60,6 +69,64 @@
   } else {
     initLinks();
   }
+
+  // The calculator's in-page section switcher marks the section in view, so the sticky bar
+  // on phones and tablets doubles as a "you are here" indicator.
+  function initSectionSpy() {
+    const nav = document.querySelector('.page-nav');
+    if (!nav || typeof IntersectionObserver !== 'function') return;
+    const links = [...nav.querySelectorAll('a[href^="#"]')];
+    const targets = links.map(a => document.getElementById(a.getAttribute('href').slice(1))).filter(Boolean);
+    if (!targets.length) return;
+    const visible = new Map();
+    const mark = () => {
+      let best = null;
+      for (const t of targets) if ((visible.get(t) || 0) > 0 && !best) best = t;
+      links.forEach(a => {
+        if (best && a.getAttribute('href') === '#' + best.id) a.setAttribute('aria-current', 'location');
+        else a.removeAttribute('aria-current');
+      });
+    };
+    const io = new IntersectionObserver(entries => {
+      for (const e of entries) visible.set(e.target, e.isIntersecting ? e.intersectionRatio : 0);
+      mark();
+    }, { rootMargin: '-80px 0px -45% 0px', threshold: [0, 0.01, 0.25] });
+    targets.forEach(t => io.observe(t));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSectionSpy);
+  } else {
+    initSectionSpy();
+  }
+
+  // iOS Safari scrolls a focused field above the on-screen keyboard, but when its toolbar then
+  // changes the visible area it can put the page back where it was, leaving the field behind
+  // the keyboard (reproduced on iOS 27 in the Simulator; the live site does it too). When the
+  // visible area changes while a text field or menu has focus and that field is out of sight,
+  // it is brought back to the middle of what is visible. Safari can undo its scroll just after
+  // the last resize, so scrolling is checked the same way for a moment afterwards.
+  const FIELD = 'input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="file"]), select, textarea';
+  function initFocusedFieldGuard() {
+    const vv = window.visualViewport;
+    if (!vv || typeof vv.addEventListener !== 'function') return;
+    let timer = 0;
+    let settleUntil = 0;
+    const schedule = () => { clearTimeout(timer); timer = setTimeout(reveal, 80); };
+    const reveal = () => {
+      const el = document.activeElement;
+      if (!el || typeof el.matches !== 'function' || !el.matches(FIELD)) return;
+      // iOS Safari measures element boxes from the visible area (its scrollY is the visual
+      // viewport's pageTop); other browsers measure from the layout viewport.
+      const top = Math.abs(window.scrollY - vv.pageTop) < 1 ? 0 : vv.offsetTop;
+      const box = el.getBoundingClientRect();
+      if (box.top >= top && box.bottom <= top + vv.height) return;
+      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
+    };
+    vv.addEventListener('resize', () => { settleUntil = Date.now() + 1000; schedule(); });
+    window.addEventListener('scroll', () => { if (Date.now() < settleUntil) schedule(); }, { passive: true });
+  }
+  initFocusedFieldGuard();
 
   function syncAuroraDelay() {
     try {

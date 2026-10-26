@@ -5,6 +5,50 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ---
 
+## [2.12.0] - 26/10/2026
+
+UI/UX pass: mobile layout, touch, focus and motion. No calculation, threshold, rounding or number format changed; every displayed figure was checked against the live v2.11.6 site for 8 term scenarios. Reports: `docs/uiux-audit.md`, `docs/uiux-improvements.md`, `docs/uiux-qa-results.md`, `docs/motion-design.md`, `docs/iphone-qa-checklist.md`, `docs/release-readiness.md`.
+
+### Added
+- **Motion and touch tokens (`design-system/tokens.json`)**: `--duration-instant`, `--duration-moderate`, `--duration-slow`, `--duration-chart`, `--duration-enter`, `--easing-out`, `--easing-in`, `--easing-in-out`, `--slider-hit`, `--slider-thumb` and `--slider-thumb-touch`.
+- **Section switcher on phones, tablets and small laptops**: sticky, with a Terms link and the section in view marked (`aria-current="location"`).
+- **Head-to-head "At a Glance" matrix on phones**: rental, cash up front, total interest and total outlay grouped by metric with **Lowest** and the difference; finalist cards swipe sideways below it.
+- **Browser suite `test/browser/ui-responsive.spec.mjs`**: 40 checks for page width at phone, tablet and laptop sizes (with and without a filled comparison), 44px touch targets, keyboard focus, phone journeys, the date picker, 16px fields, the iPhone keyboard guard, the catalogue sheet, the phone rental bar, dark-theme dialog contrast and reduced motion; passing in Chromium and WebKit.
+- **Firefox and WebKit in CI (`.github/workflows/test.yml`)**: the browser job runs both browser specs once per engine (Chromium, WebKit, Firefox). The Firefox run has not happened yet: it needs a push.
+- **iPhone keyboard guard (`js/page-transitions.js`)**: when iOS Safari leaves a focused field behind the on-screen keyboard after its toolbar changes the visible area, the field is brought back into view.
+
+### Changed
+- **Asset version 2.12.0**: `APP_VERSION`, every `?v=` query, the service-worker cache (`vahanaiq-v2.12.0`) and the tests that pin the version. `js/page-transitions.js`, `css/curated-catalogue.css` and `css/catalogue-studio.css` now load with `?v=2.12.0` too, so returning visitors cannot keep an older copy of them after a release.
+- **Comparison layout**: phone cards fit the screen with every figure visible and a 44px Compare · Details · Remove row; the table fits its panel at every width from 768 to 1920px, with the actions column kept in view; the page stays in one column from 980 to 1365px.
+- **Headers and heroes**: a two-row 121px header on phones (was 183px) and one 71px row from 780 to 1199px; compact heroes with a three-figure CBSL strip; loan terms start at y=479 on a 390×844 phone (was 663).
+- **Dialogs**: panels rise into place; phones get bottom sheets sized to `92dvh` with safe-area padding.
+- **Gauge and bars**: graphics ease from their previous value while figures change at once; the needle now turns about its hub.
+- **Sliders**: larger hit area (44px on touch) and a visible keyboard focus ring.
+- **Photo Studio**: choosing an entry on a phone scrolls the editor into view; 44px photo, zoom and guide controls on touch.
+- **Page transitions**: no navigation delay under reduced motion or where the browser cross-fades pages itself; 140ms otherwise (was 180ms). The catalogue and Studio use the same handler, and the section switcher scrolls instantly under reduced motion.
+- **"Add a Vehicle" on phones**: the whole sheet scrolls, instead of a results box that showed a fraction of one card (111px at 375×635, 14px in landscape).
+- **Information pages** load `js/boot.js`, so a saved Light or Dark choice applies there too.
+
+### Fixed
+- Comparison cards wider than the phone screen, clipping prices, deposits and rentals and pushing the row actions off-screen; the page zoomed out on phones.
+- The table's visually hidden "Actions" label widened the whole page at 768–1366px.
+- Catalogue hero overflowing every phone width (663px page).
+- Layout shift on load: catalogue up to 0.82 and Studio up to 0.46 CLS, now at most 0.027.
+- Budget telemetry figures running past their cards between 980 and 1279px; cashflow 40%/50% labels overlapping the card heading.
+- Footer links and buttons without focus rings and only 17px tall.
+- White-on-teal (1.86:1) pressed compare buttons and active chips under the System theme on a dark device.
+- Catalogue and Photo Studio dropdowns drawn 20px tall by WebKit on phones; they now draw their own chevron and are 46px in every engine.
+- iOS Safari zooming the page on focus: every text field and menu is now 16px on phones and touch screens.
+- The savings planner's date picker collapsing into a single 1,368px column of days on phones; it is a 7-column month grid again.
+- The affordability status and rental hidden behind the sticky actions column at 1200–1365px.
+- The rental-against-limit bar in phone comparison cards drawn 0px tall.
+- Content under the camera housing on iPhones in landscape: page gutters now grow to the safe area there.
+- "Mark for Review" in the catalogue's vehicle dialog was pale text on white in Dark (about 1.1:1); it now follows the theme (13.35:1).
+- On iPhone, the field being typed into (such as Net Monthly Income) could end up behind the keyboard.
+- With a wider device font (Linux's DejaVu Sans, found by the first Firefox and WebKit CI runs), the header's page links and the savings planner's drawer subtitle ran past a 320px screen; the links now wrap below the brand and the subtitle wraps beside its label.
+
+---
+
 ## [2.11.6] - 25/10/2026
 
 ### Added

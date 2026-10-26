@@ -1,8 +1,8 @@
 // VahanaIQ offline support: pages and files from this site are fetched from the network
 // first and kept in a cache, so the calculator still opens without a connection.
 // Searches (the AI proxy) and photos from other sites are never cached.
-const CACHE = "vahanaiq-v2.11.6";
-const SHELL = ["./", "index.html", "js/boot.js?v=2.11.6", "css/tokens.css?v=2.11.6", "css/style.css?v=2.11.6", "js/app.js?v=2.11.6", "manifest.json", "assets/icons/favicon.svg?v=20261020", "assets/icons/logo-option-1-apex.svg?v=20261020"];
+const CACHE = "vahanaiq-v2.12.0";
+const SHELL = ["./", "index.html", "js/boot.js?v=2.12.0", "css/tokens.css?v=2.12.0", "css/style.css?v=2.12.0", "js/app.js?v=2.12.0", "manifest.json", "assets/icons/favicon.svg?v=20261020", "assets/icons/logo-option-1-apex.svg?v=20261020"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

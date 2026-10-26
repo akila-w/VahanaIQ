@@ -3,6 +3,20 @@ import { test, expect } from '@playwright/test';
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:8123';
 const PAGES = ['index.html', 'catalogue.html', 'studio.html'];
 
+// Chromium and WebKit log "Content Security Policy"; Firefox logs "Content-Security-Policy".
+const CSP_MESSAGE = /Content[- ]Security[- ]Policy/i;
+
+// Every engine also fires securitypolicyviolation on the document, whatever its console says.
+async function recordViolations(page) {
+  await page.addInitScript(() => {
+    window.__cspViolations = [];
+    document.addEventListener('securitypolicyviolation', (e) => {
+      window.__cspViolations.push(`${e.violatedDirective} ${e.blockedURI}`);
+    });
+  });
+}
+const violations = (page) => page.evaluate(() => window.__cspViolations || []);
+
 test.describe('Content Security Policy & Browser Integrations', () => {
   for (const pageName of PAGES) {
     test(`${pageName}: zero CSP violations, photo bootstrap, and dark theme`, async ({ page }) => {
@@ -10,10 +24,11 @@ test.describe('Content Security Policy & Browser Integrations', () => {
       const pageErrors = [];
 
       page.on('console', (msg) => {
-        if (/Content Security Policy/i.test(msg.text())) {
+        if (CSP_MESSAGE.test(msg.text())) {
           cspErrors.push(msg.text());
         }
       });
+      await recordViolations(page);
 
       page.on('pageerror', (err) => {
         pageErrors.push(err.message || String(err));
@@ -25,8 +40,9 @@ test.describe('Content Security Policy & Browser Integrations', () => {
 
       await page.goto(`${BASE_URL}/${pageName}`, { waitUntil: 'load' });
 
-      // No console message matching /Content Security Policy/i and no pageerror
+      // No CSP console message, no securitypolicyviolation event and no pageerror
       expect(cspErrors).toEqual([]);
+      expect(await violations(page)).toEqual([]);
       expect(pageErrors).toEqual([]);
 
       // typeof window.__VAHANAIQ_PHOTOS__ === "object"
@@ -42,8 +58,9 @@ test.describe('Content Security Policy & Browser Integrations', () => {
   test('index.html: Google Identity Services iframe exists after opening the Account dialog', async ({ page }) => {
     const cspErrors = [];
     page.on('console', (msg) => {
-      if (/Content Security Policy/i.test(msg.text())) cspErrors.push(msg.text());
+      if (CSP_MESSAGE.test(msg.text())) cspErrors.push(msg.text());
     });
+    await recordViolations(page);
 
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
 
@@ -59,6 +76,7 @@ test.describe('Content Security Policy & Browser Integrations', () => {
     // the iframe still attaches; only a console assertion catches it.
     await page.waitForTimeout(1500);
     expect(cspErrors.filter((text) => /style-src|accounts\.google\.com/i.test(text))).toEqual([]);
+    expect((await violations(page)).filter((text) => /style-src|accounts\.google\.com/i.test(text))).toEqual([]);
   });
 
   test('catalogue.html: photo overlay Apply function is a function', async ({ page }) => {

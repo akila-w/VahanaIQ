@@ -1,15 +1,15 @@
-import { formatDate as displayDate } from "./dates.js?v=2.11.6";
-import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.11.6";
-import { fmt, esc, minDownFor, safeUrl } from "./calculator.js?v=2.11.6";
-import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.11.6";
-import { validPrice } from "./vehicle-validation.js?v=2.11.6";
-import { newVehicleId } from "./storage.js?v=2.11.6";
-import { openModal, closeModal } from "./modal.js?v=2.11.6";
-import { searchCatalogue } from "./catalogue-search.js?v=2.11.6";
-import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.11.6";
-import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.11.6";
-import { identity as fallbackIdentity } from "./identity-data.js?v=2.11.6";
-import { prepareBulkSelection } from "./bulk-selection.js?v=2.11.6";
+import { formatDate as displayDate } from "./dates.js?v=2.12.0";
+import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.12.0";
+import { fmt, esc, minDownFor, safeUrl } from "./calculator.js?v=2.12.0";
+import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.12.0";
+import { validPrice } from "./vehicle-validation.js?v=2.12.0";
+import { newVehicleId } from "./storage.js?v=2.12.0";
+import { openModal, closeModal } from "./modal.js?v=2.12.0";
+import { searchCatalogue } from "./catalogue-search.js?v=2.12.0";
+import { localStudioPhoto, NO_PHOTO } from "./image-fetcher.js?v=2.12.0";
+import { creditFor, photoForModel, formatCreditHtml } from "./photo-credits.js?v=2.12.0";
+import { identity as fallbackIdentity } from "./identity-data.js?v=2.12.0";
+import { prepareBulkSelection } from "./bulk-selection.js?v=2.12.0";
 
 const getIdentity = () => (typeof window !== "undefined" && window.__VAHANAIQ_IDENTITY__) || fallbackIdentity;
 

@@ -25,7 +25,7 @@ console.log('=== RUNNING VAHANAIQ MODULE VERSIONS TEST SUITE ===\n');
 // ============================================================================
 console.log(`TEST 1: Canonical APP_VERSION (${APP_VERSION})`);
 assert.ok(APP_VERSION, 'APP_VERSION must be defined in js/config.js');
-assert.match(APP_VERSION, /^\d+\.\d+\.\d+$/, 'APP_VERSION must be a semantic version string (e.g. 2.11.6)');
+assert.match(APP_VERSION, /^\d+\.\d+\.\d+$/, 'APP_VERSION must be a semantic version string (e.g. 2.12.0)');
 console.log(`✓ APP_VERSION is "${APP_VERSION}"\n`);
 
 // ============================================================================

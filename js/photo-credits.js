@@ -1,7 +1,7 @@
 // Manufacturer / authorised distributor photos only. No community-photo fallback.
 // The Curated Catalogue is the canonical authority over vehicle imagery.
-import { OFFICIAL_PHOTOS } from './official-photo-data.js?v=2.11.6';
-import { esc, safeUrl } from './calculator.js?v=2.11.6';
+import { OFFICIAL_PHOTOS } from './official-photo-data.js?v=2.12.0';
+import { esc, safeUrl } from './calculator.js?v=2.12.0';
 
 export const PHOTO_CREDITS = OFFICIAL_PHOTOS;
 

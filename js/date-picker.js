@@ -1,5 +1,5 @@
-import { formatDate } from './dates.js?v=2.11.6';
-import { addMonths } from './savings.js?v=2.11.6';
+import { formatDate } from './dates.js?v=2.12.0';
+import { addMonths } from './savings.js?v=2.12.0';
 export function dateInputValue(value) {
   const raw=String(value||'').trim();
   if (!raw) return '';
