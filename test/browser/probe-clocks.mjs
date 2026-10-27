@@ -15,11 +15,22 @@ const rafProbe = () => new Promise(resolve => {
   setTimeout(() => resolve({ ticks, ms: 5000, stalled: true }), 5000);
 });
 
+const BADGE = `.photo-button .brand-badge,
+:root:not([data-theme="light"]) .photo-button .brand-badge,
+[data-theme="dark"] .photo-button .brand-badge`;
+const off = sel => `${sel}{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}`;
+
+const badgeOff = off(BADGE);
+const filtersOff = off('.filters');
+const cardOff = off('.card');
+const dialogOff = off('dialog');
+
 const browser = await webkit.launch();
 
 async function rate(label, css, width = 320, trials = TRIALS) {
   let stalled = 0;
   const detail = [];
+  let seen = '';
   for (let i = 0; i < trials; i++) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
@@ -27,25 +38,28 @@ async function rate(label, css, width = 320, trials = TRIALS) {
     if (css) await page.addStyleTag({ content: css });
     await page.waitForTimeout(400);
     const raf = await page.evaluate(rafProbe);
+    if (i === 0) {
+      seen = await page.evaluate(() => {
+        const b = document.querySelector('.brand-badge');
+        const f = document.querySelector('.filters');
+        const c = document.querySelector('.card');
+        return `badge=${getComputedStyle(b).backdropFilter} filters=${getComputedStyle(f).backdropFilter} card=${getComputedStyle(c).backdropFilter}`;
+      });
+    }
     await context.close();
     const dead = raf.stalled || raf.ticks < 10;
     if (dead) stalled++;
     detail.push(raf.ticks);
   }
-  console.log(`${label} @${width}: ${stalled}/${trials} stalled | ticks ${detail.join(',')}`);
+  console.log(`${label} @${width}: ${stalled}/${trials} stalled | ticks ${detail.join(',')} | ${seen}`);
 }
 
-console.log('=== aurora layers at 320px ===');
+console.log('=== backdrop-filter sources at 320px ===');
 await rate('baseline', '');
-await rate('aurora display:none', 'body::before,body::after{display:none!important}');
-await rate('aurora blur removed', 'body::before,body::after{filter:none!important}');
-await rate('aurora opacity 0', 'body::before,body::after{opacity:0!important}');
-
-console.log('=== confirm at 1280px ===');
-await rate('baseline', '', 1280, 4);
-await rate('aurora display:none', 'body::before,body::after{display:none!important}', 1280, 4);
-
-console.log('=== control ===');
-await rate('baseline again', '');
+await rate('badges only off', badgeOff);
+await rate('filters only off', filtersOff);
+await rate('badges + filters off', `${badgeOff}\n${filtersOff}`);
+await rate('all blur off', `${badgeOff}\n${filtersOff}\n${cardOff}\n${dialogOff}`);
+await rate('all blur off + aurora off', `${badgeOff}\n${filtersOff}\n${cardOff}\n${dialogOff}\nbody::before,body::after{display:none!important}`);
 
 await browser.close();
