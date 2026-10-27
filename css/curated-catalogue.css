@@ -1081,13 +1081,22 @@ body::after {
   }
 }
 
-/* Frosted Glass Cards in Catalogue */
+/* Frosted Glass Cards in Catalogue. These pages paint a flat #f5f6f3 body with no
+   aurora behind it, so blurring the backdrop of a card or the filter panel blurred a
+   single colour: no visible change, but a full-surface composite per card. With 24
+   vehicles on screen that starved the WebKit/WPE frame clock and froze the suite
+   midway. The translucent fill stays as it was; the dialog becomes opaque, which is
+   what its own rule asks for, because unblurred translucency over card photos does
+   hurt legibility. */
 .filters,
-.card,
-dialog {
+.card {
   background: var(--glass-bg, #ffffff) !important;
-  backdrop-filter: blur(16px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1px solid var(--glass-border, #dce3db) !important;
+  box-shadow: var(--glass-shadow, 0 1px 3px rgba(30, 50, 35, 0.04)) !important;
+}
+
+dialog {
+  background: var(--panel, #f7f8f4) !important;
   border: 1px solid var(--glass-border, #dce3db) !important;
   box-shadow: var(--glass-shadow, 0 1px 3px rgba(30, 50, 35, 0.04)) !important;
 }
@@ -1846,12 +1855,9 @@ dialog {
 }
 
 /* UX-16: frosted cards re-blur the fixed background on every scrolled frame, which
-   is costly on phones; touch screens get the same colours without the blur. The
-   filter panel is the other large frosted surface and cost the frame clock the most
-   at 320px (2 of 6 trials still stalled with only it left). */
+   is costly on phones; touch screens get the same colours without the blur. */
 @media (pointer: coarse), (max-width: 760px) {
-  .card,
-  .filters {
+  .card {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
     background: var(--panel, #ffffff) !important;
