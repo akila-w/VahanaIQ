@@ -3439,10 +3439,14 @@ body.modal-open {
   margin-bottom: var(--space-6);
 }
 
+/* UX-32: a modal used to frost the page behind it with a 20px blur. Opening one on
+   WebKit/WPE stopped the frame clock (measured: 3 frames in 1.2s against 57 without
+   the blur), which left the dialog with no layout box to measure and the page looking
+   frozen. The panel sits over a 64% scrim, so an opaque panel reads the same. */
 .modal {
-  background: var(--glass-bg, var(--panel));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border, var(--line));
   border-radius: var(--radius-dialog);
   max-width: 680px;
@@ -5994,8 +5998,8 @@ main.info-page { display: block; max-width: 900px; margin: auto; padding: var(--
 }
 .date-dialog::backdrop {
   background: var(--scrim);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .calendar-heading {
   display: flex;

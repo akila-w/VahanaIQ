@@ -32,5 +32,5 @@ jobs:
           done
           echo "The local server did not start" >&2
           exit 1
-      - name: Details modal frame clock probe
-        run: node test/browser/probe-modal.mjs
+      - name: 24-card frame clock probe
+        run: node test/browser/probe-cards.mjs
