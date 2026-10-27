@@ -1855,6 +1855,20 @@ dialog {
   }
 }
 
+/* UX-31: the make badge over every card photo must drop its backdrop blur at these
+   widths too. The badge is 92% white, so the blur adds nothing visible, but one
+   blurred badge per card over a photo was enough to starve a software compositor:
+   WebKit/WPE stopped producing animation frames below 760px, which froze the
+   catalogue for anyone on that engine. Desktop keeps the frosted badge. */
+@media (pointer: coarse), (max-width: 760px) {
+  .photo-button .brand-badge,
+  [data-theme="dark"] .photo-button .brand-badge,
+  :root:not([data-theme="light"]) .photo-button .brand-badge {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
 /* UX-18: text on an accent fill uses on-accent, which is dark on the bright dark-theme
    accent whether the theme comes from the switch or from the device. */
 .compare-btn[aria-pressed="true"],
