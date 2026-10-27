@@ -44,6 +44,9 @@
   <script type="module" src="js/curated-catalogue.js?v=2.12.0"></script>
 <link rel="stylesheet" href="css/guidance.css?v=2.12.0">
   <script type="module" src="js/guidance.js?v=2.12.0"></script>
+<link rel="stylesheet" href="css/experience.css?v=2.12.0">
+<script type="module" src="js/experience.js?v=2.12.0"></script>
+<script type="module" src="js/onboarding.js?v=2.12.0"></script>
 </head>
 <body>
   <a class="skip" href="#vehicles">Skip to Vehicles</a>
@@ -58,9 +61,10 @@
         </div>
       </a>
       <nav aria-label="Main">
-        <a href="index.html">Calculator</a>
-        <a href="catalogue.html" aria-current="page">Catalogue</a>
+        <a href="index.html">Lease</a>
+        <a href="catalogue.html" aria-current="page">Showroom</a>
         <a href="studio.html">Studio</a>
+        <button class="header-tour-btn onboarding-restart-btn" id="restartOnboardingBtn" type="button" title="Start or restart 5-step guided onboarding and tour"><svg class="header-tour-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Guided Setup</button>
       </nav>
     </div>
     <div class="header-actions">
@@ -88,7 +92,7 @@
           <p>Mark vehicles to revisit and compare against your budget. Your review stays in this browser.</p>
         </div>
         <div class="review-actions">
-          <a href="index.html#comparisonPanel" class="btn-outline view-calc-btn">Open Comparison in Calculator <span aria-hidden="true">↗</span></a>
+          <a href="index.html#comparisonPanel" class="btn-outline view-calc-btn">Open Comparison in Lease <span aria-hidden="true">↗</span></a>
           <button id="export" type="button">Export Review <img src="assets/icons/lucide/download.svg" width="16" height="16" alt="" loading="lazy"></button>
         </div>
       </div>
@@ -98,22 +102,23 @@
       <footer class="foot">
     <div class="foot-cols">
       <section aria-labelledby="footImages">
-        <h2 class="foot-h" id="footImages">Representative Imagery</h2>
+        <h3 class="foot-h" id="footImages">Representative Imagery</h3>
         <p>Manufacturer images are representative; equipment, colour and appearance may vary by year, trim and market. All display frames use standardized 8:5 proportions.</p>
       </section>
       <section aria-labelledby="footPricing">
-        <h2 class="foot-h" id="footPricing">Pricing Transparency</h2>
+        <h3 class="foot-h" id="footPricing">Pricing Transparency</h3>
         <p>Prices are published amounts or asking prices, checked on the dates shown. They are indicative starting points and not binding quotations.</p>
       </section>
       <section aria-labelledby="footProject">
-        <h2 class="foot-h" id="footProject">Independent Research</h2>
+        <h3 class="foot-h" id="footProject">Independent Research</h3>
         <p>Counts and price ranges are calculated from cited sources. VahanaIQ is an independent personal project.</p>
       </section>
     </div>
-    <nav class="site-links" aria-label="Information"><a href="index.html">Calculator</a><a href="catalogue.html" aria-current="page">Catalogue</a><a href="studio.html">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html">Lease</a><a href="catalogue.html" aria-current="page">Showroom</a><a href="studio.html">Studio</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav></div><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
       <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>
+      <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
       <span>VahanaIQ v2.12.0</span>
     </p>
   </footer>

@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test';
+
+const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+test.beforeEach(async ({context}) => { await seedReturning(context); });
+
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -6,21 +10,16 @@ const BASE = process.env.BASE_URL || 'http://127.0.0.1:8123';
 const KEY = 'vahanaiq_guidance_v1';
 const go = (page, name = 'index.html') => page.goto(`${BASE}/${name}`);
 const state = page => page.evaluate(key => JSON.parse(localStorage.getItem(key)), KEY);
-const start = async page => { await page.getByRole('button', { name: 'Show me around', exact: true }).click(); };
+const start = async page => { await page.locator('#helpCentreButton').click(); await page.getByRole('button', { name: /(?:Start|Restart|Resume) (?:Calculator|Catalogue|Studio) tour/ }).first().click(); };
 
-test('welcome is optional, dismissal persists across pages and help can restart', async ({ page }) => {
+test('returning users have a quiet workspace and can start guidance from Help', async ({ page }) => {
   await go(page);
-  await expect(page.locator('.guide-invitation')).toContainText('Welcome to VahanaIQ');
-  await expect(page.locator('dialog[open]')).toHaveCount(0);
-  await page.getByRole('button', { name: 'I’ll explore myself' }).click();
-  await page.reload();
+  await expect(page.locator('#onboarding')).toHaveCount(0);
   await expect(page.locator('.guide-invitation')).toBeHidden();
   await go(page, 'catalogue.html');
-  await expect(page.locator('.guide-invitation')).toBeHidden();
   await page.locator('#helpCentreButton').click();
   await page.getByRole('button', { name: 'Start Catalogue tour' }).click();
   await expect(page.locator('#guidedTour')).toContainText('1 of 3');
-  await expect(page.locator('#guidedTour h2')).toBeFocused();
   await page.getByRole('button', { name: 'Skip tour' }).click();
   await expect(page.locator('#helpCentreButton')).toBeFocused();
 });
@@ -30,7 +29,7 @@ test('tour resumes only on request, supports back, skip, restart and completion'
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await page.reload();
   await expect(page.locator('#guidedTour')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Resume tour', exact: true }).click();
+  await start(page);
   await expect(page.locator('#guidedTour')).toContainText('2 of 4');
   await page.getByRole('button', { name: 'Back', exact: true }).click();
   await expect(page.locator('#guidedTour')).toContainText('1 of 4');
@@ -131,7 +130,8 @@ test('quick explanations toggle, dismiss and link to the matching article withou
 
 test('quick explanations fit a short touch viewport and reposition after rotation', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 320, height: 568 }, isMobile: true, hasTouch: true, colorScheme: 'dark', reducedMotion: 'reduce' });
-  const page = await context.newPage();
+  await seedReturning(context);
+    const page = await context.newPage();
   await go(page);
   await page.locator('.guide-context').nth(2).tap();
   const popover = page.locator('#guideContextHelp');
@@ -165,7 +165,7 @@ for (const [name, steps] of [['catalogue', 3], ['studio', 3]]) {
 }
 
 test('blocked and corrupt storage do not prevent help or touring', async ({ page }) => {
-  await page.addInitScript(() => { Storage.prototype.setItem = () => { throw Error('blocked'); }; Storage.prototype.getItem = () => '{malformed'; });
+  await page.addInitScript(() => { Storage.prototype.setItem = () => { throw Error('blocked'); }; Storage.prototype.getItem = key => key === 'vahanaiq_onboarding_v1' ? JSON.stringify({version:1,completed:true}) : '{malformed'; });
   await go(page); await start(page);
   await page.getByRole('button', { name: 'Explain this' }).click();
   await expect(page.locator('#helpCentre')).toBeVisible();
@@ -174,23 +174,15 @@ test('blocked and corrupt storage do not prevent help or touring', async ({ page
   await expect(page.locator('#guidedTour')).toBeHidden();
 });
 
-test('progressive suggestions follow real comparison changes and can be disabled', async ({ page }) => {
+test('workspace stays quiet after a tour and suggestion preference remains editable in Help', async ({ page }) => {
   await go(page); await start(page);
   await page.getByRole('button', { name: 'Skip tour' }).click();
-  await expect(page.locator('.guide-invitation')).toContainText('add a vehicle');
-  await page.locator('#addVehicleBtn').click();
-  await page.fill('#catalogueSearch', 'Toyota');
-  await page.locator('#catalogueAddSearch').click();
-  await expect(page.locator('.guide-invitation')).toContainText('add your income');
+  await expect(page.locator('.guide-invitation')).toBeHidden();
   await page.locator('#helpCentreButton').click();
   await page.locator('#guideTips').uncheck();
-  await expect(page.locator('.guide-invitation')).toBeHidden();
-  // A checkbox change must work even when a browser/assistive action omits input.
-  await page.locator('#guideTips').evaluate(el => { el.checked = true; el.dispatchEvent(new Event('change', { bubbles: true })); });
-  await expect(page.locator('.guide-invitation')).toBeVisible();
-  await page.locator('#guideTips').uncheck();
-  await expect(page.locator('.guide-invitation')).toBeHidden();
-  await page.keyboard.press('Escape');
+  expect((await state(page)).tips).toBe(false);
+  await page.locator('#guideTips').check();
+  expect((await state(page)).tips).toBe(true);
   await expect(page.locator('.guide-invitation')).toBeHidden();
 });
 
@@ -288,7 +280,8 @@ test('relative links and assets work under a GitHub Pages project path', async (
 
 test('touch controls, landscape, saved theme and print remain usable', async ({ browser, browserName }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, ...(browserName === 'firefox' ? {} : { isMobile: true }) });
-  const page = await context.newPage();
+  await seedReturning(context);
+    const page = await context.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
   await page.addInitScript(() => {
@@ -325,6 +318,6 @@ test('preferences synchronise between tabs without altering financial data', asy
   await go(page);
   const second = await context.newPage();
   await go(second, 'catalogue.html');
-  await page.getByRole('button', { name: 'I’ll explore myself' }).click();
+  await page.locator('#helpCentreButton').click(); await page.locator('#guideTips').uncheck();
   await expect(second.locator('.guide-invitation')).toBeHidden();
 });

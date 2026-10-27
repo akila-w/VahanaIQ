@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+test.beforeEach(async ({context}) => { await seedReturning(context); });
+
+
 // Responsive layout, touch, focus and motion guarantees from the 26/10/2026 UI/UX pass
 // (docs/uiux-audit.md, docs/uiux-qa-results.md). Like csp.spec.mjs it starts nothing itself
 // and expects a local web server at BASE_URL. The comparison is filled through the real
@@ -19,7 +23,8 @@ async function addToyotas(page) {
   await page.locator('#catalogueAddSearch').click();
   await expect(page.locator('#rows tr').first()).toBeVisible();
   // On phones the loan terms start collapsed behind Edit
-  if (!(await page.locator('#income').isVisible())) await page.locator('#toggleTerms').click();
+  if (await page.locator('#toggleTerms').isVisible() && await page.locator('#toggleTerms').getAttribute('aria-expanded') === 'false') await page.locator('#toggleTerms').click();
+  await page.locator('.terms-disclosure').filter({has:page.locator('#income')}).locator('summary').click();
   await page.fill('#income', '2500000');
   await page.locator('#income').dispatchEvent('change');
 }
@@ -31,7 +36,8 @@ test.describe('Layout: nothing is wider than the screen', () => {
     for (const [width, height] of PHONES) {
       test(`${pageName}.html at ${width}px`, async ({ browser, browserName }) => {
         const context = await browser.newContext(phone(browserName, { width, height }));
-        const page = await context.newPage();
+        await seedReturning(context);
+    const page = await context.newPage();
         await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
         await page.waitForTimeout(400);
         expect(await pageWidth(page)).toBeLessThanOrEqual(width);
@@ -43,7 +49,8 @@ test.describe('Layout: nothing is wider than the screen', () => {
   for (const [width, height] of [...PHONES, ...WIDE]) {
     test(`calculator with 24 vehicles at ${width}px keeps every figure on screen`, async ({ browser, browserName }) => {
       const context = await browser.newContext(width < 768 ? phone(browserName, { width, height }) : { viewport: { width, height } });
-      const page = await context.newPage();
+      await seedReturning(context);
+    const page = await context.newPage();
       await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
       await addToyotas(page);
       expect(await pageWidth(page)).toBeLessThanOrEqual(width);
@@ -65,7 +72,8 @@ test.describe('Layout: nothing is wider than the screen', () => {
   for (const pageName of ['index', 'catalogue', 'studio']) {
     test(`${pageName}.html fits 320px with a wide fallback font`, async ({ browser, browserName }) => {
       const context = await browser.newContext(phone(browserName, { width: 320, height: 568 }));
-      const page = await context.newPage();
+      await seedReturning(context);
+    const page = await context.newPage();
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
       await page.addStyleTag({ content: '* { font-family: Verdana, "DejaVu Sans", sans-serif !important; }' });
       await page.waitForTimeout(300);
@@ -76,6 +84,7 @@ test.describe('Layout: nothing is wider than the screen', () => {
 
   test('catalogue hero stays stacked on phones (UX-02)', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/catalogue.html`, { waitUntil: 'load' });
     await expect(page.locator('#metrics strong').first()).toBeVisible();
@@ -90,7 +99,8 @@ test.describe('Layout: nothing is wider than the screen', () => {
   for (const [width, height] of [[1366, 768], [1440, 900]]) {
     test(`loan terms use split scroll and align at the bottom beside results at ${width}px`, async ({ browser }) => {
       const context = await browser.newContext({ viewport: { width, height } });
-      const page = await context.newPage();
+      await seedReturning(context);
+    const page = await context.newPage();
       await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
       await addToyotas(page);
       const mid = await page.evaluate(async () => {
@@ -126,6 +136,7 @@ test.describe('Layout: nothing is wider than the screen', () => {
 
   test('loan terms are not sticky in one column at 1365px', async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: 1365, height: 768 } });
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     expect(await page.locator('#loanTermsHead').evaluate(el => getComputedStyle(el).position)).not.toBe('sticky');
@@ -136,6 +147,7 @@ test.describe('Layout: nothing is wider than the screen', () => {
 test.describe('Touch and focus', () => {
   test('calculator controls meet 44px on a touch screen', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     // The 44px rules apply under (pointer: coarse). Chromium and WebKit emulate a touch screen;
@@ -178,6 +190,7 @@ test.describe('Touch and focus', () => {
 test.describe('Phone journeys', () => {
   test('section switcher marks the section in view', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('savingsPanel').scrollIntoView(); });
@@ -187,6 +200,7 @@ test.describe('Phone journeys', () => {
 
   test('head-to-head opens with the at-a-glance matrix on a phone', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     await addToyotas(page);
@@ -202,6 +216,7 @@ test.describe('Phone journeys', () => {
 
   test('the savings planner date picker keeps a 7-column month grid on a phone', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     await page.locator('#toggleSavingsDrawer').click();
@@ -216,6 +231,7 @@ test.describe('Phone journeys', () => {
 
   test('every field on a phone is at least 16px, so iOS does not zoom on focus', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     for (const pageName of ['index', 'catalogue', 'studio']) {
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
@@ -229,6 +245,7 @@ test.describe('Phone journeys', () => {
 
   test('choosing a Photo Studio entry on a phone brings the editor into view', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
     await page.locator('#modelList [data-model]').nth(2).click();
@@ -241,11 +258,13 @@ test.describe('Phone journeys', () => {
     // shows a keyboard, so this checks the guard in js/page-transitions.js directly: the field
     // is focused off-screen, then the visible area reports a resize as it does when a keyboard opens.
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     await page.locator('#toggleTerms').click();
     await page.evaluate(() => {
       document.documentElement.style.scrollBehavior = 'auto';
+      document.getElementById('income').closest('details').open = true;
       document.getElementById('income').focus({ preventScroll: true });
       window.scrollTo(0, document.documentElement.scrollHeight);
       window.visualViewport.dispatchEvent(new Event('resize'));
@@ -259,6 +278,7 @@ test.describe('Phone journeys', () => {
 
   test('the catalogue sheet scrolls as a whole on a phone, not in a box a card tall (UX-26)', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName, { width: 375, height: 635 }));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     await page.locator('#addVehicleBtn').click();
@@ -274,6 +294,7 @@ test.describe('Phone journeys', () => {
 
   test('the rental bar in a phone comparison card keeps its height (UX-27)', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     await addToyotas(page);
@@ -287,6 +308,7 @@ test.describe('Phone journeys', () => {
 
   test('"Mark for Review" in the catalogue dialog is readable in the dark theme (UX-29)', async ({ browser, browserName }) => {
     const context = await browser.newContext({ ...phone(browserName), colorScheme: 'dark' });
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/catalogue.html`, { waitUntil: 'load' });
     await page.locator('#vehicles .card .photo-button').first().click();
@@ -302,6 +324,7 @@ test.describe('Phone journeys', () => {
 test.describe('Motion', () => {
   test('reduced motion: nothing animates and figures are final at once', async ({ browser, browserName }) => {
     const context = await browser.newContext({ ...phone(browserName), reducedMotion: 'reduce' });
+    await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
     await addToyotas(page);

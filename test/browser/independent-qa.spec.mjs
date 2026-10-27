@@ -1,4 +1,8 @@
 import { test, expect } from '@playwright/test';
+
+const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+test.beforeEach(async ({context}) => { await seedReturning(context); });
+
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -12,6 +16,7 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
   test(`all six routes at ${width}px in ${theme}`, async ({ browser, browserName }) => {
     test.setTimeout(60000);
     const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce' });
+    await seedReturning(context);
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
@@ -26,7 +31,7 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
           const r = rect(el);
           return r.width && r.height && (r.left < -1 || r.right > innerWidth + 1);
         }).map(el => ({ element: el.id || el.className || el.tagName, text: el.textContent.slice(0, 80), left: rect(el).left, right: rect(el).right }));
-        const terms = document.querySelector('#loanTermsHead'), budget = document.querySelector('#budgetPanel');
+        const terms = document.querySelector('#loanTermsHead'), budget = document.querySelector('#comparisonPanel');
         return { width: innerWidth, scrollWidth: document.documentElement.scrollWidth, outside, welcomeInHero: !!document.querySelector('.hero > .guide-invitation'), columns: terms && budget ? Math.abs(rect(terms).top - rect(budget).top) : null };
       });
       measurements.push({ route, ...measurement });
@@ -87,6 +92,7 @@ test('all gauge boundaries and the exact overflow example render actual values',
   await page.locator('#budgetGraphic').screenshot({ path: path.join(OUT, `${browserName}-overflow.png`) });
   // Keep a real zero-rental vehicle: vary existing commitments to isolate the ratio.
   await page.locator('#toggleTerms').click();
+  await page.locator('.terms-disclosure').filter({has:page.locator('#income')}).locator('summary').click();
   await page.fill('#down', '100'); await page.locator('#down').dispatchEvent('change');
   for (const ratio of [0, 10, 39.9, 40, 40.1, 49.9, 50, 50.1, 59.9, 60, 60.1, 75, 99.9, 100, 110.1, 150, 200]) {
     await page.fill('#debt', String(220000 * ratio / 100)); await page.locator('#debt').dispatchEvent('change');

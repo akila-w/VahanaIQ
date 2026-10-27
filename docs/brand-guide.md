@@ -92,9 +92,10 @@ In accordance with CBSL debt-to-income (DTI) ceilings. Status always carries its
 
 ### Font Stack
 ```css
-font-family: var(--font-sans); /* system-ui, -apple-system, "Segoe UI", Roboto, sans-serif */
+font-family: var(--font-sans);    /* "Inter", system-ui, sans-serif */
+font-family: var(--font-display); /* "Manrope", system-ui, sans-serif */
 ```
-The product loads no web fonts.
+The product self-hosts **Manrope** (variable weights 200–800) for display headings and **Inter** (variable weights 100–900) for body text, controls, and tabular financial figures, selected on 28/10/2026 (Option B). Their SIL Open Font Licenses are included with the assets under `assets/fonts/`. System fonts remain the fallback.
 
 ### Scale & Hierarchy
 - **Display H1:** `clamp(38px, 4.4vw, 60px)`, Weight 650, Letter spacing `-2.4px`, Line height `1.05`

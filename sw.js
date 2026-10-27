@@ -5,6 +5,15 @@
 const CACHE = "vahanaiq-v2.12.0";
 const SHELL = [
   "./",
+  "js/price-history.js?v=2.12.0",
+  "data/price-history.json",
+  "css/experience.css?v=2.12.0",
+  "js/experience.js?v=2.12.0",
+  "js/onboarding.js?v=2.12.0",
+  "js/onboarding-state.js?v=2.12.0",
+  "js/catalogue-search.js?v=2.12.0",
+  "assets/fonts/manrope/Manrope-variable.ttf",
+  "assets/fonts/inter/Inter-variable.ttf",
   "index.html",
   "catalogue.html",
   "studio.html",

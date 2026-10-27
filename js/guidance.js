@@ -26,6 +26,7 @@ const button = (text, action, className = 'guide-button') => {
 const persist = () => writeGuidance(storage, state);
 const focusElement = el => {
   if (!el) return;
+  for (let parent = el.parentElement; parent; parent = parent.parentElement) if (parent.tagName === 'DETAILS') parent.open = true;
   if (!el.matches('input, select, button, a, [tabindex]')) {
     el.setAttribute('tabindex', '-1');
     el.addEventListener('blur', () => el.removeAttribute('tabindex'), { once: true });
@@ -34,10 +35,16 @@ const focusElement = el => {
   el.scrollIntoView({ block: 'center', behavior: 'instant' });
 };
 
-const helpButton = button('Help Centre', event => openHelp(undefined, event.currentTarget), 'guide-launch');
+const helpButton = button('Help Centre', event => openHelp(undefined, event.currentTarget), 'link-btn');
 helpButton.id = 'helpCentreButton';
 helpButton.setAttribute('aria-haspopup', 'dialog');
-($('.site-header nav') || $('.info-header') || $('main')).append(helpButton);
+const photoCreditsBtn = document.querySelector('#openPhotoCreditsBtn');
+if (photoCreditsBtn) {
+  photoCreditsBtn.after(helpButton);
+} else {
+  const footMetaEl = $('.foot-meta');
+  if (footMetaEl) footMetaEl.append(helpButton);
+}
 
 const help = make('dialog', 'guide-help');
 help.id = 'helpCentre';

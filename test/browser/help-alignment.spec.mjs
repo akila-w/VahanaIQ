@@ -1,11 +1,16 @@
 import { test, expect } from '@playwright/test';
 
+const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+test.beforeEach(async ({context}) => { await seedReturning(context); });
+
+
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:8123';
 const widths = [320, 360, 375, 390, 414, 430, 600, 768, 979, 980, 1024, 1280, 1365, 1366, 1440, 1920];
 
 for (const width of widths) for (const theme of ['light', 'dark']) {
   test(`contextual help alignment at ${width}px in ${theme}`, async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, colorScheme: theme, reducedMotion: 'reduce' });
+    await seedReturning(context);
     const page = await context.newPage();
     for (const [route, count] of [['index', 5], ['catalogue', 2], ['studio', 1]]) {
       await page.goto(`${BASE}/${route}.html`);

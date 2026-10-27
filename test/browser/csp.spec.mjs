@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+test.beforeEach(async ({context}) => { await seedReturning(context); });
+
+
 const BASE_URL = process.env.BASE_URL || 'http://127.0.0.1:8123';
 const PAGES = ['index.html', 'catalogue.html', 'studio.html'];
 

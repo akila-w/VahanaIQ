@@ -1,5 +1,6 @@
 /* The Photo Studio page. Colours, spacing, radii and shadows come from the design tokens, so the
    page follows the light, dark and print themes without repeating values. */
+h1,h2,h3,h4,h5,h6,.studio-intro h1{font-family:var(--font-display,var(--font-sans))}
 .studio{max-width:1440px;margin:auto;padding:0 4vw}
 .studio-intro{display:block;padding:16px 0 12px;max-width:100%;border-bottom:1px solid var(--line);margin-bottom:16px}
 .studio-intro h1{font-size:28px;letter-spacing:-0.8px;margin-bottom:6px}

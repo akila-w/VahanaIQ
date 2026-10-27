@@ -781,6 +781,7 @@ function updateBudgetExtras(s, f, room, rows) {
 
       const heroEl = $("budgetDtiHero");
       setFigure(heroEl, dtiStr + " DTI");
+      if (heroEl) heroEl.classList.toggle("is-critical", isOffScale);
       const subEl = $("budgetDtiSub");
       setFigure(subEl, isOverIncome
         ? `LKR ${fmt(totalMonthlyDebt)} / month · Shortfall LKR ${fmt(totalMonthlyDebt - s.income)}`
@@ -798,16 +799,19 @@ function updateBudgetExtras(s, f, room, rows) {
         statusClass = "bad";
         statusText = `Limit Exceeded (> ${DTI_STRETCH_PCT}%)`;
       } else if (dtiPct <= 100) {
-        statusClass = "bad";
-        statusText = `Limit Exceeded (> ${DTI_STRETCH_PCT}% · Off-Scale 60%+)`;
+        statusClass = "bad is-critical-pill";
+        statusText = `Critical Risk: ${dtiStr} DTI (>50% Limit · Off-Scale 60%+)`;
       } else {
-        statusClass = "bad";
-        statusText = "Exceeds 100% of Net Income (Off-Scale 60%+)";
+        statusClass = "bad is-critical-pill";
+        statusText = `Critical: Exceeds 100% of Net Income (Off-Scale 60%+)`;
       }
       const pillEl = $("budgetDtiPill");
       if (pillEl) pillEl.className = "classic-dti-pill " + statusClass;
       const textEl = $("budgetDtiText");
       if (textEl) textEl.textContent = statusText;
+
+      const dialBoxEl = typeof document !== "undefined" && typeof document.querySelector === "function" ? document.querySelector(".gauge-dial-box") : null;
+      if (dialBoxEl && dialBoxEl.classList) dialBoxEl.classList.toggle("is-critical-risk", isOffScale);
 
       const rentalPctOfIncome = s.income > 0 ? (leaseRental / s.income) * 100 : 0;
       const debtPctOfIncome = s.income > 0 ? (s.debt / s.income) * 100 : 0;
@@ -817,10 +821,18 @@ function updateBudgetExtras(s, f, room, rows) {
       const labelEl = $("budgetCashflowLabel");
       if (isOverIncome) {
         const shortfall = totalMonthlyDebt - s.income;
-        setFigure(labelEl, `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Monthly shortfall: LKR ${fmt(shortfall)})`);
+        const text = `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Monthly shortfall: LKR ${fmt(shortfall)})`;
+        setFigure(labelEl, text);
+        if (typeof document !== "undefined" && typeof document.createElement === "function" && labelEl && labelEl.innerHTML !== undefined) {
+          labelEl.innerHTML = `<span class="cf-metric-main"><strong class="cf-num val-debt">LKR ${fmt(totalMonthlyDebt)}</strong> <span class="cf-slash">/</span> <span class="cf-income">LKR ${fmt(s.income)}</span></span> <span class="cf-metric-badge is-critical">${dtiStr} of net monthly income committed</span> <span class="cf-metric-badge is-shortfall">Monthly shortfall: LKR ${fmt(shortfall)}</span>`;
+        }
       } else {
         const remainingIncome = Math.max(0, s.income - totalMonthlyDebt);
-        setFigure(labelEl, `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Remaining: LKR ${fmt(remainingIncome)})`);
+        const text = `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Remaining: LKR ${fmt(remainingIncome)})`;
+        setFigure(labelEl, text);
+        if (typeof document !== "undefined" && typeof document.createElement === "function" && labelEl && labelEl.innerHTML !== undefined) {
+          labelEl.innerHTML = `<span class="cf-metric-main"><strong class="cf-num">LKR ${fmt(totalMonthlyDebt)}</strong> <span class="cf-slash">/</span> <span class="cf-income">LKR ${fmt(s.income)}</span></span> <span class="cf-metric-badge is-committed">${dtiStr} of net monthly income committed</span> <span class="cf-metric-badge is-remaining">Remaining: LKR ${fmt(remainingIncome)}</span>`;
+        }
       }
 
       const barEl = $("budgetCashflowBar");
@@ -973,6 +985,168 @@ function updateBudgetExtras(s, f, room, rows) {
   syncBudgetBar();
   clearTimeout(liveTimer);
   liveTimer = setTimeout(() => { $("budgetLive").textContent = sentence; }, 500);
+
+  // Update Live Option D (Linear Cash Flow) and Option A (Borrowing Ceiling) views in test build
+  const linearStackEl = $("linearStackBar");
+  const linearMetricsEl = $("linearMetricsGrid");
+  const ceilingGridEl = $("ceilingCardsGrid");
+  const ceilingBarEl = $("ceilingRoomBar");
+
+  if (s.income) {
+    const leaseRental = s.down >= 100 ? 0 : (rows.length > 0 ? rows[0].rental : (room > 0 ? room : 0));
+    const monthlyInsurance = s.insurance ? s.insurance / 12 : 0;
+    const totalMonthlyDebt = leaseRental + s.debt + monthlyInsurance;
+    const dtiPct = s.income > 0 ? (totalMonthlyDebt / s.income) * 100 : 0;
+    const dtiStr = dtiPct.toFixed(1) + "%";
+    const isOffScale = dtiPct > 60;
+    const isOverIncome = dtiPct > 100;
+
+    let statusClass = "ok";
+    let statusText = `Within ${DTI_STANDARD_PCT}% Standard Limit`;
+    if (dtiPct <= DTI_STANDARD_PCT) {
+      statusClass = "ok";
+      statusText = `Within ${DTI_STANDARD_PCT}% Standard Limit`;
+    } else if (dtiPct <= DTI_STRETCH_PCT) {
+      statusClass = "mid";
+      statusText = `Stretching (${DTI_STANDARD_PCT} - ${DTI_STRETCH_PCT}% Cap)`;
+    } else if (dtiPct <= 60) {
+      statusClass = "bad";
+      statusText = `Limit Exceeded (> ${DTI_STRETCH_PCT}%)`;
+    } else if (dtiPct <= 100) {
+      statusClass = "bad is-critical-pill";
+      statusText = `Critical Risk: ${dtiStr} DTI (>50% Limit · Off-Scale 60%+)`;
+    } else {
+      statusClass = "bad is-critical-pill";
+      statusText = `Critical: Exceeds 100% of Income (Off-Scale 60%+)`;
+    }
+
+    if ($("linearDtiPill")) $("linearDtiPill").className = "classic-dti-pill " + statusClass;
+    if ($("linearDtiText")) $("linearDtiText").textContent = statusText;
+    if ($("linearBudgetSubtitle")) {
+      $("linearBudgetSubtitle").textContent = rows.length > 0
+        ? `Evaluating ${rows[0].name} against LKR ${fmt(s.income)}/mo net income`
+        : `Evaluating ceiling against LKR ${fmt(s.income)}/mo net income`;
+    }
+
+    const rentalPct = Math.min(100, (leaseRental / s.income) * 100);
+    const debtPct = Math.min(100 - rentalPct, (s.debt / s.income) * 100);
+    const bufferPct = Math.max(0, 100 - rentalPct - debtPct);
+
+    if (linearStackEl) {
+      linearStackEl.innerHTML = `
+        <div class="linear-stack-seg linear-seg-debt" style="width:${debtPct}%" title="Existing Debt: LKR ${fmt(s.debt)} (${debtPct.toFixed(1)}%)">Debt ${debtPct.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-lease ${isOffScale ? "is-critical" : dtiPct > DTI_STANDARD_PCT ? "is-stretch" : ""}" style="width:${rentalPct}%" title="Lease: LKR ${fmt(leaseRental)} (${rentalPct.toFixed(1)}%)">Lease ${rentalPct.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-buffer" style="width:${bufferPct}%" title="Living Buffer: LKR ${fmt(Math.max(0, s.income - totalMonthlyDebt))} (${bufferPct.toFixed(1)}%)">Buffer ${bufferPct.toFixed(1)}%</div>
+      `;
+    }
+
+    if (linearMetricsEl) {
+      linearMetricsEl.innerHTML = `
+        <div class="linear-metric-card">
+          <span class="linear-metric-label">Monthly Commitments</span>
+          <span class="linear-metric-val">LKR ${fmt(totalMonthlyDebt)}</span>
+          <span class="linear-metric-sub">${dtiStr} of net income (${statusText})</span>
+        </div>
+        <div class="linear-metric-card">
+          <span class="linear-metric-label">Primary Lease Rental</span>
+          <span class="linear-metric-val">LKR ${fmt(leaseRental)}</span>
+          <span class="linear-metric-sub">${rows.length > 0 ? rows[0].name : "Lease room"}</span>
+        </div>
+        <div class="linear-metric-card">
+          <span class="linear-metric-label">Remaining Living Buffer</span>
+          <span class="linear-metric-val">LKR ${fmt(Math.max(0, s.income - totalMonthlyDebt))}</span>
+          <span class="linear-metric-sub">${bufferPct.toFixed(1)}% uncommitted cash flow</span>
+        </div>
+      `;
+    }
+
+    const maxP = room > 0 ? (s.down >= 100 ? 0 : room / f / (1 - s.down / 100)) : 0;
+    const maxUpfront = maxP * (s.down / 100) + (s.fees || 0);
+
+    if ($("ceilingStatusTag")) $("ceilingStatusTag").textContent = `${limit}% CBSL Standard Limit`;
+    if (ceilingGridEl) {
+      ceilingGridEl.innerHTML = `
+        <div class="ceiling-stat-card">
+          <span class="ceiling-stat-label">Safe Monthly Lease Room</span>
+          <span class="ceiling-stat-val">LKR ${fmt(room)}</span>
+          <span class="ceiling-stat-sub">Maximum safe rental at your ${limit}% limit</span>
+        </div>
+        <div class="ceiling-stat-card">
+          <span class="ceiling-stat-label">Highest Vehicle Price</span>
+          <span class="ceiling-stat-val">LKR ${fmt(maxP)}</span>
+          <span class="ceiling-stat-sub">With ${s.down}% cash deposit (${s.down < 60 ? "Over 1yr reg" : "All cars"})</span>
+        </div>
+        <div class="ceiling-stat-card">
+          <span class="ceiling-stat-label">Up-front Cash Needed</span>
+          <span class="ceiling-stat-val">LKR ${fmt(maxUpfront)}</span>
+          <span class="ceiling-stat-sub">${s.down}% deposit${s.fees ? ` + LKR ${fmt(s.fees)} fees` : ""}</span>
+        </div>
+      `;
+    }
+
+    const debtW = Math.min(100, (s.debt / s.income) * 100);
+    const roomW = Math.min(100 - debtW, (room / s.income) * 100);
+    const unborrowedW = Math.max(0, 100 - debtW - roomW);
+
+    if (ceilingBarEl) {
+      ceilingBarEl.innerHTML = `
+        <div class="linear-stack-seg linear-seg-debt" style="width:${debtW}%" title="Existing Debt: LKR ${fmt(s.debt)}">Debt ${debtW.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-lease" style="width:${roomW}%" title="Available Safe Room: LKR ${fmt(room)}">Room ${roomW.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-buffer" style="width:${unborrowedW}%" title="Unborrowed Living Buffer: ${(unborrowedW).toFixed(1)}%">Buffer ${unborrowedW.toFixed(1)}%</div>
+      `;
+    }
+    if ($("ceilingRoomRatioText")) {
+      $("ceilingRoomRatioText").textContent = room > 0
+        ? `LKR ${fmt(room)} / mo available for vehicle lease`
+        : "Existing commitments exceed limit — no lease room";
+    }
+  } else {
+    if (linearStackEl) linearStackEl.innerHTML = `<div class="linear-stack-seg linear-seg-buffer" style="width:100%;background:var(--bar);color:var(--mute)">Enter net monthly income above to see cashflow allocation</div>`;
+    if ($("linearDtiPill")) $("linearDtiPill").className = "classic-dti-pill pending";
+    if ($("linearDtiText")) $("linearDtiText").textContent = "Enter Net Monthly Income";
+    if ($("linearBudgetSubtitle")) $("linearBudgetSubtitle").textContent = "Enter net monthly income to evaluate cashflow allocation";
+    if (linearMetricsEl) {
+      linearMetricsEl.innerHTML = `
+        <div class="linear-metric-card">
+          <span class="linear-metric-label">Monthly Commitments</span>
+          <span class="linear-metric-val">LKR 0.00</span>
+          <span class="linear-metric-sub">Add income above</span>
+        </div>
+        <div class="linear-metric-card">
+          <span class="linear-metric-label">Primary Lease Rental</span>
+          <span class="linear-metric-val">LKR ${fmt(rows.length > 0 ? rows[0].rental : 0)}</span>
+          <span class="linear-metric-sub">${rows.length > 0 ? rows[0].name : "No car selected"}</span>
+        </div>
+        <div class="linear-metric-card">
+          <span class="linear-metric-label">Living Buffer</span>
+          <span class="linear-metric-val">Pending</span>
+          <span class="linear-metric-sub">Enter monthly income</span>
+        </div>
+      `;
+    }
+    if (ceilingGridEl) {
+      const card3Val = 1e6 * f * (1 - s.down / 100) / s.dti;
+      ceilingGridEl.innerHTML = `
+        <div class="ceiling-stat-card">
+          <span class="ceiling-stat-label">Rental / LKR 1M</span>
+          <span class="ceiling-stat-val">LKR ${fmt(1e6 * f * (1 - s.down / 100))}</span>
+          <span class="ceiling-stat-sub">Monthly rental per 1M price</span>
+        </div>
+        <div class="ceiling-stat-card">
+          <span class="ceiling-stat-label">Income Needed / LKR 1M</span>
+          <span class="ceiling-stat-val">LKR ${fmt(card3Val)}</span>
+          <span class="ceiling-stat-sub">At ${limit}% limit</span>
+        </div>
+        <div class="ceiling-stat-card">
+          <span class="ceiling-stat-label">CBSL Down Payment</span>
+          <span class="ceiling-stat-val">${s.down}%</span>
+          <span class="ceiling-stat-sub">Statutory deposit floor</span>
+        </div>
+      `;
+    }
+    if (ceilingBarEl) ceilingBarEl.innerHTML = `<div class="linear-stack-seg linear-seg-buffer" style="width:100%;background:var(--bar);color:var(--mute)">Enter net income to calculate borrowing ceiling</div>`;
+    if ($("ceilingRoomRatioText")) $("ceilingRoomRatioText").textContent = "Enter net monthly income above";
+  }
 }
 
 function updateLtvBar(s, rows) {
@@ -3136,3 +3310,41 @@ if (typeof window !== "undefined" && window.__VAHANAIQ_PHOTOS__) {
   };
   applyStudio();
 }
+
+// Accept the reviewed first-use choices without reloading or losing in-memory work.
+window.addEventListener('vahanaiq:onboarding-complete', event => {
+  const payload = event.detail;
+  if (!payload || vehicleBatchError(payload.cars)) return;
+  for (const car of payload.cars) if (!cars.some(c => c.id === car.id || (c.catalogueId && c.catalogueId === car.catalogueId))) cars.push(assignKey(car));
+  applyState(payload.terms);
+  saveCars(cars); saveState(currentState()); render();
+});
+
+// Interactive Budget View Switcher in test build (Gauge Dial vs Linear Cash Flow vs Borrowing Ceiling)
+function initBudgetModeSwitcher() {
+  if (typeof document === "undefined") return;
+  const switcherBtns = document.querySelectorAll(".budget-mode-btn");
+  if (!switcherBtns.length) return;
+  const setMode = mode => {
+    switcherBtns.forEach(btn => {
+      const active = btn.dataset.budgetMode === mode;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active);
+    });
+    const dialEl = $("budgetGraphic");
+    const linearEl = $("budgetLinearView");
+    const ceilingEl = $("budgetCeilingView");
+    if (dialEl) dialEl.hidden = mode !== "dial";
+    if (linearEl) linearEl.hidden = mode !== "linear";
+    if (ceilingEl) ceilingEl.hidden = mode !== "ceiling";
+    try { localStorage.setItem("vahanaiq_budget_mode", mode); } catch (_) {}
+  };
+  switcherBtns.forEach(btn => {
+    btn.addEventListener("click", () => setMode(btn.dataset.budgetMode));
+  });
+  try {
+    const saved = localStorage.getItem("vahanaiq_budget_mode");
+    if (saved && ["dial", "linear", "ceiling"].includes(saved)) setMode(saved);
+  } catch (_) {}
+}
+initBudgetModeSwitcher();

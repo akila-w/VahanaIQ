@@ -1,9 +1,14 @@
 import { test, expect } from '@playwright/test';
+
+const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+test.beforeEach(async ({context}) => { await seedReturning(context); });
+
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:8123';
 
 for (const width of [320, 390, 768, 1440]) for (const motion of ['no-preference', 'reduce']) {
   test(`guidance motion at ${width}px with ${motion}`, async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width, height: 844 }, reducedMotion: motion });
+    await seedReturning(context);
     const page = await context.newPage();
     for (const route of ['index', 'catalogue', 'studio']) {
       await page.goto(`${BASE}/${route}.html`);
@@ -34,7 +39,8 @@ test('rapid chart changes retarget from the visible angle and reduced motion sto
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto(`${BASE}/index.html`);
   await page.locator('#addVehicleBtn').click(); await page.fill('#catalogueSearch', 'Toyota'); await page.locator('#catalogueAddSearch').click();
-  if (!await page.locator('#income').isVisible()) await page.locator('#toggleTerms').click();
+  if (await page.locator('#toggleTerms').isVisible()) await page.locator('#toggleTerms').click();
+  await page.locator('.terms-disclosure').filter({has:page.locator('#income')}).locator('summary').click();
   await page.fill('#income', '2500000'); await page.locator('#income').dispatchEvent('change');
   await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => {}))));
   const result = await page.locator('#rate').evaluate(async input => {
@@ -74,6 +80,7 @@ test('rapid chart changes retarget from the visible angle and reduced motion sto
 for (const mode of ['desktop', 'reduced', 'touch']) {
   test(`hover feedback is smooth and appropriate on ${mode}`, async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width: mode === 'touch' ? 390 : 1440, height: 900 }, hasTouch: mode === 'touch', reducedMotion: mode === 'reduced' ? 'reduce' : 'no-preference' });
+    await seedReturning(context);
     const page = await context.newPage();
     for (const [route, selector] of [['index', '#addVehicleBtn'], ['catalogue', '.review-bar button'], ['studio', '#exportBtn']]) {
       await page.goto(`${BASE}/${route}.html`);
@@ -103,6 +110,7 @@ for (const mode of ['desktop', 'reduced', 'touch']) {
 for (const width of [320, 390, 600, 768, 980, 1024, 1280, 1440, 1920]) for (const theme of ['light', 'dark']) {
   test(`footer disclosures and navigation at ${width}px in ${theme}`, async ({ browser }) => {
     const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, hasTouch: true, reducedMotion: 'reduce' });
+    await seedReturning(context);
     const page = await context.newPage(); await page.goto(`${BASE}/index.html`);
     await expect(page.locator('.foot-note')).toHaveCount(3);
     const footer = await page.locator('.foot').boundingBox();
