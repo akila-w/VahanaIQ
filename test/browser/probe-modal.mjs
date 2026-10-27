@@ -27,6 +27,7 @@ const variants = {
 };
 
 const INPUTS = { income: '220000', rate: '16', tenure: '84', down: '60', insurance: '120000', fees: '150000' };
+const CAR = { id: 'qa-example', name: 'Independent QA example', price: 7269515.4, cond: 'New', pt: 'Petrol', w: 'Official', img: '', custom: true };
 
 const browser = await webkit.launch();
 
@@ -37,13 +38,18 @@ async function run(label, css, width) {
   for (let i = 0; i < TRIALS; i++) {
     const context = await browser.newContext({ viewport: { width, height: width === 844 ? 390 : 900 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
-    await page.addInitScript(inputs => {
+    await page.addInitScript(({ inputs, car }) => {
       localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify(inputs));
+      localStorage.setItem('vahanaiq_comparison_v3', JSON.stringify({ version: 3, cars: [car] }));
       localStorage.setItem('vahanaiq_guidance_v1', JSON.stringify({ version: 1, welcomed: true, tips: false, tours: {} }));
-    }, INPUTS);
+    }, { inputs: INPUTS, car: CAR });
     await page.goto(`${BASE}/index.html`);
     if (css) await page.addStyleTag({ content: css });
-    await page.locator('#rows [data-act="details"]').click();
+    try {
+      await page.locator('#rows [data-act="details"]').click({ timeout: 20000 });
+    } catch (error) {
+      notes.push(`trial${i}:click=${error.message.split('\n')[0]}`);
+    }
     const box = await page.evaluate(() => {
       const m = document.querySelector('.modal-bg.open .modal');
       if (!m) return { state: 'no open modal' };
