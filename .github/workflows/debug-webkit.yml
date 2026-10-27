@@ -35,5 +35,5 @@ jobs:
       - name: Frame clock probe with the fix in place
         continue-on-error: true
         run: node test/browser/probe-clocks.mjs
-      - name: Run the browser specs the PR runs
-        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs --browser=webkit --reporter=list
+      - name: Run help-alignment alone on webkit
+        run: npx playwright test test/browser/help-alignment.spec.mjs --browser=webkit --reporter=list --workers=1 --timeout=15000
