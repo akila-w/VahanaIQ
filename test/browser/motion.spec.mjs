@@ -118,7 +118,8 @@ for (const width of [320, 390, 600, 768, 980, 1024, 1280, 1440, 1920]) for (cons
     await expect(page.locator('.foot-note[open]')).toHaveCount(1);
     for (const link of await page.locator('.foot .site-links a, .foot-meta a, .foot-meta button').all()) {
       const rect = await link.boundingBox();
-      expect(rect.height).toBeGreaterThanOrEqual(44);
+      // Firefox reports a 44px target as 43.99994 (sub-pixel rounding in its layout), so compare whole pixels.
+      expect(Math.round(rect.height)).toBeGreaterThanOrEqual(44);
       expect(rect.x).toBeGreaterThanOrEqual(0); expect(rect.x + rect.width).toBeLessThanOrEqual(width);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

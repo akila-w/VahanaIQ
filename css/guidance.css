@@ -8,8 +8,10 @@
 .guide-button.guide-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 .guide-text-button { padding: 8px; border: 0; background: transparent; color: var(--ink); min-height: 44px; text-decoration: underline; text-underline-offset: 3px; font-size: 13px; }
 .guide-context-row { display: flex; align-items: center; gap: var(--space-4); width: fit-content; max-width: 100%; min-width: 0; }
-.guide-context-row:has(> h2, > h3) { align-items: center; }
+.guide-context-row:has(> h2, > h3) { align-items: flex-start; }
 .guide-context-row > :is(h2, h3, p, strong, label) { min-width: 0; margin: 0; }
+/* Align the icon with the heading's first line, not the middle of a heading that wraps at narrow widths. */
+.guide-context-row > :is(h2, h3) { margin-top: calc((var(--touch-target) - 1.2em) / 2); margin-top: calc((var(--touch-target) - 1lh) / 2); }
 .guide-context-row > .guide-context { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 var(--touch-target); box-sizing: border-box; width: var(--touch-target); min-width: var(--touch-target); max-width: var(--touch-target); height: var(--touch-target); min-height: var(--touch-target); max-height: var(--touch-target); padding: 0; margin: 0; border: 0; border-radius: var(--radius-circle); background: transparent; color: var(--accent); line-height: 1; }
 .guide-context::before { content: ''; display: block; width: 18px; height: 18px; background: currentColor; mask: url('../assets/icons/lucide/circle-help.svg') center / contain no-repeat; -webkit-mask: url('../assets/icons/lucide/circle-help.svg') center / contain no-repeat; }
 .terms-subcard-financing .terms-field > label { min-height: var(--touch-target); align-items: center; }
