@@ -6335,7 +6335,7 @@ button.cond-tag:hover {
 .foot-note summary:focus-visible { outline: 3px solid var(--accent-bright); outline-offset: 3px; border-radius: var(--radius-control); }
 .foot .foot-link-groups { display: flex; flex-wrap: wrap; gap: 0 var(--space-24); padding: var(--space-4) 0; margin: var(--space-12) 0 var(--space-8); border-block: 1px solid var(--line); }
 .foot-link-groups .site-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-16); margin: 0; }
-.foot-link-groups .site-links a { min-height: var(--touch-target); font-size: 12px; width: fit-content; max-width: 100%; }
+.foot-link-groups .site-links a { min-height: var(--touch-target); height: var(--touch-target); font-size: 12px; width: fit-content; max-width: 100%; padding: 0 2px; display: inline-flex; align-items: center; box-sizing: border-box; }
 .foot .copyright { font-size: 11px; line-height: 1.55; max-width: none; margin-bottom: var(--space-4); }
 .foot .foot-meta { gap: var(--space-4) var(--space-16); align-items: center; margin: 0; }
 .foot .foot-meta > span { white-space: nowrap; }
@@ -6456,9 +6456,11 @@ button.cond-tag:hover {
 }
 
 .site-links a {
-  min-height: 32px;
+  min-height: var(--touch-target);
+  height: var(--touch-target);
   display: inline-flex;
   align-items: center;
+  box-sizing: border-box;
   color: var(--footer-text, #627166);
   text-decoration: none;
   text-underline-offset: 4px;
@@ -6488,7 +6490,7 @@ button.cond-tag:hover {
 .foot-meta {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 18px;
   font-size: 11px;
   line-height: 1.5;
@@ -6500,24 +6502,24 @@ button.cond-tag:hover {
 .foot-meta button.link-btn,
 #openPhotoCreditsBtn,
 #footerSourceGuide {
-  all: unset;
-  display: inline;
-  vertical-align: baseline;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  vertical-align: middle;
   cursor: pointer;
   color: var(--accent, #103e36);
   text-decoration: underline;
   text-underline-offset: 3px;
   font-size: 11px;
   font-weight: inherit;
-  line-height: inherit;
-  padding: 0 !important;
-  margin: 0 !important;
-  min-height: auto !important;
-  min-width: auto !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  transform: none !important;
+  line-height: 1.4;
+  padding: 0 2px;
+  margin: 0;
+  min-width: auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transform: none;
   transition: color 0.15s ease, opacity 0.15s ease;
 }
 
