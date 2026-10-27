@@ -10,7 +10,7 @@ permissions:
 jobs:
   debug:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -32,19 +32,8 @@ jobs:
           done
           echo "The local server did not start" >&2
           exit 1
-      - name: Probe catalogue stability
+      - name: Frame clock probe with the fix in place
         continue-on-error: true
         run: node test/browser/probe-clocks.mjs
-      - name: Probe on the failing spec path (help-alignment 320 light)
-        continue-on-error: true
-        run: |
-          npx playwright test test/browser/help-alignment.spec.mjs --browser=webkit \
-            --reporter=list --workers=1 --timeout=20000 \
-            --grep "contextual help alignment at 320px in light" 2>&1 | tail -40
-      - name: Upload screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: probe-screenshots
-          path: catalogue-*.png
-          if-no-files-found: ignore
+      - name: Run the browser specs the PR runs
+        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs --browser=webkit --reporter=list
