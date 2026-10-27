@@ -16,74 +16,41 @@ const rafProbe = () => new Promise(resolve => {
 
 const browser = await webkit.launch();
 
-async function frameTest({ width = 320, css = '', route = 'catalogue', init = null, label = '' }) {
+async function frameTest({ width = 320, css = '', route = 'catalogue', label = '' }) {
   const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
   const page = await context.newPage();
-  if (init) await page.addInitScript(init);
   await page.goto(`${BASE}/${route}.html`);
   if (css) await page.addStyleTag({ content: css });
   await page.waitForTimeout(400);
   const raf = await page.evaluate(rafProbe);
-  const info = await page.evaluate(() => ({
-    h: document.documentElement.scrollHeight,
-    imgs: document.querySelectorAll('#vehicles img').length,
-    loaded: [...document.querySelectorAll('#vehicles img')].filter(i => i.complete && i.naturalWidth).length,
-    lazy: document.querySelectorAll('img[loading="lazy"]').length,
-    ready: document.readyState,
-  }));
+  const h = await page.evaluate(() => document.documentElement.scrollHeight);
   await context.close();
-  const flag = raf.stalled ? 'STALLED' : 'ok';
-  console.log(`${label}: ${raf.ticks} ticks/${raf.ms}ms ${flag} | docH ${info.h} imgs ${info.imgs} loaded ${info.loaded} lazy ${info.lazy} ready ${info.ready}`);
+  console.log(`${label}: ${raf.ticks} ticks/${raf.ms}ms ${raf.stalled ? 'STALLED' : 'ok'} | docH ${h}`);
 }
 
-console.log('=== 1. paint vs layout of card images, 320px ===');
-await frameTest({ label: 'baseline', css: '' });
-await frameTest({ label: 'img visibility:hidden', css: 'img{visibility:hidden!important}' });
-await frameTest({ label: 'img display:none', css: 'img{display:none!important}' });
-await frameTest({ label: 'img opacity:0', css: 'img{opacity:0!important}' });
-await frameTest({ label: 'photo-button only hidden', css: '.photo-button{display:none!important}' });
+const cases = [
+  ['baseline', ''],
+  ['.photo-button aspect-ratio off, fixed height', '.photo-button{aspect-ratio:auto!important;height:178px!important}'],
+  ['.photo-button overflow visible', '.photo-button{overflow:visible!important}'],
+  ['.photo-button overflow clip', '.photo-button{overflow:clip!important}'],
+  ['.photo-button padding-top ratio box', '.photo-button{aspect-ratio:auto!important;height:0!important;padding-top:62.5%!important}'],
+  ['.brand-badge display:none', '.brand-badge{display:none!important}'],
+  ['.brand-badge no backdrop-filter', '.photo-button .brand-badge{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}'],
+  ['.photo-count display:none', '.photo-count{display:none!important}'],
+  ['img transition:none', '.photo-button img{transition:none!important}'],
+  ['.card border-radius:0', '.card{border-radius:0!important}'],
+  ['.card overflow:visible', '.card{overflow:visible!important}'],
+  ['.card overflow:clip', '.card{overflow:clip!important}'],
+  ['.photo-button contain:paint', '.photo-button{contain:paint!important}'],
+  ['.photo-button isolation:isolate', '.photo-button{isolation:isolate!important}'],
+  ['.photo-button backface-visibility', '.photo-button{backface-visibility:hidden!important;transform:translateZ(0)!important}'],
+  ['.photo-button width:auto', '.photo-button{width:auto!important}'],
+  ['.photo-button position:static', '.photo-button{position:static!important}'],
+  ['only .card content-visibility (control)', '.card{content-visibility:auto!important;contain-intrinsic-size:auto 700px}'],
+  ['baseline repeat', ''],
+];
 
-console.log('=== 2. lazy loading / decode pipeline, 320px ===');
-await frameTest({
-  label: 'no native lazy (loading=eager)',
-  init: `addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('img[loading="lazy"]').forEach(i=>{i.loading='eager'})});`,
-});
-await frameTest({
-  label: 'IntersectionObserver stubbed out',
-  init: `window.IntersectionObserver=class{constructor(){}observe(){}unobserve(){}disconnect(){}takeRecords(){return[]}};`,
-});
-await frameTest({
-  label: 'img.decode stubbed out',
-  init: `HTMLImageElement.prototype.decode=function(){return Promise.resolve()};`,
-});
-await frameTest({ label: 'srcset+sizes removed', css: 'img{width:284px;height:177px}' });
-await frameTest({
-  label: 'srcset/sizes/loading stripped',
-  init: `addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('#vehicles img').forEach(i=>{i.removeAttribute('srcset');i.removeAttribute('sizes');i.loading='eager';})});`,
-});
-
-console.log('=== 3. stylesheet-by-stylesheet, 320px ===');
-await frameTest({
-  label: 'only tokens.css',
-  init: `addEventListener('DOMContentLoaded',()=>{[...document.styleSheets].forEach(s=>{if(!/tokens\\.css/.test(s.href||''))s.disabled=true})});`,
-});
-await frameTest({
-  label: 'no curated-catalogue.css',
-  init: `addEventListener('DOMContentLoaded',()=>{[...document.styleSheets].forEach(s=>{if(/curated-catalogue\\.css/.test(s.href||''))s.disabled=true})});`,
-});
-await frameTest({
-  label: 'no guidance.css',
-  init: `addEventListener('DOMContentLoaded',()=>{[...document.styleSheets].forEach(s=>{if(/guidance\\.css/.test(s.href||''))s.disabled=true})});`,
-});
-
-console.log('=== 4. containment experiments, 320px ===');
-await frameTest({ label: 'card contain:paint', css: '.card{contain:paint!important}' });
-await frameTest({ label: 'video/lazy card content-visibility', css: '.card{content-visibility:auto!important;contain-intrinsic-size:auto 700px}' });
-await frameTest({ label: '#vehicles content-visibility', css: '#vehicles{content-visibility:auto!important}' });
-await frameTest({ label: 'images decoded-size cap', css: '#vehicles img{max-width:284px!important;height:auto!important}' });
-
-console.log('=== 5. control repeat (browser health) ===');
-await frameTest({ label: 'baseline repeat', css: '' });
-await frameTest({ label: 'index.html 320', route: 'index' });
+console.log('=== .photo-button internals at 320px ===');
+for (const [label, css] of cases) await frameTest({ label, css });
 
 await browser.close();
