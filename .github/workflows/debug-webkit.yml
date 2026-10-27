@@ -32,8 +32,5 @@ jobs:
           done
           echo "The local server did not start" >&2
           exit 1
-      - name: Frame clock probe with the fix in place
-        continue-on-error: true
-        run: node test/browser/probe-clocks.mjs
-      - name: Run the full webkit suite exactly as CI does
-        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs --browser=webkit --reporter=list
+      - name: Details modal frame clock probe
+        run: node test/browser/probe-modal.mjs
