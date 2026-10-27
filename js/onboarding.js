@@ -137,7 +137,7 @@ function init(forcedOpen = false) {
   closeBtn.type = 'button';
   closeBtn.setAttribute('aria-label', 'Exit onboarding');
   closeBtn.title = 'Exit onboarding';
-  closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:block;width:14px;height:14px;margin:auto;"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
+  closeBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="onboarding-close-icon"><path d="M18 6L6 18M6 6l12 12"></path></svg>';
   closeBtn.addEventListener('click', () => exitOnboarding());
 
   top.append(brandGroup, stepper, closeBtn);
@@ -229,7 +229,7 @@ function init(forcedOpen = false) {
       if (numSpan) numSpan.textContent = idx < step ? '✓' : String(idx + 1);
     });
     const pct = (step / (stepLabels.length - 1)) * 100;
-    progressLine.style.width = `${pct}%`;
+    progressLine.setAttribute('style', `width:${pct}%`);
   }
 
   function title(headText, subText, eyebrow = 'Sri Lanka Vehicle Finance Intelligence') {
@@ -880,7 +880,7 @@ function init(forcedOpen = false) {
       const debt = parseNumber(terms.debt);
 
       if (!income) {
-        dtiFill.style.width = '0%';
+        dtiFill.setAttribute('style', `width:${0}%`);
         dtiFill.className = 'onboarding-dti-fill';
         dtiText.innerHTML = `<strong>Optional:</strong> Entering your income unlocks your personal Debt-to-Income gauge and cashflow spectrum. You can skip this step at any time.`;
         return;
@@ -901,7 +901,7 @@ function init(forcedOpen = false) {
       const totalCommitments = debt + avgRental;
       const dtiPct = Math.round((totalCommitments / income) * 100);
       const cappedBar = Math.min(100, Math.max(5, dtiPct));
-      dtiFill.style.width = `${cappedBar}%`;
+      dtiFill.setAttribute('style', `width:${cappedBar}%`);
 
       if (dtiPct <= 40) {
         dtiFill.className = 'onboarding-dti-fill safe';

@@ -8770,3 +8770,21 @@ main > #savingsPanel { animation-delay: 180ms; }
     align-items: flex-end;
   }
 }
+
+.header-tour-icon {
+  vertical-align: -2px;
+  margin-right: 5px;
+}
+
+.linear-stack-placeholder {
+  width: 100%;
+  background: var(--bar);
+  color: var(--mute);
+}
+
+.onboarding-close-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: auto;
+}

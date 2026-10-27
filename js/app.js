@@ -1101,7 +1101,7 @@ function updateBudgetExtras(s, f, room, rows) {
         : "Existing commitments exceed limit — no lease room";
     }
   } else {
-    if (linearStackEl) linearStackEl.innerHTML = `<div class="linear-stack-seg linear-seg-buffer" style="width:100%;background:var(--bar);color:var(--mute)">Enter net monthly income above to see cashflow allocation</div>`;
+    if (linearStackEl) linearStackEl.innerHTML = `<div class="linear-stack-seg linear-seg-buffer linear-stack-placeholder">Enter net monthly income above to see cashflow allocation</div>`;
     if ($("linearDtiPill")) $("linearDtiPill").className = "classic-dti-pill pending";
     if ($("linearDtiText")) $("linearDtiText").textContent = "Enter Net Monthly Income";
     if ($("linearBudgetSubtitle")) $("linearBudgetSubtitle").textContent = "Enter net monthly income to evaluate cashflow allocation";
@@ -1144,7 +1144,7 @@ function updateBudgetExtras(s, f, room, rows) {
         </div>
       `;
     }
-    if (ceilingBarEl) ceilingBarEl.innerHTML = `<div class="linear-stack-seg linear-seg-buffer" style="width:100%;background:var(--bar);color:var(--mute)">Enter net income to calculate borrowing ceiling</div>`;
+    if (ceilingBarEl) ceilingBarEl.innerHTML = `<div class="linear-stack-seg linear-seg-buffer linear-stack-placeholder">Enter net income to calculate borrowing ceiling</div>`;
     if ($("ceilingRoomRatioText")) $("ceilingRoomRatioText").textContent = "Enter net monthly income above";
   }
 }
