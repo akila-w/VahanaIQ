@@ -20,14 +20,6 @@
   color: var(--ink);
   border-color: var(--control-border);
 }
-[data-theme="dark"] .studio-panel input,
-[data-theme="dark"] .studio-panel select,
-:root:not([data-theme="light"]) .studio-panel input,
-:root:not([data-theme="light"]) .studio-panel select {
-  background: rgba(15, 23, 42, 0.65);
-  color: var(--ink, #f1f5f9);
-  border-color: var(--line, #334155);
-}
 .studio-panel h2{font-size:20px;margin-bottom:14px}
 .studio-field{display:grid;gap:6px;font-size:11px;font-weight:650;color:var(--mute);margin-bottom:12px}
 .studio-field.is-label{font-size:11px;font-weight:650;display:flex;align-items:center;justify-content:space-between;gap:8px}

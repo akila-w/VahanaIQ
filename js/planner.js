@@ -13,27 +13,29 @@ function fmtM(n) {
   return n.toFixed(0);
 }
 
-function buildSavingsTrajectorySvg(r, savedAmount, date, targetDateStr = '') {
-  const months = (r.months && r.months > 0 && r.months <= 120)
+export function buildSavingsTrajectorySvg(r, savedAmount, date, targetDateStr = '', availableWidth = 680) {
+  const MAX_TRAJECTORY_MONTHS = 1200;
+  const months = (r.months && r.months > 0 && r.months <= MAX_TRAJECTORY_MONTHS)
     ? r.months
-    : (r.targetMonths && r.targetMonths > 0 && r.targetMonths <= 120)
+    : (r.targetMonths && r.targetMonths > 0 && r.targetMonths <= MAX_TRAJECTORY_MONTHS)
       ? r.targetMonths
       : null;
-  if (!months || months <= 0 || months > 120) return '';
+  if (!months || months <= 0 || months > MAX_TRAJECTORY_MONTHS) return '';
   const target = r.target;
   const isTargetTrajectory = (!r.months || r.monthly <= 0) && r.targetMonths > 0;
   const monthly = isTargetTrajectory ? (r.required || 0) : r.monthly;
   const deposit = r.deposit;
   const effectiveDate = date || (targetDateStr ? targetDateStr : '');
 
-  const xStart = 62, xEnd = 650, chartW = xEnd - xStart;
+  const viewWidth = Math.max(180, Math.min(680, Number.isFinite(availableWidth) ? availableWidth : 680));
+  const xStart = 62, xEnd = viewWidth - 30, chartW = xEnd - xStart;
   const yBase = 155, yTop = 25, chartH = yBase - yTop;
 
   const getX = m => (xStart + (m / months) * chartW).toFixed(1);
   const getY = val => (yBase - (Math.min(target, Math.max(0, val)) / target) * chartH).toFixed(1);
 
   const sampleMonths = new Set([0, months]);
-  const step = months <= 12 ? 1 : months <= 24 ? 2 : months <= 48 ? 4 : 6;
+  const step = months <= 12 ? 1 : months <= 24 ? 2 : months <= 48 ? 4 : months <= 120 ? 6 : months <= 360 ? 12 : 24;
   for (let m = step; m < months; m += step) sampleMonths.add(m);
 
   let depMonth = null;
@@ -92,7 +94,7 @@ function buildSavingsTrajectorySvg(r, savedAmount, date, targetDateStr = '') {
         </div>
       </div>
       <div class="planner-trajectory-box">
-        <svg class="planner-trajectory-svg" viewBox="0 0 680 185" aria-hidden="true">
+        <svg class="planner-trajectory-svg" viewBox="0 0 ${viewWidth} 185" aria-hidden="true">
           <line x1="${xStart}" y1="${yTop}" x2="${xEnd}" y2="${yTop}" class="trajectory-ceiling-line" />
           <line x1="${xStart}" y1="${(yTop + yBase) / 2}" x2="${xEnd}" y2="${(yTop + yBase) / 2}" class="trajectory-grid-line" />
           <line x1="${xStart}" y1="${yBase}" x2="${xEnd}" y2="${yBase}" class="trajectory-axis-base" />
@@ -235,7 +237,14 @@ export function initPlanner({ vehicles, settings }) {
       targetCardHtml = `<div class="planner-target-card ${cardClass}"><div class="planner-target-top"><span class="glyph glyph-calendar" aria-hidden="true"></span><strong>Pace Needed for Target Date</strong><span class="tag ${badgeClass}">${badgeText}</span></div><div class="planner-target-body"><div class="planner-target-stat"><span>Required contribution:</span><strong>LKR ${fmt(r.required)} / month</strong>${r.requiredPercent !== null ? `<span class="planner-target-pct">(${r.requiredPercent.toFixed(1)}% of income)</span>` : ''}</div><div class="planner-target-note ${noteClass}">${noteText}</div></div></div>`;
     }
 
-    const visualTrajectoryHtml = r.months === 0 ? buildFundedCard(r, savedAmount) : buildSavingsTrajectorySvg(r, savedAmount, date, targetDateStr);
+    const resultEl = $('plannerResult');
+    let plotWidth = 680;
+    if (resultEl.clientWidth > 0 && typeof getComputedStyle === 'function') {
+      const resultStyle = getComputedStyle(resultEl);
+      const cardPadding = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--space-18')) || 18;
+      plotWidth = resultEl.clientWidth - parseFloat(resultStyle.paddingLeft) - parseFloat(resultStyle.paddingRight) - 2 * cardPadding - 2;
+    }
+    const visualTrajectoryHtml = r.months === 0 ? buildFundedCard(r, savedAmount) : buildSavingsTrajectorySvg(r, savedAmount, date, targetDateStr, plotWidth);
 
     $('plannerResult').innerHTML = `<div class="planner-hero"><div class="planner-hero-icon"><span class="glyph glyph-target" aria-hidden="true"></span></div><div class="planner-hero-content"><div class="planner-hero-title">${esc(end)}</div><div class="planner-hero-sub">${r.months && date ? 'Estimated completion: '+esc(date) : (r.targetMonths && targetDateStr ? 'Target date: ' + esc(targetDateStr) + ' · Required: LKR ' + fmt(r.required) + ' / mo' : 'No investment growth or future price changes assumed')}</div></div>${r.months !== null && r.months <= 12 ? '<span class="tag ok">Fast Track</span>' : ''}</div><div class="planner-progress-card"><div class="planner-progress-header"><span class="planner-progress-label">Savings Progress</span><span class="planner-progress-pct">${r.progress.toFixed(1)}%</span></div><div class="planner-progress-track"><div class="planner-progress-fill" style="width:${r.progress.toFixed(1)}%"></div></div><div class="planner-progress-sub"><span>LKR ${fmt(savedAmount)} saved</span><span>LKR ${fmt(r.remaining)} remaining</span></div><label class="sr-only" for="savingsProgress">Savings progress</label><progress id="savingsProgress" class="sr-only" max="100" value="${r.progress}">${r.progress.toFixed(1)}%</progress></div><div class="planner-metrics"><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">Target Upfront</span><span class="glyph glyph-wallet" aria-hidden="true"></span></div><div class="telemetry-card-val">LKR ${fmt(r.target)}</div><div class="telemetry-card-sub"><span>Deposit + fees</span></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">Already Saved</span><span class="glyph glyph-circle-check" aria-hidden="true"></span></div><div class="telemetry-card-val">LKR ${fmt(savedAmount)}</div><div class="telemetry-card-sub"><span>${r.progress.toFixed(1)}% of target</span></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">Still to Save</span><span class="glyph glyph-piggy-bank" aria-hidden="true"></span></div><div class="telemetry-card-val val-rental">LKR ${fmt(r.remaining)}</div><div class="telemetry-card-sub"><span>Cash gap needed</span></div></div><div class="telemetry-card highlight"><div class="telemetry-card-top"><span class="telemetry-card-title">Monthly Saving</span><span class="glyph glyph-chart-no-axes-combined" aria-hidden="true"></span></div><div class="telemetry-card-val">LKR ${fmt(r.monthly)}</div><div class="telemetry-card-sub"><span>${r.percent !== null ? r.percent.toFixed(1) + '% of income' : 'Fixed contribution'}</span></div></div></div>${visualTrajectoryHtml}<div class="planner-breakdown-card"><div class="planner-breakdown-header"><span class="planner-breakdown-title">Upfront Cost Composition</span><span class="tag ${cbslBadgeClass}">${cbslBadgeText}</span></div><div class="planner-cost-split-bar" role="progressbar" aria-label="Upfront cost composition"><div class="cost-split-seg seg-deposit" style="width:${depPct}%" title="Statutory Deposit: LKR ${fmt(r.deposit)} (${depPct}%)"></div><div class="cost-split-seg seg-fees" style="width:${feePct}%" title="Fees &amp; Insurance: LKR ${fmt(r.fees+r.insurance)} (${feePct}%)"></div></div><div class="planner-cost-split-legend"><span class="split-legend-item"><span class="legend-swatch swatch-deposit"></span> Statutory Deposit: ${depPct}%</span><span class="split-legend-item"><span class="legend-swatch swatch-fees"></span> Fees &amp; Insurance: ${feePct}%</span></div><dl class="planner-breakdown"><div><dt>${r.downPct===100?'Cash price':'Statutory cash deposit ('+r.downPct+'%)'}</dt><dd>LKR ${fmt(r.deposit)}</dd></div><div><dt>Fees &amp; first-year comprehensive insurance</dt><dd>LKR ${fmt(r.fees+r.insurance)}</dd></div></dl></div>${targetCardHtml}${r.percent !== null ? `<p class="hint planner-insight-hint">${r.percent.toFixed(1)}% of net income saved each month${r.fitsKnownCommitments ? ' · fits income after entered loan payments, before living costs' : ''}.</p>` : '<p class="hint planner-insight-hint">Enter income above to see the percentage saved.</p>'}${r.fitsKnownCommitments === false ? '<p class="bad planner-warn-box">This contribution exceeds income after your existing loan payments.</p>' : ''}${r.targetError ? `<p class="bad planner-warn-box">${esc(r.targetError)}</p>` : ''}<p class="hint planner-disclaimer">${['published','starting','user-entered','seller-listed'].includes(v.priceBasis)?'Using the selected price; confirm it before purchase.':'This vehicle has an unverified estimate. Enter a seller quote before relying on this goal.'} A saved deposit does not guarantee lease approval. Projections assume monthly contributions, no investment growth, and no vehicle price changes.</p>`;
   }
@@ -281,5 +290,12 @@ export function initPlanner({ vehicles, settings }) {
     showToast('Saved goal removed.','Undo',()=>{if(token!==generation)return;store.scenarios=before;savePlanner(store);options();});
   });
   window.addEventListener('vahanaiq:planner-reload',()=>{generation++;store=loadPlanner();signature='';restore();options();$('plannerVehicle').value=store.draft.plannerVehicle||'';render();});
+  if (typeof ResizeObserver === 'function') {
+    let lastWidth = 0;
+    new ResizeObserver(entries => {
+      const width = entries[0].contentRect.width;
+      if (width > 0 && Math.abs(width - lastWidth) > 1) { lastWidth = width; render(); }
+    }).observe($('plannerResult'));
+  }
   render(); return render;
 }

@@ -93,10 +93,12 @@ test.describe('Layout: nothing is wider than the screen', () => {
       const page = await context.newPage();
       await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
       await addToyotas(page);
-      const mid = await page.evaluate(() => {
+      const mid = await page.evaluate(async () => {
         const terms = document.getElementById('loanTermsHead');
         const results = document.getElementById('comparisonPanel').getBoundingClientRect();
         window.scrollTo({ top: results.top + window.scrollY, behavior: 'instant' });
+        // Allow sticky positioning to settle before taking the exact pixel measurement.
+        await new Promise(requestAnimationFrame);
         const style = getComputedStyle(terms);
         return {
           box: terms.getBoundingClientRect().toJSON(),
@@ -110,10 +112,11 @@ test.describe('Layout: nothing is wider than the screen', () => {
       expect(mid.overflowY).toBe('auto');
       if (height <= 800) expect(mid.scrollHeight).toBeGreaterThan(mid.clientHeight);
 
-      const bottomDiff = await page.evaluate(() => {
+      const bottomDiff = await page.evaluate(async () => {
         const terms = document.getElementById('loanTermsHead');
         const savings = document.getElementById('savingsPanel');
         window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+        await new Promise(requestAnimationFrame);
         return Math.abs(terms.getBoundingClientRect().bottom - savings.getBoundingClientRect().bottom);
       });
       expect(bottomDiff).toBeLessThanOrEqual(1);

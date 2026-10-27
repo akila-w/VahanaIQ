@@ -165,7 +165,7 @@ export function yearlySchedule(loan, rate, n) {
 
 // Reads and sanitizes all financing and budgeting parameters from the DOM.
 // Enforces CBSL Direction No. 01 of 2026 LTV bounds (40% floor for used cars, 60% for new/recent),
-// statutory 84-month tenure ceiling, and 6-month tenure floor.
+// product's 84-month tenure ceiling and 6-month tenure floor.
 // Sanitizes non-numeric strings, NaNs, infinities, and negative numbers into safe defaults.
 export function getSettings() {
   const rawRate = num("rate");

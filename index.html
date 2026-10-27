@@ -57,6 +57,8 @@
   <script src="js/catalogue-data.js?v=2.12.0" defer></script>
   <script type="module" src="js/catalogue-photo-overlay.js?v=2.12.0"></script>
   <script type="module" src="js/app.js?v=2.12.0"></script>
+<link rel="stylesheet" href="css/guidance.css?v=2.12.0">
+  <script type="module" src="js/guidance.js?v=2.12.0"></script>
 </head>
 <body>
 <a class="skip" href="#h-terms">Skip to Calculator</a>
@@ -97,15 +99,30 @@
       <p class="eyebrow">Sri Lanka Vehicle Finance</p>
       <h1>Know Your Monthly Rental.</h1>
       <p class="intro">Set your terms, add the cars you are considering, and see what you can genuinely afford — before you walk into a showroom.</p>
+      <details class="quick-start-guide" id="quickStartGuide">
+        <summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> First time here? How to use VahanaIQ &amp; key Sri Lankan lease terms</summary>
+        <div class="quick-start-body">
+          <ol class="quick-start-steps">
+            <li><strong>1. Set your financing terms:</strong> Choose a strategy preset or adjust your interest rate (reducing balance vs flat rate), tenure (6–84 months), and down payment.</li>
+            <li><strong>2. Add your net monthly income:</strong> Enter your take-home monthly income and existing loan or card repayments to unlock your personal Debt-to-Income (DTI) gauge and cashflow spectrum.</li>
+            <li><strong>3. Compare &amp; plan:</strong> Pin vehicles for side-by-side comparison, inspect full amortisation schedules, or map a deposit savings timeline below.</li>
+          </ol>
+          <dl class="quick-start-glossary">
+            <div><dt>CBSL Statutory Down Payment (60% / 40%)</dt><dd>Under Central Bank of Sri Lanka Directions No. 01 of 2026 (cl. 2.1), brand new, reconditioned, and recently registered (&lt;1 year) cars require at least 60% cash down (max 40% loan). Cars registered in Sri Lanka for over 1 year and commercial vehicles require at least 40% down (max 60% loan).</dd></div>
+            <div><dt>Reducing Balance vs Flat Rate</dt><dd>Regulated leases calculate interest on the reducing principal balance each month. A flat-rate quote charges interest on the initial loan amount throughout the term (for example, 12% flat over 84 months equals ~20.47% reducing).</dd></div>
+            <div><dt>Net Income Commitment Ratio (40% / 50% DTI)</dt><dd>VahanaIQ's affordability benchmark measures total monthly debt commitments (proposed lease rental + existing loans/cards + monthly insurance) against your net take-home income. 40% is the standard prudent guideline; 50% is the stretch ceiling.</dd></div>
+          </dl>
+        </div>
+      </details>
     </div>
     <div class="hero-aside">
       <span class="edition"><span aria-hidden="true">CBSL Directions 2026</span><span class="sr-only">Down-payment rules follow CBSL Directions No. 01 of 2026</span></span>
       <div class="metrics">
         <div><strong>60%</strong><span>Minimum down payment</span></div>
         <div><strong>84</strong><span>Maximum term, months</span></div>
-        <div><strong>50%</strong><span>Debt-to-income ceiling</span></div>
+        <div><strong>50%</strong><span>Net income DTI guide</span></div>
       </div>
-      <p class="small">Down-payment rules follow CBSL Directions No. 01 of 2026.</p>
+      <p class="small">60%/40% down-payment floors follow CBSL Directions No. 01 of 2026; 40%/50% DTI are affordability guidelines.</p>
     </div>
   </section>
 
@@ -233,7 +250,7 @@
                 <button type="button" class="seg-btn active" data-seg-for="dti" data-seg-val="0.4" aria-pressed="true">40% Standard</button>
                 <button type="button" class="seg-btn" data-seg-for="dti" data-seg-val="0.5" aria-pressed="false">50% Stretch</button>
               </div>
-              <div class="hint" id="dtiHint">40% standard CBSL ceiling; 50% for higher budgets</div>
+              <div class="hint" id="dtiHint">40% standard net-income guideline; 50% stretch ceiling (prudent lender benchmark)</div>
             </div>
           </div>
         </div>
@@ -317,7 +334,7 @@
 
   <section class="panel" id="budgetPanel" aria-labelledby="h-sum">
     <div class="panel-head"><div><p class="eyebrow">Affordability</p><h2 id="h-sum">Your Budget</h2></div></div>
-    <div id="budgetGraphic" class="budget-graphic-wrap">
+    <div id="budgetGraphic" class="budget-graphic-wrap is-pending">
       <div class="gauge-wrapper">
         <div class="gauge-dial-box">
           <div class="gauge-svg-container">
@@ -338,10 +355,14 @@
               <text x="36" y="154" class="dial-tick-text dial-tick-end">0%</text>
               <text x="105" y="42" class="dial-tick-text dial-tick-mid">20%</text>
               <line x1="215" y1="54.7" x2="225" y2="40" class="dial-milestone-safe"/>
-              <text x="240" y="36" class="dial-label-safe">40% CBSL</text>
+              <text x="240" y="36" class="dial-label-safe">40% STD</text>
               <line x1="255.3" y1="95" x2="268" y2="88" class="dial-milestone-bad"/>
               <text x="286" y="86" class="dial-label-bad">50% MAX</text>
-              <text x="284" y="154" class="dial-tick-text dial-tick-start">60%</text>
+              <text x="284" y="154" id="dialTickMax" class="dial-tick-text dial-tick-start">60%+</text>
+              <g id="dialOffscaleBadge" class="dial-offscale-badge" hidden>
+                <rect x="244" y="112" width="72" height="20" rx="10" class="dial-offscale-pill"/>
+                <text x="280" y="125" text-anchor="middle" class="dial-offscale-text">OFF-SCALE</text>
+              </g>
               <g id="budgetNeedle" class="dial-needle" transform="rotate(-90, 160, 150)" filter="url(#needleShadow)">
                 <g class="dial-needle-swing">
                   <polygon points="156,150 160,46 164,150" class="dial-needle-body"/>
@@ -356,11 +377,11 @@
             </svg>
           </div>
           <div class="classic-dial-readout">
-            <span class="classic-dti-hero" id="budgetDtiHero">0.0% DTI</span>
+            <span class="classic-dti-hero" id="budgetDtiHero">&mdash;% DTI</span>
             <span class="classic-dti-sub" id="budgetDtiSub">LKR 0.00 / month</span>
-            <div class="classic-dti-pill ok" id="budgetDtiPill">
+            <div class="classic-dti-pill pending" id="budgetDtiPill">
               <span class="dial-zone-dot"></span>
-              <span id="budgetDtiText">Within 40% CBSL Limit</span>
+              <span id="budgetDtiText">Enter Net Monthly Income</span>
             </div>
           </div>
           <div class="dial-zones-legend">
@@ -376,9 +397,9 @@
               <span class="cashflow-total" id="budgetCashflowLabel"></span>
             </div>
             <div class="cashflow-bar-wrap">
-              <div class="cashflow-bar" id="budgetCashflowBar"></div>
-              <div class="cashflow-threshold-line line-cbsl"><div class="cashflow-threshold-label">40% CBSL Limit</div></div>
-              <div class="cashflow-threshold-line line-cap"><div class="cashflow-threshold-label">50% Max Cap</div></div>
+              <div class="cashflow-bar" id="budgetCashflowBar" role="img" aria-label="Net income cashflow spectrum"></div>
+              <div class="cashflow-threshold-line line-cbsl"><div class="cashflow-threshold-label">40% Standard Limit</div></div>
+              <div class="cashflow-threshold-line line-cap"><div class="cashflow-threshold-label">50% Stretch Cap</div></div>
             </div>
           </div>
           <div class="telemetry-grid" id="budgetTelemetryGrid"></div>
@@ -461,6 +482,9 @@
           <option value="all">All vehicles</option>
           <option value="ok" id="affordOption">Only those within my limit</option>
         </select>
+      </div>
+      <div class="tools-reset-wrap">
+        <button class="btn-outline" id="resetFiltersBtn" type="button">Reset Filters</button>
       </div>
     </div>
     <div class="legend" id="budgetLegend" hidden></div>
@@ -593,21 +617,22 @@
 </main>
 
   <footer class="foot">
+    <div class="foot-intro"><h2>Before You Decide</h2><p>Understand the estimate, then confirm the price and terms. This is not financial advice.</p></div>
     <div class="foot-cols">
-      <section aria-labelledby="footRentals">
-        <h2 class="foot-h" id="footRentals">How Rentals Are Worked Out</h2>
+      <details class="foot-note">
+        <summary><h3 class="foot-h" id="footRentals">How Rentals Are Worked Out</h3></summary>
         <p>Rentals use the standard reducing-balance formula with monthly compounding; a flat rate is converted to its reducing-balance equivalent. Insurance and fees are included only when you enter them; fuel, servicing and early settlement charges are not.</p>
-      </section>
-      <section aria-labelledby="footDown">
-        <h2 class="foot-h" id="footDown">Down Payments</h2>
+      </details>
+      <details class="foot-note">
+        <summary><h3 class="foot-h" id="footDown">Down Payments</h3></summary>
         <p>Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Lenders apply the limit to their own valuation of the car (the agent's confirmed value, the customs or dealer invoice, or a professional valuer's report), so your down payment can differ.</p>
-      </section>
-      <section aria-labelledby="footPrices">
-        <h2 class="foot-h" id="footPrices">Prices and Advice</h2>
+      </details>
+      <details class="foot-note">
+        <summary><h3 class="foot-h" id="footPrices">Prices and Advice</h3></summary>
         <p><span id="priceAsOf">Confirm prices and stock with the seller.</span> This is not financial advice.</p>
-      </section>
+      </details>
     </div>
-    <nav class="site-links" aria-label="Information"><a href="index.html" aria-current="page">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav><p class="copyright">© 2026 Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html" aria-current="page">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html">Photo Studio</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav></div><p class="copyright">© 2026 Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
       <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>

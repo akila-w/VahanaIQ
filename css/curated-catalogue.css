@@ -1933,9 +1933,19 @@ dialog {
 #vehicles.initial-load > .card:nth-child(5) { animation-delay: 120ms; }
 #vehicles.initial-load > .card:nth-child(n+6) { animation-delay: 150ms; }
 .photo-button > img { transition: transform var(--duration-slow, 0.32s) var(--easing-out, ease-out); }
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .card { transition: box-shadow var(--duration-moderate, 0.26s) var(--easing-out, ease-out), transform var(--duration-moderate, 0.26s) var(--easing-out, ease-out); }
   .card:hover { transform: translateY(-2px); }
+}
+/* Hover movement belongs to a mouse/trackpad, not sticky touch hover or reduced motion. */
+.btn, .btn-outline, .quiet, .card-actions button, .pagination button, .review-bar button, .gallery-controls button, .close {
+  transition: background-color var(--duration-fast) var(--easing-standard), border-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-out), transform var(--duration-fast) var(--easing-out);
+}
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  :is(.btn, .btn-outline, .quiet, .card-actions button, .pagination button, .review-bar button, .gallery-controls button, .close):hover { transform: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .btn-outline, .quiet, .card-actions button, .pagination button, .review-bar button, .gallery-controls button, .close { transition: none !important; }
 }
 :is(.card-actions button, .btn, .btn-outline, .pagination button, .chip-btn):active:not(:disabled) {
   transform: scale(0.97);

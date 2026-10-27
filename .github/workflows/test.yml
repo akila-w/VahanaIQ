@@ -46,6 +46,7 @@ jobs:
           node test/scan-prices.test.mjs
           node test/savings-bulk.test.mjs
           node test/e2e-journeys.test.mjs
+          node test/guidance.test.mjs
       - name: Check the repository keeps only published assets
         run: node scripts/prune-thumbnails.mjs --check
 
@@ -81,4 +82,4 @@ jobs:
           echo "The local server did not start" >&2
           exit 1
       - name: Run browser specs in ${{ matrix.browser }}
-        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs --browser=${{ matrix.browser }} --reporter=list
+        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs --browser=${{ matrix.browser }} --reporter=list

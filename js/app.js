@@ -39,6 +39,27 @@ const $ = id => document.getElementById(id);
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const canAnimate = el => !!el && typeof el.animate === "function" && !reducedMotion();
+const activeMotion = new Set();
+const elementMotion = new WeakMap();
+function animateMotion(el, frames, options) {
+  elementMotion.get(el)?.cancel();
+  if (!canAnimate(el)) return;
+  const animation = el.animate(frames, options);
+  if (!animation) return; // Lightweight Node test doubles need no animation lifecycle.
+  elementMotion.set(el, animation);
+  activeMotion.add(animation);
+  const clear = () => { activeMotion.delete(animation); if (elementMotion.get(el) === animation) elementMotion.delete(el); };
+  animation.addEventListener('finish', clear, { once: true });
+  animation.addEventListener('cancel', clear, { once: true });
+}
+const motionPreference = typeof window !== "undefined" && typeof window.matchMedia === "function" ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+motionPreference?.addEventListener?.('change', event => {
+  if (event.matches) {
+    // Underlying values already hold the final reading; cancelling reveals it immediately.
+    for (const animation of activeMotion) animation.cancel();
+    activeMotion.clear();
+  }
+});
 
 // Sets a figure's text; when it changes after the first render, tints it for a moment
 function setFigure(el, text) {
@@ -46,7 +67,7 @@ function setFigure(el, text) {
   const changed = el.textContent !== "";
   el.textContent = text;
   if (changed && canAnimate(el)) {
-    el.animate([{ backgroundColor: "var(--callout-info-bg)" }, { backgroundColor: "transparent" }], { duration: 700, easing: EASE_OUT });
+    animateMotion(el, [{ backgroundColor: "var(--callout-info-bg)" }, { backgroundColor: "transparent" }], { duration: 700, easing: EASE_OUT });
   }
 }
 
@@ -54,24 +75,30 @@ function setFigure(el, text) {
 function setNeedle(el, angle) {
   if (!el) return;
   const before = parseFloat(String(el.getAttribute("transform") || "").replace(/^rotate\(/, ""));
-  el.setAttribute("transform", `rotate(${angle}, 160, 150)`);
   const swing = el.querySelector ? el.querySelector(".dial-needle-swing") : null;
-  const delta = before - parseFloat(angle);
+  if (before === parseFloat(angle)) return;
+  const offset = swing && typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? parseFloat(window.getComputedStyle(swing).rotate) || 0 : 0;
+  el.setAttribute("transform", `rotate(${angle}, 160, 150)`);
+  const delta = before + offset - parseFloat(angle);
   if (Number.isFinite(delta) && Math.abs(delta) > 0.05 && canAnimate(swing)) {
-    swing.animate([{ rotate: `${delta}deg` }, { rotate: "0deg" }], { duration: 450, easing: EASE_OUT });
+    animateMotion(swing, [{ rotate: `${delta}deg` }, { rotate: "0deg" }], { duration: 450, easing: EASE_OUT });
   }
 }
 
 // Replaces a graphic's markup and eases each bar from its previous width to its new width
 function setBars(el, html, barSelector) {
   if (!el) return;
+  // Input and change can request the same render. Keep the current nodes/effects
+  // when the graphic is unchanged instead of discarding an in-flight transition.
+  if (el._barsHtml === html) return;
+  el._barsHtml = html;
   const animate = canAnimate(el) && typeof el.querySelectorAll === "function";
-  const before = animate ? [...el.querySelectorAll(barSelector)].map(b => b.style.width) : [];
+  const before = animate ? [...el.querySelectorAll(barSelector)].map(b => ({ target: b.style.width, visible: typeof window !== "undefined" && typeof window.getComputedStyle === "function" ? window.getComputedStyle(b).width : b.style.width })) : [];
   el.innerHTML = html;
   if (!before.length) return;
   [...el.querySelectorAll(barSelector)].forEach((bar, i) => {
     const from = before[i], to = bar.style.width;
-    if (from && to && from !== to) bar.animate([{ width: from }, { width: to }], { duration: 450, easing: EASE_OUT });
+    if (from && to && from.target !== to) animateMotion(bar, [{ width: from.visible }, { width: to }], { duration: 450, easing: EASE_OUT });
   });
 }
 
@@ -356,7 +383,7 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
       const insMonthly = s.insurance / 12;
       setHtml(q(".v-rent-sub"), `<small class="micro-sub" title="LKR ${fmt(insMonthly)}/mo insurance included in budget">+Ins LKR ${fmt(insMonthly)}/mo</small>`);
     } else {
-      setHtml(q(".v-rent-sub"), `<small class="micro-sub" title="Monthly lease repayment over ${s.n} months">${s.n} installments</small>`);
+      setHtml(q(".v-rent-sub"), `<small class="micro-sub" title="Monthly lease repayment over ${s.n} months">${s.n} instalments</small>`);
     }
   }
 
@@ -654,30 +681,43 @@ function updateBudgetExtras(s, f, room, rows) {
     if ($("summary")) $("summary").hidden = true;
 
     if (!s.income) {
+      if (budgetGraphic.classList) {
+        budgetGraphic.classList.remove("is-offscale", "is-over-income");
+        budgetGraphic.classList.add("is-pending");
+      }
+      if ($("dialOffscaleBadge")) {
+        $("dialOffscaleBadge").setAttribute("hidden", "");
+        $("dialOffscaleBadge").hidden = true;
+      }
       const needleEl = $("budgetNeedle");
       setNeedle(needleEl, "-90.0");
 
       const heroEl = $("budgetDtiHero");
-      if (heroEl) heroEl.textContent = "0.0% DTI";
+      if (heroEl) heroEl.textContent = "—% DTI";
 
-      const propRent = rows.length > 0 ? rows[0].rental : 1e6 * f * (1 - s.down / 100);
+      const propRent = s.down >= 100 ? 0 : (rows.length > 0 ? rows[0].rental : 1e6 * f * (1 - s.down / 100));
       const subEl = $("budgetDtiSub");
       if (subEl) subEl.textContent = rows.length > 0
         ? `LKR ${fmt(propRent)} / month rental`
         : `LKR ${fmt(propRent)} / LKR 1M price`;
 
       const pillEl = $("budgetDtiPill");
-      if (pillEl) pillEl.className = "classic-dti-pill ok";
+      if (pillEl) pillEl.className = "classic-dti-pill pending";
       const textEl = $("budgetDtiText");
       if (textEl) textEl.textContent = "Enter Net Monthly Income";
 
       const labelEl = $("budgetCashflowLabel");
-      if (labelEl) labelEl.textContent = "Net Income Cashflow (Enter income above)";
+      if (labelEl) labelEl.textContent = "Pending — Enter net monthly income above";
 
       const barEl = $("budgetCashflowBar");
       if (barEl) {
         const fullW = 100;
-        barEl.innerHTML = `<div class="cashflow-seg-free" style="width:${fullW}%" title="Discretionary: Enter net monthly income">Enter net monthly income above to evaluate DTI &amp; cashflow</div>`;
+        if (typeof barEl.setAttribute === "function") {
+          barEl.setAttribute("role", "img");
+          barEl.setAttribute("aria-label", "Net income cashflow spectrum pending: enter net monthly income above to evaluate DTI and monthly cashflow.");
+        }
+        barEl._barsHtml = null;
+        barEl.innerHTML = `<div class="cashflow-seg-free" style="width:${fullW}%" title="Pending: Enter net monthly income">Enter net monthly income above to evaluate DTI &amp; cashflow</div>`;
       }
 
       const gridEl = $("budgetTelemetryGrid");
@@ -691,7 +731,7 @@ function updateBudgetExtras(s, f, room, rows) {
         const card2Tag = s.debt > 0 ? "Loans / Cards" : "Zero Debt";
         const card2TagClass = s.debt > 0 ? "mid" : "ok";
         const card2Val = s.debt;
-        const card2Sub = "Existing monthly payments";
+        const card2Sub = s.debt > 0 ? "Enter income to calculate %" : "Existing monthly payments";
 
         const card3Title = "Net Income Needed / LKR 1M";
         const card3Tag = `${limit}% Limit`;
@@ -703,10 +743,12 @@ function updateBudgetExtras(s, f, room, rows) {
         const card4Val = 1e6 * (s.down / 100);
         const card4Sub = `${s.down}% CBSL minimum per LKR 1M`;
 
-        const zeroW = 0;
+        const bar1W = s.down >= 100 ? 0 : Math.min(100, Math.max(15, Math.round(100 - s.down)));
+        const bar2W = s.debt > 0 ? 35 : 0;
+        const bar3W = Math.min(100, Math.max(0, Math.round(s.dti * 100)));
         const downW = Math.min(100, Math.max(0, Math.round(s.down)));
 
-        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ok">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-rental" style="width:${downW}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${zeroW}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ok">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${downW}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ok">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${downW}%"></div></div></div>`;
+        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ok">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-rental" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ok">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ok">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${downW}%"></div></div></div>`;
       }
     } else {
       budgetGraphic.hidden = false;
@@ -717,6 +759,20 @@ function updateBudgetExtras(s, f, room, rows) {
       const totalMonthlyDebt = leaseRental + s.debt + monthlyInsurance;
       const dtiPct = s.income > 0 ? (totalMonthlyDebt / s.income) * 100 : 0;
       const dtiStr = dtiPct.toFixed(1) + "%";
+      const isOffScale = dtiPct > 60;
+      const isOverIncome = dtiPct > 100;
+
+      if (budgetGraphic.classList) {
+        budgetGraphic.classList.remove("is-pending");
+        budgetGraphic.classList.toggle("is-offscale", isOffScale);
+        budgetGraphic.classList.toggle("is-over-income", isOverIncome);
+      }
+      if ($("dialOffscaleBadge")) {
+        // SVG groups do not implement HTMLElement.hidden: update the attribute too.
+        if (isOffScale) $("dialOffscaleBadge").removeAttribute("hidden");
+        else $("dialOffscaleBadge").setAttribute("hidden", "");
+        $("dialOffscaleBadge").hidden = !isOffScale;
+      }
 
       const clampedDti = Math.min(60, Math.max(0, dtiPct));
       const needleAngle = -90 + (clampedDti / 60) * 180;
@@ -726,53 +782,97 @@ function updateBudgetExtras(s, f, room, rows) {
       const heroEl = $("budgetDtiHero");
       setFigure(heroEl, dtiStr + " DTI");
       const subEl = $("budgetDtiSub");
-      setFigure(subEl, `LKR ${fmt(totalMonthlyDebt)} / month`);
+      setFigure(subEl, isOverIncome
+        ? `LKR ${fmt(totalMonthlyDebt)} / month · Shortfall LKR ${fmt(totalMonthlyDebt - s.income)}`
+        : `LKR ${fmt(totalMonthlyDebt)} / month`);
 
       let statusClass = "ok";
-      let statusText = "Within 40% CBSL Limit";
+      let statusText = `Within ${DTI_STANDARD_PCT}% Standard Limit`;
       if (dtiPct <= DTI_STANDARD_PCT) {
         statusClass = "ok";
-        statusText = `Within ${DTI_STANDARD_PCT}% CBSL Limit`;
+        statusText = `Within ${DTI_STANDARD_PCT}% Standard Limit`;
       } else if (dtiPct <= DTI_STRETCH_PCT) {
         statusClass = "mid";
         statusText = `Stretching (${DTI_STANDARD_PCT} - ${DTI_STRETCH_PCT}% Cap)`;
-      } else {
+      } else if (dtiPct <= 60) {
         statusClass = "bad";
         statusText = `Limit Exceeded (> ${DTI_STRETCH_PCT}%)`;
+      } else if (dtiPct <= 100) {
+        statusClass = "bad";
+        statusText = `Limit Exceeded (> ${DTI_STRETCH_PCT}% · Off-Scale 60%+)`;
+      } else {
+        statusClass = "bad";
+        statusText = "Exceeds 100% of Net Income (Off-Scale 60%+)";
       }
       const pillEl = $("budgetDtiPill");
       if (pillEl) pillEl.className = "classic-dti-pill " + statusClass;
       const textEl = $("budgetDtiText");
       if (textEl) textEl.textContent = statusText;
 
+      const rentalPctOfIncome = s.income > 0 ? (leaseRental / s.income) * 100 : 0;
+      const debtPctOfIncome = s.income > 0 ? (s.debt / s.income) * 100 : 0;
+      const insPctOfIncome = s.income > 0 ? (monthlyInsurance / s.income) * 100 : 0;
+      const fmtPct = p => (Math.abs(p - Math.round(p)) < 0.05 ? `${Math.round(p)}%` : `${p.toFixed(1)}%`);
+
       const labelEl = $("budgetCashflowLabel");
-      setFigure(labelEl, `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr})`);
+      if (isOverIncome) {
+        const shortfall = totalMonthlyDebt - s.income;
+        setFigure(labelEl, `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Monthly shortfall: LKR ${fmt(shortfall)})`);
+      } else {
+        const remainingIncome = Math.max(0, s.income - totalMonthlyDebt);
+        setFigure(labelEl, `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Remaining: LKR ${fmt(remainingIncome)})`);
+      }
 
       const barEl = $("budgetCashflowBar");
       if (barEl) {
-        const rentalPctOfIncome = s.income > 0 ? (leaseRental / s.income) * 100 : 0;
-        const debtPctOfIncome = s.income > 0 ? (s.debt / s.income) * 100 : 0;
-        const ceilingPct = s.dti * 100;
-        const safeRoomPctOfIncome = Math.max(0, ceilingPct - rentalPctOfIncome - debtPctOfIncome);
-        const freeIncomePct = Math.max(0, 100 - rentalPctOfIncome - debtPctOfIncome - safeRoomPctOfIncome);
+        if (isOverIncome) {
+          const shortfall = totalMonthlyDebt - s.income;
+          // Keep the track on a true 0–100% income scale. Excess belongs outside it,
+          // otherwise the 40% / 50% markers falsely describe a compressed scale.
+          const rW = Math.min(100, Math.max(0, rentalPctOfIncome));
+          const dW = Math.min(100 - rW, Math.max(0, debtPctOfIncome));
+          const iW = Math.min(100 - rW - dW, Math.max(0, insPctOfIncome));
 
-        const rW = Math.min(100, Math.max(0, Math.round(rentalPctOfIncome * 10) / 10));
-        const dW = Math.min(100 - rW, Math.max(0, Math.round(debtPctOfIncome * 10) / 10));
-        const roomW = Math.min(100 - rW - dW, Math.max(0, Math.round(safeRoomPctOfIncome * 10) / 10));
-        const freeW = Math.max(0, Math.round((100 - rW - dW - roomW) * 10) / 10);
+          const rLabel = rW >= 12 ? `Rental ${fmtPct(rentalPctOfIncome)}` : "";
+          const dLabel = dW >= 8 ? `Debt ${fmtPct(debtPctOfIncome)}` : "";
+          const iLabel = iW >= 8 ? `Ins ${fmtPct(insPctOfIncome)}` : "";
+          const sLabel = `Monthly shortfall: LKR ${fmt(shortfall)} · ${(dtiPct - 100).toFixed(1)}% beyond income`;
 
-        const rLabel = rW >= 12 ? `Rental ${rW.toFixed(0)}%` : "";
-        const dLabel = dW >= 8 ? `Debt ${dW.toFixed(0)}%` : "";
-        const roomLabel = roomW >= 10 ? `Buffer ${roomW.toFixed(0)}%` : "";
-        const freeLabel = freeW >= 15 ? `Discretionary ${freeW.toFixed(0)}%` : "";
+          if (typeof barEl.setAttribute === "function") {
+            barEl.setAttribute("role", "img");
+            barEl.setAttribute("aria-label", `Net income cashflow spectrum: ${dtiStr} of net monthly income committed. Lease rental LKR ${fmt(leaseRental)} (${rentalPctOfIncome.toFixed(1)}%), existing debt LKR ${fmt(s.debt)} (${debtPctOfIncome.toFixed(1)}%)${monthlyInsurance > 0 ? `, monthly insurance LKR ${fmt(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}%)` : ""}. Monthly shortfall: LKR ${fmt(shortfall)}.`);
+          }
 
-        setBars(barEl, `<div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: ${rentalPctOfIncome.toFixed(1)}%">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: ${debtPctOfIncome.toFixed(1)}%">${dLabel}</div><div class="cashflow-seg-room" style="width:${roomW}%" title="Buffer: ${safeRoomPctOfIncome.toFixed(1)}%">${roomLabel}</div><div class="cashflow-seg-free" style="width:${freeW}%" title="Discretionary: ${freeIncomePct.toFixed(1)}%">${freeLabel}</div>`, "[class^=\"cashflow-seg\"]");
+          setBars(barEl, `<div class="cashflow-income-track"><div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: LKR ${fmt(leaseRental)} (${rentalPctOfIncome.toFixed(1)}% of net income)">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: LKR ${fmt(s.debt)} (${debtPctOfIncome.toFixed(1)}% of net income)">${dLabel}</div>${iW > 0 ? `<div class="cashflow-seg-ins" style="width:${iW}%" title="Monthly Insurance: LKR ${fmt(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}% of net income)">${iLabel}</div>` : ""}</div><div class="cashflow-seg-shortfall">${sLabel}<span class="cashflow-breakdown">Rental ${fmtPct(rentalPctOfIncome)} · Existing payments ${fmtPct(debtPctOfIncome)}${monthlyInsurance > 0 ? ` · Insurance ${fmtPct(insPctOfIncome)}` : ""}</span></div>`, "[class^=\"cashflow-seg\"]");
+        } else {
+          const ceilingPct = s.dti * 100;
+          const committedPct = rentalPctOfIncome + debtPctOfIncome + insPctOfIncome;
+          const safeRoomPctOfIncome = Math.max(0, ceilingPct - committedPct);
+          const freeIncomePct = Math.max(0, 100 - committedPct - safeRoomPctOfIncome);
+
+          const rW = Math.min(100, Math.max(0, Math.round(rentalPctOfIncome * 10) / 10));
+          const dW = Math.min(100 - rW, Math.max(0, Math.round(debtPctOfIncome * 10) / 10));
+          const iW = Math.min(100 - rW - dW, Math.max(0, Math.round(insPctOfIncome * 10) / 10));
+          const roomW = Math.min(100 - rW - dW - iW, Math.max(0, Math.round(safeRoomPctOfIncome * 10) / 10));
+          const freeW = Math.max(0, Math.round((100 - rW - dW - iW - roomW) * 10) / 10);
+
+          const rLabel = rW >= 12 ? `Rental ${fmtPct(rentalPctOfIncome)}` : "";
+          const dLabel = dW >= 8 ? `Debt ${fmtPct(debtPctOfIncome)}` : "";
+          const iLabel = iW >= 8 ? `Ins ${fmtPct(insPctOfIncome)}` : "";
+          const roomLabel = roomW >= 10 ? `Buffer ${fmtPct(safeRoomPctOfIncome)}` : "";
+          const freeLabel = freeW >= 15 ? `Discretionary ${fmtPct(freeIncomePct)}` : "";
+
+          if (typeof barEl.setAttribute === "function") {
+            barEl.setAttribute("role", "img");
+            barEl.setAttribute("aria-label", `Net income cashflow spectrum: ${dtiStr} of net monthly income committed. Lease rental ${rentalPctOfIncome.toFixed(1)}%, existing debt ${debtPctOfIncome.toFixed(1)}%${monthlyInsurance > 0 ? `, monthly insurance ${insPctOfIncome.toFixed(1)}%` : ""}, available buffer within ${limit}% limit ${safeRoomPctOfIncome.toFixed(1)}%, discretionary uncommitted income ${freeIncomePct.toFixed(1)}%.`);
+          }
+
+          setBars(barEl, `<div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: LKR ${fmt(leaseRental)} (${rentalPctOfIncome.toFixed(1)}%)">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: LKR ${fmt(s.debt)} (${debtPctOfIncome.toFixed(1)}%)">${dLabel}</div>${iW > 0 ? `<div class="cashflow-seg-ins" style="width:${iW}%" title="Monthly Insurance: LKR ${fmt(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}%)">${iLabel}</div>` : ""}<div class="cashflow-seg-room" style="width:${roomW}%" title="Buffer Within ${limit}% Limit: LKR ${fmt(room)} (${safeRoomPctOfIncome.toFixed(1)}%)">${roomLabel}</div><div class="cashflow-seg-free" style="width:${freeW}%" title="Discretionary: ${freeIncomePct.toFixed(1)}%">${freeLabel}</div>`, "[class^=\"cashflow-seg\"]");
+        }
       }
 
       const gridEl = $("budgetTelemetryGrid");
       if (gridEl) {
-        const rentalPctOfIncome = s.income > 0 ? (leaseRental / s.income) * 100 : 0;
-        const debtPctOfIncome = s.income > 0 ? (s.debt / s.income) * 100 : 0;
         const bar1W = Math.min(100, Math.max(0, Math.round(rentalPctOfIncome)));
         const bar2W = Math.min(100, Math.max(0, Math.round(debtPctOfIncome)));
 
@@ -793,14 +893,23 @@ function updateBudgetExtras(s, f, room, rows) {
           card1Tag = "Proposed";
           card1TagClass = rows[0].status === "ok" ? "ok" : "bad";
           card1Val = rows[0].rental;
-          card1Sub = esc(rows[0].name);
+          if (isOverIncome) {
+            card1Sub = `${esc(rows[0].name)} · Shortfall LKR ${fmt(totalMonthlyDebt - s.income)}/mo`;
+          } else if (rows[0].rental > room) {
+            card1Sub = `${esc(rows[0].name)} · LKR ${fmt(rows[0].rental - room)}/mo over ${limit}% limit`;
+          } else {
+            card1Sub = `${esc(rows[0].name)} (${rentalPctOfIncome.toFixed(1)}% of income)`;
+          }
         }
+        const bar1Class = card1TagClass === "bad" ? "bar-debt" : "bar-rental";
 
         const card2Title = "Existing Commitments";
         const card2Tag = s.debt > 0 ? "Loans / Cards" : "Zero Debt";
-        const card2TagClass = s.debt > 0 ? "mid" : "ok";
+        const card2TagClass = s.debt > 0 ? (debtPctOfIncome > limit ? "bad" : "mid") : "ok";
         const card2Val = s.debt;
-        const card2Sub = `${debtPctOfIncome.toFixed(1)}% of net monthly income`;
+        const card2Sub = monthlyInsurance > 0
+          ? `${debtPctOfIncome.toFixed(1)}% debt + ${insPctOfIncome.toFixed(1)}% insurance`
+          : `${debtPctOfIncome.toFixed(1)}% of net monthly income`;
 
         const maxPrice = room > 0 ? (s.down >= 100 ? 0 : room / f / (1 - s.down / 100)) : 0;
         const maxUpfront = maxPrice * s.down / 100 + (s.fees || 0);
@@ -809,7 +918,7 @@ function updateBudgetExtras(s, f, room, rows) {
 
         let card3Title = "Max Vehicle Price";
         let card3Tag = `${s.down}% Down`;
-        let card3TagClass = "ok";
+        let card3TagClass = room > 0 || s.down >= 100 ? "ok" : "bad";
         let card3Val = maxPrice;
         let card3Sub = s.down < 60 ? "Over 1yr registered cars only" : `Financed at ${s.rateInput}% interest`;
 
@@ -833,7 +942,7 @@ function updateBudgetExtras(s, f, room, rows) {
           card4Sub = "No lease possible";
         }
 
-        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ${card1TagClass}">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-rental" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ${card3TagClass}">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ${card4TagClass}">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${bar4W}%"></div></div></div>`;
+        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ${card1TagClass}">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill ${bar1Class}" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ${card3TagClass}">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ${card4TagClass}">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${bar4W}%"></div></div></div>`;
       }
     }
   }
@@ -844,7 +953,15 @@ function updateBudgetExtras(s, f, room, rows) {
   } else if (s.down >= 100) {
     sentence = "100% cash purchase, no lease rental.";
   } else if (room <= 0) {
-    sentence = bar = `Your existing payments already use up your ${limit}% limit. No room for a lease rental.`;
+    const leaseRental = rows.length > 0 ? rows[0].rental : 0;
+    const monthlyInsurance = s.insurance ? s.insurance / 12 : 0;
+    const totalMonthlyDebt = leaseRental + s.debt + monthlyInsurance;
+    if (totalMonthlyDebt > s.income) {
+      const shortfall = totalMonthlyDebt - s.income;
+      sentence = bar = `Commitments use ${((totalMonthlyDebt / s.income) * 100).toFixed(1)}% of net monthly income. Monthly shortfall: LKR ${fmt(shortfall)}.`;
+    } else {
+      sentence = bar = `Your existing payments already use up your ${limit}% limit. No room for a lease rental.`;
+    }
   } else {
     const maxPrice = room / f / (1 - s.down / 100);
     const ok = rows.filter(r => r.status === "ok").length;
@@ -1183,11 +1300,25 @@ $("head").addEventListener("click", e => {
 $("resetInputsBtn").addEventListener("click", () => {
   clearState();
   for (const id of Object.keys(FIELDS)) clearSnapNote(id);
+  activeQuickFilter = "all";
   applyState({});
   try { history.replaceState(null, "", window.location.pathname + window.location.hash); } catch (e) {}
   render();
   $("rate").focus();
 });
+
+if ($("resetFiltersBtn") && typeof $("resetFiltersBtn").addEventListener === "function") {
+  $("resetFiltersBtn").addEventListener("click", () => {
+    for (const [id, def] of Object.entries(FILTER_DEFAULTS)) {
+      if ($(id)) $(id).value = def;
+    }
+    sortKey = "price";
+    sortDir = -1;
+    activeQuickFilter = "all";
+    syncQuickFilterChips();
+    render();
+  });
+}
 
 ["income", "debt", "insurance", "fees", "mPrice", "aiPriceInput"].forEach(id => $(id) && attachMoneyInput($(id)));
 attachMoneyInput($("maxprice"), { grouping: false });
@@ -1475,7 +1606,7 @@ function updateDonutContent(car, r, s, mode) {
         segClass: "donut-seg-accent",
         dotClass: "donut-dot-accent",
         label: "Vehicle Lease Rental",
-        subtitle: `${s.n} monthly installments`
+        subtitle: `${s.n} monthly instalments`
       });
     }
     if (s.insurance) {
@@ -2117,8 +2248,17 @@ $("openAiModalBtn").addEventListener("click", () => openAddFlow("ai", $("addVehi
 if ($("openManualBtn")) $("openManualBtn").addEventListener("click", () => openAddFlow("manual", $("addVehicleBtn")));
 if ($("aiEmptyBtn")) $("aiEmptyBtn").addEventListener("click", () => openAddFlow("ai", $("aiEmptyBtn")));
 let screenComparisonLimit = comparisonLimit;
-window.addEventListener("beforeprint", () => { screenComparisonLimit = comparisonLimit; comparisonLimit = Infinity; render(); });
-window.addEventListener("afterprint", () => { comparisonLimit = screenComparisonLimit; render(); });
+let printFootnotes = [];
+window.addEventListener("beforeprint", () => {
+  printFootnotes = [...(document.querySelectorAll?.('.foot-note:not([open])') || [])];
+  printFootnotes.forEach(note => { note.open = true; });
+  screenComparisonLimit = comparisonLimit; comparisonLimit = Infinity; render();
+});
+window.addEventListener("afterprint", () => {
+  printFootnotes.forEach(note => { note.open = false; });
+  printFootnotes = [];
+  comparisonLimit = screenComparisonLimit; render();
+});
 if ($("printBtn")) $("printBtn").addEventListener("click", () => window.print());
 
 $("closeAiModalBtn").addEventListener("click", closeAiModal);
@@ -2944,7 +3084,7 @@ if (invalidSavedCount) showToast("Some saved vehicles had invalid prices and wer
 
 // Source guidance opens from the footer link on either page; the header no longer carries a button.
 for (const id of ["sourceGuide", "footerSourceGuide"]) {
-  if ($(id)) $(id).addEventListener("click", () => $("guide")?.showModal());
+  if ($(id)) $(id).addEventListener("click", event => { event.currentTarget.focus({ preventScroll: true }); $("guide")?.showModal(); });
 }
 if ($("closeGuide")) $("closeGuide").addEventListener("click", () => $("guide")?.close());
 

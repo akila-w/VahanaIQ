@@ -417,4 +417,8 @@ assert.match(fs.readFileSync(path.join(ROOT, "js/curated-catalogue.js"), "utf8")
 assert.match(fs.readFileSync(path.join(ROOT, "scripts/apply-studio-photos.mjs"), "utf8"), /owner-upload/,
   "The bake script must write the same vocabulary");
 
+// Magic-byte header verification & SVG upload rejection in js/catalogue-studio.js
+assert.match(studioScript, /export async function hasValidImageMagicBytes/, "Studio must validate image magic bytes on upload");
+assert.match(studioScript, /image\/svg\+xml/, "Studio must explicitly reject SVG uploads");
+
 console.log("Studio page: every control the script asks for is in studio.html, and the overlay hand-off is wired");

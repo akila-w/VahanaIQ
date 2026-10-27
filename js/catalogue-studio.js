@@ -307,6 +307,46 @@ function forgetPhotos(items) {
   }
 }
 
+const ALLOWED_RASTER_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]);
+
+export async function hasValidImageMagicBytes(file) {
+  if (!file) return false;
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || "").toLowerCase();
+  if (type === "image/svg+xml" || name.endsWith(".svg") || name.endsWith(".svgz")) return false;
+  if (type && !ALLOWED_RASTER_TYPES.has(type)) return false;
+
+  let readBuf = null;
+  try {
+    if (typeof file.slice === "function") {
+      const head = file.slice(0, 12);
+      if (head && typeof head.arrayBuffer === "function") {
+        readBuf = await head.arrayBuffer();
+      }
+    } else if (typeof file.arrayBuffer === "function") {
+      readBuf = await file.arrayBuffer();
+    }
+  } catch {
+    return false;
+  }
+
+  if (!readBuf) {
+    return ALLOWED_RASTER_TYPES.has(type);
+  }
+
+  const b = new Uint8Array(readBuf);
+  if (b.length < 4) return false;
+  const isJpeg = b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+  const isPng = b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47
+    && b[4] === 0x0d && b[5] === 0x0a && b[6] === 0x1a && b[7] === 0x0a;
+  const isGif = b.length >= 6 && b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38
+    && (b[4] === 0x37 || b[4] === 0x39) && b[5] === 0x61;
+  const isWebp = b.length >= 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46
+    && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50;
+
+  return isJpeg || isPng || isGif || isWebp;
+}
+
 async function addFiles(list) {
   const model = selectedModel();
   if (!model) { toast("Open a catalogue entry first."); return; }
@@ -324,6 +364,10 @@ async function addFiles(list) {
   for (const file of incoming) {
     if (record.items.length >= MAX_PHOTOS) { refused.push(`${file.name || "a photo"} (an entry keeps ${MAX_PHOTOS} photos)`); continue; }
     if (file.size > MAX_UPLOAD_BYTES) { refused.push(`${file.name || "a photo"} (larger than 12 MB)`); continue; }
+    if (!(await hasValidImageMagicBytes(file))) {
+      refused.push(`${file.name || "a file"} (unsupported or invalid image format; use JPEG, PNG, WebP or GIF)`);
+      continue;
+    }
     const item = uploadItem(file);
     record = addItem(record, item);
     if (!firstAdded) firstAdded = item.id;
