@@ -70,6 +70,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Install ${{ matrix.browser }} and its system libraries
+        timeout-minutes: 5
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Serve the site and wait until it answers
         run: |
@@ -84,4 +85,4 @@ jobs:
           echo "The local server did not start" >&2
           exit 1
       - name: Run browser specs in ${{ matrix.browser }}
-        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs --browser=${{ matrix.browser }} --reporter=list
+        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs --browser=${{ matrix.browser }} --workers=2 --reporter=list,github
