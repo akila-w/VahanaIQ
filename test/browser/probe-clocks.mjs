@@ -15,13 +15,16 @@ const rafProbe = () => new Promise(resolve => {
   setTimeout(() => resolve({ ticks, ms: 5000, stalled: true }), 5000);
 });
 
-async function rate(browser, label, route, width, trials = TRIALS) {
+const browser = await webkit.launch();
+
+async function rate(label, css, width = 320, trials = TRIALS) {
   let stalled = 0;
   const detail = [];
   for (let i = 0; i < trials; i++) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
     const page = await context.newPage();
-    await page.goto(`${BASE}/${route}.html`);
+    await page.goto(`${BASE}/catalogue.html`);
+    if (css) await page.addStyleTag({ content: css });
     await page.waitForTimeout(400);
     const raf = await page.evaluate(rafProbe);
     await context.close();
@@ -29,23 +32,20 @@ async function rate(browser, label, route, width, trials = TRIALS) {
     if (dead) stalled++;
     detail.push(raf.ticks);
   }
-  console.log(`${label}: ${stalled}/${trials} stalled | ticks ${detail.join(',')}`);
+  console.log(`${label} @${width}: ${stalled}/${trials} stalled | ticks ${detail.join(',')}`);
 }
 
-const browser = await webkit.launch();
-console.log('=== default launch ===');
-await rate(browser, 'catalogue 320', 'catalogue', 320);
-await rate(browser, 'catalogue 1280', 'catalogue', 1280);
-await rate(browser, 'index 320', 'index', 320);
+console.log('=== aurora layers at 320px ===');
+await rate('baseline', '');
+await rate('aurora display:none', 'body::before,body::after{display:none!important}');
+await rate('aurora blur removed', 'body::before,body::after{filter:none!important}');
+await rate('aurora opacity 0', 'body::before,body::after{opacity:0!important}');
+
+console.log('=== confirm at 1280px ===');
+await rate('baseline', '', 1280, 4);
+await rate('aurora display:none', 'body::before,body::after{display:none!important}', 1280, 4);
+
+console.log('=== control ===');
+await rate('baseline again', '');
+
 await browser.close();
-
-for (const env of [
-  { WEBKIT_DISABLE_COMPOSITING_MODE: '1' },
-  { LIBGL_ALWAYS_SOFTWARE: '1' },
-  { WEBKIT_DISABLE_DMABUF_RENDERER: '1' },
-]) {
-  const b = await webkit.launch({ env: { ...process.env, ...env } });
-  console.log(`=== env ${JSON.stringify(env)} ===`);
-  await rate(b, 'catalogue 320', 'catalogue', 320, 4);
-  await b.close();
-}
