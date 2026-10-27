@@ -34,7 +34,7 @@ jobs:
           exit 1
       - name: Probe catalogue stability
         continue-on-error: true
-        run: node test/browser/probe-unstable.mjs
+        run: node test/browser/probe-clocks.mjs
       - name: Probe on the failing spec path (help-alignment 320 light)
         continue-on-error: true
         run: |
