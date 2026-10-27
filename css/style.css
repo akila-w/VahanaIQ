@@ -2679,9 +2679,9 @@ button.remove-row-btn:hover {
   bottom: 0;
   z-index: var(--z-budget-bar);
   padding: var(--space-10) var(--space-16) calc(var(--space-10) + env(safe-area-inset-bottom, 0px));
-  background: var(--glass-bg, var(--panel));
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  background: var(--panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-top: 1px solid var(--line);
   box-shadow: var(--shadow-budget-bar);
   font-weight: 600;
@@ -3294,7 +3294,8 @@ button[hidden] { display: none !important; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  backdrop-filter: blur(2px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   pointer-events: auto;
 }
 .photo-byline a,
@@ -3348,7 +3349,7 @@ button[hidden] { display: none !important; }
   background-color: var(--line);
   border-radius: 3px;
 }
-.catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--glass-border, var(--line)); border-radius: var(--radius-lg); padding: 10px 12px; gap: 4px; background: var(--glass-bg, var(--panel)); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%); box-shadow: var(--glass-shadow, var(--shadow-card)); }
+.catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--glass-border, var(--line)); border-radius: var(--radius-lg); padding: 10px 12px; gap: 4px; background: var(--panel); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: var(--glass-shadow, var(--shadow-card)); }
 .catalogue-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); min-height: 18px; }
 .catalogue-card h3 { font-size: 0.92rem; line-height: 1.25; margin: 0; }
 .catalogue-card p { margin: 0; }
@@ -6189,7 +6190,8 @@ dialog#guide {
 }
 dialog#guide::backdrop {
   background: var(--scrim);
-  backdrop-filter: blur(5px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 dialog#guide .dialog-head {
   display: flex;
@@ -8174,9 +8176,9 @@ tbody tr.is-pinned {
     gap: var(--space-6);
     margin: 0 -4vw var(--space-14);
     padding: var(--space-6) 4vw;
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
+    background: var(--panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     border-bottom: 1px solid var(--line);
   }
   .page-nav a {
@@ -8664,8 +8666,8 @@ main > #savingsPanel { animation-delay: 180ms; }
   [data-theme="dark"] .planner-progress-card,
   [data-theme="dark"] .planner-breakdown-card { box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
   .filters {
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }
 
@@ -8676,8 +8678,8 @@ main > #savingsPanel { animation-delay: 180ms; }
   .planner-breakdown-card,
   .catalogue-card,
   .card {
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }
 
