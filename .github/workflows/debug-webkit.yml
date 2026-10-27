@@ -32,35 +32,19 @@ jobs:
           done
           echo "The local server did not start" >&2
           exit 1
-      - name: Contextual help at 320px (action log)
+      - name: Probe catalogue stability
         continue-on-error: true
-        env:
-          DEBUG: pw:api
+        run: node test/browser/probe-unstable.mjs
+      - name: Probe on the failing spec path (help-alignment 320 light)
+        continue-on-error: true
         run: |
           npx playwright test test/browser/help-alignment.spec.mjs --browser=webkit \
-            --reporter=list --workers=1 --timeout=15000 \
-            --grep "contextual help alignment at 320px in light" 2>&1 | tail -300
-      - name: Guidance motion at 320px (action log)
-        continue-on-error: true
-        env:
-          DEBUG: pw:api
-        run: |
-          npx playwright test test/browser/motion.spec.mjs --browser=webkit \
-            --reporter=list --workers=1 --timeout=15000 \
-            --grep "guidance motion at 320px with reduce" 2>&1 | tail -300
-      - name: Header Help Centre at 320px (action log)
-        continue-on-error: true
-        env:
-          DEBUG: pw:api
-        run: |
-          npx playwright test test/browser/independent-qa.spec.mjs --browser=webkit \
-            --reporter=list --workers=1 \
-            --grep "all six routes at 320px in light" 2>&1 | tail -400
-      - name: Control - guidance at 320px tap (known green)
-        continue-on-error: true
-        env:
-          DEBUG: pw:api
-        run: |
-          npx playwright test test/browser/guidance.spec.mjs --browser=webkit \
             --reporter=list --workers=1 --timeout=20000 \
-            --grep "quick explanations fit a short touch viewport" 2>&1 | tail -120
+            --grep "contextual help alignment at 320px in light" 2>&1 | tail -40
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-screenshots
+          path: catalogue-*.png
+          if-no-files-found: ignore
