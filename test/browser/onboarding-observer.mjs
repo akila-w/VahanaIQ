@@ -1,6 +1,8 @@
 // Opt-in diagnostic observer; no application hooks or synthetic interactions.
 export function observeOnboarding() {
-  const data = window.__onboardingObservation = { samples: [], events: [] };
+  const historyKey = '__task032_observation';
+  const data = window.__onboardingObservation = { history: JSON.parse(sessionStorage.getItem(historyKey) || '[]'), samples: [], events: [] };
+  window.addEventListener('pagehide', () => sessionStorage.setItem(historyKey, JSON.stringify([...data.history, { samples:data.samples, events:data.events }])));
   const ids = new WeakMap(); let nextId = 0, lastSample = -100;
   const id = el => { if (!el) return null; if (!ids.has(el)) ids.set(el, ++nextId); return ids.get(el); };
   const rect = el => { if (!el) return null; const r = el.getBoundingClientRect(); return { x:r.x,y:r.y,width:r.width,height:r.height }; };

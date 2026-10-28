@@ -18,10 +18,16 @@ async function selectCars(page) {
  const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
  for (const [index, name] of ['Toyota Aqua', 'Toyota Camry Hybrid'].entries()) {
   await search.fill(name);
-  const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
-  if (process.env.ONBOARDING_INTERACTION !== 'click') await add.scrollIntoViewIfNeeded();
-  await expect(add).toBeInViewport();
-  await add.click();
+  const card = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) });
+  const add = card.getByRole('button', { name: '+ Add to Shortlist', exact: true });
+  if (process.env.ONBOARDING_INTERACTION === 'click') {
+   await add.click();
+   await expect(card.locator('.onboarding-car-btn')).toBeInViewport();
+  } else {
+   await add.scrollIntoViewIfNeeded();
+   await expect(add).toBeInViewport();
+   await add.click();
+  }
   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
   if (index === 0) await expect(page.getByRole('button', { name: 'Continue to Loan Terms →' })).toBeDisabled();
  }

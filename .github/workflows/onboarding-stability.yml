@@ -7,6 +7,10 @@ permissions:
   contents: read
 jobs:
   diagnose:
+    strategy:
+      fail-fast: false
+      matrix:
+        interaction: [explicit, click]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -28,22 +32,16 @@ jobs:
             sleep 1
           done
           exit 1
-      - name: Original explicit scroll, two workers
-        continue-on-error: true # Diagnostic reproduction, not a release gate.
-        run: ONBOARDING_OBSERVE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=6 --workers=2 --trace=on --reporter=line --output=qa/task032/explicit-two > qa/task032/explicit-two.log 2>&1
-      - name: Original explicit scroll, one worker
-        continue-on-error: true
-        run: ONBOARDING_OBSERVE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=4 --workers=1 --trace=on --reporter=line --output=qa/task032/explicit-one > qa/task032/explicit-one.log 2>&1
-      - name: Normal click auto-scrolling experiment
-        continue-on-error: true
-        run: ONBOARDING_OBSERVE=1 ONBOARDING_INTERACTION=click npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=6 --workers=2 --trace=on --reporter=line --output=qa/task032/click > qa/task032/click.log 2>&1
-      - name: Reduced-motion explicit-scroll experiment
-        continue-on-error: true
-        run: ONBOARDING_OBSERVE=1 ONBOARDING_MOTION=reduce npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=4 --workers=2 --trace=on --reporter=line --output=qa/task032/reduced > qa/task032/reduced.log 2>&1
+      - name: Long-lived browser and real saved-state journeys
+        env:
+          ONBOARDING_INTERACTION: ${{ matrix.interaction }}
+          ONBOARDING_OBSERVE: '1'
+          ONBOARDING_CASES: '24'
+        run: npx playwright test test/browser/onboarding-stability.spec.mjs --browser=webkit --workers=2 --reporter=line --output=qa/task032/warm > qa/task032/warm.log 2>&1
       - name: Retain every diagnostic outcome without deploying
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: task032-onboarding-diagnosis
+          name: task032-onboarding-diagnosis-${{ matrix.interaction }}
           path: qa/task032
           retention-days: 14
