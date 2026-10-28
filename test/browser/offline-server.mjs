@@ -7,10 +7,12 @@ import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '../..');
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png' };
 export async function offlineServer() {
-  const state = { revision: '', fail: '', requests: [] };
+  const state = { revision: '', fail: '', legacy: false, disconnected: false, requests: [] };
+  const legacyWorker = await fs.readFile(path.join(root, 'test/fixtures/legacy-sw-v2.12.0.js'));
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     state.requests.push(url.pathname + url.search);
+    if (state.disconnected) { req.socket.destroy(); return; }
     res.setHeader('Cache-Control', 'no-store');
     const relative = decodeURIComponent(url.pathname).replace(/^\/VahanaIQ\//, '/').replace(/^\//, '') || 'index.html';
     if (relative === '__blank.html') { res.setHeader('Content-Type', 'text/html'); res.end('<title>Install probe</title>'); return; }
@@ -18,6 +20,14 @@ export async function offlineServer() {
     try {
       if (!target.startsWith(root + path.sep) || (state.fail && relative === state.fail)) throw Error('Unavailable');
       let data = await fs.readFile(target);
+      if (state.legacy && relative === 'sw.js') data = legacyWorker;
+      if (state.legacy && relative === 'js/boot.js') data = Buffer.from(data.toString().split('\n// Shared by every page, including direct Catalogue')[0]);
+      if (state.legacy && relative === 'js/app.js') data = Buffer.from(data.toString().replace('applyState(loadState());', `// Offline support (see sw.js); browsers without service workers simply skip it
+if (typeof navigator !== \"undefined\" && \"serviceWorker\" in navigator && window.location.protocol === \"https:\") {
+  navigator.serviceWorker.register(\"sw.js\").catch(e => console.warn(\"Offline support unavailable:\", e));
+}
+
+applyState(loadState());`));
       if (state.revision && relative === 'sw.js') data = Buffer.from(data.toString().replace(/(const CACHE = ")[^"]+/, `$1vahanaiq-test-${state.revision}`));
       if (relative.startsWith('js/')) data = Buffer.from(data.toString() + `\n(window.__offlineModules ||= {})[${JSON.stringify(relative)}] = ${JSON.stringify(state.revision)};`);
       if (relative === 'js/boot.js') data = Buffer.from(data.toString() + `\nwindow.__offlineRevision = ${JSON.stringify(state.revision)};`);

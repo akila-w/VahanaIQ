@@ -17,6 +17,14 @@ test.beforeEach(async ({ context }) => {
 });
 test.afterEach(async () => { await site?.close(); });
 
+// Firefox's explicit offline/interception path is diagnosed separately. Cut the
+// actual test origin's sockets there; external HTTPS is already blocked. This
+// includes worker-origin traffic and does not depend on HTTP cache warming.
+async function setOffline(context, value) {
+  if (test.info().project.use.browserName === 'firefox') site.state.disconnected = value;
+  else await context.setOffline(value);
+}
+
 async function installed(page) {
   await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.active?.state)).toBe('activated');
   await page.evaluate(() => navigator.serviceWorker.ready);
@@ -36,7 +44,7 @@ test('isolated first install loads calculator modules offline', async ({ page, c
   await page.goto(site.origin + '/__blank.html');
   await page.evaluate(() => navigator.serviceWorker.register('sw.js'));
   await installed(page);
-  await context.setOffline(true);
+  await setOffline(context, true);
   const observed = errors(page);
   await page.goto(site.origin + '/index.html');
   await expect(page.locator('#helpCentreButton')).toBeVisible();
@@ -99,7 +107,7 @@ for (const mount of ['/', '/VahanaIQ/']) for (const entry of ['index.html', 'cat
     const cachePaths = await page.evaluate(async () => (await (await caches.open((await caches.keys())[0])).keys()).map(r => new URL(r.url).pathname));
     expect(cachePaths.some(p => p.includes('/assets/images/'))).toBe(false);
     expect(cachePaths.filter(p => p === mount)).toEqual([]);
-    await context.setOffline(true); // No second controlled online page load.
+    await setOffline(context, true); // No second controlled online page load.
     const observed = errors(page);
     for (const route of ['index.html', 'catalogue.html', 'studio.html']) {
       await page.goto(site.origin + mount + route + '?offline=1');
@@ -121,7 +129,7 @@ test('returning comparison, exact figures and photo edits survive offline reload
   await page.reload();
   await checkData(page);
   expect(site.state.requests.filter(url => /\/(js|css)\//.test(url))).toEqual([]);
-  await context.setOffline(true);
+  await setOffline(context, true);
   const observed = errors(page);
   await page.reload();
   await checkData(page);
@@ -166,11 +174,11 @@ test('two complete cache revisions wait, activate, clean up and roll back withou
   await checkData(page);
   await page.goto(site.origin + '/VahanaIQ/catalogue.html');
   await consistent(page, 'A');
-  await context.setOffline(true);
+  await setOffline(context, true);
   await page.goto(site.origin + '/VahanaIQ/index.html');
   await checkData(page);
   await consistent(page, 'A');
-  await context.setOffline(false);
+  await setOffline(context, false);
   let current = await activate(context, page, 'B');
   await consistent(current, 'B');
   await checkData(current);
@@ -178,7 +186,7 @@ test('two complete cache revisions wait, activate, clean up and roll back withou
   await update(current);
   await consistent(current, 'B');
   current = await activate(context, current, 'A');
-  await context.setOffline(true);
+  await setOffline(context, true);
   await current.reload();
   await consistent(current, 'A');
   await checkData(current);
@@ -200,7 +208,7 @@ test('failed update leaves the active complete shell and saved data usable', asy
     await reg.update(); await failure;
   });
   expect(await page.evaluate(() => caches.keys())).toEqual(['vahanaiq-test-A']);
-  await context.setOffline(true);
+  await setOffline(context, true);
   await page.reload();
   await consistent(page, 'A');
   await checkData(page);
@@ -210,7 +218,7 @@ test('uncached vehicle images fail gracefully while catalogue controls work', as
   await page.goto(site.origin + '/__blank.html');
   await page.evaluate(() => navigator.serviceWorker.register('sw.js'));
   await installed(page);
-  await context.setOffline(true);
+  await setOffline(context, true);
   const observed = errors(page);
   await page.goto(site.origin + '/catalogue.html');
   await expect(page.locator('.error-art').first()).toBeVisible();
@@ -227,7 +235,7 @@ test('empty-profile first-use setup remains functional immediately offline', asy
     const page = await context.newPage();
     await page.goto(site.origin + '/index.html');
     await installed(page);
-    await context.setOffline(true);
+    await setOffline(context, true);
     const observed = errors(page);
     await page.reload();
     await page.getByRole('button', { name: 'Start Guided Setup (Takes 2 min) →', exact: true }).click();
@@ -283,13 +291,13 @@ test('uploaded photo bytes survive an update, offline reload and browser restart
     site.state.revision = 'upload-B';
     await update(page);
     page = await activate(context, page, 'upload-B');
-    await context.setOffline(true);
+    await setOffline(context, true);
     await page.reload();
     await checkData(page);
     expect(await photoBytes(page)).toEqual(expected);
     await context.close();
     context = await open();
-    await context.setOffline(true);
+    await setOffline(context, true);
     page = context.pages()[0];
     await page.goto(site.origin + '/VahanaIQ/index.html');
     await checkData(page);
@@ -298,4 +306,100 @@ test('uploaded photo bytes survive an update, offline reload and browser restart
     await context?.close();
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+
+// The fixture is the deployed a0bf238 worker, SHA-256 recorded in the review.
+// Its registration bootstrap and app are reconstructed byte-for-byte by the server.
+test('deployed legacy worker migrates with warm assets, two tabs and saved data', async ({ page, context }) => {
+  site.state.legacy = true;
+  await page.goto(site.origin + '/VahanaIQ/index.html');
+  await page.evaluate(() => navigator.serviceWorker.register('sw.js'));
+  await installed(page);
+  await saveData(page);
+  await page.reload(); // Warm the six dependencies missing from the legacy shell.
+  await checkData(page);
+  const second = await context.newPage();
+  await second.goto(site.origin + '/VahanaIQ/catalogue.html');
+  await expect(second.locator('#vehicles .card').first()).toBeVisible();
+  const observer = await context.newPage();
+  await observer.goto(site.origin + '/__blank.html');
+  await observer.evaluate(async origin => {
+    const old = await caches.open('vahanaiq-v2.12.0');
+    await old.put(origin + '/VahanaIQ/obsolete.js', new Response('old asset'));
+    await old.put(origin + '/VahanaIQ/assets/images/old-photo.webp', new Response('old photo'));
+    await (await caches.open('unrelated-app')).put(origin + '/unrelated', new Response('keep'));
+  }, site.origin);
+  site.state.legacy = false;
+  await update(page);
+  expect(await observer.evaluate(() => caches.keys())).toEqual(expect.arrayContaining(['vahanaiq-v2.12.0', 'vahanaiq-v2.12.0-offline-1', 'unrelated-app']));
+  // An old tab can keep calculating and saving while the new worker waits.
+  await page.reload();
+  await checkData(page);
+  await setOffline(context, true);
+  await page.reload();
+  await checkData(page);
+  await setOffline(context, false);
+  await page.close();
+  expect(await second.evaluate(async () => (await navigator.serviceWorker.getRegistration()).waiting?.state)).toBe('installed');
+  await second.close();
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['unrelated-app', 'vahanaiq-v2.12.0-offline-1']);
+  const current = await context.newPage();
+  await setOffline(context, true);
+  const observed = errors(current);
+  await current.goto(site.origin + '/VahanaIQ/index.html');
+  await checkData(current);
+  expect(await current.evaluate(() => window.__offlineCSP)).toEqual([]);
+  expect(observed.failed).toEqual([]);
+  expect(observed.exceptions).toEqual([]);
+  expect(await current.evaluate(async () => !!await caches.match(new URL('obsolete.js', location.href)))).toBe(false);
+});
+
+
+test('legacy first-install gaps survive a failed migration and repair on retry', async ({ page, context }) => {
+  site.state.legacy = true;
+  await page.goto(site.origin + '/VahanaIQ/__blank.html');
+  await page.evaluate(() => navigator.serviceWorker.register('sw.js'));
+  await installed(page);
+  expect(await page.evaluate(async () => !!await caches.match(new URL('js/savings.js?v=2.12.0', location.href)))).toBe(false);
+  // Seed existing state without importing or warming the missing application graph.
+  await page.evaluate(async car => {
+    localStorage.setItem('vahanaiq_comparison_v3', JSON.stringify({ version: 3, cars: [car] }));
+    localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '220000', rate: '0', tenure: '12', down: '60' }));
+    localStorage.setItem('vahanaiq_planner_v1', JSON.stringify({ version: 1, draft: { plannerSaved: '100000' }, scenarios: [] }));
+    await new Promise((resolve, reject) => {
+      const request = indexedDB.open('vahanaiq_catalogue_photos', 1);
+      request.onupgradeneeded = () => request.result.createObjectStore('edits', { keyPath: 'modelId' });
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const db = request.result, tx = db.transaction('edits', 'readwrite');
+        tx.objectStore('edits').put({ modelId: 'offline-probe', items: [{ frame: { scale: 1.2, x: 0.1, y: 0 } }] });
+        tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error);
+      };
+    });
+  }, car);
+  site.state.legacy = false;
+  site.state.fail = 'js/savings.js';
+  await page.evaluate(async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const failed = new Promise(resolve => reg.addEventListener('updatefound', () => {
+      const worker = reg.installing;
+      worker.addEventListener('statechange', () => { if (worker.state === 'redundant') resolve(); });
+    }, { once: true }));
+    await reg.update(); await failed;
+  });
+  expect(await page.evaluate(() => caches.keys())).toEqual(['vahanaiq-v2.12.0']);
+  site.state.fail = '';
+  await update(page);
+  const observer = await context.newPage();
+  await observer.goto(site.origin + '/__blank.html');
+  await page.close();
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['vahanaiq-v2.12.0-offline-1']);
+  await setOffline(context, true);
+  const current = await context.newPage();
+  const observed = errors(current);
+  await current.goto(site.origin + '/VahanaIQ/index.html');
+  await checkData(current);
+  expect(observed.failed).toEqual([]);
+  expect(observed.exceptions).toEqual([]);
 });

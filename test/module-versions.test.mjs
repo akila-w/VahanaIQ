@@ -3,6 +3,7 @@
 // relative ES module imports, and the service worker offline cache.
 
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -185,5 +186,15 @@ for (const entry of SHIPPED_PAGES) {
 }
 for (const asset of shell) assert.ok(fs.existsSync(path.join(ROOT, asset.split('?')[0])), `Missing shell file: ${asset}`);
 assert.ok(!shell.some(asset => asset.startsWith('assets/images/')), 'Do not precache vehicle photos');
+
+// Pin each released shell, including unversioned HTML/JSON and the worker itself.
+// A shell change must bump CACHE and add a new record; keep old records immutable.
+const revisions = JSON.parse(fs.readFileSync(path.join(ROOT, 'test/fixtures/offline-shell-revisions.json'), 'utf8'));
+const hash = createHash('sha256').update(swContent);
+for (const asset of shell) hash.update('\0' + asset + '\0').update(fs.readFileSync(path.join(ROOT, asset.split('?')[0])));
+const digest = hash.digest('hex');
+assert.equal(revisions[cacheMatch[1]], digest,
+  `Offline shell changed: bump CACHE and add a new immutable revision record (${digest}); do not overwrite a released entry`);
+console.log(`✓ ${cacheMatch[1]} pins every shell file and the worker to SHA-256 ${digest}`);
 
 console.log('ALL MODULE VERSION AND OFFLINE DEPENDENCY TESTS PASSED');
