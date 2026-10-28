@@ -20,8 +20,24 @@ test('guided setup requires a shortlist and applies reviewed terms to real compa
  await page.getByRole('button',{name:'Open My Lease →'}).click();await expect(page.locator('#onboarding')).toHaveCount(0);await expect(page.locator('#rows tr')).toHaveCount(2);await expect(page.locator('#rate')).toHaveValue('12');await page.reload();await expect(page.locator('#onboarding')).toHaveCount(0);
 });
 test('draft survives reload and direct catalogue entry uses the same required flow',async({page})=>{
- await page.goto(BASE+'/catalogue.html');await selectCars(page);await page.reload();await expect(page.locator('#onboardingTitle')).toHaveText('Set your lease financing terms');await page.getByRole('button',{name:'← Back',exact:true}).click();await expect(page.locator('.onboarding-tray')).toContainText('2 of 12 selected');
- await page.getByRole('button',{name:/Remove Toyota Aqua/}).click();await expect(page.getByRole('button',{name:'Continue to Loan Terms →'})).toBeDisabled();
+ await test.step('Open Catalogue setup and select two cars', async () => {
+  await page.goto(BASE+'/catalogue.html', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#onboarding')).toBeVisible();
+  await selectCars(page);
+  await expect(page.locator('#onboardingTitle')).toHaveText('Set your lease financing terms');
+ });
+ await test.step('Reload the page and recover the finance step', async () => {
+  // Setup is ready when its own controls render; optional external SDKs do not
+  // need to finish downloading for a saved draft to be restored.
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#onboardingTitle')).toHaveText('Set your lease financing terms');
+ });
+ await test.step('Return to the shortlist and enforce the two-car minimum', async () => {
+  await page.getByRole('button',{name:'← Back',exact:true}).click();
+  await expect(page.locator('.onboarding-tray')).toContainText('2 of 12 selected');
+  await page.getByRole('button',{name:/Remove Toyota Aqua/}).click();
+  await expect(page.getByRole('button',{name:'Continue to Loan Terms →'})).toBeDisabled();
+ });
 });
 test('existing comparisons survive without compulsory setup',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('vahanaiq_comparison_v3',JSON.stringify({version:3,cars:[{id:'existing-car',name:'Existing car',price:10000000,cond:'New'}]})));

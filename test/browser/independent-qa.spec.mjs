@@ -176,8 +176,11 @@ for (const width of [...widths, 844]) test(`populated calculator, charts and dia
   await page.locator('#plannerMode').selectOption('fixed');
   await page.fill('#plannerMonthly', '25000'); await page.locator('#plannerMonthly').dispatchEvent('input');
   await expect(page.locator('.planner-trajectory-card svg')).toBeVisible();
-  const plotScale = await page.locator('.planner-trajectory-card svg').evaluate(svg => svg.getBoundingClientRect().width / svg.viewBox.baseVal.width);
-  expect(plotScale, 'chart labels must retain readable size instead of shrinking a desktop plot').toBeGreaterThanOrEqual(0.9);
+  await expect.poll(() => page.locator('.planner-trajectory-card svg').evaluate(svg =>
+    svg.getBoundingClientRect().width / svg.viewBox.baseVal.width), {
+    message: 'chart labels must retain readable size instead of shrinking a desktop plot',
+    timeout: 5000
+  }).toBeGreaterThanOrEqual(0.9);
   await checkBounds('.planner-trajectory-card');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
   const clipped = await page.locator('#budgetGraphic').evaluate(el => [...el.querySelectorAll('.cashflow-seg-shortfall, .telemetry-card-val, .classic-dti-pill, .classic-dti-sub')].filter(node => node.scrollWidth > node.clientWidth + 1).map(node => node.className));
