@@ -1,0 +1,2080 @@
+
+Running 18 tests using 1 worker
+
+[1/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics
+  1) [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-index-l-f12ed-in-source-rendering-metrics-firefox/error-context.md
+
+
+[2/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+  2) [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-catalog-704c5-in-source-rendering-metrics-firefox/error-context.md
+
+
+[3/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+  3) [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-studio--28341-in-source-rendering-metrics-firefox/error-context.md
+
+
+[4/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics
+  4) [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-about-l-16821-in-source-rendering-metrics-firefox/error-context.md
+
+
+[5/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+  5) [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-privacy-979e1-in-source-rendering-metrics-firefox/error-context.md
+
+
+[6/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+  6) [firefox] › test/browser/fonts.spec.mjs:8:3 › terms: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-terms-l-2088c-in-source-rendering-metrics-firefox/error-context.md
+
+
+[7/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics
+  7) [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-index-l-f12ed-in-source-rendering-metrics-firefox-repeat1/error-context.md
+
+
+[8/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+  8) [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-catalog-704c5-in-source-rendering-metrics-firefox-repeat1/error-context.md
+
+
+[9/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+  9) [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-studio--28341-in-source-rendering-metrics-firefox-repeat1/error-context.md
+
+
+[10/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics
+  10) [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-about-l-16821-in-source-rendering-metrics-firefox-repeat1/error-context.md
+
+
+[11/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+  11) [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-privacy-979e1-in-source-rendering-metrics-firefox-repeat1/error-context.md
+
+
+[12/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+  12) [firefox] › test/browser/fonts.spec.mjs:8:3 › terms: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-terms-l-2088c-in-source-rendering-metrics-firefox-repeat1/error-context.md
+
+
+[13/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics
+  13) [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-index-l-f12ed-in-source-rendering-metrics-firefox-repeat2/error-context.md
+
+
+[14/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+  14) [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-catalog-704c5-in-source-rendering-metrics-firefox-repeat2/error-context.md
+
+
+[15/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+  15) [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-studio--28341-in-source-rendering-metrics-firefox-repeat2/error-context.md
+
+
+[16/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics
+  16) [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-about-l-16821-in-source-rendering-metrics-firefox-repeat2/error-context.md
+
+
+[17/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+  17) [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 13
+    + Received  + 13
+
+    @@ -65,13 +65,13 @@
+        ],
+        Array [
+          "Inter",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     153.53334045410156,
+    +     157.5,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -89,13 +89,13 @@
+        ],
+        Array [
+          "Inter",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.8000030517578,
+    +     156.76666259765625,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Inter",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -113,19 +113,19 @@
+        ],
+        Array [
+          "Inter",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.43333435058594,
+    +     156.39999389648438,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          200,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    -     347.4333190917969,
+    +     348.98333740234375,
+          18,
+          3,
+        ],
+        Array [
+          "Manrope",
+    @@ -185,13 +185,13 @@
+        ],
+        Array [
+          "Manrope",
+          650,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          750,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -209,13 +209,13 @@
+        ],
+        Array [
+          "Manrope",
+          750,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+        Array [
+          "Manrope",
+          800,
+          "LKR 1,234,567.89 — − + % £ € ₹ ₨",
+    @@ -233,10 +233,10 @@
+        ],
+        Array [
+          "Manrope",
+          800,
+          "සිංහල தமிழ் 🚗",
+    -     152.03334045410156,
+    +     156,
+          22.238531494140624,
+    -     8,
+    +     7,
+        ],
+      ]
+
+      40 |       } finally { await context.close(); }
+      41 |     }
+    > 42 |     expect(widths[1]).toEqual(widths[0]);
+         |                       ^
+      43 |   });
+      44 | }
+      45 |
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/fonts.spec.mjs:42:23
+
+    Error Context: test-results/test-browser-fonts-privacy-979e1-in-source-rendering-metrics-firefox-repeat2/error-context.md
+
+
+[18/18] [firefox] › test/browser/fonts.spec.mjs:8:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+  17 failed
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › terms: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › terms: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › index: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › studio: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › about: local WOFF2 faces load once and retain source rendering metrics 
+    [firefox] › test/browser/fonts.spec.mjs:8:3 › privacy: local WOFF2 faces load once and retain source rendering metrics 
+  1 passed (59.0s)

@@ -1,0 +1,74 @@
+
+Running 70 tests using 1 worker
+
+[1/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[2/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[3/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[4/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[5/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[6/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[7/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[8/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[9/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[10/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[11/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[12/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[13/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[14/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[15/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[16/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[17/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[18/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[19/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[20/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[21/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[22/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[23/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[24/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[25/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[26/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[27/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[28/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[29/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[30/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[31/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[32/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[33/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[34/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[35/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[36/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[37/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[38/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[39/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[40/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[41/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[42/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[43/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[44/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[45/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[46/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[47/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[48/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[49/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[50/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[51/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[52/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[53/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[54/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[55/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[56/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[57/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[58/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[59/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[60/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[61/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[62/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[63/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+[64/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › index: local WOFF2 faces load once and retain source rendering metrics
+[65/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › catalogue: local WOFF2 faces load once and retain source rendering metrics
+[66/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › studio: local WOFF2 faces load once and retain source rendering metrics
+[67/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › about: local WOFF2 faces load once and retain source rendering metrics
+[68/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › privacy: local WOFF2 faces load once and retain source rendering metrics
+[69/70] [firefox] › test/browser/fonts.spec.mjs:10:3 › terms: local WOFF2 faces load once and retain source rendering metrics
+[70/70] [firefox] › test/browser/fonts.spec.mjs:52:1 › mixed Sinhala, Tamil and emoji retain metrics and pixels with both formats in one controlled page
+  70 passed (2.0m)

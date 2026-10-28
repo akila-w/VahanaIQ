@@ -5,6 +5,8 @@
 #
 # Do NOT add a .nojekyll file: that switches Jekyll off and would publish all of the above.
 exclude:
+  # Root task reports are review artefacts, not public site content.
+  - "Task-*-report.md"
   - docs
   - data/batches
   - test

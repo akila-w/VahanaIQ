@@ -1,0 +1,62 @@
+[
+  {
+    "family": "inter",
+    "ttf": 876576,
+    "woff2": 350460,
+    "glyphs": 2933,
+    "codepoints": 2849,
+    "axes": [
+      [
+        "opsz",
+        14.0,
+        14.0,
+        32.0
+      ],
+      [
+        "wght",
+        100.0,
+        400.0,
+        900.0
+      ]
+    ],
+    "currency": {
+      "£": true,
+      "€": true,
+      "₹": true,
+      "₨": true
+    },
+    "scripts": {
+      "Greek": true,
+      "Cyrillic": true,
+      "Sinhala": false,
+      "Tamil": false
+    }
+  },
+  {
+    "family": "manrope",
+    "ttf": 164700,
+    "woff2": 53892,
+    "glyphs": 742,
+    "codepoints": 678,
+    "axes": [
+      [
+        "wght",
+        200.0,
+        200.0,
+        800.0
+      ]
+    ],
+    "currency": {
+      "£": true,
+      "€": true,
+      "₹": true,
+      "₨": false
+    },
+    "scripts": {
+      "Greek": true,
+      "Cyrillic": true,
+      "Sinhala": false,
+      "Tamil": false
+    }
+  }
+]

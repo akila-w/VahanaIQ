@@ -1,0 +1,18 @@
+{
+  "candidate": "02a2dd9f8a331f0e789459dfca76dccd05162121",
+  "squash": "72f86cf9f31f1b4f1ae062a81f8ca165cfbc1890",
+  "identicalTree": "d3db2512de5b68302c8fb6d246ec0b39307671ae",
+  "passingCI": 40693163253,
+  "failingCI": 40695315786,
+  "browser": "Firefox 157.0 / Playwright firefox-1555",
+  "passingImage": "Ubuntu 24.04.5 / 20261012.334.1",
+  "failingImage": "Ubuntu 24.04.5 / 20261025.353.1",
+  "firstDiagnosticImage": "ubuntu24\n20261026.354.1",
+  "secondDiagnosticImage": "ubuntu24\n20261026.354.1",
+  "knownCommonPackages": {
+    "fontconfig": "2.15.0-1.1ubuntu2",
+    "fonts-freefont-ttf": "20211204+svn4273-2",
+    "fonts-noto-color-emoji": "2.047-0ubuntu0.24.04.1"
+  },
+  "limit": "Historical CI did not capture a complete font inventory. Runner image changes are recorded, not asserted to be causal. Native logs identify font-list/cmap initialisation, not a per-glyph canvas font API."
+}

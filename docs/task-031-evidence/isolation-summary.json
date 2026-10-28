@@ -1,0 +1,92 @@
+[
+  {
+    "mode": "fresh",
+    "formats": [
+      "ttf",
+      "ttf"
+    ],
+    "firstDifferences": 18,
+    "convertedGlyphDifferences": 0,
+    "allDifferencesByStage": {
+      "first": 18,
+      "second": 0,
+      "exercised": 0,
+      "exercisedAgain": 0
+    }
+  },
+  {
+    "mode": "fresh",
+    "formats": [
+      "woff2",
+      "woff2"
+    ],
+    "firstDifferences": 18,
+    "convertedGlyphDifferences": 0,
+    "allDifferencesByStage": {
+      "first": 18,
+      "second": 18,
+      "exercised": 18,
+      "exercisedAgain": 18
+    }
+  },
+  {
+    "mode": "fresh",
+    "formats": [
+      "ttf",
+      "woff2"
+    ],
+    "firstDifferences": 18,
+    "convertedGlyphDifferences": 0,
+    "allDifferencesByStage": {
+      "first": 18,
+      "second": 18,
+      "exercised": 0,
+      "exercisedAgain": 0
+    }
+  },
+  {
+    "mode": "fresh",
+    "formats": [
+      "woff2",
+      "ttf"
+    ],
+    "firstDifferences": 12,
+    "convertedGlyphDifferences": 0,
+    "allDifferencesByStage": {
+      "first": 12,
+      "second": 0,
+      "exercised": 0,
+      "exercisedAgain": 0
+    }
+  },
+  {
+    "mode": "shared-context",
+    "formats": [
+      "ttf",
+      "woff2"
+    ],
+    "firstDifferences": 20,
+    "convertedGlyphDifferences": 0,
+    "allDifferencesByStage": {
+      "first": 20,
+      "second": 18,
+      "exercised": 0,
+      "exercisedAgain": 0
+    }
+  },
+  {
+    "mode": "shared-context",
+    "formats": [
+      "woff2",
+      "ttf"
+    ],
+    "firstDifferences": 19,
+    "convertedGlyphDifferences": 0,
+    "allDifferencesByStage": {
+      "first": 19,
+      "second": 18,
+      "exercised": 18,
+      "exercisedAgain": 0
+    }
+  }
+]
