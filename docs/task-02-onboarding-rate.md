@@ -37,10 +37,10 @@ A regression case delivers the deferred callback after the field is selected and
 - `js/onboarding.js`: preserve an already-focused control in the deferred callback.
 - `sw.js`: advance the immutable cache revision.
 - `test/browser/onboarding.spec.mjs`: retain the original scenario, add the focus-order regression, checkpoints and exact post-reload assertions.
-- `test/browser/offline.spec.mjs`: update current-cache expectations.
+- `test/browser/offline.spec.mjs`: update current-cache expectations and observe completed activation before opening the next controlled page.
 - `test/fixtures/offline-shell-revisions.json`: append the new shell fingerprint.
 - `.github/workflows/onboarding-rate.yml`: required repeated Linux Firefox verification with artefacts.
-- `.github/workflows/test.yml`: retain evidence when a full browser job fails.
+- `.github/workflows/test.yml`: retain failure evidence and repeat the WebKit lifecycle ordering check.
 - `Task-02-report.md` and this report: link the investigation and current cache policy.
 
 Temporary diagnostic workflow/source instrumentation existed only in investigation commits and is absent from the final application and test tree.
@@ -55,6 +55,12 @@ npx playwright test test/browser/onboarding.spec.mjs --browser=firefox \
 ```
 
 The final revision also requires the complete Verify VahanaIQ workflow: all 27 Node suites, all onboarding and offline cases in Chromium/WebKit/Firefox, and the existing CI checks. Exact final-commit statuses and links are maintained in [PR #31](https://github.com/akila-w/VahanaIQ/pull/31) after that run completes. The report alone is not a substitute for a successful final run.
+
+## Full-run lifecycle follow-up
+
+On fix revision `b7c45d4`, both traced Firefox cases and forty repeated cases passed; full Chromium and Firefox each passed 233 cases. WebKit passed the onboarding cases but the immutable-cache lifecycle case observed `activating` instead of `activated` at its existing five-second readiness assertion. The helper had used cache cleanup as a proxy for completed activation and opened a new controlled document before the claim/activation transition finished.
+
+The helper now observes `registration.active.state === "activated"` from the existing observer outside the worker scope, before opening a new controlled page. The existing assertion timeout and subsequent installed/controller assertions are retained. The same ordering gate is applied to legacy migration entry. A focused five-repeat Linux WebKit check precedes the final full matrix. This is test ordering only; no further application, worker or cache-content change is involved.
 
 ## Limits
 

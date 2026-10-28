@@ -146,12 +146,22 @@ async function update(page) {
   await page.evaluate(async () => { await (await navigator.serviceWorker.getRegistration()).update(); });
   await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).waiting?.state)).toBe('installed');
 }
+async function activatedFromObserver(observer) {
+  // Cache cleanup happens inside activate, before clients.claim resolves. Opening
+  // a controlled document during that transition can race claiming in WebKit.
+  // Observe the actual state from outside the scope before starting navigation.
+  await expect.poll(() => observer.evaluate(async () =>
+    (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state
+  )).toBe('activated');
+}
+
 async function activate(context, page, revision) {
   // The observer is outside /VahanaIQ/, so it cannot keep the old worker alive.
   const observer = await context.newPage();
   await observer.goto(site.origin + '/__blank.html');
   await page.close();
   await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual([`vahanaiq-test-${revision}`]);
+  await activatedFromObserver(observer);
   const next = await context.newPage();
   await next.goto(site.origin + '/VahanaIQ/index.html');
   await installed(next);
@@ -344,6 +354,7 @@ test('deployed legacy worker migrates with warm assets, two tabs and saved data'
   expect(await second.evaluate(async () => (await navigator.serviceWorker.getRegistration()).waiting?.state)).toBe('installed');
   await second.close();
   await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['unrelated-app', 'vahanaiq-v2.12.0-offline-2']);
+  await activatedFromObserver(observer);
   const current = await context.newPage();
   await setOffline(context, true);
   const observed = errors(current);
@@ -395,6 +406,7 @@ test('legacy first-install gaps survive a failed migration and repair on retry',
   await observer.goto(site.origin + '/__blank.html');
   await page.close();
   await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['vahanaiq-v2.12.0-offline-2']);
+  await activatedFromObserver(observer);
   await setOffline(context, true);
   const current = await context.newPage();
   const observed = errors(current);
