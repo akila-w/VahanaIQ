@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
 const BASE=process.env.BASE_URL||'http://127.0.0.1:8123';
 async function selectCars(page) {
  await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();
@@ -45,6 +46,41 @@ test('existing comparisons survive without compulsory setup',async({page})=>{
 });
 test('required flow fits a narrow phone',async({page})=>{
  await page.setViewportSize({width:320,height:568});await page.goto(BASE+'/index.html');await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);await expect(page.getByRole('button',{name:'Continue to Loan Terms →'})).toBeInViewport();
+});
+
+test('all five onboarding progress steps stay visible on narrow phones', async ({ page }) => {
+ await mkdir('qa/2026-10-28-uiux', { recursive: true });
+ const layouts = [];
+ for (const [width, height] of [[320, 568], [360, 800], [375, 812], [390, 844], [430, 932]]) {
+  await page.setViewportSize({ width, height });
+  await page.goto(BASE + '/index.html');
+  const steps = page.locator('#onboarding .onboarding-step-pill');
+  await expect(steps).toHaveCount(5);
+  await page.locator('#onboarding').evaluate(el => Promise.all(el.getAnimations().filter(a => a.effect?.target === el).map(a => a.finished)));
+  const legacyStyle = await page.addStyleTag({ content: `@media (max-width:600px) {
+   .onboarding-head { display:flex; justify-content:space-between; gap:16px; }
+   .onboarding-stepper { justify-content:flex-start; gap:12px; }
+   .onboarding-progress-bar { left:12px; right:12px; }
+   .onboarding-step-pill { width:auto; height:auto; min-width:0; padding:4px 10px; }
+   .onboarding-close-btn { width:34px; height:34px; margin-left:auto; }
+  }` });
+  await page.screenshot({ path: `qa/2026-10-28-uiux/onboarding-before-${width}.png` });
+  await legacyStyle.evaluate(el => el.remove());
+  await page.screenshot({ path: `qa/2026-10-28-uiux/onboarding-after-${width}.png` });
+  const boxes = await steps.evaluateAll(items => items.map(item => {
+   const rect = item.getBoundingClientRect();
+   return { left: rect.left, right: rect.right, width: rect.width, height: rect.height };
+  }));
+  layouts.push({ width, boxes });
+ }
+ for (const { width, boxes } of layouts) {
+  for (const [index, box] of boxes.entries()) {
+   expect(box.width, `step ${index + 1} width at ${width}px`).toBeGreaterThanOrEqual(44);
+   expect(box.height, `step ${index + 1} height at ${width}px`).toBeGreaterThanOrEqual(44);
+   expect(box.left, `step ${index + 1} left edge at ${width}px`).toBeGreaterThanOrEqual(0);
+   expect(box.right, `step ${index + 1} right edge at ${width}px`).toBeLessThanOrEqual(width);
+  }
+ }
 });
 
 test('history renders only comparable reviewed observations and handles missing history',async({page})=>{
