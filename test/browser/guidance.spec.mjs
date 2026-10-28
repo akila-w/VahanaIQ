@@ -250,14 +250,29 @@ test('guidance is cached and works offline', async ({ page, context }) => {
   await expect(page.locator('#guidedTour')).toBeVisible();
 });
 
-test('an older cached content module keeps quick help available during refresh', async ({ page }) => {
-  const content = fs.readFileSync('js/guidance-content.js', 'utf8');
-  await page.route('**/js/guidance-content.js*', route => route.fulfill({ contentType: 'text/javascript', body: content.slice(content.indexOf('export const articles')) }));
-  await go(page);
-  await page.getByRole('button', { name: 'Help: Understanding your budget' }).click();
-  await expect(page.locator('#guideContextHelp')).toContainText('Net income is your monthly take-home pay');
-  await page.locator('#guideContextHelp').getByRole('button', { name: 'More details' }).click();
-  await expect(page.locator('#helpCentre [data-article="budget"]')).toHaveAttribute('open', '');
+test.describe('older content module fixture', () => {
+  // The real worker can serve current content before this synthetic route is hit.
+  // Worker installation and upgrades are exercised in offline.spec.mjs.
+  test.use({ serviceWorkers: 'block' });
+
+  test('an older cached content module keeps quick help available during refresh', async ({ page }) => {
+    const content = fs.readFileSync('js/guidance-content.js', 'utf8');
+    let servedOlderModule = false;
+    await page.route('**/js/guidance-content.js*', async route => {
+      await route.fulfill({ contentType: 'text/javascript', body: content.slice(content.indexOf('export const articles')) });
+      servedOlderModule = true;
+    });
+    const response = page.waitForResponse(response => response.url().includes('/js/guidance-content.js'));
+    await go(page);
+    const olderModule = await response;
+    expect(olderModule.fromServiceWorker()).toBe(false);
+    expect(await olderModule.text()).not.toContain('export const quickHelp');
+    expect(servedOlderModule).toBe(true);
+    await page.getByRole('button', { name: 'Help: Understanding your budget' }).click();
+    await expect(page.locator('#guideContextHelp')).toContainText('Net income is your monthly take-home pay');
+    await page.locator('#guideContextHelp').getByRole('button', { name: 'More details' }).click();
+    await expect(page.locator('#helpCentre [data-article="budget"]')).toHaveAttribute('open', '');
+  });
 });
 
 test('relative links and assets work under a GitHub Pages project path', async ({ page }) => {

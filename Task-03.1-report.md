@@ -30,6 +30,14 @@ Node and browser jobs depend on this focused publication job. They use an explic
 
 The root contains three task reports. Existing working files `README.md`, `firestore.rules`, dependency manifests/locks and optional Ruby build files remain excluded. Internal material under `docs/`, `test/`, `scripts/`, `qa/`, `serverless/`, `design-system/`, `data/batches/` and the existing vendor/working-file patterns retain their current exclusions. Public application pages, `manifest.json`, `sw.js`, `robots.txt`, `sitemap.xml`, `LICENSE`, `SECURITY.md`, `CHANGELOG.md`, icons and runtime assets are preserved. No additional public information is reclassified.
 
+### Additional CI failure investigated
+
+The first publication candidate (`598ddb5`) passed the real Pages build, Node, Firefox and CodeQL checks, but Chromium failed the existing older-guidance-module compatibility case. It expected the older article fallback text and received the current quick-help text instead. A focused local repetition reproduced **2 failures / 8 passes** without changing the application.
+
+Response instrumentation in fresh disposable Chromium contexts confirmed the cause: with workers allowed, the substituted-module route was hit **zero** times, the response reported `fromServiceWorker: true`, and it contained the current `quickHelp` export. Blocking workers for this synthetic fixture produced **one** route hit, `fromServiceWorker: false`, no `quickHelp` export, and the expected older article text. The worker had raced the test fixture; the assertion was not exercising the intended older module.
+
+Only this compatibility case now uses a worker-blocked context. It additionally requires route delivery, a non-worker response and absence of the newer export before retaining both original UI assertions. The real offline/lifecycle suites retain their worker coverage. Twenty focused Chromium repetitions pass after this correction. This verification-only change is included because the complete candidate CI exposed the defect; no application behaviour, assertion tolerance or retry policy changes.
+
 ### Runtime/cache compatibility and limitations
 
 The correction does not alter application HTML/CSS/JS, font files, typography, financial calculations, authentication/synchronisation, catalogue data or browser storage. The cached shell and revision ledger are unchanged from production `72f86cf`: **`vahanaiq-v2.12.0-offline-3`**, fingerprint **`8e38d91748dbf346a49bec2b2359750710b6d1d4486fbca8f7a3c2730baee61b`**. No cache advance is necessary. The original Firefox test correction remains intact.
@@ -141,7 +149,7 @@ Exact per-glyph font names were not available through the standard Firefox canva
 
 ## Files changed and reproduction
 
-Publication correction delta from the previously approved candidate: `_config.yml`, `scripts/smoke-deploy.mjs`, new `scripts/verify-publication.mjs`, `.github/workflows/test.yml` and this report. Existing Firefox fix/evidence files are preserved.
+Publication correction delta from the previously approved candidate: `_config.yml`, `scripts/smoke-deploy.mjs`, new `scripts/verify-publication.mjs`, `.github/workflows/test.yml`, the single synthetic compatibility case in `test/browser/guidance.spec.mjs`, and this report. Existing Firefox fix/evidence files are preserved.
 
 - `test/browser/fonts.spec.mjs`: separate source-font equivalence, same-document fallback controls and mixed-script checks; visible layout comparison; attachments.
 - `test/browser/font-metrics.mjs`: shared samples, explicit text exercise, exact metrics and raster probes.
