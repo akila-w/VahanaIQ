@@ -600,6 +600,7 @@ function render() {
     $("empty").hidden = true;
   }
 
+  applyBudgetMode();
   saveState(currentState());
 }
 
@@ -1030,12 +1031,14 @@ function updateBudgetExtras(s, f, room, rows) {
 
     const rentalPct = Math.min(100, (leaseRental / s.income) * 100);
     const debtPct = Math.min(100 - rentalPct, (s.debt / s.income) * 100);
-    const bufferPct = Math.max(0, 100 - rentalPct - debtPct);
+    const insurancePct = Math.min(100 - rentalPct - debtPct, (monthlyInsurance / s.income) * 100);
+    const bufferPct = Math.max(0, 100 - rentalPct - debtPct - insurancePct);
 
     if (linearStackEl) {
       linearStackEl.innerHTML = `
         <div class="linear-stack-seg linear-seg-debt" style="width:${debtPct}%" title="Existing Debt: LKR ${fmt(s.debt)} (${debtPct.toFixed(1)}%)">Debt ${debtPct.toFixed(1)}%</div>
         <div class="linear-stack-seg linear-seg-lease ${isOffScale ? "is-critical" : dtiPct > DTI_STANDARD_PCT ? "is-stretch" : ""}" style="width:${rentalPct}%" title="Lease: LKR ${fmt(leaseRental)} (${rentalPct.toFixed(1)}%)">Lease ${rentalPct.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-insurance" style="width:${insurancePct}%" title="Insurance: LKR ${fmt(monthlyInsurance)} (${insurancePct.toFixed(1)}%)">Insurance ${insurancePct.toFixed(1)}%</div>
         <div class="linear-stack-seg linear-seg-buffer" style="width:${bufferPct}%" title="Living Buffer: LKR ${fmt(Math.max(0, s.income - totalMonthlyDebt))} (${bufferPct.toFixed(1)}%)">Buffer ${bufferPct.toFixed(1)}%</div>
       `;
     }
@@ -1050,7 +1053,7 @@ function updateBudgetExtras(s, f, room, rows) {
         <div class="linear-metric-card">
           <span class="linear-metric-label">Primary Lease Rental</span>
           <span class="linear-metric-val">LKR ${fmt(leaseRental)}</span>
-          <span class="linear-metric-sub">${rows.length > 0 ? rows[0].name : "Lease room"}</span>
+          <span class="linear-metric-sub">${rows.length > 0 ? esc(rows[0].name) : "Lease room"}</span>
         </div>
         <div class="linear-metric-card">
           <span class="linear-metric-label">Remaining Living Buffer</span>
@@ -1115,7 +1118,7 @@ function updateBudgetExtras(s, f, room, rows) {
         <div class="linear-metric-card">
           <span class="linear-metric-label">Primary Lease Rental</span>
           <span class="linear-metric-val">LKR ${fmt(rows.length > 0 ? rows[0].rental : 0)}</span>
-          <span class="linear-metric-sub">${rows.length > 0 ? rows[0].name : "No car selected"}</span>
+          <span class="linear-metric-sub">${rows.length > 0 ? esc(rows[0].name) : "No car selected"}</span>
         </div>
         <div class="linear-metric-card">
           <span class="linear-metric-label">Living Buffer</span>
@@ -3316,11 +3319,19 @@ window.addEventListener('vahanaiq:onboarding-complete', event => {
   const payload = event.detail;
   if (!payload || vehicleBatchError(payload.cars)) return;
   for (const car of payload.cars) if (!cars.some(c => c.id === car.id || (c.catalogueId && c.catalogueId === car.catalogueId))) cars.push(assignKey(car));
-  applyState(payload.terms);
+  applyState({ ...currentState(), ...payload.terms });
   saveCars(cars); saveState(currentState()); render();
 });
 
 // Interactive Budget View Switcher in test build (Gauge Dial vs Linear Cash Flow vs Borrowing Ceiling)
+function applyBudgetMode(mode) {
+  if (mode === undefined) mode = document.querySelector?.('.budget-mode-btn.active')?.dataset.budgetMode;
+  if (!mode) return;
+  for (const [id, value] of [['budgetGraphic', 'dial'], ['budgetLinearView', 'linear'], ['budgetCeilingView', 'ceiling']]) {
+    const panel = $(id);
+    if (panel) panel.hidden = mode !== value;
+  }
+}
 function initBudgetModeSwitcher() {
   if (typeof document === "undefined") return;
   const switcherBtns = document.querySelectorAll(".budget-mode-btn");
@@ -3331,12 +3342,7 @@ function initBudgetModeSwitcher() {
       btn.classList.toggle("active", active);
       btn.setAttribute("aria-pressed", active);
     });
-    const dialEl = $("budgetGraphic");
-    const linearEl = $("budgetLinearView");
-    const ceilingEl = $("budgetCeilingView");
-    if (dialEl) dialEl.hidden = mode !== "dial";
-    if (linearEl) linearEl.hidden = mode !== "linear";
-    if (ceilingEl) ceilingEl.hidden = mode !== "ceiling";
+    applyBudgetMode(mode);
     try { localStorage.setItem("vahanaiq_budget_mode", mode); } catch (_) {}
   };
   switcherBtns.forEach(btn => {

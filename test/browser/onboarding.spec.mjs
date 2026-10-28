@@ -53,3 +53,51 @@ test('first-use setup is optional and Escape dismisses it', async ({ page }) => 
  await page.reload();
  await expect(page.locator('#onboarding')).toHaveCount(0);
 });
+
+for (const route of ['catalogue', 'studio']) test(`setup from ${route} preserves saved vehicles and other financing settings`, async ({ page }) => {
+ await page.addInitScript(() => {
+  if (localStorage.getItem('vahanaiq_comparison_v3')) return;
+  localStorage.setItem('vahanaiq_comparison_v3', JSON.stringify({ version: 3, cars: [{ id: 'saved-car', name: 'Saved vehicle', price: 9000000, cond: 'New' }] }));
+  localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ insurance: '120000', fees: '45000', dti: '0.5' }));
+ });
+ await page.goto(`${BASE}/${route}.html?onboarding=1`);
+ await selectCars(page);
+ await page.getByRole('button', { name: 'Continue to Affordability Check →' }).click();
+ await page.getByRole('button', { name: 'Skip Income' }).click();
+ await page.getByRole('button', { name: 'Open My Lease →' }).click();
+ await expect(page.locator('#rows tr')).toHaveCount(3);
+ await expect(page.locator('#rows')).toContainText('Saved vehicle');
+ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1')));
+ expect(saved).toMatchObject({ insurance: '120000', fees: '45000', dti: '0.5' });
+});
+
+test('repeated Guided Setup clicks create only one dialog per click', async ({ page }) => {
+ await page.goto(BASE+'/index.html');
+ await expect(page.locator('#onboarding')).toBeVisible();
+ await page.evaluate(() => {
+  window.setupInsertions = 0;
+  new MutationObserver(records => {
+   for (const record of records) for (const node of record.addedNodes) if (node.id === 'onboarding') window.setupInsertions++;
+  }).observe(document.body, { childList: true });
+ });
+ for (let index = 1; index <= 5; index++) {
+  await page.locator('#onboarding').getByRole('button', { name: 'Exit to Lease', exact: true }).click();
+  await page.locator('#restartOnboardingBtn').click();
+  await expect(page.locator('#onboarding')).toHaveCount(1);
+  await expect.poll(() => page.evaluate(() => window.setupInsertions)).toBe(index);
+ }
+});
+
+test('completing setup starts the Calculator tour and preserves existing cost settings', async ({ page }) => {
+ await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ insurance: '120000', fees: '45000' })));
+ await page.goto(BASE+'/index.html');
+ await selectCars(page);
+ await page.getByRole('button', { name: 'Continue to Affordability Check →' }).click();
+ await page.getByRole('button', { name: 'Skip Income' }).click();
+ await page.getByRole('button', { name: 'Take a 60-Second Guided Tour' }).click();
+ await expect(page.locator('#onboarding')).toHaveCount(0);
+ await expect(page.locator('#guidedTour')).toBeVisible();
+ await expect(page.locator('#guidedTour')).toContainText('1 of 4');
+ const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1')));
+ expect(saved).toMatchObject({ insurance: '120000', fees: '45000' });
+});

@@ -1,9 +1,18 @@
-import { ONBOARDING_KEY, MIN_SHORTLIST, readOnboarding, validTerms } from './onboarding-state.js?v=2.12.0';
+import { ONBOARDING_KEY, MIN_SHORTLIST, readOnboarding, validTerms, mergeShortlist } from './onboarding-state.js?v=2.12.0';
 import { searchCatalogue } from './catalogue-search.js?v=2.12.0';
 import { rental, flatToEffective, minDownFor } from './calculator.js?v=2.12.0';
 import { validPrice, vehicleBatchError } from './vehicle-validation.js?v=2.12.0';
 import { safeImageUrl } from './safe-url.js?v=2.12.0';
 import { DEFAULT_RATE, DEFAULT_TENURE, DEFAULT_DOWN, CONDITIONS } from './constants.js?v=2.12.0';
+
+// Each trigger has one stable listener for the lifetime of this page.
+function handleRestartClick(event) {
+  event.preventDefault();
+  restartOnboarding();
+}
+document.querySelectorAll('#startOnboardingBtn, #restartOnboardingBtn, .onboarding-restart-btn, [data-trigger="onboarding"]').forEach(btn => {
+  btn.addEventListener('click', handleRestartClick);
+});
 
 const calculatorPage = !!document.querySelector('#loanTermsHead');
 if (calculatorPage || document.querySelector('#vehicles') || document.querySelector('#models') || document.querySelector('#restartOnboardingBtn')) {
@@ -29,27 +38,12 @@ function init(forcedOpen = false) {
   const urlParams = new URLSearchParams(window.location.search);
   const forced = forcedOpen || urlParams.has('onboarding') || window.location.hash === '#onboarding';
 
-  // Wire trigger buttons on page
-  wireTriggers();
-
   // If completed and not forced, do not auto-open modal
   const comparison = read('vahanaiq_comparison_v3', null);
   const hasComparison = comparison?.version === 3 && Array.isArray(comparison.cars) &&
     comparison.cars.length > 0 && !vehicleBatchError(comparison.cars);
   if ((progress.completed || hasComparison) && !forced) {
     return;
-  }
-
-  function wireTriggers() {
-    document.querySelectorAll('#startOnboardingBtn, #restartOnboardingBtn, .onboarding-restart-btn, [data-trigger="onboarding"]').forEach(btn => {
-      btn.removeEventListener('click', handleRestartClick);
-      btn.addEventListener('click', handleRestartClick);
-    });
-  }
-
-  function handleRestartClick(e) {
-    e.preventDefault();
-    restartOnboarding();
   }
 
   const draft = read('vahanaiq_onboarding_draft_v1', {});
@@ -986,8 +980,12 @@ function init(forcedOpen = false) {
     if (selected.length < MIN_SHORTLIST || vehicleBatchError(selected) || !validTerms(terms)) return;
 
     const cars = [...selected];
-    const savedCars = write('vahanaiq_comparison_v3', { version: 3, cars });
-    const savedTerms = write('vahanaiq_inputs_v1', terms);
+    const previous = read('vahanaiq_comparison_v3', { version: 3, cars: [] });
+    const existing = Array.isArray(previous?.cars) ? previous.cars : [];
+    const mergedCars = mergeShortlist(existing, cars);
+    const mergedTerms = { ...read('vahanaiq_inputs_v1', {}), ...terms };
+    const savedCars = calculatorPage || write('vahanaiq_comparison_v3', { version: 3, cars: mergedCars });
+    const savedTerms = calculatorPage || write('vahanaiq_inputs_v1', mergedTerms);
 
     if (!calculatorPage && (!savedCars || !savedTerms)) {
       status.textContent = 'Browser storage could not save this comparison. Ensure cookies/storage are enabled.';
@@ -1009,11 +1007,7 @@ function init(forcedOpen = false) {
       document.querySelector('#h-list')?.focus();
 
       if (startTour) {
-        if (typeof window.__VAHANAIQ_START_TOUR__ === 'function') {
-          window.__VAHANAIQ_START_TOUR__(0);
-        } else {
-          window.dispatchEvent(new CustomEvent('vahanaiq:start-tour', { detail: { page: 'calculator' } }));
-        }
+        window.dispatchEvent(new CustomEvent('vahanaiq:start-tour', { detail: { page: 'calculator' } }));
       }
     } else {
       location.href = startTour ? 'index.html?guide=tour#loanTermsHead' : 'index.html#comparisonPanel';

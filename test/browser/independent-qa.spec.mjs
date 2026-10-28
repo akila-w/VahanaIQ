@@ -217,3 +217,28 @@ test('Photo Studio accepts the real JPEG fixture and refuses invalid uploads', a
   await expect(page.locator('#photoError')).toContainText('invalid image format');
   await expect(page.locator('#filmstrip > *')).toHaveCount(before + 1);
 });
+
+test('budget modes persist through edits, escape vehicle names and allocate insurance', async ({ page }) => {
+ await seed(page, { income: '100000', rate: '0', tenure: '84', down: '60', insurance: '120000', fees: '0' }, { ...fixture, name: '<img id="injected-vehicle" src="invalid">Vehicle name' });
+ await page.goto(`${BASE}/index.html`);
+ for (const mode of ['linear', 'ceiling']) {
+  await page.locator(`[data-budget-mode="${mode}"]`).click();
+  await page.locator('#income').fill('110000');
+  await page.locator('#income').dispatchEvent('change');
+  await expect(page.locator('#budgetGraphic')).toBeHidden();
+  await expect(page.locator(mode === 'linear' ? '#budgetLinearView' : '#budgetCeilingView')).toBeVisible();
+ }
+ await page.locator('[data-budget-mode="linear"]').click();
+ await page.locator('#income').fill('100000');
+ await page.locator('#income').dispatchEvent('change');
+ await expect(page.locator('#linearMetricsGrid #injected-vehicle')).toHaveCount(0);
+ await expect(page.locator('#linearMetricsGrid')).toContainText('<img id="injected-vehicle"');
+ const widths = await page.locator('#linearStackBar').evaluate(el => Object.fromEntries(['lease', 'debt', 'insurance', 'buffer'].map(name => [name, parseFloat(el.querySelector(`.linear-seg-${name}`).style.width)])));
+ expect(widths.insurance).toBeCloseTo(10, 4);
+ expect(widths.lease + widths.debt + widths.insurance + widths.buffer).toBeCloseTo(100, 4);
+ await expect(page.locator('#linearStackBar .linear-seg-insurance')).toContainText('Insurance 10.0%');
+ await page.locator('#income').fill('');
+ await page.locator('#income').dispatchEvent('change');
+ await expect(page.locator('#linearMetricsGrid #injected-vehicle')).toHaveCount(0);
+ await expect(page.locator('#linearMetricsGrid')).toContainText('<img id="injected-vehicle"');
+});

@@ -390,3 +390,7 @@ window.addEventListener('storage', event => {
     if (help.open) { $('#guideTips').checked = state.tips; renderTourLinks(); }
   }
 });
+
+window.addEventListener('vahanaiq:start-tour', event => {
+  if (page && (!event.detail?.page || event.detail.page === page)) startTour(0, document.querySelector('#restartOnboardingBtn') || helpButton);
+});

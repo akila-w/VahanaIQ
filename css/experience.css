@@ -2660,3 +2660,5 @@ footer.foot { padding-block: 16px !important; }
   input, select, textarea, .tools input, .tools select,
   .catalogue-filters input, .catalogue-filters select { font-size: 16px !important; }
 }
+
+.linear-seg-insurance { background: var(--mid-ink); color: var(--panel); }
