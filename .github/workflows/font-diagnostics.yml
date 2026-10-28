@@ -1,0 +1,42 @@
+name: Task 03.1 focused font diagnosis
+on:
+  push:
+    branches: [codex/task-03-1-font-metrics]
+permissions:
+  contents: read
+jobs:
+  fonts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps firefox
+      - name: Capture font environment
+        run: |
+          mkdir -p qa/task031-diagnostics
+          cat /etc/os-release > qa/task031-diagnostics/os.txt
+          fc-list > qa/task031-diagnostics/fonts.txt
+          dpkg-query -W 'fonts-*' > qa/task031-diagnostics/font-packages.txt
+          printenv ImageOS ImageVersion > qa/task031-diagnostics/runner-image.txt
+          python3 -m http.server 8123 --bind 127.0.0.1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8123/index.html; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Reproduce original assertion only
+        continue-on-error: true
+        run: npx playwright test test/browser/fonts.spec.mjs --browser=firefox --workers=1 --repeat-each=3 --reporter=line > qa/task031-diagnostics/original-test.log 2>&1
+      - name: Isolate format, context, fallback and text readiness
+        run: node scripts/diagnose-font-metrics.mjs > qa/task031-diagnostics/summary.txt
+      - name: Keep evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: task031-font-diagnostics
+          path: qa/task031-diagnostics
+          retention-days: 14
