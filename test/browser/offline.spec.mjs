@@ -1,9 +1,11 @@
 import { test, expect, chromium, webkit, firefox } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { offlineServer } from './offline-server.mjs';
 import { seedReturning } from './returning-user.mjs';
+const CURRENT_CACHE = readFileSync(new URL('../../sw.js', import.meta.url), 'utf8').match(/const CACHE = "([^"]+)"/)[1];
 let site;
 test.beforeEach(async ({ context }) => {
   site = await offlineServer();
@@ -342,7 +344,7 @@ test('deployed legacy worker migrates with warm assets, two tabs and saved data'
   }, site.origin);
   site.state.legacy = false;
   await update(page);
-  expect(await observer.evaluate(() => caches.keys())).toEqual(expect.arrayContaining(['vahanaiq-v2.12.0', 'vahanaiq-v2.12.0-offline-2', 'unrelated-app']));
+  expect(await observer.evaluate(() => caches.keys())).toEqual(expect.arrayContaining(['vahanaiq-v2.12.0', CURRENT_CACHE, 'unrelated-app']));
   // An old tab can keep calculating and saving while the new worker waits.
   await page.reload();
   await checkData(page);
@@ -353,7 +355,7 @@ test('deployed legacy worker migrates with warm assets, two tabs and saved data'
   await page.close();
   expect(await second.evaluate(async () => (await navigator.serviceWorker.getRegistration()).waiting?.state)).toBe('installed');
   await second.close();
-  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['unrelated-app', 'vahanaiq-v2.12.0-offline-2']);
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['unrelated-app', CURRENT_CACHE]);
   await activatedFromObserver(observer);
   const current = await context.newPage();
   await setOffline(context, true);
@@ -405,7 +407,7 @@ test('legacy first-install gaps survive a failed migration and repair on retry',
   const observer = await context.newPage();
   await observer.goto(site.origin + '/__blank.html');
   await page.close();
-  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['vahanaiq-v2.12.0-offline-2']);
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual([CURRENT_CACHE]);
   await activatedFromObserver(observer);
   await setOffline(context, true);
   const current = await context.newPage();
@@ -414,4 +416,39 @@ test('legacy first-install gaps survive a failed migration and repair on retry',
   await checkData(current);
   expect(observed.failed).toEqual([]);
   expect(observed.exceptions).toEqual([]);
+});
+
+// Exercise the released Task 02 font URLs, not just two names of the new shell.
+test('Task 02 TTF shell upgrades atomically to WOFF2 with saved data and offline fonts', async ({ page, context }) => {
+  site.state.previousFonts = true;
+  site.state.revision = 'task02';
+  await page.goto(site.origin + '/VahanaIQ/index.html');
+  await installed(page);
+  await saveData(page);
+  const fontUrls = p => p.evaluate(async () => {
+    const cache = await caches.open((await caches.keys())[0]);
+    return (await cache.keys()).map(r => new URL(r.url).pathname).filter(p => /\.(ttf|woff2)$/.test(p)).sort();
+  });
+  expect((await fontUrls(page)).every(p => p.endsWith('.ttf'))).toBe(true);
+  site.state.previousFonts = false;
+  site.state.revision = 'task03';
+  await update(page);
+  await page.reload();
+  await consistent(page, 'task02');
+  expect(await page.evaluate(() => [...document.fonts].every(f => f.status === 'loaded'))).toBe(true);
+  expect((await fontUrls(page)).some(p => p.endsWith('.ttf'))).toBe(true);
+  let current = await activate(context, page, 'task03');
+  await checkData(current);
+  const fonts = await fontUrls(current);
+  expect(fonts).toHaveLength(2);
+  expect(fonts.every(p => p.endsWith('.woff2'))).toBe(true);
+  await setOffline(context, true);
+  for (const route of ['index', 'catalogue', 'studio', 'about', 'privacy', 'terms']) {
+    await current.goto(site.origin + '/VahanaIQ/' + route + '.html');
+    await current.evaluate(() => document.fonts.ready);
+    expect(await current.evaluate(() => [...document.fonts].every(f => f.status === 'loaded'))).toBe(true);
+    await consistent(current, 'task03');
+  }
+  await current.goto(site.origin + '/VahanaIQ/index.html');
+  await checkData(current);
 });

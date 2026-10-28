@@ -1,0 +1,257 @@
+{
+  "first": {
+    "before": {
+      "fontBytes": {
+        "median": 537786,
+        "min": 537786,
+        "max": 537786
+      },
+      "fontRequests": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "fontEnd": {
+        "median": 4965,
+        "min": 4951,
+        "max": 5023.299999998882
+      },
+      "fontsDone": {
+        "median": 5100.9000000003725,
+        "min": 5094.199999999255,
+        "max": 5167.9000000003725
+      },
+      "lcp": {
+        "median": 5128,
+        "min": 5120,
+        "max": 5192
+      },
+      "cls": {
+        "median": 0.03473860416058339,
+        "min": 0.03473860416058339,
+        "max": 0.03622464391623889
+      },
+      "initialTransfer": {
+        "median": 845052,
+        "min": 845052,
+        "max": 845052
+      }
+    },
+    "after": {
+      "fontBytes": {
+        "median": 404352,
+        "min": 404352,
+        "max": 404352
+      },
+      "fontRequests": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "fontEnd": {
+        "median": 4297.5,
+        "min": 4289.5,
+        "max": 4313.199999999255
+      },
+      "fontsDone": {
+        "median": 4445,
+        "min": 4426.199999999255,
+        "max": 4449.9000000003725
+      },
+      "lcp": {
+        "median": 4472,
+        "min": 4452,
+        "max": 4476
+      },
+      "cls": {
+        "median": 0.03473860416058339,
+        "min": 0.03473860416058339,
+        "max": 0.03473860416058339
+      },
+      "initialTransfer": {
+        "median": 711614,
+        "min": 711614,
+        "max": 711614
+      }
+    },
+    "changePercent": {
+      "fontBytes": -24.81172808514911,
+      "fontRequests": 0.0,
+      "fontEnd": -13.44410876132931,
+      "fontsDone": -12.85851516399703,
+      "lcp": -12.792511700468022,
+      "cls": 0.0,
+      "initialTransfer": -15.790507566398283
+    }
+  },
+  "returning": {
+    "before": {
+      "fontBytes": {
+        "median": 537786,
+        "min": 537786,
+        "max": 537786
+      },
+      "fontRequests": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "fontEnd": {
+        "median": 4965.700000001118,
+        "min": 4958.4000000003725,
+        "max": 5040.700000001118
+      },
+      "fontsDone": {
+        "median": 5091,
+        "min": 5089.5999999996275,
+        "max": 5209.5
+      },
+      "lcp": {
+        "median": 1384,
+        "min": 1352,
+        "max": 1604
+      },
+      "cls": {
+        "median": 0.03473860416058339,
+        "min": 0.03473860416058339,
+        "max": 0.036975602193490935
+      },
+      "initialTransfer": {
+        "median": 845052,
+        "min": 845052,
+        "max": 845052
+      }
+    },
+    "after": {
+      "fontBytes": {
+        "median": 404352,
+        "min": 404352,
+        "max": 404352
+      },
+      "fontRequests": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "fontEnd": {
+        "median": 4298.5,
+        "min": 4290.199999999255,
+        "max": 4304.299999998882
+      },
+      "fontsDone": {
+        "median": 4440.0999999996275,
+        "min": 4420.39999999851,
+        "max": 4471.5999999996275
+      },
+      "lcp": {
+        "median": 1364,
+        "min": 1356,
+        "max": 1408
+      },
+      "cls": {
+        "median": 0.03473860416058339,
+        "min": 0.03473860416058339,
+        "max": 0.03622464391623889
+      },
+      "initialTransfer": {
+        "median": 711614,
+        "min": 711614,
+        "max": 711614
+      }
+    },
+    "changePercent": {
+      "fontBytes": -24.81172808514911,
+      "fontRequests": 0.0,
+      "fontEnd": -13.436172140905967,
+      "fontsDone": -12.785307405232228,
+      "lcp": -1.4450867052023142,
+      "cls": 0.0,
+      "initialTransfer": -15.790507566398283
+    }
+  },
+  "warm": {
+    "before": {
+      "fontBytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "fontRequests": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "fontEnd": {
+        "median": 91.60000000149012,
+        "min": 88.60000000149012,
+        "max": 109.09999999962747
+      },
+      "fontsDone": {
+        "median": 231.10000000149012,
+        "min": 213.80000000074506,
+        "max": 256.90000000037253
+      },
+      "lcp": {
+        "median": 156,
+        "min": 144,
+        "max": 160
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "initialTransfer": {
+        "median": 16143,
+        "min": 16143,
+        "max": 16143
+      }
+    },
+    "after": {
+      "fontBytes": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "fontRequests": {
+        "median": 2,
+        "min": 2,
+        "max": 2
+      },
+      "fontEnd": {
+        "median": 87.19999999925494,
+        "min": 84.5,
+        "max": 115.79999999888241
+      },
+      "fontsDone": {
+        "median": 230.7000000011176,
+        "min": 194.7999999988824,
+        "max": 298.5
+      },
+      "lcp": {
+        "median": 148,
+        "min": 132,
+        "max": 180
+      },
+      "cls": {
+        "median": 0,
+        "min": 0,
+        "max": 0
+      },
+      "initialTransfer": {
+        "median": 16143,
+        "min": 16143,
+        "max": 16143
+      }
+    },
+    "changePercent": {
+      "fontBytes": null,
+      "fontRequests": 0.0,
+      "fontEnd": -4.803493452143659,
+      "fontsDone": -0.1730852446429898,
+      "lcp": -5.128205128205132,
+      "cls": null,
+      "initialTransfer": 0.0
+    }
+  }
+}

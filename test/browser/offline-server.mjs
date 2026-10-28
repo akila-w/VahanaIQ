@@ -5,9 +5,9 @@ import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 const root = path.resolve(import.meta.dirname, '../..');
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png' };
 export async function offlineServer() {
-  const state = { revision: '', fail: '', legacy: false, disconnected: false, requests: [] };
+  const state = { revision: '', previousFonts: false, fail: '', legacy: false, disconnected: false, requests: [] };
   const legacyWorker = await fs.readFile(path.join(root, 'test/fixtures/legacy-sw-v2.12.0.js'));
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -20,6 +20,8 @@ export async function offlineServer() {
     try {
       if (!target.startsWith(root + path.sep) || (state.fail && relative === state.fail)) throw Error('Unavailable');
       let data = await fs.readFile(target);
+      if (state.previousFonts && relative === 'sw.js') data = await fs.readFile(path.join(root, 'test/fixtures/task02-sw-offline2.js'));
+      if (state.previousFonts && relative === 'css/tokens.css') data = Buffer.from(data.toString().replaceAll('-variable.woff2', '-variable.ttf').replaceAll('format("woff2")', 'format("truetype")'));
       if (state.legacy && relative === 'sw.js') data = legacyWorker;
       if (state.legacy && relative === 'js/boot.js') data = Buffer.from(data.toString().split('\n// Shared by every page, including direct Catalogue')[0]);
       if (state.legacy && relative === 'js/app.js') data = Buffer.from(data.toString().replace('applyState(loadState());', `// Offline support (see sw.js); browsers without service workers simply skip it

@@ -1,0 +1,394 @@
+{
+  "before-first": [
+    {
+      "ms": 1247.26,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 44,
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.ttf"
+      }
+    },
+    {
+      "ms": 1292.01,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 43,
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.ttf"
+      }
+    },
+    {
+      "ms": 1489.81,
+      "event": "largestContentfulPaint::Candidate",
+      "details": {
+        "data": {
+          "candidateIndex": 1,
+          "isMainFrame": true,
+          "isOutermostMainFrame": true,
+          "navigationId": "687D1C1381D4A2F656A6D22296BD22F7",
+          "nodeId": 19,
+          "nodeName": "P class='intro'",
+          "performanceTimelineNavigationId": 4733,
+          "size": 20473,
+          "type": "text"
+        },
+        "frame": "835D08CDD46DDE379EE9CAF6AD9A5A8A"
+      }
+    },
+    {
+      "ms": 2897.26,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Manrope-ExtraLight",
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.ttf"
+      }
+    },
+    {
+      "ms": 2980.13,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2981.57,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 3124.12,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 3126.66,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 3126.71,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 5030.44,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Inter-Regular",
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.ttf"
+      }
+    },
+    {
+      "ms": 5189.85,
+      "event": "largestContentfulPaint::Candidate",
+      "details": {
+        "data": {
+          "candidateIndex": 2,
+          "isMainFrame": true,
+          "isOutermostMainFrame": true,
+          "navigationId": "687D1C1381D4A2F656A6D22296BD22F7",
+          "nodeId": 239,
+          "nodeName": "P class='onboarding-intro'",
+          "performanceTimelineNavigationId": 4733,
+          "size": 35504,
+          "type": "text"
+        },
+        "frame": "835D08CDD46DDE379EE9CAF6AD9A5A8A"
+      }
+    }
+  ],
+  "after-first": [
+    {
+      "ms": 1181.66,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 44,
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.woff2"
+      }
+    },
+    {
+      "ms": 1214.63,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 43,
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.woff2"
+      }
+    },
+    {
+      "ms": 1365.23,
+      "event": "largestContentfulPaint::Candidate",
+      "details": {
+        "data": {
+          "candidateIndex": 1,
+          "isMainFrame": true,
+          "isOutermostMainFrame": true,
+          "navigationId": "BA739BA1848F557F029C47D23E1DBC1C",
+          "nodeId": 19,
+          "nodeName": "P class='intro'",
+          "performanceTimelineNavigationId": 6169,
+          "size": 20473,
+          "type": "text"
+        },
+        "frame": "1E0093F86D025A5D256896D037FF597E"
+      }
+    },
+    {
+      "ms": 2423.85,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Manrope-ExtraLight",
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.woff2"
+      }
+    },
+    {
+      "ms": 2880.33,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2902.41,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2969.28,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2970.81,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2970.85,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 4311.85,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Inter-Regular",
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.woff2"
+      }
+    },
+    {
+      "ms": 4469.06,
+      "event": "largestContentfulPaint::Candidate",
+      "details": {
+        "data": {
+          "candidateIndex": 2,
+          "isMainFrame": true,
+          "isOutermostMainFrame": true,
+          "navigationId": "BA739BA1848F557F029C47D23E1DBC1C",
+          "nodeId": 239,
+          "nodeName": "P class='onboarding-intro'",
+          "performanceTimelineNavigationId": 6169,
+          "size": 35504,
+          "type": "text"
+        },
+        "frame": "1E0093F86D025A5D256896D037FF597E"
+      }
+    }
+  ],
+  "before-returning": [
+    {
+      "ms": 1181.86,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 44,
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.ttf"
+      }
+    },
+    {
+      "ms": 1219.0,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 43,
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.ttf"
+      }
+    },
+    {
+      "ms": 1382.85,
+      "event": "largestContentfulPaint::Candidate",
+      "details": {
+        "data": {
+          "candidateIndex": 1,
+          "isMainFrame": true,
+          "isOutermostMainFrame": true,
+          "navigationId": "CB2B23E63C2ECD6B6C2C3A2DB1A27384",
+          "nodeId": 19,
+          "nodeName": "P class='intro'",
+          "performanceTimelineNavigationId": 5054,
+          "size": 20473,
+          "type": "text"
+        },
+        "frame": "3B623C1A7C7FBE933ED5A4624108A371"
+      }
+    },
+    {
+      "ms": 2761.94,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Manrope-ExtraLight",
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.ttf"
+      }
+    },
+    {
+      "ms": 3000.81,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 3001.27,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 3083.01,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 3085.01,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 3085.08,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 4990.74,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Inter-Regular",
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.ttf"
+      }
+    }
+  ],
+  "after-returning": [
+    {
+      "ms": 1177.99,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 44,
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.woff2"
+      }
+    },
+    {
+      "ms": 1222.86,
+      "event": "BeginRemoteFontLoad",
+      "details": {
+        "display": "swap",
+        "id": 43,
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.woff2"
+      }
+    },
+    {
+      "ms": 1399.67,
+      "event": "largestContentfulPaint::Candidate",
+      "details": {
+        "data": {
+          "candidateIndex": 1,
+          "isMainFrame": true,
+          "isOutermostMainFrame": true,
+          "navigationId": "E1768E3F1C924EA8B175EFB6E8E217E4",
+          "nodeId": 19,
+          "nodeName": "P class='intro'",
+          "performanceTimelineNavigationId": 1063,
+          "size": 20473,
+          "type": "text"
+        },
+        "frame": "2EDAEB7D30540AE376E830309F3C0B7F"
+      }
+    },
+    {
+      "ms": 2506.51,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Manrope-ExtraLight",
+        "url": "http://127.0.0.1:58316/assets/fonts/manrope/Manrope-variable.woff2"
+      }
+    },
+    {
+      "ms": 2860.48,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2864.59,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2943.18,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2945.67,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 2945.72,
+      "event": "v8.evaluateModule",
+      "details": {
+        "worldId": 0
+      }
+    },
+    {
+      "ms": 4312.81,
+      "event": "RemoteFontLoaded",
+      "details": {
+        "name": "Inter-Regular",
+        "url": "http://127.0.0.1:58316/assets/fonts/inter/Inter-variable.woff2"
+      }
+    }
+  ]
+}
