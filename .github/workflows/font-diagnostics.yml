@@ -1,7 +1,5 @@
 name: Focused font verification
 on:
-  push:
-    branches: [codex/task-03-1-font-metrics]
   workflow_dispatch:
 permissions:
   contents: read

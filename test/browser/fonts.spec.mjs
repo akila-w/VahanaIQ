@@ -21,8 +21,14 @@ for (const route of ['index', 'catalogue', 'studio', 'about', 'privacy', 'terms'
         await page.goto(origin + '/' + route + '.html');
         await page.evaluate(() => document.fonts.ready);
         expect(await page.evaluate(() => [...document.fonts].map(f => f.status))).toEqual(['loaded', 'loaded']);
+        await expect(page.locator('h1')).toBeVisible();
+        if (route === 'index') await expect(page.locator('#rate')).not.toHaveValue('');
+        if (route === 'catalogue') await expect(page.locator('#vehicles .card').first()).toBeVisible();
+        if (route === 'studio') await expect(page.locator('#modelList button').first()).toBeVisible();
+        // Closed dialogs contain asynchronously populated catalogue controls;
+        // compare the visible page, not hidden modal contents at arbitrary times.
         const geometry = await page.evaluate(() => [...document.querySelectorAll('h1,h2,nav,button,input,select')]
-          .filter(e => e.getBoundingClientRect().width).map(e => {
+          .filter(e => e.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })).map(e => {
             const r = e.getBoundingClientRect(), s = getComputedStyle(e);
             return { tag: e.tagName, id: e.id, x: r.x, y: r.y, width: r.width, height: r.height, family: s.fontFamily, weight: s.fontWeight };
           }));
