@@ -31,6 +31,20 @@ async function addToyotas(page) {
 
 const pageWidth = page => page.evaluate(() => document.documentElement.scrollWidth);
 
+test('all six routes fit the requested 375×812 phone viewport in both themes', async ({ browser, browserName }) => {
+  for (const theme of ['light', 'dark']) {
+    const context = await browser.newContext({ ...phone(browserName, { width: 375, height: 812 }), colorScheme: theme });
+    await seedReturning(context);
+    const page = await context.newPage();
+    for (const pageName of ['index', 'catalogue', 'studio', 'about', 'privacy', 'terms']) {
+      await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
+      await expect(page.locator('h1').first()).toBeVisible();
+      expect(await pageWidth(page), `${pageName}.html at 375×812 in ${theme}`).toBeLessThanOrEqual(375);
+    }
+    await context.close();
+  }
+});
+
 test.describe('Layout: nothing is wider than the screen', () => {
   for (const pageName of ['index', 'catalogue', 'studio', 'about']) {
     for (const [width, height] of PHONES) {

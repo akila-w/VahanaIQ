@@ -44,11 +44,21 @@ html {
   overflow-x: hidden;
   overscroll-behavior-x: none;
   scroll-behavior: smooth;
-  scroll-padding-top: env(safe-area-inset-top, 24px);
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 80px);
+  max-width: 100vw;
+}
+
+img, video, iframe, svg {
+  max-width: 100%;
+  height: auto;
 }
 
 * {
   box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 body {
@@ -105,6 +115,16 @@ body::after {
   body::before,
   body::after {
     animation: none !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -558,9 +578,15 @@ main.page-exit {
 }
 
 @media (max-width: 650px) {
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
   .hero {
     display: block;
     padding: 32px 0 24px;
+  }
+  .hero-aside {
+    width: 100%;
   }
   h1 {
     font-size: 46px;
@@ -1600,9 +1626,13 @@ select {
   cursor: pointer;
 }
 
-input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, th button:focus-visible {
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, th button:focus-visible, [tabindex]:focus-visible {
   outline: 3px solid var(--accent-bright);
-  outline-offset: 3px;
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 .hint {
@@ -4167,6 +4197,12 @@ button.btn.btn-danger {
   button.cond-tag { padding: 0 var(--space-10); }
   .close-btn { justify-content: center; }
   button.hint-btn { min-height: 44px; display: flex; align-items: center; }
+  a, input, select, textarea, button {
+    touch-action: manipulation;
+  }
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+    font-size: 16px;
+  }
 }
 
 /* ==========================================================================
