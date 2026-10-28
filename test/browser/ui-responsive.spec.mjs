@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+import { seedReturning } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 
@@ -24,7 +24,7 @@ async function addToyotas(page) {
   await expect(page.locator('#rows tr').first()).toBeVisible();
   // On phones the loan terms start collapsed behind Edit
   if (await page.locator('#toggleTerms').isVisible() && await page.locator('#toggleTerms').getAttribute('aria-expanded') === 'false') await page.locator('#toggleTerms').click();
-  await page.locator('.terms-disclosure').filter({has:page.locator('#income')}).locator('summary').click();
+  await expect(page.locator('#income')).toBeVisible();
   await page.fill('#income', '2500000');
   await page.locator('#income').dispatchEvent('change');
 }
@@ -264,7 +264,7 @@ test.describe('Phone journeys', () => {
     await page.locator('#toggleTerms').click();
     await page.evaluate(() => {
       document.documentElement.style.scrollBehavior = 'auto';
-      document.getElementById('income').closest('details').open = true;
+      // Income is now always visible in the Budget panel.
       document.getElementById('income').focus({ preventScroll: true });
       window.scrollTo(0, document.documentElement.scrollHeight);
       window.visualViewport.dispatchEvent(new Event('resize'));

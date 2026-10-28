@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+import { seedReturning } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 

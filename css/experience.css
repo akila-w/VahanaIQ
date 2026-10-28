@@ -1570,8 +1570,12 @@ body::after {
   font-weight: 750 !important;
   letter-spacing: -0.02em !important;
   line-height: 1.2 !important;
-  margin: 0 !important;
+  margin: 0;
   color: var(--ink) !important;
+}
+
+.panel-head .guide-context-row > h2 {
+  margin-top: calc((var(--touch-target) - 1lh) / 2);
 }
 
 .panel-subtitle {
@@ -2620,3 +2624,39 @@ input[type="range"].terms-slider {
   margin-bottom: 0 !important;
 }
 
+
+/* Keep the compact header usable when its navigation and actions need more than one row. */
+@media screen and (max-width: 900px) {
+  .site-header { flex-wrap: wrap !important; }
+  .header-brand-group { flex: 1 1 100% !important; flex-wrap: wrap !important; max-width: 100%; }
+  .site-header nav { flex-wrap: wrap !important; max-width: 100%; }
+  .header-actions { flex: 1 1 100% !important; flex-wrap: wrap !important; max-width: 100%; margin-left: 0 !important; }
+}
+
+/* A single-column page scrolls as one document; split scrolling starts at the desktop grid. */
+@media screen and (min-width: 980px) and (max-width: 1365px) {
+  main > .terms-panel { position: static !important; max-height: none !important; overflow-y: visible !important; }
+}
+
+@media print {
+  #helpCentreButton { display: none !important; }
+}
+
+/* Expandable explanations keep the footer compact while summaries retain touch-sized targets. */
+footer.foot { padding-block: 16px !important; }
+.foot-cols > .foot-note { padding: 0 12px; }
+.foot-note > summary.foot-h { display: flex; align-items: center; min-height: var(--touch-target); margin: 0; }
+.foot-note > p { padding-bottom: 12px; }
+
+/* Preserve phone accessibility when compact desktop controls are in use. */
+@media (pointer: coarse) {
+  .chip-btn, .seg-btn, .step-btn, .strategy-pill, .page-nav a,
+  .header-actions > button, .header-actions label, input[type="range"].terms-slider {
+    min-height: var(--touch-target) !important;
+  }
+  input[type="range"].terms-slider { height: var(--touch-target) !important; }
+}
+@media screen and (max-width: 979px) {
+  input, select, textarea, .tools input, .tools select,
+  .catalogue-filters input, .catalogue-filters select { font-size: 16px !important; }
+}

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+import { seedReturning } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 
@@ -34,8 +34,19 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
         expect(item.mask).toContain('circle-help.svg');
       }
       if (route === 'index' && width >= 980 && width <= 1365) {
-        const tops = await page.locator('.terms-subcard-financing').evaluate(el => [el.querySelector('.seg-control'), el.querySelector('#rate').closest('.stepper-wrap'), el.querySelector('#tenure').closest('.stepper-wrap')].map(control => control.getBoundingClientRect().top));
-        expect(Math.max(...tops) - Math.min(...tops), 'finance controls share a top edge below their labels').toBeLessThanOrEqual(1);
+        const controls = await page.locator('.terms-subcard-financing').evaluate(el =>
+          [el.querySelector('.seg-control'), ...['rate', 'tenure', 'down'].map(id => el.querySelector(`#${id}`).closest('.stepper-wrap'))].map(control => {
+            const field = control.closest('.terms-field');
+            return { row: field.getBoundingClientRect().top, top: control.getBoundingClientRect().top, height: control.getBoundingClientRect().height };
+          }));
+        expect(controls).toHaveLength(4);
+        for (const control of controls) {
+          expect(control.height, 'each finance control is visible').toBeGreaterThan(0);
+          expect(control.top, 'each finance control sits below its label').toBeGreaterThan(control.row);
+          for (const peer of controls.filter(peer => Math.abs(peer.row - control.row) <= 1)) {
+            expect(Math.abs(peer.top - control.top), 'finance controls in the same grid row share a top edge').toBeLessThanOrEqual(1);
+          }
+        }
       }
       const trigger = page.locator('.guide-context').last();
       await trigger.click();

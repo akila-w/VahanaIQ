@@ -2006,3 +2006,6 @@ dialog[open]::backdrop { animation: scrimIn var(--duration-base, 0.2s) ease; }
 .site-header {
   view-transition-name: site-header;
 }
+
+/* Hover feedback must preserve the reviewed photo framing. */
+.photo-button:hover > img { transform: none; }

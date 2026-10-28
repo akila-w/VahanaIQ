@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+import { seedReturning } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:8123';
@@ -40,7 +40,7 @@ test('rapid chart changes retarget from the visible angle and reduced motion sto
   await page.goto(`${BASE}/index.html`);
   await page.locator('#addVehicleBtn').click(); await page.fill('#catalogueSearch', 'Toyota'); await page.locator('#catalogueAddSearch').click();
   if (await page.locator('#toggleTerms').isVisible()) await page.locator('#toggleTerms').click();
-  await page.locator('.terms-disclosure').filter({has:page.locator('#income')}).locator('summary').click();
+  await expect(page.locator('#income')).toBeVisible();
   await page.fill('#income', '2500000'); await page.locator('#income').dispatchEvent('change');
   await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => {}))));
   const result = await page.locator('#rate').evaluate(async input => {

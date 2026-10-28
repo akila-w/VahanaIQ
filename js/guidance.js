@@ -42,7 +42,7 @@ const photoCreditsBtn = document.querySelector('#openPhotoCreditsBtn');
 if (photoCreditsBtn) {
   photoCreditsBtn.after(helpButton);
 } else {
-  const footMetaEl = $('.foot-meta');
+  const footMetaEl = $('.foot-meta') || $('.foot');
   if (footMetaEl) footMetaEl.append(helpButton);
 }
 

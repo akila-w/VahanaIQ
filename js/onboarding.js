@@ -33,7 +33,10 @@ function init(forcedOpen = false) {
   wireTriggers();
 
   // If completed and not forced, do not auto-open modal
-  if (progress.completed && !forced) {
+  const comparison = read('vahanaiq_comparison_v3', null);
+  const hasComparison = comparison?.version === 3 && Array.isArray(comparison.cars) &&
+    comparison.cars.length > 0 && !vehicleBatchError(comparison.cars);
+  if ((progress.completed || hasComparison) && !forced) {
     return;
   }
 

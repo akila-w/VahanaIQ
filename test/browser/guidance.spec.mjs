@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const seedReturning = context => context.addInitScript(() => localStorage.setItem('vahanaiq_onboarding_v1', JSON.stringify({version:1,completed:true,step:4})));
+import { seedReturning, ONBOARDING_KEY } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 import fs from 'node:fs';
@@ -165,7 +165,7 @@ for (const [name, steps] of [['catalogue', 3], ['studio', 3]]) {
 }
 
 test('blocked and corrupt storage do not prevent help or touring', async ({ page }) => {
-  await page.addInitScript(() => { Storage.prototype.setItem = () => { throw Error('blocked'); }; Storage.prototype.getItem = key => key === 'vahanaiq_onboarding_v1' ? JSON.stringify({version:1,completed:true}) : '{malformed'; });
+  await page.addInitScript(key => { Storage.prototype.setItem = () => { throw Error('blocked'); }; Storage.prototype.getItem = name => name === key ? JSON.stringify({version:1,completed:true}) : '{malformed'; }, ONBOARDING_KEY);
   await go(page); await start(page);
   await page.getByRole('button', { name: 'Explain this' }).click();
   await expect(page.locator('#helpCentre')).toBeVisible();
