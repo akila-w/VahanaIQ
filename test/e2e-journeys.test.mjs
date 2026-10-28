@@ -76,7 +76,6 @@ if (shouldRun("Set a target date for the savings plan")) {
   runCount++;
   console.log("TEST JOURNEY 4: Set a target date for the savings plan");
   const plannerJs = fs.readFileSync("js/planner.js", "utf8");
-  assert.ok(plannerJs.includes('r.targetMonths && r.targetMonths > 0 && r.targetMonths <= 120'), "buildSavingsTrajectorySvg must support targetMonths when monthly is 0");
   assert.ok(plannerJs.includes('isTargetTrajectory'), "Savings planner must support target-date trajectory projection");
   assert.ok(plannerJs.includes('Target Pace Projection'), "Trajectory legend must indicate target pace projection");
 
@@ -99,6 +98,8 @@ if (shouldRun("Set a target date for the savings plan")) {
   assert.equal(plan.months, null, "Months to goal without contribution is null");
   assert.ok(plan.required > 0, "Required contribution must be calculated for target date");
   assert.ok(plan.targetMonths > 0, "Target months must be positive");
+  const { buildSavingsTrajectorySvg } = await import('../js/planner.js');
+  assert.match(buildSavingsTrajectorySvg(plan, 0, null, '2028-10-24'), /Target Pace Projection/, 'A zero-contribution plan must actually render the target-date projection');
 
   console.log("  ✓ Set a target date for the savings plan PASSED: savings horizon and projected trajectory render when target date is filled in.\n");
 }

@@ -120,6 +120,7 @@ class MockElement {
   }
   focus() {}
   select() {}
+  contains() { return false; }
   closest(sel) {
     if (!sel) return null;
     if (sel.includes("modal")) return null;
@@ -261,6 +262,8 @@ registerEl("budgetBar");
 registerEl("budgetPanel");
 registerEl("budgetGraphic");
 registerEl("budgetNeedle");
+registerEl("dialTickMax");
+registerEl("dialOffscaleBadge");
 registerEl("budgetDtiHero");
 registerEl("budgetDtiSub");
 registerEl("budgetDtiPill");
@@ -268,6 +271,8 @@ registerEl("budgetDtiText");
 registerEl("budgetCashflowLabel");
 registerEl("budgetCashflowBar");
 registerEl("budgetTelemetryGrid");
+registerEl("resetFiltersBtn", "BUTTON");
+registerEl("quickStartGuide", "DETAILS");
 registerEl("ltvSplitContainer");
 registerEl("ltvBarTrack");
 registerEl("ltvBarDp");
@@ -498,20 +503,21 @@ console.log("  ✓ 1.3 Used Car Statutory Floor verified: 40% Down, Max 60% Loan
 // -------------------------------------------------------------
 console.log("CHECKLIST ITEM 2: Budget Panel — Speedometer & Cashflow Console");
 
-// 2.1 Zero-Income State:
-console.log("  2.1 Checking Zero-Income State:");
+// 2.1 Zero-Income / Pending State (Updated per Section 7 audit: absent income must NOT show a misleading '0.0% DTI' / green 'ok' pill):
+console.log("  2.1 Checking Zero-Income (Pending) State:");
 domElements.income.value = "";
 domElements.debt.value = "0";
 domElements.down.value = "60";
 domElements.income.dispatchEvent({ type: "input", target: domElements.income });
 
-assert.equal(domElements.budgetDtiHero.textContent, "0.0% DTI", "Hero must show 0.0% DTI");
+assert.equal(domElements.budgetDtiHero.textContent, "—% DTI", "Hero must show pending —% DTI when income is not provided");
 assert.equal(domElements.budgetNeedle.getAttribute("transform"), "rotate(-90.0, 160, 150)", "Needle must anchor at far left (-90 deg)");
 assert.equal(domElements.budgetDtiText.textContent, "Enter Net Monthly Income");
-assert.ok(domElements.budgetDtiPill.className.includes("ok"));
+assert.ok(domElements.budgetDtiPill.className.includes("pending"), "Status pill must use .pending state instead of green .ok when income is missing");
+assert.equal(domElements.dialOffscaleBadge.hidden, true, "Off-scale badge must be hidden when income is absent");
 assert.ok(domElements.budgetCashflowBar.innerHTML.includes("Enter net monthly income above to evaluate DTI &amp; cashflow"));
 assert.ok(domElements.budgetTelemetryGrid.innerHTML.includes("telemetry-card"), "Telemetry grid must render cards");
-console.log("  ✓ 2.1 Zero-Income verified: needle at far-left, prompt to enter monthly income.\n");
+console.log("  ✓ 2.1 Zero-Income pending state verified: —% DTI, .pending pill, needle at far-left.\n");
 
 // 2.2 Standard Cashflow & DTI (LKR 450,000 Income & LKR 45,000 Debt):
 console.log("  2.2 Checking Standard Cashflow & DTI (LKR 450,000 Income & LKR 45,000 Debt):");
@@ -542,6 +548,89 @@ assert.ok(domElements.budgetCashflowBar.innerHTML.includes("cashflow-seg-free"),
 assert.ok(domElements.budgetTelemetryGrid.innerHTML.includes("Existing Commitments"), "Telemetry must show Existing Commitments");
 assert.ok(domElements.budgetTelemetryGrid.innerHTML.includes("LKR 45,000.00"), "Telemetry must reflect LKR 45,000 debt");
 console.log("  ✓ 2.2 Standard Cashflow & DTI verified: Smooth needle rotation, stacked cashflow spectrum segments.\n");
+
+// 2.3 Section 7 Edge Cases: 0% to 200% DTI, Off-Scale 60%+, >100% Monthly Shortfall, & Insurance Segment:
+console.log("  2.3 Checking All 17 DTI Edge Cases (0% to 200%), Off-Scale 60%+, and >100% Monthly Shortfall:");
+assert.ok(html.includes('id="dialTickMax"') && html.includes('60%+'), "Gauge SVG must label right endpoint as 60%+");
+assert.ok(html.includes('id="dialOffscaleBadge"'), "Gauge SVG must include #dialOffscaleBadge");
+
+// Test 100% cash purchase + debt edge cases across all 17 DTI ratios
+domElements.down.value = "100"; // 0 lease rental so we can dial exact DTI percentages via existing debt
+domElements.insurance.value = "";
+domElements.income.value = "100,000";
+const edgeRatios = [0, 10, 39.9, 40, 40.1, 49.9, 50, 50.1, 59.9, 60, 60.1, 75, 99.9, 100, 110.1, 150, 200];
+for (const pct of edgeRatios) {
+  domElements.debt.value = String(pct * 1000);
+  domElements.debt.dispatchEvent({ type: "input", target: domElements.debt });
+  assert.equal(domElements.budgetDtiHero.textContent, `${pct.toFixed(1)}% DTI`, `Hero must show ${pct.toFixed(1)}% DTI`);
+  const expectedAngle = (-90 + (Math.min(60, Math.max(0, pct)) / 60) * 180).toFixed(1);
+  assert.equal(domElements.budgetNeedle.getAttribute("transform"), `rotate(${expectedAngle}, 160, 150)`, `Needle angle for ${pct}%`);
+  if (pct <= 40) {
+    assert.ok(domElements.budgetDtiPill.className.includes("ok"), `${pct}% should be ok`);
+    assert.equal(domElements.dialOffscaleBadge.hidden, true, `${pct}% should not be off-scale`);
+  } else if (pct <= 50) {
+    assert.ok(domElements.budgetDtiPill.className.includes("mid"), `${pct}% should be mid`);
+    assert.equal(domElements.dialOffscaleBadge.hidden, true, `${pct}% should not be off-scale`);
+  } else if (pct <= 60) {
+    assert.ok(domElements.budgetDtiPill.className.includes("bad"), `${pct}% should be bad`);
+    assert.equal(domElements.dialOffscaleBadge.hidden, true, `${pct}% should not be off-scale`);
+  } else if (pct <= 100) {
+    assert.ok(domElements.budgetDtiPill.className.includes("bad"), `${pct}% should be bad`);
+    assert.equal(domElements.dialOffscaleBadge.hidden, false, `${pct}% (>60%) must unhide #dialOffscaleBadge`);
+    assert.ok(domElements.budgetDtiText.textContent.includes("Off-Scale 60%+"), `${pct}% status must mention Off-Scale 60%+`);
+  } else {
+    assert.ok(domElements.budgetDtiPill.className.includes("bad"), `${pct}% should be bad`);
+    assert.equal(domElements.dialOffscaleBadge.hidden, false, `${pct}% (>100%) must unhide #dialOffscaleBadge`);
+    assert.ok(domElements.budgetDtiText.textContent.includes("Exceeds 100% of Net Income"), `${pct}% status must warn Exceeds 100% of Net Income`);
+    assert.ok(domElements.budgetCashflowBar.innerHTML.includes("cashflow-seg-shortfall"), `${pct}% must render .cashflow-seg-shortfall`);
+  }
+}
+
+// Exact user-specified overflow test case:
+// Net monthly income: LKR 220,000, Proposed monthly rental: LKR 242,317.18, Existing commitments: LKR 0
+domElements.resetCatalogBtn.click();
+domElements.down.value = "60";
+domElements.rate.value = "16";
+domElements.rateType.value = "reducing";
+domElements.tenure.value = "84";
+domElements.income.value = "220,000";
+domElements.debt.value = "0";
+domElements.insurance.value = "";
+const f84 = calcMod.rental(1, 16, 84);
+const exactPrice = Math.round(242317.18 / (f84 * 0.4));
+domElements.mName.value = "Overflow Test SUV";
+domElements.mPrice.value = String(exactPrice);
+domElements.mCond.value = "New";
+domElements.mWarr.value = "Official";
+domElements.mAddBtn.click();
+
+assert.equal(domElements.budgetDtiHero.textContent, "110.1% DTI", "Exact scenario must display 110.1% DTI");
+assert.ok(domElements.budgetCashflowLabel.textContent.includes("110.1% of net monthly income committed"), "Must state 110.1% of net monthly income committed");
+assert.ok(domElements.budgetCashflowLabel.textContent.includes("Monthly shortfall: LKR 22,317."), "Must state Monthly shortfall: LKR 22,317.xx");
+assert.ok(!domElements.budgetCashflowBar.innerHTML.includes("Rental 100%"), "Must NEVER label a >100% rental as Rental 100%");
+assert.ok(domElements.budgetCashflowBar.innerHTML.includes("Rental 110.1%"), "Must label the segment with actual 110.1% ratio");
+assert.ok(domElements.budgetCashflowBar.innerHTML.includes("cashflow-seg-shortfall"), "Must include shortfall overflow segment");
+
+// Verify monthly insurance segment in cashflow spectrum
+domElements.income.value = "600,000";
+domElements.debt.value = "30,000";
+domElements.insurance.value = "360,000"; // LKR 30,000/mo = 5% of income
+domElements.insurance.dispatchEvent({ type: "input", target: domElements.insurance });
+assert.ok(domElements.budgetCashflowBar.innerHTML.includes("cashflow-seg-ins"), "Cashflow bar must include .cashflow-seg-ins when annual insurance is provided");
+domElements.insurance.value = "";
+
+// Re-add Registered Used car & BYD ATTO 1 so Checklist Item 4 has both in plannerVehicle
+domElements.mName.value = "BYD ATTO 1 Dynamic (Standard Range)";
+domElements.mPrice.value = "9,100,000";
+domElements.mCond.value = "New";
+domElements.mWarr.value = "Official";
+domElements.mAddBtn.click();
+domElements.mName.value = "Registered Used Toyota Aqua";
+domElements.mPrice.value = "8,500,000";
+domElements.mCond.value = "Used";
+domElements.mWarr.value = "Official";
+domElements.mAddBtn.click();
+console.log("  ✓ 2.3 All 17 DTI edge cases, 110.1% shortfall scenario, and insurance cashflow segment verified.\n");
 
 
 // -------------------------------------------------------------

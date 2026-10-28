@@ -282,4 +282,28 @@ const resHtmlCelebration = elements.get('plannerResult').innerHTML;
 assert.ok(resHtmlCelebration.includes('planner-funded-card'), 'Celebratory funded card should render when target reached');
 assert.ok(resHtmlCelebration.includes('Goal 100% Funded &amp; Ready') || resHtmlCelebration.includes('Goal 100% Funded & Ready'), 'Celebratory title should render');
 
-console.log('✓ All 16 Savings Planner unit, integration, boundary & graphic checks passed successfully!');
+// Q. Test: Long-Horizon Trajectory SVG (>120 months up to 1200 months)
+const { buildSavingsTrajectorySvg } = await import('../js/planner.js');
+const svg180 = buildSavingsTrajectorySvg({
+  months: 180,
+  targetMonths: null,
+  target: 9000000,
+  deposit: 8400000,
+  monthly: 50000,
+  required: null,
+  progress: 0
+}, 0, '24 Oct 2041');
+assert.ok(svg180.includes('planner-trajectory-svg'), 'Trajectory SVG must render for 180-month (15-year) horizon');
+assert.ok(svg180.includes('180 mos'), 'Trajectory SVG axis must label 180 mos');
+const svg1201 = buildSavingsTrajectorySvg({
+  months: 1201,
+  targetMonths: null,
+  target: 9000000,
+  deposit: 8400000,
+  monthly: 5000,
+  required: null,
+  progress: 0
+}, 0, '');
+assert.equal(svg1201, '', 'Trajectory SVG must return empty string above 1200-month cap');
+
+console.log('✓ All 17 Savings Planner unit, integration, boundary & graphic checks passed successfully!');

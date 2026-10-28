@@ -1,5 +1,17 @@
 # VahanaIQ — Release Readiness
 
+## Current PR preparation, 27/10/2026
+
+Akila authorised committing/pushing the reviewed work and creating a pull request on 27/10/2026. The new branch is `codex/onboarding-guidance-qa`, based on `origin/main` at `7e448bd`; the earlier release PRs have already merged. The current changes include shared onboarding/Help Centre, contextual popovers, responsive/footer/motion refinements, catalogue financing parity, off-scale cashflow presentation, planner layout and the combined audit corrections.
+
+Current implementation and verification: `docs/onboarding-implementation.md`, `docs/onboarding-verification.md`, `docs/independent-integration-qa.md` and `docs/motion-footer-verification.md`. The final PR preflight evidence is appended below after execution. The historical 26/10 assessment below does not describe these additional changes or their file count. Its statements about untouched financial presentation files and the live version must not be applied to this PR.
+
+The application version remains 2.12.0 in this change. Confirm the release version/cache policy before merging. All three CI browser engines must pass; Firefox cannot launch locally on this Mac. Physical-device and assistive-technology verification remain outstanding. A PR does not approve merging or deploying.
+
+PR preflight: all 25 Node suites and the separate verification runner passed, along with build-css/build-tokens/build-info-pages parity, referenced-thumbnail pruning and whitespace checks. The complete six-file browser suite contains 200 cases per engine. During final review, the pending-income branch was found to bypass the bar-markup cache; it now invalidates that cache so clearing and restoring income rebuilds the cashflow graphic. The motion browser case covers this transition. Tip preferences now process both input and change events idempotently; the existing preference case also exercises a change-only checkbox update. The full browser-run outcomes and CI status are reported on the PR, including any failed first attempt and targeted reruns.
+
+## Historical assessment, 26/10/2026
+
 **Date:** 26/10/2026 · **Candidate:** v2.12.0, the uncommitted working tree on `4402dc3`, on the local branch `feature/v2.12.0-release` · **Live site:** v2.11.6
 **Nothing has been committed, pushed, merged, tagged or deployed.**
 

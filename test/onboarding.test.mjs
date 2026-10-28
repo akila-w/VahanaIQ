@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readOnboarding, validTerms, mergeShortlist } from '../js/onboarding-state.js';
+import { historySeries, observationError, priceChange } from '../js/price-history.js';
+assert.equal(readOnboarding({getItem:()=>'{broken'}).completed,false);
+assert.equal(readOnboarding({getItem:()=>JSON.stringify({version:1,step:99})}).step,4);
+const terms={rate:'16',rateType:'reducing',tenure:'84',down:'60'};
+assert.ok(!validTerms(undefined));assert.ok(!validTerms(null));assert.ok(!validTerms({...terms,rate:41}));
+assert.ok(validTerms(terms));assert.ok(!validTerms({...terms,rate:''}));assert.ok(!validTerms({...terms,tenure:'0'}));
+assert.equal(mergeShortlist([{id:'a',catalogueId:'a'}],[{id:'a-variant',catalogueId:'a'},{id:'b'}]).length,2);
+const point={modelId:'a',offerId:'a-new',seriesId:'a-new-source',sourceUrl:'https://example.com/price',observedOn:'2026-10-01',amount:100,currency:'LKR',kind:'dealer',reviewed:true,year:'2026',trim:'Base',condition:'New',route:'Dealer'};
+assert.equal(observationError(point),'');assert.ok(observationError({...point,observedOn:'2026-02-30'}));assert.ok(observationError({...point,kind:'estimated'}));
+const series=historySeries([point,{...point,amount:90,observedOn:'2026-10-20'},{...point,year:'2025',amount:80}],'a');
+assert.equal(series.length,2);assert.equal(priceChange(series[0]).percent,-10);assert.equal(priceChange([point]),null);
+assert.equal(historySeries([point,{...point,amount:150}],'a').length,0);
+console.log('Onboarding and price-history checks passed');

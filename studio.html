@@ -26,6 +26,10 @@
   <script src="js/page-transitions.js?v=2.12.0" defer></script>
   <script src="js/catalogue-data.js?v=2.12.0" defer></script>
   <script type="module" src="js/catalogue-studio.js?v=2.12.0"></script>
+<link rel="stylesheet" href="css/guidance.css?v=2.12.0">
+  <script type="module" src="js/guidance.js?v=2.12.0"></script>
+<link rel="stylesheet" href="css/experience.css?v=2.12.0">
+  <script type="module" src="js/onboarding.js?v=2.12.0"></script>
 </head>
 <body>
   <a class="skip" href="#models">Skip to Catalogue Entries</a>
@@ -40,9 +44,10 @@
         </div>
       </a>
       <nav aria-label="Main">
-        <a href="index.html">Calculator</a>
-        <a href="catalogue.html">Catalogue</a>
+        <a href="index.html">Lease</a>
+        <a href="catalogue.html">Showroom</a>
         <a href="studio.html" aria-current="page">Studio</a>
+        <button class="header-tour-btn onboarding-restart-btn" id="restartOnboardingBtn" type="button" title="Start or restart 5-step guided onboarding and tour"><svg class="header-tour-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Guided Setup</button>
       </nav>
     </div>
     <div class="header-actions">
@@ -53,14 +58,24 @@
         <label title="Light"><input type="radio" name="theme" value="light"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="sr-only">Light</span></label>
         <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
       </fieldset>
+      <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign In</button>
     </div>
   </header>
   <main class="studio">
-    <section class="studio-intro">
-      <p class="eyebrow">Catalogue Photos</p>
-      <h1>Photo Studio</h1>
-      <p class="studio-lede">Upload your own pictures, frame any photo at 8:5, arrange the order and choose the cover for an entry in the Vehicle Catalogue. Every photo and setting stays on this device, and the catalogue page in this browser shows your work straight away.</p>
-      <p class="studio-note" id="storageNote">Photos are kept in this browser only. Nothing is uploaded anywhere.</p>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Catalogue Photos</p>
+        <h1>Photo Studio</h1>
+        <p class="intro">Upload your own pictures, frame any photo at 8:5, arrange the order and choose the cover for an entry in the Vehicle Catalogue. Every photo and setting stays on this device.</p>
+      </div>
+      <div class="hero-aside">
+        <span class="edition">Sri Lanka · Studio Edition</span>
+        <div class="metrics">
+          <div><strong>8:5</strong><span>Aspect Ratio</span></div>
+          <div><strong>Local</strong><span>On-Device Only</span></div>
+          <div><strong>227</strong><span>Models</span></div>
+        </div>
+      </div>
     </section>
     <div class="studio-layout">
       <section id="models" class="studio-panel studio-models" aria-labelledby="modelsTitle">
@@ -80,7 +95,7 @@
       <section class="studio-panel studio-editor" aria-labelledby="editorTitle">
         <header class="editor-head">
           <div>
-            <p class="eyebrow" id="editorMake">Photo Studio</p>
+            <p class="eyebrow" id="editorMake">Vehicle Framing</p>
             <h2 id="editorTitle">Choose a Catalogue Entry</h2>
           </div>
           <div class="editor-actions">
@@ -168,21 +183,23 @@
   <footer class="foot">
     <div class="foot-cols">
       <section aria-labelledby="footStorage">
-        <h2 class="foot-h" id="footStorage">On-Device Storage</h2>
-        <p>Photos you upload here are kept in this browser's own storage and are never sent to a server. Manufacturer images remain the property of their respective owners; a photo you add is published under your own responsibility.</p>
+        <h3 class="foot-h" id="footStorage">On-Device Storage</h3>
+        <p id="storageNote">Photos you upload here are kept in this browser's own storage and are never sent to a server. Manufacturer images remain the property of their respective owners; a photo you add is published under your own responsibility.</p>
       </section>
       <section aria-labelledby="footFraming">
-        <h2 class="foot-h" id="footFraming">Framing Standards</h2>
+        <h3 class="foot-h" id="footFraming">Framing Standards</h3>
         <p>All display frames use standardized 8:5 proportions. Zoom, focus and mode choices stay on this device, and the catalogue page in this browser reflects your framing immediately.</p>
       </section>
       <section aria-labelledby="footPublishing">
-        <h2 class="foot-h" id="footPublishing">Publishing to Catalogue</h2>
+        <h3 class="foot-h" id="footPublishing">Publishing to Catalogue</h3>
         <p>Export your photos and run the bake script to update the repository data. VahanaIQ is an independent personal project.</p>
       </section>
     </div>
-    <nav class="site-links" aria-label="Information"><a href="index.html">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html" aria-current="page">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html">Lease</a><a href="catalogue.html">Showroom</a><a href="studio.html" aria-current="page">Studio</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav></div><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
+      <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>
+      <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
       <span>VahanaIQ v2.12.0</span>
     </p>
   </footer>

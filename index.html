@@ -57,6 +57,11 @@
   <script src="js/catalogue-data.js?v=2.12.0" defer></script>
   <script type="module" src="js/catalogue-photo-overlay.js?v=2.12.0"></script>
   <script type="module" src="js/app.js?v=2.12.0"></script>
+<link rel="stylesheet" href="css/guidance.css?v=2.12.0">
+  <script type="module" src="js/guidance.js?v=2.12.0"></script>
+<link rel="stylesheet" href="css/experience.css?v=2.12.0">
+<script type="module" src="js/experience.js?v=2.12.0"></script>
+<script type="module" src="js/onboarding.js?v=2.12.0"></script>
 </head>
 <body>
 <a class="skip" href="#h-terms">Skip to Calculator</a>
@@ -72,14 +77,15 @@
       </div>
     </a>
     <nav aria-label="Main">
-      <a href="index.html" aria-current="page">Calculator</a>
-      <a href="catalogue.html">Catalogue</a>
+      <a href="index.html" aria-current="page">Lease</a>
+      <a href="catalogue.html">Showroom</a>
       <a href="studio.html">Studio</a>
+      <button class="header-tour-btn onboarding-restart-btn" id="restartOnboardingBtn" type="button" title="Start or restart 5-step guided onboarding and tour"><svg class="header-tour-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Guided Setup</button>
     </nav>
   </div>
-  <div class="header-actions">
-    <button class="btn" id="addVehicleBtn" type="button" aria-label="Add a Vehicle"><span class="glyph glyph-plus" aria-hidden="true"></span> Add<span class="btn-label-more"> a Vehicle</span></button>
-    <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
+    <div class="header-actions">
+      <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
+      <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
     <fieldset class="theme-switch" id="themeSwitch">
       <legend class="sr-only">Theme</legend>
       <label title="System: match this device"><input type="radio" name="theme" value="system" checked><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="sr-only">System</span></label>
@@ -95,23 +101,46 @@
   <section class="hero">
     <div>
       <p class="eyebrow">Sri Lanka Vehicle Finance</p>
-      <h1>Know Your Monthly Rental.</h1>
+      <h1>Your vehicle finance comparison.</h1>
       <p class="intro">Set your terms, add the cars you are considering, and see what you can genuinely afford — before you walk into a showroom.</p>
+      <details class="quick-start-guide" id="quickStartGuide">
+        <summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> First time here? How to use VahanaIQ &amp; key Sri Lankan lease terms</summary>
+        <div class="quick-start-body">
+          <ol class="quick-start-steps">
+            <li><strong>1. Set your financing terms:</strong> Choose a strategy preset or adjust your interest rate (reducing balance vs flat rate), tenure (6–84 months), and down payment.</li>
+            <li><strong>2. Add your net monthly income:</strong> Enter your take-home monthly income and existing loan or card repayments to unlock your personal Debt-to-Income (DTI) gauge and cashflow spectrum.</li>
+            <li><strong>3. Compare &amp; plan:</strong> Pin vehicles for side-by-side comparison, inspect full amortisation schedules, or map a deposit savings timeline below.</li>
+          </ol>
+          <dl class="quick-start-glossary">
+            <div><dt>CBSL Statutory Down Payment (60% / 40%)</dt><dd>Under Central Bank of Sri Lanka Directions No. 01 of 2026 (cl. 2.1), brand new, reconditioned, and recently registered (&lt;1 year) cars require at least 60% cash down (max 40% loan). Cars registered in Sri Lanka for over 1 year and commercial vehicles require at least 40% down (max 60% loan).</dd></div>
+            <div><dt>Reducing Balance vs Flat Rate</dt><dd>Regulated leases calculate interest on the reducing principal balance each month. A flat-rate quote charges interest on the initial loan amount throughout the term (for example, 12% flat over 84 months equals ~20.47% reducing).</dd></div>
+            <div><dt>Net Income Commitment Ratio (40% / 50% DTI)</dt><dd>VahanaIQ's affordability benchmark measures total monthly debt commitments (proposed lease rental + existing loans/cards + monthly insurance) against your net take-home income. 40% is the standard prudent guideline; 50% is the stretch ceiling.</dd></div>
+          </dl>
+        </div>
+      </details>
     </div>
     <div class="hero-aside">
-      <span class="edition"><span aria-hidden="true">CBSL Directions 2026</span><span class="sr-only">Down-payment rules follow CBSL Directions No. 01 of 2026</span></span>
-      <div class="metrics">
-        <div><strong>60%</strong><span>Minimum down payment</span></div>
-        <div><strong>84</strong><span>Maximum term, months</span></div>
-        <div><strong>50%</strong><span>Debt-to-income ceiling</span></div>
+      <div class="hero-aside-meta">
+        <span class="edition">Sri Lanka · 2026 Edition</span>
       </div>
-      <p class="small">Down-payment rules follow CBSL Directions No. 01 of 2026.</p>
+      <a class="cbsl-badge-seal" href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener" title="View Central Bank of Sri Lanka Directions No. 01 of 2026 (PDF)">
+        <svg class="cbsl-crest-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <div class="seal-copy">
+          <strong>CBSL 2026 Compliant</strong>
+          <span>Directions No. 01 of 2026 (cl. 2.1) &middot; Max 84m</span>
+        </div>
+        <span class="seal-arrow" aria-hidden="true">&rarr;</span>
+      </a>
     </div>
   </section>
 
   <nav class="page-nav" aria-label="Main sections"><a href="#loanTermsHead"><span class="glyph glyph-sliders-horizontal" aria-hidden="true"></span> Terms</a><a href="#budgetPanel"><span class="glyph glyph-wallet" aria-hidden="true"></span> Budget</a><a href="#comparisonPanel"><span class="glyph glyph-car" aria-hidden="true"></span> Compare</a><a href="#savingsPanel"><span class="glyph glyph-target" aria-hidden="true"></span> Save</a></nav><section class="panel terms-panel" id="loanTermsHead" aria-labelledby="h-terms">
     <div class="panel-head">
-      <div><p class="eyebrow">Loan Terms</p><h2 id="h-terms">Loan Terms and Your Income</h2></div><button class="btn-outline mobile-only" id="toggleTerms" type="button" aria-expanded="false" aria-controls="loanTermsGrid">Edit</button>
+      <div>
+        <h2 id="h-terms">Loan Terms</h2>
+        <p class="panel-subtitle">Interest rates, loan tenure, and CBSL statutory down payments.</p>
+      </div>
+      <button class="btn-outline mobile-only" id="toggleTerms" type="button" aria-expanded="false" aria-controls="loanTermsGrid">Edit</button>
       <button class="link-btn quiet" id="resetInputsBtn" type="button">Reset Inputs</button>
     </div>
     <p class="compact-terms mobile-only" id="compactTerms"></p><div class="grid terms-grid mobile-collapsed" id="loanTermsGrid">
@@ -163,6 +192,11 @@
               <button type="button" class="step-btn" data-step-for="rate" data-step-delta="0.5" aria-label="Increase interest rate">+</button>
             </div>
             <input type="range" class="terms-slider" id="rateSlider" data-slider-for="rate" min="0" max="40" step="0.5" value="16" aria-label="Interest rate slider">
+            <div class="preset-chips" role="group" aria-label="Interest rate presets">
+              <button type="button" class="chip-btn" data-preset-for="rate" data-preset-val="14" aria-pressed="false">14%</button>
+              <button type="button" class="chip-btn active" data-preset-for="rate" data-preset-val="16" aria-pressed="true">16%</button>
+              <button type="button" class="chip-btn" data-preset-for="rate" data-preset-val="18" aria-pressed="false">18%</button>
+            </div>
             <div class="hint" id="rateHint">Reducing-balance rate. Ask the lender which kind they quote.</div>
           </div>
           <div class="terms-field">
@@ -201,45 +235,8 @@
       </div>
 
       <div class="terms-split-row">
-        <div class="terms-subcard terms-subcard-income">
-          <div class="terms-subcard-head">
-            <span class="terms-subcard-title"><span class="glyph glyph-wallet" aria-hidden="true"></span> Income &amp; Commitments</span>
-            <span class="tag">Affordability</span>
-          </div>
-          <div class="terms-subcard-grid cols-3">
-            <div class="terms-field span-2">
-              <label for="income">Net Monthly Income (LKR)</label>
-              <div class="input-adorn-wrap">
-                <span class="adorn-prefix" aria-hidden="true">LKR</span>
-                <input id="income" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="incomeHint">
-              </div>
-              <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
-            </div>
-            <div class="terms-field span-2">
-              <label for="debt">Existing Monthly Loan and Card Payments (LKR)</label>
-              <div class="input-adorn-wrap">
-                <span class="adorn-prefix" aria-hidden="true">LKR</span>
-                <input id="debt" type="text" placeholder="0.00" inputmode="decimal" autocomplete="off" aria-describedby="debtHint">
-              </div>
-              <div class="hint" id="debtHint">Total per month; 0.00 if none</div>
-            </div>
-            <div class="terms-field span-2">
-              <label id="dtiLabel" for="dti">Debt-to-Income Limit</label>
-              <select id="dti" class="sr-only" tabindex="-1" aria-hidden="true" aria-describedby="dtiHint">
-                <option value="0.4">40% of income</option>
-                <option value="0.5">50% (higher budget limit)</option>
-              </select>
-              <div class="seg-control" role="group" aria-labelledby="dtiLabel" data-seg="dti">
-                <button type="button" class="seg-btn active" data-seg-for="dti" data-seg-val="0.4" aria-pressed="true">40% Standard</button>
-                <button type="button" class="seg-btn" data-seg-for="dti" data-seg-val="0.5" aria-pressed="false">50% Stretch</button>
-              </div>
-              <div class="hint" id="dtiHint">40% standard CBSL ceiling; 50% for higher budgets</div>
-            </div>
-          </div>
-        </div>
-
         <button type="button" class="drawer-toggle" id="toggleCostsDrawer" aria-expanded="false" aria-controls="termsSubcardCosts">
-          <span class="drawer-toggle-label">+ Optional Incidental Costs (Insurance &amp; Up-front Fees)</span>
+          <span class="drawer-toggle-label">+ Incidental Costs (Insurance &amp; Fees)</span>
           <span class="drawer-toggle-meta" id="costsDrawerMeta">Optional</span>
         </button>
         <div class="terms-subcard terms-subcard-costs drawer-collapsed" id="termsSubcardCosts">
@@ -268,7 +265,7 @@
         </div>
       </div>
       <button type="button" class="drawer-toggle" id="toggleLtvDrawer" aria-expanded="false" aria-controls="ltvSplitContainer">
-        <span class="drawer-toggle-label">+ Vehicle Valuation Financing Structure (CBSL Directions No. 01 of 2026)</span>
+        <span class="drawer-toggle-label">+ CBSL Valuation Structure</span>
         <span class="drawer-toggle-meta" id="ltvDrawerMeta">60% Deposit &middot; 40% LTV</span>
       </button>
       <div class="ltv-split-container drawer-collapsed" id="ltvSplitContainer">
@@ -316,8 +313,54 @@
   </section>
 
   <section class="panel" id="budgetPanel" aria-labelledby="h-sum">
-    <div class="panel-head"><div><p class="eyebrow">Affordability</p><h2 id="h-sum">Your Budget</h2></div></div>
-    <div id="budgetGraphic" class="budget-graphic-wrap">
+    <div class="panel-head">
+      <div>
+        <h2 id="h-sum">Your Budget</h2>
+        <p class="panel-subtitle">Net income cashflow, Debt-to-Income (DTI) ratio, and borrowing limits.</p>
+      </div>
+      <div class="budget-view-switcher" role="group" aria-label="Budget Display Mode">
+        <button type="button" class="budget-mode-btn active" data-budget-mode="dial" aria-pressed="true">Gauge Dial</button>
+        <button type="button" class="budget-mode-btn" data-budget-mode="linear" aria-pressed="false">Linear Cash Flow</button>
+        <button type="button" class="budget-mode-btn" data-budget-mode="ceiling" aria-pressed="false">Borrowing Ceiling</button>
+      </div>
+    </div>
+    <div class="terms-subcard terms-subcard-income in-budget-panel">
+      <div class="terms-subcard-head">
+        <span class="terms-subcard-title"><span class="glyph glyph-wallet" aria-hidden="true"></span> Income &amp; Commitments</span>
+        <span class="tag">Affordability</span>
+      </div>
+      <div class="terms-subcard-grid cols-3">
+        <div class="terms-field">
+          <label for="income">Net Monthly Income (LKR)</label>
+          <div class="input-adorn-wrap">
+            <span class="adorn-prefix" aria-hidden="true">LKR</span>
+            <input id="income" type="text" placeholder="Optional" inputmode="decimal" autocomplete="off" aria-describedby="incomeHint">
+          </div>
+          <div class="hint" id="incomeHint">Leave empty to skip the affordability check</div>
+        </div>
+        <div class="terms-field">
+          <label for="debt">Existing Monthly Loan and Card Payments (LKR)</label>
+          <div class="input-adorn-wrap">
+            <span class="adorn-prefix" aria-hidden="true">LKR</span>
+            <input id="debt" type="text" placeholder="0.00" inputmode="decimal" autocomplete="off" aria-describedby="debtHint">
+          </div>
+          <div class="hint" id="debtHint">Total per month; 0.00 if none</div>
+        </div>
+        <div class="terms-field">
+          <label id="dtiLabel" for="dti">Debt-to-Income Limit</label>
+          <select id="dti" class="sr-only" tabindex="-1" aria-hidden="true" aria-describedby="dtiHint">
+            <option value="0.4">40% of income</option>
+            <option value="0.5">50% (higher budget limit)</option>
+          </select>
+          <div class="seg-control" role="group" aria-labelledby="dtiLabel" data-seg="dti">
+            <button type="button" class="seg-btn active" data-seg-for="dti" data-seg-val="0.4" aria-pressed="true">40% Standard</button>
+            <button type="button" class="seg-btn" data-seg-for="dti" data-seg-val="0.5" aria-pressed="false">50% Stretch</button>
+          </div>
+          <div class="hint" id="dtiHint">40% standard net-income guideline; 50% stretch ceiling (prudent lender benchmark)</div>
+        </div>
+      </div>
+    </div>
+    <div id="budgetGraphic" class="budget-graphic-wrap is-pending">
       <div class="gauge-wrapper">
         <div class="gauge-dial-box">
           <div class="gauge-svg-container">
@@ -338,10 +381,14 @@
               <text x="36" y="154" class="dial-tick-text dial-tick-end">0%</text>
               <text x="105" y="42" class="dial-tick-text dial-tick-mid">20%</text>
               <line x1="215" y1="54.7" x2="225" y2="40" class="dial-milestone-safe"/>
-              <text x="240" y="36" class="dial-label-safe">40% CBSL</text>
+              <text x="240" y="36" class="dial-label-safe">40% STD</text>
               <line x1="255.3" y1="95" x2="268" y2="88" class="dial-milestone-bad"/>
               <text x="286" y="86" class="dial-label-bad">50% MAX</text>
-              <text x="284" y="154" class="dial-tick-text dial-tick-start">60%</text>
+              <text x="284" y="154" id="dialTickMax" class="dial-tick-text dial-tick-start">60%+</text>
+              <g id="dialOffscaleBadge" class="dial-offscale-badge" hidden>
+                <rect x="244" y="112" width="72" height="20" rx="10" class="dial-offscale-pill"/>
+                <text x="280" y="125" text-anchor="middle" class="dial-offscale-text">OFF-SCALE</text>
+              </g>
               <g id="budgetNeedle" class="dial-needle" transform="rotate(-90, 160, 150)" filter="url(#needleShadow)">
                 <g class="dial-needle-swing">
                   <polygon points="156,150 160,46 164,150" class="dial-needle-body"/>
@@ -356,11 +403,11 @@
             </svg>
           </div>
           <div class="classic-dial-readout">
-            <span class="classic-dti-hero" id="budgetDtiHero">0.0% DTI</span>
+            <span class="classic-dti-hero" id="budgetDtiHero">&mdash;% DTI</span>
             <span class="classic-dti-sub" id="budgetDtiSub">LKR 0.00 / month</span>
-            <div class="classic-dti-pill ok" id="budgetDtiPill">
+            <div class="classic-dti-pill pending" id="budgetDtiPill">
               <span class="dial-zone-dot"></span>
-              <span id="budgetDtiText">Within 40% CBSL Limit</span>
+              <span id="budgetDtiText">Enter Net Monthly Income</span>
             </div>
           </div>
           <div class="dial-zones-legend">
@@ -376,12 +423,51 @@
               <span class="cashflow-total" id="budgetCashflowLabel"></span>
             </div>
             <div class="cashflow-bar-wrap">
-              <div class="cashflow-bar" id="budgetCashflowBar"></div>
-              <div class="cashflow-threshold-line line-cbsl"><div class="cashflow-threshold-label">40% CBSL Limit</div></div>
-              <div class="cashflow-threshold-line line-cap"><div class="cashflow-threshold-label">50% Max Cap</div></div>
+              <div class="cashflow-bar" id="budgetCashflowBar" role="img" aria-label="Net income cashflow spectrum"></div>
+              <div class="cashflow-threshold-line line-cbsl"><div class="cashflow-threshold-label">40% Standard Limit</div></div>
+              <div class="cashflow-threshold-line line-cap"><div class="cashflow-threshold-label">50% Stretch Cap</div></div>
             </div>
           </div>
           <div class="telemetry-grid" id="budgetTelemetryGrid"></div>
+        </div>
+      </div>
+    </div>
+    <div id="budgetLinearView" class="budget-linear-view" hidden>
+      <div class="linear-budget-card">
+        <div class="linear-budget-header">
+          <div>
+            <span class="linear-budget-title">Monthly Cash Flow Allocation</span>
+            <span class="linear-budget-meta" id="linearBudgetSubtitle">Evaluating top vehicle against net income</span>
+          </div>
+          <div class="classic-dti-pill pending" id="linearDtiPill">
+            <span class="dial-zone-dot"></span>
+            <span id="linearDtiText">Enter Net Monthly Income</span>
+          </div>
+        </div>
+        <div class="linear-stack-wrap">
+          <div class="linear-stack-bar" id="linearStackBar" role="img" aria-label="Monthly Cash Flow Allocation Bar"></div>
+          <div class="linear-marker marker-cbsl"><div class="linear-marker-label">40% Limit</div></div>
+          <div class="linear-marker marker-cap"><div class="linear-marker-label">50% Cap</div></div>
+        </div>
+        <div class="linear-metrics-grid" id="linearMetricsGrid"></div>
+      </div>
+    </div>
+    <div id="budgetCeilingView" class="budget-ceiling-view" hidden>
+      <div class="ceiling-budget-card">
+        <div class="ceiling-budget-header">
+          <div>
+            <span class="ceiling-budget-title">Borrowing Capacity &amp; Safe Limits</span>
+            <span class="ceiling-budget-meta">Vehicle-agnostic borrowing envelope based on CBSL responsible lending limits</span>
+          </div>
+          <span class="tag ok" id="ceilingStatusTag">40% Standard Limit</span>
+        </div>
+        <div class="ceiling-cards-grid" id="ceilingCardsGrid"></div>
+        <div class="ceiling-room-bar-wrap">
+          <div class="ceiling-room-label-row">
+            <span>Income Allocation to Debt vs Living Buffer</span>
+            <strong id="ceilingRoomRatioText">LKR 0 available</strong>
+          </div>
+          <div class="ceiling-room-bar" id="ceilingRoomBar"></div>
         </div>
       </div>
     </div>
@@ -391,7 +477,10 @@
 
   <section class="panel" id="comparisonPanel" aria-labelledby="h-list">
     <div class="panel-head">
-      <div><p class="eyebrow">Comparison</p><h2 id="h-list" tabindex="-1">Vehicles</h2></div>
+      <div>
+        <h2 id="h-list" tabindex="-1">Vehicles</h2>
+        <p class="panel-subtitle">Side-by-side repayment estimates, CBSL deposits, and budget compatibility.</p>
+      </div>
       <div class="comparison-tools"><button class="btn-outline" id="toggleColsBtn" type="button" aria-pressed="false">Show Full Columns</button><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add Another Vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button"><span class="glyph glyph-share-2" aria-hidden="true"></span> Share</button><button class="link-btn" id="resetCatalogBtn" type="button"><span class="glyph glyph-trash-2" aria-hidden="true"></span> Remove All Vehicles</button></span></div>
     </div>
     <div class="empty-state" id="emptyState" hidden>
@@ -462,6 +551,9 @@
           <option value="ok" id="affordOption">Only those within my limit</option>
         </select>
       </div>
+      <div class="tools-reset-wrap">
+        <button class="btn-outline" id="resetFiltersBtn" type="button">Reset Filters</button>
+      </div>
     </div>
     <div class="legend" id="budgetLegend" hidden></div>
     <div class="h2h-tray" id="headToHeadTray" role="region" aria-label="Head-to-head comparison selection" hidden>
@@ -485,7 +577,13 @@
   </section>
 
   <section class="panel savings-panel" id="savingsPanel" aria-labelledby="h-savings">
-    <div class="panel-head"><div><p class="eyebrow">Target</p><h2 id="h-savings">Savings Planner</h2></div><span class="tag">Plan Your Deposit</span></div>
+    <div class="panel-head">
+      <div>
+        <h2 id="h-savings">Savings Planner</h2>
+        <p class="panel-subtitle">Calculate how much you need to set aside monthly to reach your required cash deposit.</p>
+      </div>
+      <span class="tag">Plan Your Deposit</span>
+    </div>
     <button type="button" class="drawer-toggle" id="toggleSavingsDrawer" aria-expanded="false" aria-controls="savingsPlannerLayout">
       <span class="drawer-toggle-label">Expand Deposit &amp; Savings Trajectory Planner</span>
       <span class="drawer-toggle-meta" id="savingsDrawerMeta">Optional deposit &amp; pace calculator</span>
@@ -593,21 +691,19 @@
 </main>
 
   <footer class="foot">
+    <p class="foot-intro">Planning estimates, not financial advice. Confirm prices and lending terms before committing.</p>
     <div class="foot-cols">
-      <section aria-labelledby="footRentals">
-        <h2 class="foot-h" id="footRentals">How Rentals Are Worked Out</h2>
+      <details class="foot-note"><summary class="foot-h" id="footRentals">How Rentals Are Worked Out</summary>
         <p>Rentals use the standard reducing-balance formula with monthly compounding; a flat rate is converted to its reducing-balance equivalent. Insurance and fees are included only when you enter them; fuel, servicing and early settlement charges are not.</p>
-      </section>
-      <section aria-labelledby="footDown">
-        <h2 class="foot-h" id="footDown">Down Payments</h2>
+      </details>
+      <details class="foot-note"><summary class="foot-h" id="footDown">Down Payments</summary>
         <p>Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Lenders apply the limit to their own valuation of the car (the agent's confirmed value, the customs or dealer invoice, or a professional valuer's report), so your down payment can differ.</p>
-      </section>
-      <section aria-labelledby="footPrices">
-        <h2 class="foot-h" id="footPrices">Prices and Advice</h2>
+      </details>
+      <details class="foot-note"><summary class="foot-h" id="footPrices">Prices and Advice</summary>
         <p><span id="priceAsOf">Confirm prices and stock with the seller.</span> This is not financial advice.</p>
-      </section>
+      </details>
     </div>
-    <nav class="site-links" aria-label="Information"><a href="index.html" aria-current="page">Calculator</a><a href="catalogue.html">Catalogue</a><a href="studio.html">Photo Studio</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav><p class="copyright">© 2026 Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html" aria-current="page">Lease</a><a href="catalogue.html">Showroom</a><a href="studio.html">Studio</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav></div><p class="copyright">© 2026 Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
       <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>

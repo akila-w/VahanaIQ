@@ -1,5 +1,7 @@
+import { mountPriceHistory } from './price-history.js?v=2.12.0';
 'use strict';
 import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
+import { rental as calcRental, flatToEffective, minDownFor } from './calculator.js?v=2.12.0';
 
 (() => {
   const {
@@ -20,6 +22,8 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
   const date = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? new Date(value+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Date Not Specified';
   const fmt = n => Number(n).toLocaleString('en-LK', {minimumFractionDigits:2, maximumFractionDigits:2});
   const kinds = {official:'Distributor Price',dealer:'Dealer Asking Price',launch:'Published Launch Price',estimated:'Estimated Price',quote:'Price on Request'};
+  let priceHistory = [];
+  const historyReady = fetch('data/price-history.json').then(r => { if (!r.ok) throw Error('History unavailable'); return r.json(); }).then(d => { priceHistory = Array.isArray(d.observations) ? d.observations : []; }).catch(() => { priceHistory = null; });
   let data, identity = {}, cards = [], page = 0, reviewOnly = false, current = null, imageIndex = 0, opener = null;
   let selectedAffordabilityVehicle = null;
   const size = 18;
@@ -107,6 +111,8 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
         model: m.model || cleanName,
         price: low.amount || 0,
         cond: low.condition || 'New',
+        financeClass: m.financeClass,
+        firstRegisteredOn: low.firstRegisteredOn,
         pt: low.fuel ? `${low.fuel} Powertrain` : (m.offers?.find(o => o.fuel)?.fuel ? `${m.offers.find(o => o.fuel).fuel} Powertrain` : 'Petrol'),
         km: '',
         w: low.route === 'Distributor' ? 'Official' : (low.route === 'Dealer Listing' ? 'Dealer' : 'Grey'),
@@ -132,17 +138,20 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
         const parsed = JSON.parse(raw);
         const income = parseFloat(String(parsed.income ?? '').replace(/,/g, '')) || 0;
         const debt = parseFloat(String(parsed.debt ?? '').replace(/,/g, '')) || 0;
+        const insurance = parseFloat(String(parsed.insurance ?? '').replace(/,/g, '')) || 0;
+        const fees = parseFloat(String(parsed.fees ?? '').replace(/,/g, '')) || 0;
         const dti = parseFloat(parsed.dti) || DEFAULT_DTI;
         let maxprice = parseFloat(String(parsed.maxprice ?? '').replace(/,/g, '')) || 0;
         if (maxprice > 0 && maxprice < 1000) maxprice *= 1000000;
         const down = parseFloat(parsed.down) || DEFAULT_DOWN;
         const tenure = parseFloat(parsed.tenure) || DEFAULT_TENURE;
-        const rate = parseFloat(parsed.rate) || DEFAULT_RATE;
+        const parsedRate = parseFloat(parsed.rate);
+        const rate = Number.isFinite(parsedRate) && parsedRate >= 0 ? Math.min(parsedRate, 100) : DEFAULT_RATE;
         const rateType = parsed.rateType === 'flat' ? 'flat' : DEFAULT_RATE_TYPE;
-        return { income, debt, dti, maxprice, down, tenure, rate, rateType };
+        return { income, debt, insurance, fees, dti, maxprice, down, tenure, rate, rateType };
       }
     } catch {}
-    return { income: 0, debt: 0, dti: DEFAULT_DTI, maxprice: 0, down: DEFAULT_DOWN, tenure: DEFAULT_TENURE, rate: DEFAULT_RATE, rateType: DEFAULT_RATE_TYPE };
+    return { income: 0, debt: 0, insurance: 0, fees: 0, dti: DEFAULT_DTI, maxprice: 0, down: DEFAULT_DOWN, tenure: DEFAULT_TENURE, rate: DEFAULT_RATE, rateType: DEFAULT_RATE_TYPE };
   }
 
   function buildAffordabilityHtml(m) {
@@ -156,39 +165,41 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
 
     const income = settings.income;
     const debt = settings.debt;
+    const monthlyInsurance = settings.insurance > 0 ? settings.insurance / 12 : 0;
+    const fees = settings.fees || 0;
     const dti = settings.dti;
     const maxprice = settings.maxprice;
-    const downPct = settings.down;
+    const minDown = minDownFor(low?.condition || 'New', m.financeClass, low?.firstRegisteredOn);
+    const downPct = Math.min(100, Math.max(settings.down, minDown));
     const tenure = settings.tenure;
     const rate = settings.rate;
-
-    let f = 0;
-    if (settings.rateType === 'flat') {
-      f = (1 / tenure) + (rate / 100 / 12);
-    } else {
-      const r = (rate / 100) / 12;
-      f = r > 0 ? (r / (1 - Math.pow(1 + r, -tenure))) : (1 / tenure);
-    }
+    const effectiveRate = settings.rateType === 'flat' ? flatToEffective(rate, tenure) : rate;
 
     const loan = price * (1 - downPct / 100);
-    const rental = loan * f;
-    const monthlyCommitment = rental + debt;
-    const monthlyRoom = income > 0 ? Math.max(0, (income * dti) - debt) : 0;
+    const rental = downPct >= 100 ? 0 : calcRental(loan, effectiveRate, tenure);
+    const monthlyCommitment = rental + debt + monthlyInsurance;
+    const monthlyRoom = income > 0 ? Math.max(0, (income * dti) - debt - monthlyInsurance) : 0;
     const dtiPct = income > 0 ? (monthlyCommitment / income * 100) : null;
+    const depositAmount = price * downPct / 100;
+    const upfrontAmount = depositAmount + fees;
 
     let statusTag = '';
     let summaryText = '';
 
     if (income > 0) {
-      if (dtiPct <= dti * 100) {
+      if (downPct >= 100) {
+        statusTag = `<span class="tag ok">100% Cash · 0.0% Lease DTI</span>`;
+        summaryText = `100% cash purchase (LKR ${fmt(upfrontAmount)} upfront${fees > 0 ? ' including fees' : ''}) — zero monthly lease rental.`;
+      } else if (rental <= monthlyRoom && dtiPct <= dti * 100 + 1e-9) {
         statusTag = `<span class="tag ok">Within Budget · ${dtiPct.toFixed(1)}% DTI</span>`;
-        summaryText = `At LKR ${fmt(rental)}/mo (${downPct}% down, ${tenure}m @ ${rate}%), this vehicle fits within your ${Math.round(dti * 100)}% DTI monthly budget ceiling of LKR ${fmt(monthlyRoom)}.`;
+        summaryText = `At LKR ${fmt(rental)}/mo (${downPct}% down, ${tenure}m @ ${rate}% ${settings.rateType === 'flat' ? 'flat' : 'reducing'}), this vehicle fits within your ${Math.round(dti * 100)}% DTI monthly budget ceiling of LKR ${fmt(monthlyRoom)}.`;
       } else if (dtiPct <= DTI_STRETCH_PCT) {
         statusTag = `<span class="tag mid">Stretch Budget · ${dtiPct.toFixed(1)}% DTI</span>`;
         summaryText = `At LKR ${fmt(rental)}/mo, this vehicle exceeds your standard ${Math.round(dti * 100)}% DTI limit but remains within the ${DTI_STRETCH_PCT}% stretch limit.`;
       } else {
+        const shortfall = monthlyCommitment > income ? ` (Monthly shortfall: LKR ${fmt(monthlyCommitment - income)})` : '';
         statusTag = `<span class="tag bad">Above Budget · ${dtiPct.toFixed(1)}% DTI</span>`;
-        summaryText = `Total monthly commitment (LKR ${fmt(monthlyCommitment)}) exceeds the ${DTI_STRETCH_PCT}% DTI ceiling on your entered monthly income of LKR ${fmt(income)}.`;
+        summaryText = `Total monthly commitment (LKR ${fmt(monthlyCommitment)}) exceeds the ${DTI_STRETCH_PCT}% DTI ceiling on your entered monthly income of LKR ${fmt(income)}${shortfall}.`;
       }
     } else if (maxprice > 0) {
       if (price <= maxprice) {
@@ -201,7 +212,7 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
     } else {
       statusTag = `<span class="tag ok">Indicative Quote</span>`;
       summaryText = price > 0
-        ? `Estimated monthly lease rental: LKR ${fmt(rental)}/mo (${downPct}% down payment: LKR ${fmt(price * downPct / 100)}, ${tenure} months). Configure your income in the Calculator to test DTI affordability.`
+        ? `Estimated monthly lease rental: LKR ${fmt(rental)}/mo (${downPct}% down payment: LKR ${fmt(depositAmount)}${fees > 0 ? ` + LKR ${fmt(fees)} fees` : ''}, ${tenure} months). Configure your income in the Calculator to test DTI affordability.`
         : `Request a verified quote to calculate monthly lease rental and test affordability against your budget.`;
     }
 
@@ -225,11 +236,11 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
           </div>
           <div class="afford-stat">
             <span class="afford-stat-label">Estimated Rental</span>
-            <span class="afford-stat-val">${price > 0 ? money(Math.round(rental)) + ' / mo' : 'Quote Needed'}</span>
+            <span class="afford-stat-val">${price > 0 ? 'LKR ' + fmt(rental) + ' / mo' : 'Quote Needed'}</span>
           </div>
           <div class="afford-stat">
-            <span class="afford-stat-label">Statutory Down (${downPct}%)</span>
-            <span class="afford-stat-val">${price > 0 ? money(Math.round(price * downPct / 100)) : '—'}</span>
+            <span class="afford-stat-label">Down Payment (${downPct}%)</span>
+            <span class="afford-stat-val">${price > 0 ? 'LKR ' + fmt(depositAmount) : '—'}</span>
           </div>
         </div>
         <p class="affordability-summary-line">${esc(summaryText)}</p>
@@ -459,6 +470,15 @@ import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
     $('detailMake').textContent = m.make; $('detailTitle').textContent = `${cleanName} ${m.cardYear}`;
     $('detailBody').innerHTML = `<div class="dialog-compare-bar"><button id="dialogCompareBtn" class="btn btn-compare" data-compare="${esc(m.id)}" type="button" aria-pressed="${inComp}">${inComp ? '✓ In Comparison' : '+ Add to Comparison'}</button><button class="flag" data-flag="${esc(m.id)}" aria-label="Mark ${esc(m.name)} for review" aria-pressed="${isMarked}">${isMarked ? '✓ Marked' : 'Mark for Review'}</button></div><div class="detail-layout"><section class="detail-gallery" aria-label="Official Vehicle Images"><div class="photo-frame" id="galleryImage"></div><div class="gallery-controls" id="galleryControls"><button id="galleryPrevious" aria-label="Previous Photo">←</button><span id="galleryPosition" role="status"></span><button id="galleryNext" aria-label="Next Photo">→</button></div><div class="gallery-toolbar" id="galleryToolbar"><span id="galleryCoverBadge" class="tag cover-tag" title="This photo is currently the cover photo on the catalogue card">★ Cover Photo</span><button id="galleryMakeCoverBtn" class="btn-outline btn-xs" type="button" title="Set this photo as the cover photo on the catalogue card">Set as Cover</button><button id="galleryCropBtn" class="btn-outline btn-xs crop-toggle-btn" type="button" title="Quickly adjust framing and crop for this photo">Crop &amp; Frame</button><a id="galleryStudioBtn" href="studio.html#model=${encodeURIComponent(modelId)}" class="btn-outline btn-xs studio-edit-btn" title="Open Photo Studio to crop, frame, add or arrange photos">Studio ↗</a><button id="galleryRemoveBtn" class="quiet btn-xs remove-btn" type="button" title="Remove this photo from this vehicle">Remove</button><button id="galleryUndoBtn" class="quiet btn-xs undo-btn" type="button" title="Revert to original published photos" hidden>Undo Changes</button></div><div class="modal-crop-toolbar" id="modalCropToolbar" hidden><div class="crop-tool-group"><button id="modalCropFitBtn" class="btn-outline btn-xs" type="button" title="Fit photo to frame">Fit</button><button id="modalCropCentreBtn" class="btn-outline btn-xs" type="button" title="Centre photo">Centre</button><button id="modalCropZoomOut" class="btn-outline btn-xs" type="button" aria-label="Zoom out">−</button><span id="modalCropZoomVal" class="zoom-chip">1.00×</span><button id="modalCropZoomIn" class="btn-outline btn-xs" type="button" aria-label="Zoom in">+</button></div><div class="crop-action-group"><button id="modalCropCancelBtn" class="quiet btn-xs" type="button">Cancel</button><button id="modalCropDoneBtn" class="btn btn-xs btn-primary-crop" type="button">Save</button></div></div><div class="sources gallery-source"><a id="gallerySource" target="_blank" rel="noopener noreferrer">Photo Source ↗</a><a id="galleryOriginal" target="_blank" rel="noopener noreferrer">Original Image ↗</a></div><p class="photo-note" id="photoNote"></p></section><section aria-label="Purchase Options"><h3>Purchase Options</h3><div class="offer-stack">${m.offers.map(o => `<article class="offer"><span class="tag ${esc(o.kind)}">${esc(kinds[o.kind] || o.kind || '')}</span><h3>${esc(o.name)}</h3><p class="offer-meta">${esc([o.trim,o.year,o.condition,o.route].filter(Boolean).join(' · '))}</p><p class="price ${o.amount?'':'quote'}">${o.amount?money(o.amount):'Price on Request'}</p><div class="offer-actions"><button class="btn-outline btn-xs offer-compare-btn" data-compare="${esc(m.id)}" data-offer-id="${esc(o.id)}" type="button" aria-pressed="${inComp}">${inComp ? '✓ In Comparison' : 'Add to Comparison'}</button></div><p class="offer-meta">Checked ${date(o.checkedOn)}${o.sourcePublishedOn?' · Published '+date(o.sourcePublishedOn):''}</p>${o.kind === 'estimated' ? '<p class="estimate-methodology">Estimated Price based on Sri Lanka Customs Tariff, engine capacity/EV tier &amp; distributor bracket</p>' : ''}${o.note?`<p class="offer-note">${esc(o.note)}</p>`:''}<a href="${safeUrl(o.sourceUrl)}" target="_blank" rel="noopener noreferrer">${o.amount?'View Price Source':'Visit Source / Request a Quote'} ↗</a>${o.image?`<img class="variant-image" src="${safeImgUrl(o.image.smallSrc)}" width="640" height="400" alt="${esc(o.name)}" loading="lazy" decoding="async"><p class="photo-note">${esc(o.image.caption || 'Japanese Market Image')} · <a href="${safeUrl(o.image.sourcePage)}" target="_blank" rel="noopener noreferrer">Photo Source ↗</a></p>`:''}</article>`).join('')}</div></section></div><section class="detail-affordability" aria-label="Affordability Summary">${buildAffordabilityHtml(m)}</section><div class="review-note"><label for="note">Your Review Note</label><textarea id="note" maxlength="3000" placeholder="Anything you would like changed for this vehicle…"></textarea><p>Saved locally in this browser. Included when you export your review.</p></div>`;
     observeLazyImages($('detailBody'));
+    const historyHost = document.createElement('div');
+    $('detailBody').append(historyHost);
+    historyHost.textContent = 'Loading recorded price history…';
+    historyReady.then(() => {
+      if (!historyHost.isConnected) return;
+      historyHost.replaceChildren();
+      if (priceHistory === null) { historyHost.textContent = 'Price history is temporarily unavailable. Close and reopen after refreshing to retry.'; return; }
+      mountPriceHistory(historyHost, modelId, priceHistory);
+    });
     $('dialogCompareBtn')?.addEventListener('click', () => {
       toggleComparison(m);
       const updatedInComp = isCarInComparison(m);

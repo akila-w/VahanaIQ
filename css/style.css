@@ -1987,8 +1987,64 @@ button.hint-btn:focus-visible {
   white-space: nowrap;
 }
 
+.cashflow-seg-ins {
+  background: var(--mid-ink);
+  color: var(--panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  transition: width var(--duration-base) var(--easing-standard);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cashflow-seg-shortfall {
+  background: var(--callout-warn-bg);
+  color: var(--ink);
+  border-left: 4px solid var(--bad);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 700;
+  padding: var(--space-8) var(--space-10);
+  margin-top: var(--space-24);
+  border-radius: var(--radius-sm);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.cashflow-bar:has(> .cashflow-income-track) {
+  height: auto;
+  display: block;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.cashflow-income-track {
+  height: 24px;
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.cashflow-breakdown {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.cashflow-bar-wrap:has(.cashflow-income-track) > .cashflow-threshold-line {
+  height: 56px;
+  bottom: auto;
+}
+
 .cashflow-seg-room {
-  background: var(--ok);
+  background: var(--ok-ink);
   color: var(--panel);
   display: flex;
   align-items: center;
@@ -2623,9 +2679,9 @@ button.remove-row-btn:hover {
   bottom: 0;
   z-index: var(--z-budget-bar);
   padding: var(--space-10) var(--space-16) calc(var(--space-10) + env(safe-area-inset-bottom, 0px));
-  background: var(--glass-bg, var(--panel));
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  background: var(--panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-top: 1px solid var(--line);
   box-shadow: var(--shadow-budget-bar);
   font-weight: 600;
@@ -3238,7 +3294,8 @@ button[hidden] { display: none !important; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  backdrop-filter: blur(2px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   pointer-events: auto;
 }
 .photo-byline a,
@@ -3292,7 +3349,7 @@ button[hidden] { display: none !important; }
   background-color: var(--line);
   border-radius: 3px;
 }
-.catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--glass-border, var(--line)); border-radius: var(--radius-lg); padding: 10px 12px; gap: 4px; background: var(--glass-bg, var(--panel)); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%); box-shadow: var(--glass-shadow, var(--shadow-card)); }
+.catalogue-card { display: flex; flex-direction: column; min-width: 0; border: 1px solid var(--glass-border, var(--line)); border-radius: var(--radius-lg); padding: 10px 12px; gap: 4px; background: var(--panel); backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: var(--glass-shadow, var(--shadow-card)); }
 .catalogue-card-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); min-height: 18px; }
 .catalogue-card h3 { font-size: 0.92rem; line-height: 1.25; margin: 0; }
 .catalogue-card p { margin: 0; }
@@ -3383,10 +3440,14 @@ body.modal-open {
   margin-bottom: var(--space-6);
 }
 
+/* UX-32: a modal used to frost the page behind it with a 20px blur. Opening one on
+   WebKit/WPE stopped the frame clock (measured: 3 frames in 1.2s against 57 without
+   the blur), which left the dialog with no layout box to measure and the page looking
+   frozen. The panel sits over a 64% scrim, so an opaque panel reads the same. */
 .modal {
-  background: var(--glass-bg, var(--panel));
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--panel);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border: 1px solid var(--glass-border, var(--line));
   border-radius: var(--radius-dialog);
   max-width: 680px;
@@ -5362,11 +5423,13 @@ button.btn.btn-danger {
 }
 .planner-layout {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: var(--space-20);
   align-items: stretch;
 }
+.planner-layout.drawer-collapsed { display: none; }
 .planner-inputs {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-14);
@@ -5473,6 +5536,7 @@ button.btn.btn-danger {
   flex: 1 1 auto;
 }
 .planner-result {
+  min-width: 0;
   border: 1px solid var(--line);
   background: var(--bg);
   padding: var(--space-20);
@@ -5680,6 +5744,8 @@ button.btn.btn-danger {
 }
 .planner-breakdown-header {
   display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-8);
@@ -5789,7 +5855,7 @@ body.modal-open .budget-bar { display: none !important; }
   .modal { max-height: 92dvh; }
   .modal-header { position: sticky; top: calc(-1 * var(--space-16)); z-index: 2; background: var(--panel); padding: var(--space-8) 0; }
   .close-btn { min-width: 44px; min-height: 44px; flex: 0 0 44px; }
-  .planner-layout { grid-template-columns: 1fr; gap: var(--space-16); }
+  .planner-layout { grid-template-columns: minmax(0, 1fr); gap: var(--space-16); }
   .planner-result { padding: var(--space-16); }
   .planner-pair { grid-template-columns: minmax(0, 1fr); }
   .bulk-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); }
@@ -5835,7 +5901,7 @@ body.modal-open .budget-bar { display: none !important; }
 .site-links a { min-height: 32px; display: inline-flex; align-items: center; color: var(--footer-text); text-decoration: none; text-underline-offset: 4px; font-size: 11px; }
 .site-links a:hover { text-decoration: underline; color: var(--accent); }
 .copyright { color: var(--footer-text); font-size: 11px; margin-bottom: 10px; }
-.info-page { max-width: 900px; margin: auto; padding: var(--space-20); }
+main.info-page { display: block; max-width: 900px; margin: auto; padding: var(--space-20); }
 .info-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-16); margin-bottom: var(--space-40); }
 .info-header > a:first-child { display: inline-flex; gap: var(--space-8); align-items: center; text-decoration: none; color: var(--ink); font-size: 1.25rem; }
 .info-eyebrow { color: var(--accent); font-size: .75rem; letter-spacing: .1em; font-weight: 700; }
@@ -5933,8 +5999,8 @@ body.modal-open .budget-bar { display: none !important; }
 }
 .date-dialog::backdrop {
   background: var(--scrim);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .calendar-heading {
   display: flex;
@@ -6124,7 +6190,8 @@ dialog#guide {
 }
 dialog#guide::backdrop {
   background: var(--scrim);
-  backdrop-filter: blur(5px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 dialog#guide .dialog-head {
   display: flex;
@@ -6185,6 +6252,10 @@ dialog#guide .close:hover {
 
 
 /* Interactive Button Hover Animations */
+button:is(.btn, .btn-outline, .quiet, .row-btn, .icon-btn, .cond-tag, .close-btn) {
+  transition: background-color var(--duration-fast) var(--easing-standard), border-color var(--duration-fast) var(--easing-standard), color var(--duration-fast) var(--easing-standard), box-shadow var(--duration-fast) var(--easing-out), transform var(--duration-fast) var(--easing-out);
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
 button.btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 62, 54, 0.18);
@@ -6251,6 +6322,37 @@ button.cond-tag:hover {
 
 .close-btn:active {
   transform: scale(0.95);
+}
+}
+
+/* Calculator footer: concise disclosures, predictable link columns and shared baselines. */
+.foot:has(.foot-intro) { padding-top: var(--space-16); padding-bottom: var(--space-20); }
+.foot .foot-intro { margin-bottom: var(--space-12); }
+.foot .foot-intro h2 { font-size: 18px; margin: 0 0 var(--space-4); }
+.foot .foot-intro p { font-size: 12px; line-height: 1.5; max-width: 75ch; margin: 0; }
+.foot .foot-cols { grid-template-columns: 1fr; align-items: start; gap: var(--space-4); margin-bottom: var(--space-8); }
+.foot-note { border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--panel); min-width: 0; }
+.foot-note summary { display: flex; align-items: center; justify-content: space-between; gap: var(--space-12); min-height: var(--touch-target); padding: var(--space-8) var(--space-12); cursor: pointer; list-style: none; }
+.foot-note summary::-webkit-details-marker { display: none; }
+.foot-note summary::after { content: '+'; font-size: 20px; line-height: 1; color: var(--accent); flex-shrink: 0; }
+.foot-note[open] summary::after { content: '−'; }
+.foot-note summary .foot-h { margin: 0; font-size: 13px; line-height: 1.4; }
+.foot .foot-note p { padding: 0 var(--space-16) var(--space-16); margin: 0; font-size: 12px; line-height: 1.65; }
+.foot-note summary:focus-visible { outline: 3px solid var(--accent-bright); outline-offset: 3px; border-radius: var(--radius-control); }
+.foot .foot-link-groups { display: flex; flex-wrap: wrap; gap: 0 var(--space-24); padding: var(--space-4) 0; margin: var(--space-12) 0 var(--space-8); border-block: 1px solid var(--line); }
+.foot-link-groups .site-links { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-16); margin: 0; }
+.foot-link-groups .site-links a { min-height: var(--touch-target); height: var(--touch-target); font-size: 12px; width: fit-content; max-width: 100%; padding: 0 2px; display: inline-flex; align-items: center; box-sizing: border-box; }
+.foot .copyright { font-size: 11px; line-height: 1.55; max-width: none; margin-bottom: var(--space-4); }
+.foot .foot-meta { gap: var(--space-4) var(--space-16); align-items: center; margin: 0; }
+.foot .foot-meta > span { white-space: nowrap; }
+@media (max-width: 700px) {
+  .foot .foot-link-groups { display: block; }
+}
+@media (min-width: 600px) {
+  .foot .foot-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-8); }
+}
+@media (min-width: 600px) and (max-width: 979px) {
+  .foot-note summary { min-height: 64px; }
 }
 
 
@@ -6360,9 +6462,11 @@ button.cond-tag:hover {
 }
 
 .site-links a {
-  min-height: 32px;
+  min-height: var(--touch-target);
+  height: var(--touch-target);
   display: inline-flex;
   align-items: center;
+  box-sizing: border-box;
   color: var(--footer-text, #627166);
   text-decoration: none;
   text-underline-offset: 4px;
@@ -6392,7 +6496,7 @@ button.cond-tag:hover {
 .foot-meta {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 18px;
   font-size: 11px;
   line-height: 1.5;
@@ -6404,24 +6508,24 @@ button.cond-tag:hover {
 .foot-meta button.link-btn,
 #openPhotoCreditsBtn,
 #footerSourceGuide {
-  all: unset;
-  display: inline;
-  vertical-align: baseline;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  vertical-align: middle;
   cursor: pointer;
   color: var(--accent, #103e36);
   text-decoration: underline;
   text-underline-offset: 3px;
   font-size: 11px;
   font-weight: inherit;
-  line-height: inherit;
-  padding: 0 !important;
-  margin: 0 !important;
-  min-height: auto !important;
-  min-width: auto !important;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  transform: none !important;
+  line-height: 1.4;
+  padding: 0 2px;
+  margin: 0;
+  min-width: auto;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  transform: none;
   transition: color 0.15s ease, opacity 0.15s ease;
 }
 
@@ -8072,9 +8176,9 @@ tbody tr.is-pinned {
     gap: var(--space-6);
     margin: 0 -4vw var(--space-14);
     padding: var(--space-6) 4vw;
-    background: var(--glass-bg);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    backdrop-filter: blur(14px) saturate(160%);
+    background: var(--panel);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
     border-bottom: 1px solid var(--line);
   }
   .page-nav a {
@@ -8507,6 +8611,8 @@ main > #savingsPanel { animation-delay: 180ms; }
   .toast:not(.show),
   .cashflow-seg-rental,
   .cashflow-seg-debt,
+  .cashflow-seg-ins,
+  .cashflow-seg-shortfall,
   .cashflow-seg-room,
   .cashflow-seg-free,
   .page-nav a { transition: none !important; }
@@ -8552,8 +8658,6 @@ main > #savingsPanel { animation-delay: 180ms; }
   .planner-progress-card,
   .planner-breakdown-card {
     background: var(--glass-bg, var(--panel));
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-color: var(--glass-border, var(--line));
     box-shadow: var(--glass-shadow, var(--shadow-card)), inset 0 1px 0 rgba(255, 255, 255, 0.5);
   }
@@ -8561,7 +8665,126 @@ main > #savingsPanel { animation-delay: 180ms; }
   [data-theme="dark"] .planner-step-card,
   [data-theme="dark"] .planner-progress-card,
   [data-theme="dark"] .planner-breakdown-card { box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+  .filters {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@media screen and (hover: hover) and (pointer: fine) {
+  .panel,
+  .planner-step-card,
+  .planner-progress-card,
+  .planner-breakdown-card,
   .catalogue-card,
-  .filters,
-  .card { backdrop-filter: blur(24px) saturate(180%) !important; -webkit-backdrop-filter: blur(24px) saturate(180%) !important; }
+  .card {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Pending income state, off-scale gauge indicator, quick-start onboarding guide & filter reset */
+@media screen {
+  .classic-dti-pill.pending {
+    background: var(--badge-bg);
+    color: var(--mute);
+    border: 1px dashed var(--control-border);
+  }
+  .classic-dti-pill.pending .dial-zone-dot {
+    background: var(--mute);
+  }
+  .budget-graphic-wrap.is-pending .classic-dti-hero {
+    color: var(--mute);
+  }
+  .budget-graphic-wrap.is-offscale .dial-arc-bad {
+    filter: drop-shadow(0 0 6px var(--bad));
+  }
+  .budget-graphic-wrap.is-over-income .classic-dti-hero {
+    color: var(--bad);
+  }
+  .dial-offscale-pill {
+    fill: var(--bad);
+  }
+  .dial-offscale-text {
+    fill: var(--panel);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+  }
+  .quick-start-guide {
+    margin-top: var(--space-10);
+    padding: var(--space-8) var(--space-12);
+    background: var(--badge-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-control);
+    font-size: 12.5px;
+    color: var(--ink);
+    max-width: 68ch;
+  }
+  .quick-start-guide summary {
+    cursor: pointer;
+    font-weight: 650;
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+    list-style: none;
+  }
+  .quick-start-guide summary::-webkit-details-marker {
+    display: none;
+  }
+  .quick-start-body {
+    margin-top: var(--space-10);
+    padding-top: var(--space-10);
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: var(--space-10);
+  }
+  .quick-start-steps {
+    margin: 0;
+    padding-left: var(--space-16);
+    display: grid;
+    gap: var(--space-6);
+    line-height: 1.45;
+  }
+  .quick-start-glossary {
+    margin: 0;
+    display: grid;
+    gap: var(--space-8);
+    border-top: 1px dashed var(--line);
+    padding-top: var(--space-8);
+  }
+  .quick-start-glossary dt {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 12px;
+  }
+  .quick-start-glossary dd {
+    margin: 2px 0 0;
+    color: var(--mute);
+    font-size: 11.5px;
+    line-height: 1.45;
+  }
+  .tools-reset-wrap {
+    display: flex;
+    align-items: flex-end;
+  }
+}
+
+.header-tour-icon {
+  vertical-align: -2px;
+  margin-right: 5px;
+}
+
+.linear-stack-placeholder {
+  width: 100%;
+  background: var(--bar);
+  color: var(--mute);
+}
+
+.onboarding-close-icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: auto;
 }

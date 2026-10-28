@@ -43,10 +43,13 @@ export function buildTokensCss(tokens) {
 
   const plain = PLAIN_FAMILIES.flatMap(f => (tokens[f]?.tokens ?? []).map(t => `--${t.name}: ${t.value};`));
   const fonts = Object.entries(tokens.type?.families ?? {}).map(([key, stack]) => `--font-${key}: ${stack};`);
+  const faces = (tokens.type?.fonts ?? []).map(font => `@font-face {\n  font-family: ${JSON.stringify(font.family)};\n  src: url(${JSON.stringify(font.src)}) format(${JSON.stringify(font.format)});\n  font-style: ${font.style};\n  font-weight: ${font.weight};\n  font-display: ${font.display};\n}`).join('\n\n');
   const dark = decls('dark');
 
   return `/* ${tokens.name} design tokens, generated from design-system/tokens.json by
    scripts/build-tokens.mjs. Do not edit: change tokens.json and run the script. */
+
+${faces}
 
 ${block(':root', [...decls('light'), ...plain, ...fonts])}
 @media (prefers-color-scheme: dark) {
@@ -55,6 +58,10 @@ ${block(':root:not([data-theme="light"])', dark, '  ')}}
 ${block(':root[data-theme="dark"]', dark)}
 @media print {
 ${block(':root, :root[data-theme]', decls('print'), '  ')}}
+
+h1, h2, h3, h4, h5, h6, .brand, .brand-title, .dialog-head h2, .panel-head h2 {
+  font-family: var(--font-display, var(--font-sans));
+}
 `;
 }
 

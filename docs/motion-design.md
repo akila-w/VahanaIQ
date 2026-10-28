@@ -66,3 +66,13 @@ Motion in VahanaIQ explains a change; it never decorates a financial figure. The
 - `test/browser/ui-responsive.spec.mjs` asserts that no animation runs under reduced motion and that the needle's attribute holds the final reading immediately.
 - The phone bottom sheets and dialogs were also checked by hand in iOS Safari (iOS 27 Simulator): they rise into place, stack correctly when one opens another, and close back to the page.
 - The QA evidence in `qa/2026-10-26-uiux/` (git-ignored) includes `behaviour.log` with timings for the dialog transition and rapid open/close.
+
+## Refinements, 27/10/2026
+
+- Contextual help fades/rises 6px over `--duration-fast` (150ms). Help Centre uses the same entrance over `--duration-base` (200ms) consistently on all routes. Neither delays interaction or dismissal. Colour feedback on guidance controls uses the existing 150ms token; their hit targets remain stationary.
+- Chart animations now have a single active effect per element. A new needle movement begins at its currently displayed angle, and bars begin at their currently displayed pixel width, rather than jumping to the previous target. Underlying readings remain final immediately. Figure tints replace their previous effect instead of accumulating.
+- Switching reduced motion on cancels in-flight chart/tint effects immediately, exposing final values. CSS entrances/transitions also stop. This supplements the existing check that avoids starting effects when the preference is already on.
+- Desktop button lift now includes `transform` and shadow in its transition; it previously snapped because only background/border were transitioned. Lift/scale hover feedback is restricted to fine pointers and is removed for touch or reduced motion. Catalogue cards retain their 2px desktop lift; existing image framing stays fixed. Colour and focus feedback remain available without movement.
+- Calculator footer explanations use native disclosures. They open instantly, avoiding an extra animation that would move the navigation below them. All explanations open for printing and their previous open/closed state is restored afterwards.
+
+The dedicated `test/browser/motion.spec.mjs` covers full/reduced motion across three guidance pages at 320/390/768/1440px, interrupted chart effects, live preference changes, hover modes, and footer keyboard/touch/print behaviour. Evidence and limits are in `docs/motion-footer-verification.md`; local screenshots and probes are in `qa/2026-10-27-motion/`.

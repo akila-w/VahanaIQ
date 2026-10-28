@@ -596,6 +596,23 @@ assert.equal(reloadedCars[0].price, 28900000);
 assert.equal(reloadedCars[0].cond, "Recond");
 assert.equal(baseVehicles[0].price, catalogPrice, "Original baseVehicles catalog must remain unmutated");
 console.log("✓ Inline Base Vehicle Edit Persistence PASSED\n");
+
+// -------------------------------------------------------------
+// Test 11: British English, Onboarding Guide, Filter Reset & Catalogue Parity
+// -------------------------------------------------------------
+console.log("TEST 11: British English, Onboarding Guide, Filter Reset & Catalogue Parity");
+const appJsContent = fs.readFileSync("js/app.js", "utf8");
+assert.ok(!appJsContent.includes("installments"), "js/app.js must use British English 'instalments', not 'installments'");
+assert.ok(appJsContent.includes("instalments"), "js/app.js must contain British English 'instalments'");
+assert.ok(html.includes('id="quickStartGuide"'), "index.html must include #quickStartGuide onboarding guide");
+assert.ok(html.includes('id="resetFiltersBtn"'), "index.html must include #resetFiltersBtn");
+const curatedCatalogueJs = fs.readFileSync("js/curated-catalogue.js", "utf8");
+assert.ok(curatedCatalogueJs.includes("flatToEffective"), "js/curated-catalogue.js must use flatToEffective from calculator.js");
+assert.ok(curatedCatalogueJs.includes("minDownFor"), "js/curated-catalogue.js must enforce minDownFor from calculator.js");
+assert.ok(curatedCatalogueJs.includes("parsed.insurance"), "js/curated-catalogue.js must read saved insurance from vahanaiq_inputs_v1");
+assert.ok(curatedCatalogueJs.includes("parsed.fees"), "js/curated-catalogue.js must read saved fees from vahanaiq_inputs_v1");
+console.log("✓ British English, Onboarding Guide, Filter Reset & Catalogue Parity PASSED\n");
+
 console.log("==================================================");
-console.log("ALL 10 VERIFICATION TESTS PASSED SUCCESSFULLY! (100%)");
+console.log("ALL 11 VERIFICATION TESTS PASSED SUCCESSFULLY! (100%)");
 console.log("==================================================");
