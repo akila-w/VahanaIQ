@@ -110,7 +110,7 @@
     const io = new IntersectionObserver(entries => {
       for (const e of entries) visible.set(e.target, e.isIntersecting ? e.intersectionRatio : 0);
       mark();
-    }, { rootMargin: '-80px 0px -45% 0px', threshold: [0, 0.01, 0.25] });
+    }, { rootMargin: '-72px 0px -45% 0px', threshold: [0, 0.01, 0.25] });
     targets.forEach(t => io.observe(t));
   }
 
