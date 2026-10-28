@@ -9,10 +9,46 @@ permissions:
   contents: read
 
 jobs:
+  publication:
+    name: publication (GitHub Pages / Jekyll)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Prepare tracked source and future-report regression fixtures
+        id: fixture
+        run: node scripts/verify-publication.mjs prepare
+      - name: Build with the production Pages action (github-pages 232 / Jekyll 3.10)
+        uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1.0.13
+        with:
+          source: ${{ steps.fixture.outputs.source }}
+          destination: ${{ steps.fixture.outputs.destination }}
+      - name: Verify generated publishing directory and smoke negative controls
+        run: node scripts/verify-publication.mjs check "${{ steps.fixture.outputs.work }}"
+      - name: Retain publication evidence without deploying
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: publication-verification
+          path: |
+            ${{ steps.fixture.outputs.work }}/fixture.json
+            ${{ steps.fixture.outputs.work }}/verification.json
+            ${{ steps.fixture.outputs.work }}/*.log
+          retention-days: 14
   verify:
+    needs: publication
+    # Required checks must FAIL, rather than be skipped, when publication fails.
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Require successful publication verification
+        env:
+          PUBLICATION_RESULT: ${{ needs.publication.result }}
+        run: test "$PUBLICATION_RESULT" = success
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -54,6 +90,8 @@ jobs:
   # One job per engine, so each reports its own status. Firefox runs here because the
   # Playwright Firefox build does not start on the maintainer's macOS 27 machine.
   browser:
+    needs: publication
+    if: ${{ always() }}
     name: browser (${{ matrix.browser }})
     runs-on: ubuntu-latest
     # WebKit under WPE runs the same specs several times slower than Chromium, so it needs
@@ -64,6 +102,10 @@ jobs:
       matrix:
         browser: [chromium, webkit, firefox]
     steps:
+      - name: Require successful publication verification
+        env:
+          PUBLICATION_RESULT: ${{ needs.publication.result }}
+        run: test "$PUBLICATION_RESULT" = success
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

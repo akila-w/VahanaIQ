@@ -8,6 +8,34 @@
 
 The final PR description records the immutable tested head, full CI run and results. No earlier successful run substitutes for that final-commit gate. The evidence and executed checks below describe the investigation and focused verification.
 
+## Publication-boundary correction
+
+The previous approved head `4337508f736b3aaaa4d363318a75db4b412d3ef9` was not merged after release preflight. Existing `_config.yml` exclusions covered internal directories but not root task reports. A read-only production request returned the exact `Task-03-report.md` body, while `docs/`, `scripts/` and `test/` examples returned 404. An accessible report establishes a publication-scope mismatch; it is not evidence that secrets were exposed.
+
+This candidate retains the complete Firefox fix and makes a separate, narrow publication correction:
+
+- `_config.yml` adds only the quoted pattern **`Task-*-report.md`**, preserving all existing exclusions. It covers `Task-02-report.md`, `Task-03-report.md`, `Task-03.1-report.md` and future matching root Markdown reports. `.nojekyll` is neither introduced nor used.
+- `scripts/smoke-deploy.mjs` checks representative known root reports plus all matching root report names found in the checkout, including their generated `.html` paths. Each must return **404**; 403, 200 and network errors do not pass. Existing positive page/asset/catalogue/image checks remain, now supplemented with exact content hashes and WOFF2 MIME checks.
+- Smoke readiness requires both the application version and the root-report publication contract. A configuration-only deployment cannot pass merely because the unchanged version is already served. A local negative control with the correct version and a public report was rejected.
+- `scripts/verify-publication.mjs` prepares a tracked-source fixture, adds two future report examples (plain Markdown and front-matter-bearing Markdown), and a public `.txt` near-match. It verifies **generated output**, not just the YAML text.
+- `.github/workflows/test.yml` builds this fixture with the **same official Pages action and exact action commit** used by the production legacy Pages builder: `actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697`, image v1.0.13, **github-pages 232 / Jekyll 3.10.0**. No deploy step, Pages write permission or Pages artefact publication is added.
+
+The publication job must finish first. It checks absence of all current/future report Markdown and HTML outputs and existing internal directories/files, while requiring all 76 application-shell bodies, the worker and legitimate public information (`LICENSE`, `CHANGELOG.md`, `SECURITY.md`, sitemap and robots) to remain byte-identical. The near-matching public text fixture must remain published.
+
+It then runs the production smoke tool against the actual generated directory. Controlled HTTP mutations must be rejected: a report Markdown leak, an HTML leak, a 403 instead of 404, and stale token CSS despite an unchanged version marker. The unmodified generated site must pass. Build/output inventories, runtime hashes and each positive/negative smoke log are retained as the **publication-verification** CI artefact.
+
+Node and browser jobs depend on this focused publication job. They use an explicit first-step result assertion under `always()`, so a failed publication build makes required jobs **fail** rather than silently satisfying required checks through skipped jobs. Repository protection rules are unchanged. Only after publication verification succeeds do all 27 Node suites and the complete 241-case browser matrix run, with the existing extra WebKit lifecycle checks. Final immutable-head job results and artefact links are recorded in PR #33's description.
+
+### Root inventory and preserved public content
+
+The root contains three task reports. Existing working files `README.md`, `firestore.rules`, dependency manifests/locks and optional Ruby build files remain excluded. Internal material under `docs/`, `test/`, `scripts/`, `qa/`, `serverless/`, `design-system/`, `data/batches/` and the existing vendor/working-file patterns retain their current exclusions. Public application pages, `manifest.json`, `sw.js`, `robots.txt`, `sitemap.xml`, `LICENSE`, `SECURITY.md`, `CHANGELOG.md`, icons and runtime assets are preserved. No additional public information is reclassified.
+
+### Runtime/cache compatibility and limitations
+
+The correction does not alter application HTML/CSS/JS, font files, typography, financial calculations, authentication/synchronisation, catalogue data or browser storage. The cached shell and revision ledger are unchanged from production `72f86cf`: **`vahanaiq-v2.12.0-offline-3`**, fingerprint **`8e38d91748dbf346a49bec2b2359750710b6d1d4486fbca8f7a3c2730baee61b`**. No cache advance is necessary. The original Firefox test correction remains intact.
+
+Pre-merge verification uses the official Pages builder and examines its real output, but does not deploy that output. Live-site removal and CDN propagation can only be confirmed after a separately approved release. The current deployed baseline is not represented as corrected. Full final-head CI, exact commit identity and the final verdict are recorded in the delivery PR description without adding a commit after testing.
+
 ## Confirmed cause
 
 The old assertion compared canvas metrics for **platform fallback glyphs in separate fresh browser contexts**, treating them as if the converted font files supplied those glyphs. Linux Firefox can select different native fallback faces as its font-list/cmap state is initialised. `document.fonts.ready` and two loaded application faces did not control that platform state. The comparison therefore attributed a native fallback change to TTF versus WOFF2.
@@ -112,6 +140,8 @@ No production application change is proposed. Task 03's **404,352 encoded WOFF2 
 Exact per-glyph font names were not available through the standard Firefox canvas API. Explicit-family metrics, fontconfig candidates, native cmap logs and visible screenshots support the fallback attribution; an upstream Gecko internals diagnosis is not claimed. Complete old runner font inventories and historical warmup state cannot be reconstructed from the retained CI artefacts. Physical devices and every operating-system fallback configuration are outside this hotfix's validation scope.
 
 ## Files changed and reproduction
+
+Publication correction delta from the previously approved candidate: `_config.yml`, `scripts/smoke-deploy.mjs`, new `scripts/verify-publication.mjs`, `.github/workflows/test.yml` and this report. Existing Firefox fix/evidence files are preserved.
 
 - `test/browser/fonts.spec.mjs`: separate source-font equivalence, same-document fallback controls and mixed-script checks; visible layout comparison; attachments.
 - `test/browser/font-metrics.mjs`: shared samples, explicit text exercise, exact metrics and raster probes.
