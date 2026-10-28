@@ -16,3 +16,11 @@ try {
 // whichever of the two finishes first.
 window.__VAHANAIQ_PHOTOS__ = { apply: null, resolve: null };
 window.__VAHANAIQ_PHOTOS__.ready = new Promise(function (resolve) { window.__VAHANAIQ_PHOTOS__.resolve = resolve; });
+
+// Shared by every page, including direct Catalogue and Photo Studio visits.
+// Resolve from this script, preserving both root hosting and /VahanaIQ/ scope.
+if (window.isSecureContext && "serviceWorker" in navigator) {
+  navigator.serviceWorker.register(new URL("../sw.js", document.currentScript.src), {
+    updateViaCache: "none"
+  }).catch(e => console.warn("Offline support unavailable:", e));
+}

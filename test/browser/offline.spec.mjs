@@ -1,0 +1,301 @@
+import { test, expect, chromium, webkit, firefox } from '@playwright/test';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { offlineServer } from './offline-server.mjs';
+import { seedReturning } from './returning-user.mjs';
+let site;
+test.beforeEach(async ({ context }) => {
+  site = await offlineServer();
+  await seedReturning(context);
+  // Optional account/search integrations are outside the offline shell.
+  await context.route(/https:\/\//, route => route.abort());
+  await context.addInitScript(() => {
+    window.__offlineCSP = [];
+    document.addEventListener('securitypolicyviolation', e => window.__offlineCSP.push(e.violatedDirective));
+  });
+});
+test.afterEach(async () => { await site?.close(); });
+
+async function installed(page) {
+  await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.active?.state)).toBe('activated');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+}
+
+function errors(page) {
+  const failed = [], exceptions = [];
+  page.on('requestfailed', req => { if (/\/(js|css)\/.*\.(js|css)(\?|$)/.test(req.url()) && req.url().startsWith(site.origin)) failed.push(req.url()); });
+  page.on('pageerror', e => exceptions.push(e.message));
+  return { failed, exceptions };
+}
+
+// Isolates precaching from opportunistic runtime/HTTP caching: the installer has
+// never loaded any application module before going offline.
+test('isolated first install loads calculator modules offline', async ({ page, context }) => {
+  await page.goto(site.origin + '/__blank.html');
+  await page.evaluate(() => navigator.serviceWorker.register('sw.js'));
+  await installed(page);
+  await context.setOffline(true);
+  const observed = errors(page);
+  await page.goto(site.origin + '/index.html');
+  await expect(page.locator('#helpCentreButton')).toBeVisible();
+  expect(await page.evaluate(async () => (await fetch('assets/icons/favicon.svg?v=20261020')).ok)).toBe(true);
+  expect(observed.failed).toEqual([]);
+  expect(observed.exceptions).toEqual([]);
+});
+
+const car = { id: 'offline-car', name: 'Offline comparison', price: 7269515.4, cond: 'New', pt: 'Petrol', w: 'Official', img: '', custom: true };
+async function saveData(page) {
+  await expect(page.locator('#rate')).not.toHaveValue('');
+  await page.evaluate(async car => {
+    const storage = await import('./js/storage.js?v=2.12.0');
+    if (!storage.saveCars([car])) throw Error('Could not save comparison');
+    for (const [id, value] of Object.entries({ income: '220000', rate: '0', tenure: '12', down: '60' })) {
+      const field = document.getElementById(id); field.value = value;
+      field.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    const planner = await import('./js/planner-store.js?v=2.12.0');
+    planner.savePlanner({ version: 1, draft: { plannerSaved: '100000' }, scenarios: [] });
+    const photos = await import('./js/catalogue-photo-store.js?v=2.12.0');
+    if (!await photos.writeEdit({ version: 1, modelId: 'offline-probe', name: 'Persistent photo fixture', coverId: 'official:probe', items: [{ id: 'official:probe', kind: 'official', frame: { scale: 1.2, x: 0.1, y: 0 } }] })) throw Error('Could not save photo edit');
+  }, car);
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1') || '{}').income)).toBe('220000');
+}
+async function checkData(page) {
+  await expect(page.locator('#rows')).toContainText(car.name);
+  await expect(page.locator('#budgetDtiHero')).toHaveText('110.1% DTI');
+  await expect(page.locator('#budgetCashflowLabel')).toContainText('Monthly shortfall: LKR 22,317.18');
+  expect(await page.evaluate(async () => {
+    const { readEdit } = await import('./js/catalogue-photo-store.js?v=2.12.0');
+    return (await readEdit('offline-probe')).items[0].frame;
+  })).toEqual({ scale: 1.2, x: 0.1, y: 0 });
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_planner_v1')).draft.plannerSaved)).toBe('100000');
+}
+async function functional(page, route) {
+  await expect(page.locator('#helpCentreButton')).toBeVisible();
+  if (route === 'index.html') {
+    await expect(page.locator('#toggleSavingsDrawer')).toBeVisible();
+    await page.locator('#toggleSavingsDrawer').click();
+    await page.locator('#plannerCalendar').click();
+    await expect(page.locator('.calendar-grid')).toBeVisible();
+    await page.keyboard.press('Escape');
+  } else if (route === 'catalogue.html') {
+    await expect(page.locator('#vehicles .card').first()).toBeVisible();
+  } else {
+    await page.locator('#modelList [data-model]').nth(2).click();
+    await expect(page.locator('.studio-editor')).toBeVisible();
+  }
+  expect(await page.evaluate(() => window.__offlineCSP)).toEqual([]);
+}
+
+for (const mount of ['/', '/VahanaIQ/']) for (const entry of ['index.html', 'catalogue.html', 'studio.html']) {
+  test(`fresh direct ${mount}${entry}: install, offline entry and navigation`, async ({ page, context }) => {
+    await page.goto(site.origin + mount + entry);
+    await installed(page);
+    const registration = await page.evaluate(async () => ({ scope: (await navigator.serviceWorker.getRegistration()).scope }));
+    expect(registration.scope).toBe(site.origin + mount);
+    // Check no image catalogue was fetched by installation, nor duplicated root HTML.
+    const cachePaths = await page.evaluate(async () => (await (await caches.open((await caches.keys())[0])).keys()).map(r => new URL(r.url).pathname));
+    expect(cachePaths.some(p => p.includes('/assets/images/'))).toBe(false);
+    expect(cachePaths.filter(p => p === mount)).toEqual([]);
+    await context.setOffline(true); // No second controlled online page load.
+    const observed = errors(page);
+    for (const route of ['index.html', 'catalogue.html', 'studio.html']) {
+      await page.goto(site.origin + mount + route + '?offline=1');
+      await functional(page, route);
+      await expect(page).toHaveTitle(route === 'index.html' ? /Lease/ : route === 'catalogue.html' ? /Catalogue/ : /Studio/);
+    }
+    await page.goto(site.origin + mount);
+    await expect(page.locator('#toggleSavingsDrawer')).toBeVisible();
+    expect(observed.failed).toEqual([]);
+    expect(observed.exceptions).toEqual([]);
+  });
+}
+
+test('returning comparison, exact figures and photo edits survive offline reload', async ({ page, context }) => {
+  await page.goto(site.origin + '/index.html');
+  await installed(page);
+  await saveData(page);
+  site.state.requests.length = 0;
+  await page.reload();
+  await checkData(page);
+  expect(site.state.requests.filter(url => /\/(js|css)\//.test(url))).toEqual([]);
+  await context.setOffline(true);
+  const observed = errors(page);
+  await page.reload();
+  await checkData(page);
+  // Recalculate through the real controls while offline.
+  if (!await page.locator('#down').isVisible()) await page.locator('#toggleTerms').click();
+  await page.locator('#down').fill('100');
+  await page.locator('#down').dispatchEvent('change');
+  await expect(page.locator('#budgetDtiHero')).toHaveText('0.0% DTI');
+  expect(observed.failed).toEqual([]);
+  expect(observed.exceptions).toEqual([]);
+});
+
+async function update(page) {
+  await page.evaluate(async () => { await (await navigator.serviceWorker.getRegistration()).update(); });
+  await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration()).waiting?.state)).toBe('installed');
+}
+async function activate(context, page, revision) {
+  // The observer is outside /VahanaIQ/, so it cannot keep the old worker alive.
+  const observer = await context.newPage();
+  await observer.goto(site.origin + '/__blank.html');
+  await page.close();
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual([`vahanaiq-test-${revision}`]);
+  const next = await context.newPage();
+  await next.goto(site.origin + '/VahanaIQ/index.html');
+  await installed(next);
+  await observer.close();
+  return next;
+}
+async function consistent(page, revision) {
+  expect(await page.evaluate(() => [...new Set(Object.values(window.__offlineModules))])).toEqual([revision]);
+}
+
+test('two complete cache revisions wait, activate, clean up and roll back without data loss', async ({ page, context }) => {
+  site.state.revision = 'A';
+  await page.goto(site.origin + '/VahanaIQ/index.html');
+  await installed(page);
+  await saveData(page);
+  site.state.revision = 'B';
+  await update(page);
+  await page.reload(); // Reload alone retains the waiting update while this tab lives.
+  await consistent(page, 'A');
+  await checkData(page);
+  await page.goto(site.origin + '/VahanaIQ/catalogue.html');
+  await consistent(page, 'A');
+  await context.setOffline(true);
+  await page.goto(site.origin + '/VahanaIQ/index.html');
+  await checkData(page);
+  await consistent(page, 'A');
+  await context.setOffline(false);
+  let current = await activate(context, page, 'B');
+  await consistent(current, 'B');
+  await checkData(current);
+  site.state.revision = 'A'; // Controlled rollback installs the original shell again.
+  await update(current);
+  await consistent(current, 'B');
+  current = await activate(context, current, 'A');
+  await context.setOffline(true);
+  await current.reload();
+  await consistent(current, 'A');
+  await checkData(current);
+});
+
+test('failed update leaves the active complete shell and saved data usable', async ({ page, context }) => {
+  site.state.revision = 'A';
+  await page.goto(site.origin + '/VahanaIQ/index.html');
+  await installed(page);
+  await saveData(page);
+  site.state.revision = 'broken';
+  site.state.fail = 'js/savings.js';
+  await page.evaluate(async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const failure = new Promise(resolve => reg.addEventListener('updatefound', () => {
+      const worker = reg.installing;
+      worker.addEventListener('statechange', () => { if (worker.state === 'redundant') resolve(); });
+    }, { once: true }));
+    await reg.update(); await failure;
+  });
+  expect(await page.evaluate(() => caches.keys())).toEqual(['vahanaiq-test-A']);
+  await context.setOffline(true);
+  await page.reload();
+  await consistent(page, 'A');
+  await checkData(page);
+});
+
+test('uncached vehicle images fail gracefully while catalogue controls work', async ({ page, context }) => {
+  await page.goto(site.origin + '/__blank.html');
+  await page.evaluate(() => navigator.serviceWorker.register('sw.js'));
+  await installed(page);
+  await context.setOffline(true);
+  const observed = errors(page);
+  await page.goto(site.origin + '/catalogue.html');
+  await expect(page.locator('.error-art').first()).toBeVisible();
+  await page.locator('#helpCentreButton').click();
+  await expect(page.locator('#helpCentre')).toBeVisible();
+  expect(observed.failed).toEqual([]);
+  expect(observed.exceptions).toEqual([]);
+});
+
+test('empty-profile first-use setup remains functional immediately offline', async ({ browser }) => {
+  const context = await browser.newContext();
+  await context.route(/https:\/\//, route => route.abort());
+  try {
+    const page = await context.newPage();
+    await page.goto(site.origin + '/index.html');
+    await installed(page);
+    await context.setOffline(true);
+    const observed = errors(page);
+    await page.reload();
+    await page.getByRole('button', { name: 'Start Guided Setup (Takes 2 min) →', exact: true }).click();
+    const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
+    for (const name of ['Toyota Aqua', 'Toyota Camry Hybrid']) {
+      await search.fill(name);
+      await page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true }).click();
+    }
+    await page.getByRole('button', { name: 'Continue to Loan Terms →', exact: true }).click();
+    await page.getByRole('button', { name: 'Continue to Affordability Check →', exact: true }).click();
+    await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
+    await page.getByRole('button', { name: 'Open My Lease →', exact: true }).click();
+    await expect(page.locator('#rows tr')).toHaveCount(2);
+    expect(observed.failed).toEqual([]);
+    expect(observed.exceptions).toEqual([]);
+  } finally { await context.close(); }
+});
+
+
+// WebKit's disposable contexts reject IndexedDB Blob writes. A persistent profile
+// exercises the normal saved-browser contract for uploaded photos on every engine.
+test('uploaded photo bytes survive an update, offline reload and browser restart', async ({ browserName }) => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'vahanaiq-offline-'));
+  const engine = { chromium, webkit, firefox }[browserName];
+  let context;
+  async function open() {
+    const profile = await engine.launchPersistentContext(directory);
+    await seedReturning(profile);
+    await profile.route(/https:\/\//, route => route.abort());
+    return profile;
+  }
+  async function photoBytes(page) {
+    return page.evaluate(async () => {
+      const { readEdit } = await import('./js/catalogue-photo-store.js?v=2.12.0');
+      return [...new Uint8Array(await (await readEdit('offline-upload')).items[0].blob.arrayBuffer())];
+    });
+  }
+  try {
+    context = await open();
+    site.state.revision = 'upload-A';
+    let page = context.pages()[0];
+    await page.goto(site.origin + '/VahanaIQ/index.html');
+    await installed(page);
+    await saveData(page);
+    const expected = await page.evaluate(async () => {
+      const { writeEdit } = await import('./js/catalogue-photo-store.js?v=2.12.0');
+      const { uploadItem } = await import('./js/catalogue-photos.js?v=2.12.0');
+      const bytes = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zl1sAAAAASUVORK5CYII='), c => c.charCodeAt(0));
+      const item = uploadItem(new File([bytes], 'offline.png', { type: 'image/png' }));
+      if (!await writeEdit({ version: 1, modelId: 'offline-upload', coverId: item.id, items: [item] })) throw Error('Could not save uploaded photo');
+      return [...bytes];
+    });
+    site.state.revision = 'upload-B';
+    await update(page);
+    page = await activate(context, page, 'upload-B');
+    await context.setOffline(true);
+    await page.reload();
+    await checkData(page);
+    expect(await photoBytes(page)).toEqual(expected);
+    await context.close();
+    context = await open();
+    await context.setOffline(true);
+    page = context.pages()[0];
+    await page.goto(site.origin + '/VahanaIQ/index.html');
+    await checkData(page);
+    expect(await photoBytes(page)).toEqual(expected);
+  } finally {
+    await context?.close();
+    await rm(directory, { recursive: true, force: true });
+  }
+});

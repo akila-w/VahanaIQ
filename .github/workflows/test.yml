@@ -86,4 +86,4 @@ jobs:
           echo "The local server did not start" >&2
           exit 1
       - name: Run browser specs in ${{ matrix.browser }}
-        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs test/browser/onboarding.spec.mjs --browser=${{ matrix.browser }} --workers=2 --reporter=list,github
+        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs test/browser/onboarding.spec.mjs test/browser/offline.spec.mjs --browser=${{ matrix.browser }} --workers=2 --reporter=list,github

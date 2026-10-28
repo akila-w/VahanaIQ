@@ -3198,11 +3198,6 @@ if ($("shareBtn")) {
   });
 }
 
-// Offline support (see sw.js); browsers without service workers simply skip it
-if (typeof navigator !== "undefined" && "serviceWorker" in navigator && window.location.protocol === "https:") {
-  navigator.serviceWorker.register("sw.js").catch(e => console.warn("Offline support unavailable:", e));
-}
-
 applyState(loadState());
 refreshPlanner = initPlanner({
   vehicles: () => [...cars.filter(c => !c.hidden), ...marketCatalogue.filter(v => !cars.some(c => c.catalogueId === v.id && !c.hidden))],

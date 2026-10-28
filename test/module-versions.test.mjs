@@ -152,9 +152,38 @@ assert.ok(
   cacheMatch[1].includes(APP_VERSION),
   `sw.js CACHE string "${cacheMatch[1]}" must contain APP_VERSION "${APP_VERSION}"`
 );
-assert.equal(cacheMatch[1], `vahanaiq-v${APP_VERSION}`, `sw.js CACHE should equal "vahanaiq-v${APP_VERSION}"`);
+assert.match(cacheMatch[1], new RegExp(`^vahanaiq-v${APP_VERSION.replaceAll(".", "\\.")}-offline-[1-9][0-9]*$`), "Cache must include an independent offline shell revision");
 console.log(`✓ sw.js CACHE string is "${cacheMatch[1]}" containing "${APP_VERSION}"\n`);
 
-console.log('==================================================');
-console.log('ALL MODULE VERSION TESTS PASSED SUCCESSFULLY! (100%)');
-console.log('==================================================');
+
+// Walk every shipped entry point, including lazy modules and CSS font/icon URLs.
+// This checks the manifest against source references rather than another hand list.
+const shell = JSON.parse(swContent.match(/const SHELL = (\[[\s\S]*?\]);/)[1]);
+assert.equal(new Set(shell).size, shell.length, 'No duplicate shell requests');
+assert.equal(new Set(shell.map(asset => asset.split('?')[0])).size, shell.length, 'No duplicate shell file bodies');
+const base = new URL('https://offline.invalid/VahanaIQ/');
+const cached = new Set(shell.map(asset => new URL(asset, base).href));
+for (const entry of SHIPPED_PAGES) {
+  const visited = new Set();
+  function walk(url) {
+    if (url.origin !== base.origin || visited.has(url.href)) return;
+    visited.add(url.href);
+    assert.ok(cached.has(url.href), `${entry}: missing offline dependency ${url.href}`);
+    const source = fs.readFileSync(path.join(ROOT, url.pathname.replace(base.pathname, '')), 'utf8');
+    if (url.pathname.endsWith('.html')) {
+      for (const m of source.matchAll(/<(?:script|link)\b[^>]*(?:src|href)=["']([^"']+)["'][^>]*>/g)) {
+        if (/\.(?:js|css)(?:\?|$)/.test(m[1])) walk(new URL(m[1], url));
+      }
+    } else if (url.pathname.endsWith('.js')) {
+      for (const m of source.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s*)["'](\.[^"']+)["']/g)) walk(new URL(m[1], url));
+    } else if (url.pathname.endsWith('.css')) {
+      for (const m of source.matchAll(/url\(\s*["']?(\.\.[^"')]+)["']?\s*\)/g)) walk(new URL(m[1], url));
+    }
+  }
+  walk(new URL(entry, base));
+  console.log(`✓ ${entry}: ${visited.size} offline page, JS, CSS and CSS asset dependencies`);
+}
+for (const asset of shell) assert.ok(fs.existsSync(path.join(ROOT, asset.split('?')[0])), `Missing shell file: ${asset}`);
+assert.ok(!shell.some(asset => asset.startsWith('assets/images/')), 'Do not precache vehicle photos');
+
+console.log('ALL MODULE VERSION AND OFFLINE DEPENDENCY TESTS PASSED');
