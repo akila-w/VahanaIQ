@@ -89,7 +89,7 @@ jobs:
         if: matrix.browser == 'webkit'
         run: npx playwright test test/browser/offline.spec.mjs --browser=webkit --grep 'two complete cache revisions' --repeat-each=5 --workers=1 --trace=retain-on-failure --reporter=line
       - name: Run browser specs in ${{ matrix.browser }}
-        run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs test/browser/onboarding.spec.mjs test/browser/offline.spec.mjs test/browser/offline-diagnostic.spec.mjs --browser=${{ matrix.browser }} --workers=2 --reporter=list,github
+        run: npx playwright test test/browser/fonts.spec.mjs test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs test/browser/onboarding.spec.mjs test/browser/offline.spec.mjs test/browser/offline-diagnostic.spec.mjs --browser=${{ matrix.browser }} --workers=2 --reporter=list,github
       - name: Retain browser failure evidence
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
