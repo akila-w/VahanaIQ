@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
 
+// Synthetic catalogue routes must reach Playwright instead of the offline cache.
+// Real worker behaviour is covered separately in offline.spec.mjs.
+test.use({ serviceWorkers: 'block' });
+
 import { seedReturning } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 

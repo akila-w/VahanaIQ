@@ -1,0 +1,41 @@
+name: Verify onboarding rate handoff
+on:
+  pull_request:
+    paths:
+      - js/onboarding.js
+      - test/browser/onboarding.spec.mjs
+      - .github/workflows/onboarding-rate.yml
+permissions:
+  contents: read
+jobs:
+  firefox-rate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps firefox
+      - name: Serve the application
+        run: |
+          python3 -m http.server 8123 --bind 127.0.0.1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8123/index.html; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Capture focused Firefox traces
+        run: RATE_TRACE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=firefox --grep 'guided setup requires|deferred step focus' --workers=1 --reporter=line --output=rate-traces
+      - name: Repeat both rate handoff scenarios twenty times
+        run: npx playwright test test/browser/onboarding.spec.mjs --browser=firefox --grep 'guided setup requires|deferred step focus' --repeat-each=20 --workers=2 --reporter=line --output=rate-repeat
+      - name: Retain traces, screenshots and state
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: onboarding-rate-verification
+          path: |
+            rate-traces
+            rate-repeat
+          retention-days: 7

@@ -277,7 +277,9 @@ function init(forcedOpen = false) {
     // Do NOT focus the close button upon dialog opening
     requestAnimationFrame(() => {
       const primaryBtn = foot.querySelector('.btn-primary') || body.querySelector('input');
-      if (primaryBtn) primaryBtn.focus({ preventScroll: true });
+      // A user may have focused a field before this deferred callback runs.
+      // Preserve that focus so pending keyboard input still reaches the field.
+      if (primaryBtn && !body.contains(document.activeElement)) primaryBtn.focus({ preventScroll: true });
     });
   }
 

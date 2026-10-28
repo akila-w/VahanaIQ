@@ -1,12 +1,12 @@
-// VahanaIQ offline & fast-navigation support: core pages, stylesheets, and versioned
-// scripts are precached so tab switches between Calculator, Catalogue, and Studio
-// resolve immediately from cache while staying fresh in the background.
-// Searches (the AI proxy) and photos from other sites are never cached.
-const CACHE = "vahanaiq-v2.12.0";
+// One complete, immutable offline shell per worker revision. Bump the cache
+// revision whenever a shell file changes, even when APP_VERSION stays the same.
+// Tests walk the entry-point dependency graph to guard this explicit manifest.
+const CACHE = "vahanaiq-v2.12.0-offline-2";
 const SHELL = [
-  "./",
   "js/price-history.js?v=2.12.0",
   "data/price-history.json",
+  "data/catalogue.json",
+  "data/identity.json",
   "css/experience.css?v=2.12.0",
   "js/experience.js?v=2.12.0",
   "js/onboarding.js?v=2.12.0",
@@ -32,6 +32,15 @@ const SHELL = [
   "css/curated-catalogue.css?v=2.12.0",
   "css/catalogue-studio.css?v=2.12.0",
   "js/boot.js?v=2.12.0",
+  "js/canvas-utils.js?v=2.12.0",
+  "js/market-catalogue.js?v=2.12.0",
+  "js/official-photo-data.js?v=2.12.0",
+  "js/bulk-selection.js?v=2.12.0",
+  "js/savings.js?v=2.12.0",
+  "js/planner-store.js?v=2.12.0",
+  "js/date-picker.js?v=2.12.0",
+  "js/identity-data.js?v=2.12.0",
+  "js/gemini.js?v=2.12.0",
   "js/page-transitions.js?v=2.12.0",
   "js/catalogue-data.js?v=2.12.0",
   "js/app.js?v=2.12.0",
@@ -58,12 +67,32 @@ const SHELL = [
   "js/photo-frame.js?v=2.12.0",
   "js/catalogue-photos.js?v=2.12.0",
   "js/catalogue-photo-store.js?v=2.12.0",
-  "assets/icons/favicon.svg?v=20261020",
-  "assets/icons/logo-option-1-apex.svg?v=20261020"
+  "assets/icons/icon-192.png",
+  "assets/icons/icon-512.png",
+  "assets/icons/favicon.svg",
+  "assets/icons/apple-touch-icon.png",
+  "assets/icons/logo-option-1-apex.svg",
+  "assets/icons/logo-v-mark-transparent-light.svg",
+  "assets/icons/logo-v-mark-transparent-dark.svg",
+  "assets/icons/lucide/search.svg",
+  "assets/icons/lucide/car.svg",
+  "assets/icons/lucide/fuel.svg",
+  "assets/icons/lucide/download.svg",
+  "assets/identity/gemini.png"
 ];
 
+const shellURLs = new Set(SHELL.map(asset => new URL(asset, self.registration.scope).href));
+const faviconPath = new URL("assets/icons/favicon.svg", self.registration.scope).pathname;
+
 self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
+  // addAll commits the batch only if every dependency succeeds. Do not skip the
+  // waiting phase: existing tabs must finish using their complete old shell.
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(
+    SHELL.map(asset => new Request(new URL(asset, self.registration.scope), { cache: "reload" }))
+  )).catch(async error => {
+    await caches.delete(CACHE);
+    throw error;
+  }));
 });
 
 self.addEventListener("activate", event => {
@@ -75,31 +104,19 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
   if (event.request.method !== "GET" || url.origin !== self.location.origin) return;
-  // Review originals and source evidence are large working artefacts, outside the app shell.
-  if (/\/docs\/|\/assets\/images\/review-/.test(url.pathname)) return;
-
-  // Version-pinned static assets (?v=...) can be served cache-first with background revalidation
-  // so switching between Calculator, Catalogue, and Studio never blocks on network round-trips.
-  if (url.searchParams.has("v") && event.request.mode !== "navigate") {
-    event.respondWith(caches.match(event.request).then(cached => {
-      const networkFetch = fetch(event.request).then(response => {
-        if (response.ok && response.type === "basic") {
-          const copy = response.clone();
-          event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy)));
-        }
-        return response;
-      });
-      return cached || networkFetch;
-    }));
-    return;
+  // Both existing favicon URLs share one cache entry. Module queries stay exact.
+  if (url.pathname === faviconPath) url.search = "";
+  // Only the declared shell is cached. Vehicle photos, review originals and
+  // external APIs remain optional network requests and never fill this cache.
+  if (event.request.mode === "navigate") {
+    url.search = "";
+    if (url.href === self.registration.scope) url.pathname += "index.html";
   }
-
-  event.respondWith(fetch(event.request).then(response => {
-    if (response.ok && response.type === "basic") {
-      const copy = response.clone();
-      event.waitUntil(caches.open(CACHE).then(cache => cache.put(event.request, copy)));
-    }
-    return response;
-  }).catch(() => caches.match(event.request, { ignoreSearch: event.request.mode === "navigate" })
-    .then(cached => cached || (event.request.mode === "navigate" ? caches.match("index.html") : undefined))));
+  if (!shellURLs.has(url.href)) return;
+  event.respondWith(caches.open(CACHE).then(async cache => {
+    const cached = await cache.match(url.href);
+    // A missing entry means storage was evicted. Recover online if possible;
+    // never substitute Calculator HTML for another page or a JS/CSS dependency.
+    return cached || fetch(event.request);
+  }));
 });
