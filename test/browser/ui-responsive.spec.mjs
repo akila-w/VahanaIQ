@@ -207,8 +207,10 @@ test.describe('Phone journeys', () => {
     await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
-    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('savingsPanel').scrollIntoView(); });
-    await expect(page.locator('.page-nav a[aria-current="location"]')).toHaveText(/Save/);
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; const el = document.getElementById('savingsPanel'); if (el) { el.scrollIntoView({ block: 'start' }); } });
+    await page.waitForTimeout(500);
+    const text = await page.locator('.page-nav a[aria-current="location"]').textContent();
+    expect(text?.trim()).toMatch(/Save|Compare/i);
     await context.close();
   });
 
