@@ -7,7 +7,7 @@ const sourceRoot = process.env.DIAG_SOURCE_ROOT || process.cwd();
 test.use({ trace: 'on', screenshot: 'on' });
 
 test('trace the reviewed onboarding interest rate end to end', async ({ page }, testInfo) => {
-  await page.addInitScript(() => {
+  await page.addInitScript(forceFocus => {
     window.__rateLog = [];
     const state = (kind, extra = {}) => {
       const input = document.querySelector('#onboarding .onboarding-terms-form input[type="number"]');
@@ -15,6 +15,17 @@ test('trace the reviewed onboarding interest rate end to end', async ({ page }, 
       window.__rateLog.push({ t: performance.now(), kind, active: document.activeElement?.outerHTML?.slice(0, 180), input: input?.value, terms: window.__rateTerms?.(), draft: parse('vahanaiq_onboarding_draft_v1'), calculator: document.querySelector('#rate')?.value, stored: parse('vahanaiq_inputs_v1'), ...extra });
     };
     window.__rateSnapshot = state;
+    if (forceFocus) {
+      const raf = window.requestAnimationFrame.bind(window), pending = [];
+      window.requestAnimationFrame = callback => {
+        if (new Error().stack.includes('/js/onboarding.js')) { pending.push(callback); return -pending.length; }
+        return raf(callback);
+      };
+      window.__releaseStepFocus = () => {
+        state('release-deferred-step-focus', { count: pending.length });
+        pending.splice(0).forEach(callback => callback(performance.now()));
+      };
+    }
     for (const event of ['input', 'change', 'focusin', 'focusout', 'pointerdown', 'click']) {
       document.addEventListener(event, e => {
         if (e.target.closest?.('#onboarding') || e.target.id === 'rate') {
@@ -44,7 +55,7 @@ test('trace the reviewed onboarding interest rate end to end', async ({ page }, 
       state('completion:before-listeners', { payload: structuredClone(e.detail) });
       queueMicrotask(() => state('completion:after-listeners', { payload: structuredClone(e.detail) }));
     });
-  });
+  }, process.env.DIAG_FORCE_FOCUS === '1');
   await page.route('**/js/onboarding.js*', route => {
     const source = fs.readFileSync(path.join(sourceRoot, 'js/onboarding.js'), 'utf8');
     const anchor = "  let models = window.__VAHANAIQ_CATALOGUE__?.models || [];";
@@ -63,7 +74,15 @@ test('trace the reviewed onboarding interest rate end to end', async ({ page }, 
       await add.scrollIntoViewIfNeeded(); await expect(add).toBeInViewport(); await add.click();
     }
     await page.getByRole('button', { name: 'Continue to Loan Terms →', exact: true }).click();
-    await page.getByLabel('Annual Interest Rate (%)', { exact: true }).fill('12');
+    const rate = page.getByLabel('Annual Interest Rate (%)', { exact: true });
+    if (process.env.DIAG_FORCE_FOCUS === '1') {
+      // The same selection/text phases used by Playwright fill for number inputs,
+      // with the application's queued animation-frame callback delivered between.
+      await rate.selectText();
+      await snapshot('field-selected-before-deferred-focus');
+      await page.evaluate(() => window.__releaseStepFocus());
+      await page.keyboard.insertText('12');
+    } else await rate.fill('12');
     await snapshot('after-fill');
     await page.getByRole('button', { name: 'Continue to Affordability Check →', exact: true }).click();
     await snapshot('after-leaving-field');
