@@ -2,10 +2,16 @@ import { test, expect } from '@playwright/test';
 const BASE=process.env.BASE_URL||'http://127.0.0.1:8123';
 async function selectCars(page) {
  await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();
- await page.getByRole('searchbox',{name:'Search vehicles',exact:true}).fill('Toyota');
- await page.locator('.onboarding-car').filter({has:page.getByRole('heading',{name:'Toyota Aqua',exact:true})}).getByRole('button',{name:'+ Add to Shortlist',exact:true}).click();
- await expect(page.getByRole('button',{name:'Continue to Loan Terms →'})).toBeDisabled();
- await page.locator('.onboarding-car').filter({has:page.getByRole('heading',{name:'Toyota Camry Hybrid',exact:true})}).getByRole('button',{name:'+ Add to Shortlist',exact:true}).click();
+ const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
+ for (const [index, name] of ['Toyota Aqua', 'Toyota Camry Hybrid'].entries()) {
+  await search.fill(name);
+  const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
+  await add.scrollIntoViewIfNeeded();
+  await expect(add).toBeInViewport();
+  await add.click();
+  await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
+  if (index === 0) await expect(page.getByRole('button', { name: 'Continue to Loan Terms →' })).toBeDisabled();
+ }
  await page.getByRole('button',{name:'Continue to Loan Terms →'}).click();
 }
 test('guided setup requires a shortlist and applies reviewed terms to real comparison',async({page})=>{

@@ -151,8 +151,15 @@ for (const width of [...widths, 844]) test(`populated calculator, charts and dia
   await seed(page, { income: '220000', rate: '16', tenure: '84', down: '60', insurance: '120000', fees: '150000' });
   await page.goto(`${BASE}/index.html`);
   const checkBounds = async selector => {
-    const r = await page.locator(selector).boundingBox();
-    expect(r.x).toBeGreaterThanOrEqual(-1); expect(r.x + r.width).toBeLessThanOrEqual(width + 1);
+    // Planner input changes replace the chart; WebKit can expose the old SVG
+    // for a frame before its replacement has a layout box. Retry the complete
+    // visibility and bounds assertion against the current element.
+    await expect(async () => {
+      const r = await page.locator(selector).boundingBox();
+      expect(r, `${selector} must have a visible layout box`).not.toBeNull();
+      expect(r.x).toBeGreaterThanOrEqual(-1);
+      expect(r.x + r.width).toBeLessThanOrEqual(width + 1);
+    }).toPass({ timeout: 5000 });
   };
   await page.locator('#rows [data-act="details"]').click();
   await checkBounds('.modal-bg.open .modal');
