@@ -1,0 +1,561 @@
+[
+  {
+    "case": "studio-fallback",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3406
+    ],
+    "afterSize": [
+      390,
+      3406
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "terms-reduced",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3531
+    ],
+    "afterSize": [
+      390,
+      3531
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "about-print",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      967
+    ],
+    "afterSize": [
+      1440,
+      967
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "about-phone-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      1552
+    ],
+    "afterSize": [
+      390,
+      1552
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-first",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      4321
+    ],
+    "afterSize": [
+      390,
+      4321
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-phone-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      4321
+    ],
+    "afterSize": [
+      390,
+      4321
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "privacy-print",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      1715
+    ],
+    "afterSize": [
+      1440,
+      1715
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "catalogue-wide-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      4588
+    ],
+    "afterSize": [
+      1440,
+      4588
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "studio-print",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      844
+    ],
+    "afterSize": [
+      1440,
+      844
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "about-reduced",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      1552
+    ],
+    "afterSize": [
+      390,
+      1552
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "studio-phone-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3406
+    ],
+    "afterSize": [
+      390,
+      3406
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "catalogue-phone-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      12403
+    ],
+    "afterSize": [
+      390,
+      12403
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "catalogue-print",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      2737
+    ],
+    "afterSize": [
+      1440,
+      2737
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "terms-wide-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      2293
+    ],
+    "afterSize": [
+      1440,
+      2293
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-fallback",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      4300
+    ],
+    "afterSize": [
+      390,
+      4300
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "terms-fallback",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3454
+    ],
+    "afterSize": [
+      390,
+      3454
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "studio-phone-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3406
+    ],
+    "afterSize": [
+      390,
+      3406
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "terms-phone-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3531
+    ],
+    "afterSize": [
+      390,
+      3531
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "terms-print",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      1919
+    ],
+    "afterSize": [
+      1440,
+      1919
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "catalogue-wide-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      4588
+    ],
+    "afterSize": [
+      1440,
+      4588
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "studio-reduced",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3406
+    ],
+    "afterSize": [
+      390,
+      3406
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "about-wide-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      1181
+    ],
+    "afterSize": [
+      1440,
+      1181
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "privacy-phone-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3049
+    ],
+    "afterSize": [
+      390,
+      3049
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "terms-wide-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      2293
+    ],
+    "afterSize": [
+      1440,
+      2293
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-phone-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      4321
+    ],
+    "afterSize": [
+      390,
+      4321
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "studio-wide-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      1638
+    ],
+    "afterSize": [
+      1440,
+      1638
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "about-wide-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      1181
+    ],
+    "afterSize": [
+      1440,
+      1181
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "studio-wide-light",
+    "identicalPixels": false,
+    "beforeSize": [
+      1440,
+      1638
+    ],
+    "afterSize": [
+      1440,
+      1638
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-reduced",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      4321
+    ],
+    "afterSize": [
+      390,
+      4321
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "privacy-phone-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3049
+    ],
+    "afterSize": [
+      390,
+      3049
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "privacy-wide-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      2039
+    ],
+    "afterSize": [
+      1440,
+      2039
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "about-fallback",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      1552
+    ],
+    "afterSize": [
+      390,
+      1552
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "privacy-reduced",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3049
+    ],
+    "afterSize": [
+      390,
+      3049
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "privacy-fallback",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      2998
+    ],
+    "afterSize": [
+      390,
+      2998
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-wide-light",
+    "identicalPixels": false,
+    "beforeSize": [
+      1440,
+      1708
+    ],
+    "afterSize": [
+      1440,
+      1708
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "terms-phone-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      3531
+    ],
+    "afterSize": [
+      390,
+      3531
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "catalogue-fallback",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      12382
+    ],
+    "afterSize": [
+      390,
+      12382
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-print",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      1609
+    ],
+    "afterSize": [
+      1440,
+      1609
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "index-wide-dark",
+    "identicalPixels": false,
+    "beforeSize": [
+      1440,
+      1708
+    ],
+    "afterSize": [
+      1440,
+      1708
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "catalogue-phone-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      12403
+    ],
+    "afterSize": [
+      390,
+      12403
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "about-phone-dark",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      1552
+    ],
+    "afterSize": [
+      390,
+      1552
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "catalogue-reduced",
+    "identicalPixels": true,
+    "beforeSize": [
+      390,
+      12403
+    ],
+    "afterSize": [
+      390,
+      12403
+    ],
+    "identicalGeometry": true
+  },
+  {
+    "case": "privacy-wide-light",
+    "identicalPixels": true,
+    "beforeSize": [
+      1440,
+      2039
+    ],
+    "afterSize": [
+      1440,
+      2039
+    ],
+    "identicalGeometry": true
+  }
+]

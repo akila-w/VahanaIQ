@@ -1,0 +1,34 @@
+{
+  "latin": [
+    {
+      "familyName": "Inter",
+      "postScriptName": "Inter-Regular_opsz200000_wght",
+      "isCustomFont": true,
+      "glyphCount": 37
+    }
+  ],
+  "sinhala": [
+    {
+      "familyName": "Sinhala Sangam MN",
+      "postScriptName": "SinhalaSangamMN",
+      "isCustomFont": false,
+      "glyphCount": 4
+    }
+  ],
+  "tamil": [
+    {
+      "familyName": "Tamil Sangam MN",
+      "postScriptName": "TamilSangamMN",
+      "isCustomFont": false,
+      "glyphCount": 3
+    }
+  ],
+  "greek": [
+    {
+      "familyName": "Inter",
+      "postScriptName": "Inter-Regular_opsz200000_wght",
+      "isCustomFont": true,
+      "glyphCount": 16
+    }
+  ]
+}
