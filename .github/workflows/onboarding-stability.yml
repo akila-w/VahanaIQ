@@ -1,0 +1,49 @@
+name: Focused onboarding stability investigation
+on:
+  push:
+    branches: [codex/task-03-2-webkit-onboarding]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps webkit
+      - name: Record environment and serve unchanged application
+        run: |
+          mkdir -p qa/task032
+          cat /etc/os-release > qa/task032/os.txt
+          printenv ImageOS ImageVersion > qa/task032/runner-image.txt
+          npx playwright --version > qa/task032/playwright.txt
+          python3 -m http.server 8123 --bind 127.0.0.1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:8123/index.html; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Original explicit scroll, two workers
+        continue-on-error: true # Diagnostic reproduction, not a release gate.
+        run: ONBOARDING_OBSERVE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=6 --workers=2 --trace=on --reporter=line --output=qa/task032/explicit-two > qa/task032/explicit-two.log 2>&1
+      - name: Original explicit scroll, one worker
+        continue-on-error: true
+        run: ONBOARDING_OBSERVE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=4 --workers=1 --trace=on --reporter=line --output=qa/task032/explicit-one > qa/task032/explicit-one.log 2>&1
+      - name: Normal click auto-scrolling experiment
+        continue-on-error: true
+        run: ONBOARDING_OBSERVE=1 ONBOARDING_INTERACTION=click npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=6 --workers=2 --trace=on --reporter=line --output=qa/task032/click > qa/task032/click.log 2>&1
+      - name: Reduced-motion explicit-scroll experiment
+        continue-on-error: true
+        run: ONBOARDING_OBSERVE=1 ONBOARDING_MOTION=reduce npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=4 --workers=2 --trace=on --reporter=line --output=qa/task032/reduced > qa/task032/reduced.log 2>&1
+      - name: Retain every diagnostic outcome without deploying
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: task032-onboarding-diagnosis
+          path: qa/task032
+          retention-days: 14

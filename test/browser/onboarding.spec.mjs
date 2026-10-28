@@ -1,5 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
+import { observeOnboarding } from './onboarding-observer.mjs';
+
+if (process.env.ONBOARDING_OBSERVE === '1') {
+ test.beforeEach(async ({page}) => { await page.addInitScript(observeOnboarding); });
+ test.afterEach(async ({page}, testInfo) => {
+  const observations = await page.evaluate(() => window.__onboardingObservation).catch(error => ({ error: String(error) }));
+  await writeFile(testInfo.outputPath('onboarding-observation.json'), JSON.stringify(observations));
+ });
+}
+if (process.env.ONBOARDING_MOTION) test.use({ reducedMotion: process.env.ONBOARDING_MOTION });
 
 test.use({ trace: process.env.RATE_TRACE === '1' ? 'on' : 'retain-on-failure', screenshot: 'only-on-failure' });
 const BASE=process.env.BASE_URL||'http://127.0.0.1:8123';
@@ -9,7 +19,7 @@ async function selectCars(page) {
  for (const [index, name] of ['Toyota Aqua', 'Toyota Camry Hybrid'].entries()) {
   await search.fill(name);
   const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
-  await add.scrollIntoViewIfNeeded();
+  if (process.env.ONBOARDING_INTERACTION !== 'click') await add.scrollIntoViewIfNeeded();
   await expect(add).toBeInViewport();
   await add.click();
   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
