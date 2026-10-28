@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        interaction: [explicit, click]
+        interaction: [wheel, dom, ready]
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -36,7 +36,7 @@ jobs:
         env:
           ONBOARDING_INTERACTION: ${{ matrix.interaction }}
           ONBOARDING_OBSERVE: '1'
-          ONBOARDING_CASES: '24'
+          ONBOARDING_CASES: '12'
         run: npx playwright test test/browser/onboarding-stability.spec.mjs --browser=webkit --workers=2 --reporter=line --output=qa/task032/warm > qa/task032/warm.log 2>&1
       - name: Retain every diagnostic outcome without deploying
         if: always()

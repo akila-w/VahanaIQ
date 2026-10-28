@@ -33,9 +33,17 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||24);i++)for(const route of ['
     await Promise.all([...card.querySelectorAll('img')].map(img=>img.decode().catch(()=>{})));
     await Promise.all(document.getAnimations().filter(a=>a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));
    });
-   if(mode!=='click') {await add.scrollIntoViewIfNeeded();await expect(add).toBeInViewport();}
+   if(mode==='wheel') {
+    const bounds=await page.locator('.onboarding-body').boundingBox();
+    await page.mouse.move(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
+    await page.mouse.wheel(0,600);
+    await expect(add).toBeInViewport();
+   } else if(mode==='dom') {
+    await add.evaluate(button=>button.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
+    await expect(add).toBeInViewport();
+   } else if(mode!=='click') {await add.scrollIntoViewIfNeeded();await expect(add).toBeInViewport();}
    await add.click();
-   if(mode==='click')await expect(card.locator('.onboarding-car-btn')).toBeInViewport();
+   await expect(card.locator('.onboarding-car-btn')).toBeInViewport();
    await expect(page.locator('.onboarding-tray')).toContainText(`${index+1} of 12 selected`);
   }
   await page.getByRole('button',{name:'Continue to Loan Terms →'}).click();
