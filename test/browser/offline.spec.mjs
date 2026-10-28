@@ -332,7 +332,7 @@ test('deployed legacy worker migrates with warm assets, two tabs and saved data'
   }, site.origin);
   site.state.legacy = false;
   await update(page);
-  expect(await observer.evaluate(() => caches.keys())).toEqual(expect.arrayContaining(['vahanaiq-v2.12.0', 'vahanaiq-v2.12.0-offline-1', 'unrelated-app']));
+  expect(await observer.evaluate(() => caches.keys())).toEqual(expect.arrayContaining(['vahanaiq-v2.12.0', 'vahanaiq-v2.12.0-offline-2', 'unrelated-app']));
   // An old tab can keep calculating and saving while the new worker waits.
   await page.reload();
   await checkData(page);
@@ -343,7 +343,7 @@ test('deployed legacy worker migrates with warm assets, two tabs and saved data'
   await page.close();
   expect(await second.evaluate(async () => (await navigator.serviceWorker.getRegistration()).waiting?.state)).toBe('installed');
   await second.close();
-  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['unrelated-app', 'vahanaiq-v2.12.0-offline-1']);
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['unrelated-app', 'vahanaiq-v2.12.0-offline-2']);
   const current = await context.newPage();
   await setOffline(context, true);
   const observed = errors(current);
@@ -394,7 +394,7 @@ test('legacy first-install gaps survive a failed migration and repair on retry',
   const observer = await context.newPage();
   await observer.goto(site.origin + '/__blank.html');
   await page.close();
-  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['vahanaiq-v2.12.0-offline-1']);
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(['vahanaiq-v2.12.0-offline-2']);
   await setOffline(context, true);
   const current = await context.newPage();
   const observed = errors(current);

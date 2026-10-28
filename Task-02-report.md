@@ -72,7 +72,7 @@ Recommended Task 03: measure and optimise font delivery using the Task 01 mobile
 
 ## Final release-readiness review — 28/10/2026
 
-Review in progress; final CI evidence will be added after the focused safeguards reach the PR.
+This was the initial review checkpoint. The subsequent Firefox rate investigation and targeted repair are documented in [docs/task-02-onboarding-rate.md](docs/task-02-onboarding-rate.md); final CI evidence and the current verdict are maintained on PR #31.
 
 - The deployed `https://akila-w.github.io/VahanaIQ/sw.js` was fetched and matched baseline `a0bf238` exactly: SHA-256 `f9e2b29fd07b3febd96c2edd6bf05e37b1a02c73e09c4a6d8ea5aad0bf9c9a09`. `test/fixtures/legacy-sw-v2.12.0.js` preserves those bytes. The test server reconstructs the baseline boot/app sources, verified against their Git versions before adding test-only markers.
 - Initial PR CI on `e58fbac`: Node verification and Chromium passed. Firefox passed all 213 existing cases but failed the thirteen new offline cases with `NS_ERROR_OFFLINE` during navigation. Its worker had installed, acquired control and passed readiness checks before disruption. Linux Firefox failures are distinct from the local Mac launch restriction.
@@ -81,3 +81,5 @@ Review in progress; final CI evidence will be added after the focused safeguards
 - Cache revision `vahanaiq-v2.12.0-offline-1` remains unchanged because no worker or cached asset changed during review. `test/fixtures/offline-shell-revisions.json` now pins SHA-256 `e95d487ffe2f916f4edad8b01bf6d4da22da3e4bec3669e62f0f1bca06503259` across the worker, every manifest URL and every cached file body. A future shell change must bump `CACHE` and add a new fingerprint entry; released entries must never be overwritten. The version guard now checks content as well as graph coverage.
 
 The migration guarantee applies after the new worker finishes installation and activates. While old tabs remain open, the legacy worker retains its existing background-refresh behaviour; it cannot be retroactively made immutable. This repair changes only registration in the cached application JS, so the overlap remains compatible. An offline legacy client that has not downloaded the new worker still needs connectivity once to receive the repair. Closing all application tabs is needed for a waiting update; refreshing one tab is insufficient. Broader rollback to the legacy worker would restore its immediate-activation/incomplete-cache behaviour and is not recommended as an offline-safe rollback. Forward recovery under a new revision is preferred.
+
+The targeted onboarding focus repair advances the current worker cache to `vahanaiq-v2.12.0-offline-2`, with a new appended fingerprint. Earlier cache names and results above describe their original review revisions.

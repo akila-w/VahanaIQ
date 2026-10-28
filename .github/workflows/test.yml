@@ -87,3 +87,10 @@ jobs:
           exit 1
       - name: Run browser specs in ${{ matrix.browser }}
         run: npx playwright test test/browser/csp.spec.mjs test/browser/ui-responsive.spec.mjs test/browser/guidance.spec.mjs test/browser/independent-qa.spec.mjs test/browser/help-alignment.spec.mjs test/browser/motion.spec.mjs test/browser/onboarding.spec.mjs test/browser/offline.spec.mjs test/browser/offline-diagnostic.spec.mjs --browser=${{ matrix.browser }} --workers=2 --reporter=list,github
+      - name: Retain browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: browser-failure-${{ matrix.browser }}
+          path: test-results
+          retention-days: 7

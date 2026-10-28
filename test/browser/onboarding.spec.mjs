@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
+
+test.use({ trace: process.env.RATE_TRACE === '1' ? 'on' : 'retain-on-failure', screenshot: 'only-on-failure' });
 const BASE=process.env.BASE_URL||'http://127.0.0.1:8123';
 async function selectCars(page) {
  await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();
@@ -15,10 +17,85 @@ async function selectCars(page) {
  }
  await page.getByRole('button',{name:'Continue to Loan Terms →'}).click();
 }
-test('guided setup requires a shortlist and applies reviewed terms to real comparison',async({page})=>{
- await page.goto(BASE+'/index.html');await expect(page.locator('#onboarding')).toBeVisible();
- await selectCars(page);await page.getByLabel('Annual Interest Rate (%)',{exact:true}).fill('12');await page.getByRole('button',{name:'Continue to Affordability Check →'}).click();await page.getByRole('button',{name:'Skip Income'}).click();await expect(page.locator('.onboarding-result')).toHaveCount(2);
- await page.getByRole('button',{name:'Open My Lease →'}).click();await expect(page.locator('#onboarding')).toHaveCount(0);await expect(page.locator('#rows tr')).toHaveCount(2);await expect(page.locator('#rate')).toHaveValue('12');await page.reload();await expect(page.locator('#onboarding')).toHaveCount(0);
+// Observe the real completion event and normal persisted state; no production hooks.
+async function reviewedTerms(page, testInfo, deferFocus = false) {
+ const checkpoints = [];
+ let handoff = [];
+ await page.addInitScript(deferFocus => {
+  window.__reviewedRate = [];
+  window.addEventListener('vahanaiq:onboarding-complete', event => {
+   const payloadRate = event.detail.terms.rate;
+   window.__reviewedRate.push({ phase: 'completion-payload', payloadRate });
+   queueMicrotask(() => window.__reviewedRate.push({ phase: 'completion-listeners-applied', payloadRate, calculatorRate: document.querySelector('#rate').value }));
+  });
+  if (deferFocus) {
+   const raf = window.requestAnimationFrame.bind(window), pending = [];
+   window.requestAnimationFrame = callback => {
+    if (new Error().stack.includes('/js/onboarding.js')) { pending.push(callback); return -pending.length; }
+    return raf(callback);
+   };
+   window.__flushStepFocus = () => {
+    const count = pending.length;
+    pending.splice(0).forEach(callback => callback(performance.now()));
+    return count;
+   };
+  }
+ }, deferFocus);
+ const draftRate = () => page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_onboarding_draft_v1') || '{}').terms?.rate);
+ const snapshot = async phase => checkpoints.push(await page.evaluate(phase => ({ phase, fieldRate: document.querySelector('#onboarding .onboarding-terms-form input')?.value, draftRate: JSON.parse(localStorage.getItem('vahanaiq_onboarding_draft_v1') || '{}').terms?.rate, calculatorRate: document.querySelector('#rate')?.value, active: document.activeElement?.tagName }), phase));
+ try {
+  await page.goto(BASE + '/index.html');
+  await expect(page.locator('#onboarding')).toBeVisible();
+  await selectCars(page);
+  const rate = page.getByLabel('Annual Interest Rate (%)', { exact: true });
+  if (deferFocus) {
+   // Deliver the queued render callback between the selection and text phases
+   // of a number fill. Before the fix this takes focus away from the rate field.
+   await rate.selectText();
+   await expect(rate).toBeFocused();
+   expect(await page.evaluate(() => window.__flushStepFocus())).toBeGreaterThan(0);
+   await expect(rate).toBeFocused();
+   await page.keyboard.insertText('12');
+  } else await rate.fill('12');
+  await snapshot('after-fill');
+  await expect(rate).toHaveValue('12');
+  await expect.poll(draftRate).toBe('12');
+  await page.getByRole('button', { name: 'Continue to Affordability Check →', exact: true }).click();
+  await snapshot('after-leaving-field');
+  expect(await draftRate()).toBe('12');
+  await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
+  await expect(page.locator('.onboarding-result')).toHaveCount(2);
+  await snapshot('before-completion');
+  expect(await draftRate()).toBe('12');
+  await page.getByRole('button', { name: 'Open My Lease →', exact: true }).click();
+  await expect(page.locator('#onboarding')).toHaveCount(0);
+  await expect(page.locator('#rows tr')).toHaveCount(2);
+  await expect(page.locator('#rate')).toHaveValue('12');
+  handoff = await page.evaluate(() => window.__reviewedRate);
+  expect(handoff).toEqual([
+   { phase: 'completion-payload', payloadRate: '12' },
+   { phase: 'completion-listeners-applied', payloadRate: '12', calculatorRate: '12' }
+  ]);
+  await snapshot('calculator-applied');
+  // Save is deliberately debounced: wait for durable state before testing reload.
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1') || '{}').rate)).toBe('12');
+  await page.screenshot({ path: testInfo.outputPath('reviewed-rate.png') });
+  await page.reload();
+  await expect(page.locator('#onboarding')).toHaveCount(0);
+  await expect(page.locator('#rows tr')).toHaveCount(2);
+  await expect(page.locator('#rate')).toHaveValue('12');
+  await snapshot('after-reload');
+ } finally {
+  if (!handoff.length) handoff = await page.evaluate(() => window.__reviewedRate).catch(() => []);
+  await writeFile(testInfo.outputPath('reviewed-rate-state.json'), JSON.stringify({ deferFocus, checkpoints, handoff }, null, 2));
+ }
+}
+
+test('guided setup requires a shortlist and applies reviewed terms to real comparison', async ({ page }, testInfo) => {
+ await reviewedTerms(page, testInfo);
+});
+test('deferred step focus preserves the rate being entered', async ({ page }, testInfo) => {
+ await reviewedTerms(page, testInfo, true);
 });
 test('draft survives reload and direct catalogue entry uses the same required flow',async({page})=>{
  await test.step('Open Catalogue setup and select two cars', async () => {
