@@ -3,17 +3,16 @@
 // SITE_URL=http://127.0.0.1:8765 SMOKE_ATTEMPTS=1 node scripts/smoke-deploy.mjs
 import fs from 'node:fs';
 import path from 'node:path';
-import { createHash } from 'node:crypto';
+import { sha256 as hash, getResource, waitForRelease, boundedInteger } from './deploy-readiness.mjs';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const BASE = (process.env.SITE_URL || 'https://akila-w.github.io/VahanaIQ').replace(/\/+$/, '');
-const ATTEMPTS = Number(process.env.SMOKE_ATTEMPTS || 12);
-const DELAY_MS = Number(process.env.SMOKE_DELAY_MS || 15000);
+const ATTEMPTS = boundedInteger(process.env.SMOKE_ATTEMPTS, 24, 'SMOKE_ATTEMPTS', 1, 30);
+const DELAY_MS = boundedInteger(process.env.SMOKE_DELAY_MS, 15000, 'SMOKE_DELAY_MS', 0, 30000);
+const TIMEOUT_MS = boundedInteger(process.env.SMOKE_TIMEOUT_MS, 480000, 'SMOKE_TIMEOUT_MS', 1, 480000);
 const version = fs.readFileSync(path.join(ROOT, 'js/config.js'), 'utf8').match(/APP_VERSION = "([^"]+)"/)?.[1];
 if (!version) throw new Error('Could not read APP_VERSION from js/config.js');
-const hash = body => createHash('sha256').update(body).digest('hex');
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const reports = [...new Set([
   'Task-02-report.md', 'Task-03-report.md', 'Task-03.1-report.md',
   ...fs.readdirSync(ROOT).filter(name => /^Task-.*-report\.md$/.test(name))
@@ -22,7 +21,7 @@ const reports = [...new Set([
 const REPORT_PATHS = reports.flatMap(name => [name, name.replace(/\.md$/, '.html')]);
 const PAGES = ['catalogue.html', 'studio.html', 'about.html', 'privacy.html', 'terms.html'];
 const ASSETS = [
-  'css/tokens.css', 'css/style.css', 'css/style.min.css', 'css/curated-catalogue.css', 'css/catalogue-studio.css', 'js/app.js', 'js/config.js',
+  'css/experience.css', 'css/tokens.css', 'css/style.css', 'css/style.min.css', 'css/curated-catalogue.css', 'css/catalogue-studio.css', 'js/app.js', 'js/config.js',
   'js/catalogue-data.js', 'js/curated-catalogue.js', 'js/catalogue-studio.js', 'js/catalogue-photo-overlay.js',
   'js/catalogue-photos.js', 'js/catalogue-photo-store.js', 'js/photo-frame.js', 'js/official-photo-data.js', 'sw.js',
   'manifest.json', 'sitemap.xml', 'robots.txt', 'data/catalogue.json', 'data/identity.json',
@@ -41,13 +40,16 @@ const BLOCKED = [
   // Photo Studio exports carry inline photo pixels and are working files.
   'vahanaiq-studio-photos-2026-10-23.json'
 ];
-async function get(url) {
-  try {
-    const res = await fetch(url, { redirect: 'follow', headers: { 'Cache-Control': 'no-cache' } });
-    const body = Buffer.from(await res.arrayBuffer());
-    return { status: res.status, body, text: body.toString('utf8'), type: res.headers.get('content-type') || '' };
-  } catch (error) { return { status: 0, body: Buffer.alloc(0), text: '', type: '', error: String(error) }; }
-}
+const get = url => getResource(url);
+// Include the complete cached shell as well as every existing published-resource
+// assertion. This covers changed CSS/JS/JSON/fonts even without a version bump.
+const shell = JSON.parse(fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8').match(/const SHELL = (\[[\s\S]*?\]);/)[1]);
+const resourcePaths = [...new Set(['index.html', ...PAGES, ...ASSETS, ...shell.map(file => file.split('?')[0])])];
+const resources = new Map(resourcePaths.map(file => [file, hash(fs.readFileSync(path.join(ROOT, file)))]));
+const identity = process.env.SMOKE_EXPECTED_SHA ? {
+  expectedSHA: process.env.SMOKE_EXPECTED_SHA, repository: process.env.SMOKE_REPOSITORY, token: process.env.SMOKE_GITHUB_TOKEN
+} : undefined;
+if (process.env.GITHUB_ACTIONS === 'true' && !process.env.SITE_URL && !identity) throw Error('Production Actions smoke requires exact Pages deployment identity');
 
 export async function smoke() {
   const failures = [];
@@ -55,19 +57,10 @@ export async function smoke() {
     console.log(`${ok ? 'ok  ' : 'FAIL'}  ${label}${detail ? `  (${detail})` : ''}`);
     if (!ok) failures.push(label);
   };
-  // Wait for both the version AND the changed publication contract. A config-only
-  // deployment must not silently accept the previous site's unchanged version.
-  let deployed = false;
-  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
-    const index = await get(`${BASE}/`);
-    const boundary = await Promise.all(REPORT_PATHS.map(async report => ({ report, ...(await get(`${BASE}/${report}`)) })));
-    const unexpected = boundary.filter(result => result.status !== 404);
-    if (index.status === 200 && index.text.includes(`app.js?v=${version}`) && !unexpected.length) { deployed = true; break; }
-    console.log(`waiting for ${version} and report exclusions (attempt ${attempt}/${ATTEMPTS}, index HTTP ${index.status}; ${unexpected.map(r => `${r.report}: HTTP ${r.status}`).join(', ') || 'reports return 404'})`);
-    if (attempt < ATTEMPTS) await sleep(DELAY_MS);
-  }
-  if (!deployed) {
-    console.error(`Timed out waiting for version ${version} AND root-report 404 responses at ${BASE}`);
+  const readiness = await waitForRelease({ base: BASE, resources, reportPaths: REPORT_PATHS, version, identity,
+    attempts: ATTEMPTS, delayMs: DELAY_MS, timeoutMs: TIMEOUT_MS });
+  if (!readiness.ready) {
+    console.error(`Timed out waiting for the intended deployment, exact resource hashes AND root-report 404 responses at ${BASE}`);
     process.exitCode = 1; return false;
   }
 
@@ -89,7 +82,8 @@ export async function smoke() {
   for (const asset of ASSETS) {
     const res = await get(`${BASE}/${asset}`);
     note(res.status === 200, `GET ${asset} is 200`, `HTTP ${res.status}`);
-    note(hash(res.body) === hash(fs.readFileSync(path.join(ROOT, asset))), `${asset} content matches checkout`);
+    note(hash(res.body) === hash(fs.readFileSync(path.join(ROOT, asset))), `${asset} content matches checkout`,
+      JSON.stringify({ expectedSHA256: resources.get(asset), actualSHA256: res.sha256, status: res.status, headers: res.headers }));
     if (asset.endsWith('.woff2')) note(res.type.startsWith('font/woff2'), `${asset} has WOFF2 MIME`, res.type);
   }
   for (const blocked of BLOCKED) {
