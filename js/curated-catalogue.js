@@ -104,6 +104,12 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
       save();
       const currentType = $('priceType')?.value || '';
       const low = offer || (currentType ? getOfferForCard(m, currentType).offer : null) || lowest(m) || m.offers?.[0] || {};
+      if (offerEvidenceStatus(low) !== 'confirmed') {
+        delete review.comparison[m.id];
+        save();
+        toast('This catalogue price is not verified. Enter a seller quote in the Calculator before comparing.');
+        return;
+      }
       const cleanName = shortName(m).replace(/\s+(202[0-9])$/, '');
       const cardTitle = cleanName.toLowerCase().startsWith(m.make.toLowerCase()) ? cleanName : `${m.make} ${cleanName}`;
       const carRecord = {
@@ -166,8 +172,10 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
     const low = (currentType ? getOfferForCard(m, currentType).offer : null) || lowest(m);
     const verified = offerEvidenceStatus(low) === 'confirmed';
     const price = verified ? low.amount : 0;
+
     const cleanName = shortName(m).replace(/\s+(202[0-9])$/, '');
     const vehicleTitle = cleanName.toLowerCase().startsWith(m.make.toLowerCase()) ? cleanName : `${m.make} ${cleanName}`;
+    if (!verified) return `<div class="affordability-card"><div class="affordability-card-head"><h4>Budget &amp; Affordability Review for ${esc(vehicleTitle)}</h4><span class="tag mid">Price not verified</span></div><p class="affordability-summary-line">This price is indicative or unsupported by matching evidence. Obtain a current seller quote before relying on an affordability result.</p></div>`;
 
     const income = settings.income;
     const debt = settings.debt;
