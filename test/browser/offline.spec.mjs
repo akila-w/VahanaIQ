@@ -1,11 +1,16 @@
 import { test, expect, chromium, webkit, firefox } from '@playwright/test';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { offlineServer } from './offline-server.mjs';
 import { seedReturning } from './returning-user.mjs';
 const CURRENT_CACHE = readFileSync(new URL('../../sw.js', import.meta.url), 'utf8').match(/const CACHE = "([^"]+)"/)[1];
+const stylesheetDigest = body => createHash('sha256').update(body).digest('hex');
+const PREVIOUS_EXPERIENCE_DIGEST = stylesheetDigest(gunzipSync(readFileSync(new URL('../fixtures/task031-experience.css.gz', import.meta.url))));
+const CURRENT_EXPERIENCE_DIGEST = stylesheetDigest(readFileSync(new URL('../../css/experience.css', import.meta.url)));
 let site;
 test.beforeEach(async ({ context }) => {
   site = await offlineServer();
@@ -414,6 +419,48 @@ test('legacy first-install gaps survive a failed migration and repair on retry',
   const observed = errors(current);
   await current.goto(site.origin + '/VahanaIQ/index.html');
   await checkData(current);
+  expect(observed.failed).toEqual([]);
+  expect(observed.exceptions).toEqual([]);
+});
+
+// Exact worker/CSS fixtures from deployed 02f8b335, not a renamed new shell.
+test('deployed offline-3 stylesheet upgrades atomically without losing saved data', async ({ page, context }) => {
+  const previous = 'vahanaiq-v2.12.0-offline-3';
+  const cachedStylesheet = (probe, name) => probe.evaluate(async name => {
+    const url = new URL('/VahanaIQ/css/experience.css?v=2.12.0', location.href);
+    const response = name ? await (await caches.open(name)).match(url) : await fetch(url);
+    if (!response) throw Error('Cached experience stylesheet is missing');
+    const digest = await crypto.subtle.digest('SHA-256', await response.arrayBuffer());
+    return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  }, name);
+  site.state.previousAnchoring = true;
+  await page.goto(site.origin + '/VahanaIQ/index.html');
+  await installed(page);
+  await saveData(page);
+  expect(await cachedStylesheet(page, previous)).toBe(PREVIOUS_EXPERIENCE_DIGEST);
+  expect(await cachedStylesheet(page)).toBe(PREVIOUS_EXPERIENCE_DIGEST);
+  const observer = await context.newPage();
+  await observer.goto(site.origin + '/__blank.html');
+  site.state.previousAnchoring = false;
+  await update(page);
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual(expect.arrayContaining([previous, CURRENT_CACHE]));
+  // The active tab keeps its original stylesheet while the complete new shell waits.
+  await page.reload();
+  await checkData(page);
+  expect(await cachedStylesheet(page, previous)).toBe(PREVIOUS_EXPERIENCE_DIGEST);
+  expect(await cachedStylesheet(page)).toBe(PREVIOUS_EXPERIENCE_DIGEST);
+  expect(await cachedStylesheet(observer, CURRENT_CACHE)).toBe(CURRENT_EXPERIENCE_DIGEST);
+  await page.close();
+  await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual([CURRENT_CACHE]);
+  await activatedFromObserver(observer);
+  const current = await context.newPage();
+  await setOffline(context, true);
+  const observed = errors(current);
+  await current.goto(site.origin + '/VahanaIQ/index.html');
+  await checkData(current);
+  expect(await cachedStylesheet(current, CURRENT_CACHE)).toBe(CURRENT_EXPERIENCE_DIGEST);
+  expect(await cachedStylesheet(current)).toBe(CURRENT_EXPERIENCE_DIGEST);
+  expect(await current.evaluate(() => window.__offlineCSP)).toEqual([]);
   expect(observed.failed).toEqual([]);
   expect(observed.exceptions).toEqual([]);
 });
