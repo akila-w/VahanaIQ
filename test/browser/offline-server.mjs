@@ -4,11 +4,14 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { gunzipSync } from 'node:zlib';
 const root = path.resolve(import.meta.dirname, '../..');
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png' };
 export async function offlineServer() {
-  const state = { revision: '', previousFonts: false, fail: '', legacy: false, disconnected: false, requests: [] };
+  const state = { revision: '', previousFonts: false, previousAnchoring: false, fail: '', legacy: false, disconnected: false, requests: [] };
   const legacyWorker = await fs.readFile(path.join(root, 'test/fixtures/legacy-sw-v2.12.0.js'));
+  const task031Worker = await fs.readFile(path.join(root, 'test/fixtures/task031-sw-offline3.js'));
+  const task031Experience = gunzipSync(await fs.readFile(path.join(root, 'test/fixtures/task031-experience.css.gz')));
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     state.requests.push(url.pathname + url.search);
@@ -20,6 +23,8 @@ export async function offlineServer() {
     try {
       if (!target.startsWith(root + path.sep) || (state.fail && relative === state.fail)) throw Error('Unavailable');
       let data = await fs.readFile(target);
+      if (state.previousAnchoring && relative === 'sw.js') data = task031Worker;
+      if (state.previousAnchoring && relative === 'css/experience.css') data = task031Experience;
       if (state.previousFonts && relative === 'sw.js') data = await fs.readFile(path.join(root, 'test/fixtures/task02-sw-offline2.js'));
       if (state.previousFonts && relative === 'css/tokens.css') data = Buffer.from(data.toString().replaceAll('-variable.woff2', '-variable.ttf').replaceAll('format("woff2")', 'format("truetype")'));
       if (state.legacy && relative === 'sw.js') data = legacyWorker;

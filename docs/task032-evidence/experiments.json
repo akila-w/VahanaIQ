@@ -1,0 +1,186 @@
+{
+  "baseline": "02f8b335ace5bf219c2c9b0e1e653e89c2a5675c",
+  "preservedFailures": [
+    {
+      "run": 40741747089,
+      "job": 123005211684,
+      "node": "onboarding.spec.mjs:186",
+      "outcome": "240 passed, 1 failed",
+      "image": "20261025.353.1"
+    },
+    {
+      "run": 40708293077,
+      "job": 122886550017,
+      "outcome": "239 passed, 2 failed",
+      "image": "20261012.334.1"
+    }
+  ],
+  "environment": {
+    "os": "Ubuntu 24.04.5 LTS",
+    "playwright": "1.64.1",
+    "webkit": "27.2",
+    "webkitBuild": 2370,
+    "diagnosticRunnerImage": "20261026.354.1",
+    "baselineViewport": [
+      1280,
+      720
+    ],
+    "motion": "no-preference",
+    "serviceWorkers": "allow"
+  },
+  "experiments": [
+    {
+      "run": 40745885743,
+      "commit": "586393879e84a3d81c4cb3f0d5599e73e1c46226",
+      "mode": "original explicit scroll",
+      "effectiveWorkers": 2,
+      "passed": 16,
+      "failed": 2,
+      "cases": 18
+    },
+    {
+      "run": 40745885743,
+      "mode": "original explicit scroll",
+      "effectiveWorkers": 1,
+      "passed": 12,
+      "failed": 0,
+      "cases": 12
+    },
+    {
+      "run": 40745885743,
+      "mode": "original explicit scroll, reduced motion",
+      "effectiveWorkers": 2,
+      "passed": 12,
+      "failed": 0,
+      "cases": 12
+    },
+    {
+      "run": 40745885743,
+      "mode": "INVALID first click experiment; checked viewport before allowing click to scroll",
+      "passed": 0,
+      "failed": 18,
+      "cases": 18,
+      "includedInRootCauseRates": false
+    },
+    {
+      "run": 40747003140,
+      "commit": "00256ce9cb17873719ebbb55acfcbb0287edabf8",
+      "mode": "explicit scroll, long-lived browser",
+      "effectiveWorkers": 1,
+      "passed": 47,
+      "failed": 1,
+      "cases": 48,
+      "failureCase": "catalogue case 0; prolonged browser age is not required"
+    },
+    {
+      "run": 40747003140,
+      "mode": "normal pointer click, long-lived browser",
+      "effectiveWorkers": 1,
+      "passed": 48,
+      "failed": 0,
+      "cases": 48
+    },
+    {
+      "run": 40748705202,
+      "commit": "212627ea0d01ef586fdfae91fa2cca898e9869b5",
+      "mode": "native wheel and pointer click",
+      "effectiveWorkers": 1,
+      "passed": 24,
+      "failed": 0,
+      "cases": 24
+    },
+    {
+      "run": 40748705202,
+      "mode": "DOM scroll and pointer click",
+      "effectiveWorkers": 1,
+      "passed": 24,
+      "failed": 0,
+      "cases": 24
+    },
+    {
+      "run": 40748705202,
+      "mode": "finite-animation, font and image readiness before explicit scroll",
+      "effectiveWorkers": 1,
+      "passed": 24,
+      "failed": 0,
+      "cases": 24
+    },
+    {
+      "run": 40800380223,
+      "commit": "5a71312f66c37234e2c817187726decd7ba832c9",
+      "mode": "native click only, original three tests repeated ten times",
+      "effectiveWorkers": 2,
+      "passed": 23,
+      "failed": 7,
+      "cases": 30,
+      "conclusion": "Rejected as insufficient; three-engine focused verification failed WebKit. Full matrix was not started."
+    },
+    {
+      "run": 40801331196,
+      "mode": "controlled stylesheet, anchoring auto, original interaction",
+      "effectiveWorkers": 2,
+      "passed": 24,
+      "failed": 0,
+      "cases": 24,
+      "conclusion": "Did not reproduce; not accepted as a sufficient negative control"
+    },
+    {
+      "run": 40801331196,
+      "mode": "controlled stylesheet, anchoring none, original interaction",
+      "effectiveWorkers": 2,
+      "passed": 24,
+      "failed": 0,
+      "cases": 24
+    },
+    {
+      "run": 40801331196,
+      "mode": "integer scrollport-size experiment",
+      "effectiveWorkers": 2,
+      "passed": 23,
+      "failed": 1,
+      "cases": 24,
+      "conclusion": "Rejected: scroll instability remained"
+    },
+    {
+      "run": 40801331196,
+      "mode": "native pointer focuses search before typing, anchoring auto",
+      "effectiveWorkers": 2,
+      "passed": 0,
+      "failed": 24,
+      "cases": 24,
+      "conclusion": "Rejected as a test-only correction"
+    },
+    {
+      "run": 40802130909,
+      "commit": "f26892e7be21d34c628ea0de94d01d9acad84adc",
+      "mode": "same runner A: original actual stylesheet and worker delivery",
+      "effectiveWorkers": 2,
+      "passed": 26,
+      "failed": 4,
+      "cases": 30
+    },
+    {
+      "run": 40802130909,
+      "mode": "same runner B: only onboarding scroll anchoring disabled",
+      "effectiveWorkers": 2,
+      "passed": 30,
+      "failed": 0,
+      "cases": 30
+    },
+    {
+      "run": 40802130909,
+      "mode": "same runner A reversal: original stylesheet restored",
+      "effectiveWorkers": 2,
+      "passed": 12,
+      "failed": 3,
+      "cases": 15
+    }
+  ],
+  "limitations": [
+    "Native scroll-engine rounding internals were not traced to an upstream code defect.",
+    "A passing finite sample is not a proof of every possible WebKit configuration.",
+    "The first diagnostic workflow continued after failures; raw logs, not green aggregate status, determine counts."
+  ],
+  "confirmedTrigger": "Automatic scroll anchoring in the animated, dynamically rebuilt onboarding scrollport; scoped disable removes the reproducible sustained one-pixel oscillation without changing interaction assertions.",
+  "chosenCorrection": "overflow-anchor: none on .onboarding-body; original selectCars helper retained byte-for-byte."
+}

@@ -732,6 +732,9 @@ body.onboarding-active {
 .onboarding-body {
   padding: 24px 28px;
   overflow-y: auto;
+  /* Cards are replaced while filtering/selecting. WebKit anchoring can keep
+     adjusting this animated scrollport by one pixel after layout has settled. */
+  overflow-anchor: none;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   min-height: 0;
