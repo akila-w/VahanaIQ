@@ -1,0 +1,16 @@
+
+Running 12 tests using 2 workers
+
+[1/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › studio case 0 › focus-explicit saved-state journey
+[2/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › catalogue case 0 › focus-explicit saved-state journey
+[3/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › catalogue case 1 › focus-explicit saved-state journey
+[4/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › studio case 1 › focus-explicit saved-state journey
+[5/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › catalogue case 2 › focus-explicit saved-state journey
+[6/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › studio case 2 › focus-explicit saved-state journey
+[7/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › catalogue case 3 › focus-explicit saved-state journey
+[8/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › studio case 3 › focus-explicit saved-state journey
+[9/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › catalogue case 4 › focus-explicit saved-state journey
+[10/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › studio case 4 › focus-explicit saved-state journey
+[11/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › catalogue case 5 › focus-explicit saved-state journey
+[12/12] [webkit] › qa/task032/onboarding-stability.spec.mjs:32:2 › studio case 5 › focus-explicit saved-state journey
+  12 passed (1.3m)

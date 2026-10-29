@@ -1,0 +1,16 @@
+{
+  "run": 40803532166,
+  "artifact": 12866829583,
+  "trace": "qa/2026-10-28-task032/fixed-trace/variants/onboarding-stability-catal-3fc83-xplicit-saved-state-journey-webkit/trace.zip",
+  "continueActionTime": 8431.759,
+  "nativeFrame": {
+    "type": "screencast-frame",
+    "pageId": "page@4bef23ebeae82db6bd2543a487a37030",
+    "file": "screencast/page@4bef23ebeae82db6bd2543a487a37030-1793239322599.jpeg",
+    "width": 1280,
+    "height": 720,
+    "timestamp": 8648.779,
+    "frameSwapWallTime": 1793239322604.548
+  },
+  "note": "First native screencast frame after Continue action begins; unedited JPEG extracted from trace."
+}

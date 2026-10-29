@@ -1,7 +1,5 @@
 name: Focused onboarding stability verification
 on:
-  push:
-    branches: [codex/task-03-2-webkit-onboarding]
   workflow_dispatch:
     inputs:
       interaction:

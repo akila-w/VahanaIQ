@@ -1,0 +1,122 @@
+
+Running 18 tests using 2 workers
+
+[1/18] [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow
+[2/18] [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow
+[3/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from catalogue preserves saved vehicles and other financing settings
+  1) [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow › Open Catalogue setup and select two cars 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('.onboarding-car').filter({ has: getByRole('heading', { name: 'Toyota Camry Hybrid', exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true })
+        - locator resolved to <button type="button" class="btn onboarding-car-btn">+ Add to Shortlist</button>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+          - waiting 100ms
+        5 × waiting for element to be visible, enabled and stable
+          - element is not stable
+        - retrying click action
+          - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      22 |   if (process.env.ONBOARDING_INTERACTION !== 'click') await add.scrollIntoViewIfNeeded();
+      23 |   await expect(add).toBeInViewport();
+    > 24 |   await add.click();
+         |             ^
+      25 |   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
+      26 |   if (index === 0) await expect(page.getByRole('button', { name: 'Continue to Loan Terms →' })).toBeDisabled();
+      27 |  }
+        at selectCars (/home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:24:13)
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:114:3
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:111:2
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    qa/task032/explicit-two/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: qa/task032/explicit-two/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    qa/task032/explicit-two/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace qa/task032/explicit-two/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[4/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from catalogue preserves saved vehicles and other financing settings
+[5/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings
+[6/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings
+[7/18] [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow
+[8/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from catalogue preserves saved vehicles and other financing settings
+[9/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings
+  2) [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.scrollIntoViewIfNeeded: Element is not attached to the DOM
+    Call log:
+      - attempting scroll into view action
+        2 × waiting for element to be stable
+          - element is not stable
+        - retrying scroll into view action
+        - waiting 20ms
+        2 × waiting for element to be stable
+          - element is not stable
+        - retrying scroll into view action
+          - waiting 100ms
+        34 × waiting for element to be stable
+           - element is not stable
+         - retrying scroll into view action
+           - waiting 500ms
+        - waiting for element to be stable
+
+
+      20 |   await search.fill(name);
+      21 |   const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
+    > 22 |   if (process.env.ONBOARDING_INTERACTION !== 'click') await add.scrollIntoViewIfNeeded();
+         |                                                                 ^
+      23 |   await expect(add).toBeInViewport();
+      24 |   await add.click();
+      25 |   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
+        at selectCars (/home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:22:65)
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:203:2
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    qa/task032/explicit-two/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: qa/task032/explicit-two/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    qa/task032/explicit-two/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace qa/task032/explicit-two/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[10/18] [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow
+[11/18] [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow
+[12/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from catalogue preserves saved vehicles and other financing settings
+[13/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from catalogue preserves saved vehicles and other financing settings
+[14/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings
+[15/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings
+[16/18] [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow
+[17/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from catalogue preserves saved vehicles and other financing settings
+[18/18] [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings
+  2 failed
+    [webkit] › test/browser/onboarding.spec.mjs:110:1 › draft survives reload and direct catalogue entry uses the same required flow 
+    [webkit] › test/browser/onboarding.spec.mjs:196:46 › setup from studio preserves saved vehicles and other financing settings 
+  16 passed (2.0m)

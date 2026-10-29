@@ -1,0 +1,34 @@
+
+Running 30 tests using 2 workers
+
+[1/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[2/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[3/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[4/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[5/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[6/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[7/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[8/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[9/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[10/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[11/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[12/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[13/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[14/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[15/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[16/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[17/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[18/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[19/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[20/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[21/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[22/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[23/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[24/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[25/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[26/30] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[27/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[28/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[29/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[30/30] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+  30 passed (3.2m)

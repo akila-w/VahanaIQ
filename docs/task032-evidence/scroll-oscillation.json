@@ -1,0 +1,2201 @@
+[
+  {
+    "case": "test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit",
+    "source": "qa/2026-10-28-task032/diagnostic-1/explicit-two/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/onboarding-observation.json",
+    "samples": 150,
+    "firstTime": 2905,
+    "lastTime": 30179,
+    "sampleSpanMs": 27274,
+    "scrollTopValues": [
+      368,
+      369
+    ],
+    "buttonYValues": [
+      390.046875,
+      390.4452209472656,
+      391.046875
+    ],
+    "buttonIds": [
+      4
+    ],
+    "allButtonCentresHitTarget": true,
+    "lastMutationMs": 2876,
+    "firstImageCompleteMs": 2905,
+    "tail": [
+      {
+        "t": 27747,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 25902,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 27942,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 26097,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 28140,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 26295,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 28337,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 26492,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 28526,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 26681,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 28701,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 26856,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 28873,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 27028,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 29080,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 27235,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 29254,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 27409,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 29448,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 27603,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 29627,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 27782,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 30179,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 28334,
+            "target": "step-num"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case": "test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit",
+    "source": "qa/2026-10-28-task032/diagnostic-1/explicit-two/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit/onboarding-observation.json",
+    "samples": 41,
+    "firstTime": 5873,
+    "lastTime": 13267,
+    "sampleSpanMs": 7394,
+    "scrollTopValues": [
+      368,
+      369
+    ],
+    "buttonYValues": [
+      390.046875,
+      390.093994140625,
+      391.046875
+    ],
+    "buttonIds": [
+      4
+    ],
+    "allButtonCentresHitTarget": true,
+    "lastMutationMs": 5808,
+    "firstImageCompleteMs": 7244,
+    "tail": [
+      {
+        "t": 10994,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 6538,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 11175,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 6719,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 11299,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 6843,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 11572,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 7116,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 11821,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 7365,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 12016,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 7560,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 12196,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 7740,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 12413,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 7957,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 12556,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 8100,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 12675,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 8219,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 12815,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 8359,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 13267,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 8811,
+            "target": "step-num"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "case": "test-browser-onboarding-st-348cd-catalogue-long-lived-case-0-webkit",
+    "source": "qa/2026-10-28-task032/diagnostic-2-explicit/warm/test-browser-onboarding-st-348cd-catalogue-long-lived-case-0-webkit/onboarding-observation.json",
+    "samples": 116,
+    "firstTime": 7545,
+    "lastTime": 22960,
+    "sampleSpanMs": 15415,
+    "scrollTopValues": [
+      368,
+      369
+    ],
+    "buttonYValues": [
+      390.046875,
+      390.485107421875,
+      391.046875
+    ],
+    "buttonIds": [
+      4
+    ],
+    "allButtonCentresHitTarget": true,
+    "lastMutationMs": 7526,
+    "firstImageCompleteMs": 7545,
+    "tail": [
+      {
+        "t": 21133,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 14630,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 21258,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 14755,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 21383,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 14880,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 21510,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15007,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 21635,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15132,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 21760,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15257,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 21887,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15384,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 22010,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15507,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 22136,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15633,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 22259,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 368,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 391.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 95.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15756,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 22383,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 15880,
+            "target": "step-num"
+          }
+        ]
+      },
+      {
+        "t": 22960,
+        "query": "Toyota Camry Hybrid",
+        "body": {
+          "rect": {
+            "x": 121,
+            "y": 96,
+            "width": 1038,
+            "height": 490.5
+          },
+          "scrollTop": 369,
+          "scrollHeight": 860,
+          "clientHeight": 491,
+          "scrollBehavior": "auto",
+          "transform": "none"
+        },
+        "dialog": {
+          "x": 120,
+          "y": 16,
+          "width": 1040,
+          "height": 688
+        },
+        "documentScroll": 0,
+        "focus": "onboarding-search",
+        "buttons": [
+          {
+            "id": 4,
+            "name": "Toyota Camry Hybrid",
+            "rect": {
+              "x": 164,
+              "y": 390.046875,
+              "width": 210.078125,
+              "height": 38
+            },
+            "disabled": false,
+            "hit": true,
+            "images": [
+              {
+                "rect": {
+                  "x": 164,
+                  "y": 94.390625,
+                  "width": 286.65625,
+                  "height": 179.15625
+                },
+                "complete": true,
+                "naturalWidth": 640
+              }
+            ]
+          }
+        ],
+        "animations": [
+          {
+            "name": "pulseStep",
+            "state": "running",
+            "time": 16457,
+            "target": "step-num"
+          }
+        ]
+      }
+    ]
+  }
+]

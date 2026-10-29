@@ -1,0 +1,74 @@
+{
+  "run": 40803532166,
+  "head": "389499e4a493cca225fc4a14389f03c0cd24b4de",
+  "webkit": {
+    "historicalRepetitions": 30,
+    "variants": 12,
+    "deployedOffline3Migration": 1,
+    "totalPassed": 43,
+    "failed": 0
+  },
+  "chromium": {
+    "historicalRepetitions": 9,
+    "variants": 12,
+    "deployedOffline3Migration": 1,
+    "totalPassed": 22,
+    "failed": 0
+  },
+  "firefox": {
+    "historicalRepetitions": 9,
+    "variants": 12,
+    "deployedOffline3Migration": 1,
+    "totalPassed": 22,
+    "failed": 0
+  },
+  "variantCoverage": [
+    {
+      "width": 1280,
+      "height": 720,
+      "images": "normal",
+      "interaction": "pointer",
+      "motion": [
+        "normal",
+        "reduced"
+      ],
+      "entryPoints": [
+        "Catalogue",
+        "Studio"
+      ]
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "images": "normal",
+      "interaction": "native keyboard",
+      "motion": [
+        "normal",
+        "reduced"
+      ],
+      "entryPoints": [
+        "Catalogue",
+        "Studio"
+      ]
+    },
+    {
+      "width": 1440,
+      "height": 844,
+      "images": "held until both selections, then decoded",
+      "interaction": "pointer",
+      "motion": [
+        "normal",
+        "reduced"
+      ],
+      "entryPoints": [
+        "Catalogue",
+        "Studio"
+      ]
+    }
+  ],
+  "notes": [
+    "Standard selectCars helper is identical to baseline; original explicit scrolling and viewport assertions remain.",
+    "Delayed-image contexts block workers so the actual selected images cannot bypass interception; complete=false and release/decode are asserted.",
+    "No retries, forced clicks, DOM click dispatch, timeout increases or arbitrary UI sleeps."
+  ]
+}

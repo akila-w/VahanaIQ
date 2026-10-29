@@ -1,0 +1,13 @@
+{
+  "trace": "qa/2026-10-28-task032/diagnostic-2-traces/warm/test-browser-onboarding-st-9edd5-catalogue-long-lived-case-0-webkit/trace.zip",
+  "actionTime": 18631.606,
+  "frame": {
+    "type": "screencast-frame",
+    "pageId": "page@63f8915053cf1743abfb1cdf0db94ea8",
+    "file": "screencast/page@63f8915053cf1743abfb1cdf0db94ea8-1793212799607.jpeg",
+    "width": 1280,
+    "height": 720,
+    "timestamp": 18749.377,
+    "frameSwapWallTime": 1793212799631.266
+  }
+}

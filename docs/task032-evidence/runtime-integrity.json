@@ -1,0 +1,53 @@
+{
+  "baseline": "02f8b335ace5bf219c2c9b0e1e653e89c2a5675c",
+  "oldRevisionRecordsPreserved": {
+    "vahanaiq-v2.12.0-offline-1": "e95d487ffe2f916f4edad8b01bf6d4da22da3e4bec3669e62f0f1bca06503259",
+    "vahanaiq-v2.12.0-offline-2": "a5a5232d0f17b5adcaeae505676b95f9aa20e364be541cd75ae4ecd400c73134",
+    "vahanaiq-v2.12.0-offline-3": "8e38d91748dbf346a49bec2b2359750710b6d1d4486fbca8f7a3c2730baee61b"
+  },
+  "candidateRevision": "vahanaiq-v2.12.0-offline-4",
+  "candidateFingerprint": "1c002bb8a3f6959f3f6cf65a0818e9cfd3810e01dcf792425ec3304783473f2e",
+  "files": [
+    {
+      "file": "css/experience.css",
+      "baselineBytes": 58395,
+      "candidateBytes": 58579,
+      "baselineSha256": "5bd5fd3dce135bfdb2e79aee42bbc723ef063ceb6e9f0c8457cd636aa427719c",
+      "candidateSha256": "928c511c4672c4be1486d209811889eb0372f2feb745510f40abf851b98c51c7",
+      "unchanged": false
+    },
+    {
+      "file": "sw.js",
+      "baselineBytes": 4595,
+      "candidateBytes": 4595,
+      "baselineSha256": "ad267db880687c12bf2b1e8f55a9e10f576550ac3147eb5e8fd290a1a8b55553",
+      "candidateSha256": "c07cd47fb37be58c5f413648d151b1fb2e128d82d33edb2346fab535a7977aab",
+      "unchanged": false
+    },
+    {
+      "file": "css/tokens.css",
+      "baselineBytes": 6402,
+      "candidateBytes": 6402,
+      "baselineSha256": "a4043913d1221bfc1baccaf915aaff4934250a4eb1415af3317deae47b96b3b3",
+      "candidateSha256": "a4043913d1221bfc1baccaf915aaff4934250a4eb1415af3317deae47b96b3b3",
+      "unchanged": true
+    },
+    {
+      "file": "assets/fonts/inter/Inter-variable.woff2",
+      "baselineBytes": 350460,
+      "candidateBytes": 350460,
+      "baselineSha256": "13b4cddc57045d40b411008e61588c8f81aa0bd72fe884624831a0ff9c4d159a",
+      "candidateSha256": "13b4cddc57045d40b411008e61588c8f81aa0bd72fe884624831a0ff9c4d159a",
+      "unchanged": true
+    },
+    {
+      "file": "assets/fonts/manrope/Manrope-variable.woff2",
+      "baselineBytes": 53892,
+      "candidateBytes": 53892,
+      "baselineSha256": "30b83738add8c9edd9e3450b98036a9a8fb5668d0cbd4eb0ce5fe6761197f21f",
+      "candidateSha256": "30b83738add8c9edd9e3450b98036a9a8fb5668d0cbd4eb0ce5fe6761197f21f",
+      "unchanged": true
+    }
+  ],
+  "fontBytes": 404352
+}

@@ -1,0 +1,156 @@
+
+Running 15 tests using 2 workers
+
+[1/15] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[2/15] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[3/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[4/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[5/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[6/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[7/15] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+  1) [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('.onboarding-car').filter({ has: getByRole('heading', { name: 'Toyota Camry Hybrid', exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true })
+        - locator resolved to <button type="button" class="btn onboarding-car-btn">+ Add to Shortlist</button>
+      - attempting click action
+        - waiting for element to be visible, enabled and stable
+
+
+      12 |   await add.scrollIntoViewIfNeeded();
+      13 |   await expect(add).toBeInViewport();
+    > 14 |   await add.click();
+         |             ^
+      15 |   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
+      16 |   if (index === 0) await expect(page.getByRole('button', { name: 'Continue to Loan Terms →' })).toBeDisabled();
+      17 |  }
+        at selectCars (/home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:14:13)
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:193:2
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    qa/task032/reversal/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: qa/task032/reversal/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    qa/task032/reversal/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/trace.zip
+    Usage:
+
+        npx playwright show-trace qa/task032/reversal/test-browser-onboarding-se-75a5b-nd-other-financing-settings-webkit/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[8/15] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+  2) [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow › Open Catalogue setup and select two cars 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.scrollIntoViewIfNeeded: Element is not attached to the DOM
+    Call log:
+      - attempting scroll into view action
+        2 × waiting for element to be stable
+          - element is not stable
+        - retrying scroll into view action
+        - waiting 20ms
+        2 × waiting for element to be stable
+          - element is not stable
+        - retrying scroll into view action
+          - waiting 100ms
+        28 × waiting for element to be stable
+           - element is not stable
+         - retrying scroll into view action
+           - waiting 500ms
+        - waiting for element to be stable
+
+
+      10 |   await search.fill(name);
+      11 |   const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
+    > 12 |   await add.scrollIntoViewIfNeeded();
+         |             ^
+      13 |   await expect(add).toBeInViewport();
+      14 |   await add.click();
+      15 |   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
+        at selectCars (/home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:12:13)
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:104:3
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:101:2
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat2/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat2/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat2/trace.zip
+    Usage:
+
+        npx playwright show-trace qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat2/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[9/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[10/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+  3) [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow › Open Catalogue setup and select two cars 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.scrollIntoViewIfNeeded: Test timeout of 30000ms exceeded.
+    Call log:
+      - attempting scroll into view action
+        2 × waiting for element to be stable
+          - element is not stable
+        - retrying scroll into view action
+        - waiting 20ms
+        2 × waiting for element to be stable
+          - element is not stable
+        - retrying scroll into view action
+          - waiting 100ms
+        27 × waiting for element to be stable
+           - element is not stable
+         - retrying scroll into view action
+           - waiting 500ms
+        - waiting for element to be stable
+
+
+      10 |   await search.fill(name);
+      11 |   const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
+    > 12 |   await add.scrollIntoViewIfNeeded();
+         |             ^
+      13 |   await expect(add).toBeInViewport();
+      14 |   await add.click();
+      15 |   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
+        at selectCars (/home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:12:13)
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:104:3
+        at /home/runner/work/VahanaIQ/VahanaIQ/test/browser/onboarding.spec.mjs:101:2
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat3/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat3/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat3/trace.zip
+    Usage:
+
+        npx playwright show-trace qa/task032/reversal/test-browser-onboarding-dr-6d7c3-uses-the-same-required-flow-webkit-repeat3/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[11/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[12/15] [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow
+[13/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+[14/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from catalogue preserves saved vehicles and other financing settings
+[15/15] [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings
+  3 failed
+    [webkit] › test/browser/onboarding.spec.mjs:186:46 › setup from studio preserves saved vehicles and other financing settings 
+    [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow 
+    [webkit] › test/browser/onboarding.spec.mjs:100:1 › draft survives reload and direct catalogue entry uses the same required flow 
+  12 passed (2.1m)
