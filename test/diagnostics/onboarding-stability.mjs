@@ -1,13 +1,18 @@
 // Focused diagnostic experiments. The standard suite keeps its original assertions.
 import {test,expect} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
+import {readFileSync} from 'node:fs';
 import {observeOnboarding} from './onboarding-observer.mjs';
 const base=process.env.BASE_URL||'http://127.0.0.1:8123';
 const mode=process.env.ONBOARDING_INTERACTION||'click';
+const cssVariant=process.env.ONBOARDING_CSS;
 test.use({trace:'on',screenshot:'only-on-failure'});
+if(cssVariant)test.use({serviceWorkers:'block'});
+if(process.env.ONBOARDING_PARALLEL==='1')test.describe.configure({mode:'parallel'});
 const releaseByPage=new WeakMap();
 test.beforeEach(async({page})=>{
  if(process.env.ONBOARDING_OBSERVE==='1')await page.addInitScript(observeOnboarding);
+ if(cssVariant)await page.route('**/css/experience.css*',route=>route.fulfill({contentType:'text/css',body:readFileSync('css/experience.css','utf8')+(cssVariant==='anchor-none'?'\n.onboarding-body { overflow-anchor: none; }\n':'')}));
  await page.addInitScript(()=>{
   if(localStorage.getItem('vahanaiq_comparison_v3'))return;
   localStorage.setItem('vahanaiq_comparison_v3',JSON.stringify({version:3,cars:[{id:'saved-car',name:'Saved vehicle',price:9000000,cond:'New'}]}));
@@ -38,8 +43,11 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
   }
   await page.goto(`${base}/${route}.html?onboarding=1`,{waitUntil:delayedImages?'domcontentloaded':'load'});
   await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();
+  if(cssVariant==='anchor-none')await expect(page.locator('.onboarding-body')).toHaveCSS('overflow-anchor','none');
+  if(cssVariant==='integer')await page.locator('.onboarding-body').evaluate(body=>{body.style.height=Math.floor(body.getBoundingClientRect().height)+'px';body.style.flex='0 0 auto';});
   const search=page.getByRole('searchbox',{name:'Search vehicles',exact:true});
   for(const [index,name]of ['Toyota Aqua','Toyota Camry Hybrid'].entries()){
+   if(mode.startsWith('focus'))await search.click();
    await search.fill(name);
    const card=page.locator('.onboarding-car').filter({has:page.getByRole('heading',{name,exact:true})});
    const add=card.getByRole('button',{name:'+ Add to Shortlist',exact:true});
@@ -57,7 +65,7 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
    } else if(mode==='dom') {
     await add.evaluate(button=>button.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
     await expect(add).toBeInViewport();
-   } else if(mode!=='click') {await add.scrollIntoViewIfNeeded();await expect(add).toBeInViewport();}
+   } else if(!['click','focus'].includes(mode)) {await add.scrollIntoViewIfNeeded();await expect(add).toBeInViewport();}
    if(keyboard){
     // Safari on macOS uses Option-Tab when the user's Tab preference skips buttons.
     const tabKey=process.platform==='darwin'&&browserName==='webkit'?'Alt+Tab':'Tab';
