@@ -84,6 +84,7 @@ jobs:
           node test/e2e-journeys.test.mjs
           node test/guidance.test.mjs
           node test/onboarding.test.mjs
+          node --test test/deploy-readiness.test.mjs
       - name: Check the repository keeps only published assets
         run: node scripts/prune-thumbnails.mjs --check
 

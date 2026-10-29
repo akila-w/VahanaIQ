@@ -51,12 +51,20 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
    await search.fill(name);
    const card=page.locator('.onboarding-car').filter({has:page.getByRole('heading',{name,exact:true})});
    const add=card.getByRole('button',{name:'+ Add to Shortlist',exact:true});
-   if(delayedImages)await expect(card.locator('img')).toHaveJSProperty('complete',false);
-   if(mode==='ready')await card.evaluate(async card=>{
-    await document.fonts.ready;
-    await Promise.all([...card.querySelectorAll('img')].map(img=>img.decode().catch(()=>{})));
-    await Promise.all(document.getAnimations().filter(a=>a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));
-   });
+   // Ready must observe loading, then release the held requests before decode.
+   // Other modes keep images held throughout selection as their loading control.
+   if(delayedImages&&(mode!=='ready'||index===0))await expect(card.locator('img')).toHaveJSProperty('complete',false);
+   if(mode==='ready'){
+    if(delayedImages){
+     await expect.poll(()=>heldImages).toBeGreaterThan(0);
+     releaseImages();
+    }
+    await card.evaluate(async card=>{
+     await document.fonts.ready;
+     await Promise.all([...card.querySelectorAll('img')].map(img=>img.decode().catch(()=>{})));
+     await Promise.all(document.getAnimations().filter(a=>a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));
+    });
+   }
    if(mode==='wheel') {
     const bounds=await page.locator('.onboarding-body').boundingBox();
     await page.mouse.move(bounds.x+bounds.width/2,bounds.y+bounds.height/2);
