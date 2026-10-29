@@ -286,14 +286,14 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       return;
     }
     const chosenStatus = o ? offerEvidenceStatus(o) : (publishedPrice(pending) ? "confirmed" : "unverified");
-    const brandNewPrice = o && chosenStatus === "confirmed" ? o.amount : (publishedPrice(pending) ? pending.price : null);
+    const brandNewPrice = o ? (chosenStatus === "confirmed" ? o.amount : null) : (publishedPrice(pending) ? pending.price : null);
     $("cataloguePrice").value = brandNewPrice ? formatMoneyText(String(brandNewPrice)) : "";
     if (o && chosenStatus === "confirmed" && $("catalogueTrimWrap") && !$("catalogueTrimWrap").hidden) {
       $("cataloguePriceNote").textContent = `Source-backed Brand New amount (${o.kind || "published"}), checked ${displayDate(o.checkedOn || pending.checkedOn)}. Confirm current quote.`;
     } else {
       $("cataloguePriceNote").textContent = pending.priceBasis === "conflicting"
         ? "The source does not establish a reliable price for this variant. Enter a confirmed quote."
-        : publishedPrice(pending)
+        : !o && publishedPrice(pending)
         ? "Source-backed asking/starting amount, checked " + displayDate(pending.priceVerifiedOn || pending.checkedOn) + ". Confirm the exact specification and current quote."
         : validPrice(pending.price)
         ? "Unverified catalogue estimate. Replace it with a seller quote before relying on the calculation."
