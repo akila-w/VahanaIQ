@@ -8,13 +8,10 @@ async function selectCars(page) {
  const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
  for (const [index, name] of ['Toyota Aqua', 'Toyota Camry Hybrid'].entries()) {
   await search.fill(name);
-  const card = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) });
-  const add = card.getByRole('button', { name: '+ Add to Shortlist', exact: true });
-  // A separate scroll can leave WebKit's fractional modal scrollport oscillating
-  // by one pixel. Click performs its own visibility, stability and hit-target
-  // checks and scrolling; verify the selected replacement button stays in view.
+  const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
+  await add.scrollIntoViewIfNeeded();
+  await expect(add).toBeInViewport();
   await add.click();
-  await expect(card.locator('.onboarding-car-btn')).toBeInViewport();
   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
   if (index === 0) await expect(page.getByRole('button', { name: 'Continue to Loan Terms →' })).toBeDisabled();
  }

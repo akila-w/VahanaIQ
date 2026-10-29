@@ -1,4 +1,4 @@
-name: Focused onboarding geometry isolation
+name: Focused WebKit same-runner anchoring control
 on:
   push:
     branches: [codex/task-03-2-webkit-onboarding]
@@ -6,21 +6,9 @@ on:
 permissions:
   contents: read
 jobs:
-  isolate:
+  compare:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - interaction: explicit
-            css: original
-          - interaction: explicit
-            css: anchor-none
-          - interaction: explicit
-            css: integer
-          - interaction: focus
-            css: original
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
@@ -28,33 +16,36 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npx playwright install --with-deps webkit
-      - name: Record environment, stage opt-in diagnostics and serve unchanged application
+      - name: Preserve source, record environment and serve unchanged application
         run: |
           mkdir -p qa/task032
+          cp css/experience.css qa/task032/original-experience.css
           cat /etc/os-release > qa/task032/os.txt
           printenv ImageOS ImageVersion > qa/task032/runner-image.txt
           sha256sum css/experience.css > qa/task032/source-css.txt
-          cp test/diagnostics/onboarding-stability.mjs qa/task032/onboarding-stability.spec.mjs
-          cp test/diagnostics/onboarding-observer.mjs qa/task032/onboarding-observer.mjs
-          cp test/diagnostics/playwright.config.mjs qa/task032/playwright.config.mjs
           python3 -m http.server 8123 --bind 127.0.0.1 &
           for attempt in $(seq 1 30); do
             if curl -fsS -o /dev/null http://127.0.0.1:8123/index.html; then exit 0; fi
             sleep 1
           done
           exit 1
-      - name: Controlled two-worker geometry comparison
-        env:
-          ONBOARDING_INTERACTION: ${{ matrix.interaction }}
-          ONBOARDING_CSS: ${{ matrix.css }}
-          ONBOARDING_PARALLEL: '1'
-          ONBOARDING_OBSERVE: '1'
-          ONBOARDING_CASES: '12'
-        run: npx playwright test --config=qa/task032/playwright.config.mjs --browser=webkit --workers=2 --reporter=line --output=qa/task032/isolation > qa/task032/isolation.log 2>&1
-      - name: Retain all control outcomes without deploying
+      - name: Original application, worker allowed, original strict interaction
+        continue-on-error: true # Preserve a failing diagnostic control; not a release gate.
+        run: RATE_TRACE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=10 --workers=2 --reporter=line --output=qa/task032/original > qa/task032/original.log 2>&1
+      - name: Test only a scoped anchoring override in this disposable runner
+        run: printf '\n.onboarding-body { overflow-anchor: none; }\n' >> css/experience.css
+      - name: Same runner and strict interaction, anchoring disabled
+        continue-on-error: true
+        run: RATE_TRACE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=10 --workers=2 --reporter=line --output=qa/task032/anchor-none > qa/task032/anchor-none.log 2>&1
+      - name: Restore the original source for the reversal control
+        run: cp qa/task032/original-experience.css css/experience.css
+      - name: Original application again on the same runner
+        continue-on-error: true
+        run: RATE_TRACE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=5 --workers=2 --reporter=line --output=qa/task032/reversal > qa/task032/reversal.log 2>&1
+      - name: Retain raw controls without deploying
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: task032-isolate-${{ matrix.interaction }}-${{ matrix.css }}
+          name: task032-same-runner-controls
           path: qa/task032
           retention-days: 14
