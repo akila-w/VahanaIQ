@@ -33,7 +33,8 @@ jobs:
         continue-on-error: true # Preserve a failing diagnostic control; not a release gate.
         run: RATE_TRACE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=10 --workers=2 --reporter=line --output=qa/task032/original > qa/task032/original.log 2>&1
       - name: Test only a scoped anchoring override in this disposable runner
-        run: printf '\n.onboarding-body { overflow-anchor: none; }\n' >> css/experience.css
+        run: |
+          printf '\n.onboarding-body { overflow-anchor: none; }\n' >> css/experience.css
       - name: Same runner and strict interaction, anchoring disabled
         continue-on-error: true
         run: RATE_TRACE=1 npx playwright test test/browser/onboarding.spec.mjs --browser=webkit --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each=10 --workers=2 --reporter=line --output=qa/task032/anchor-none > qa/task032/anchor-none.log 2>&1
