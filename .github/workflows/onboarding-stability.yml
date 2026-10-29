@@ -1,47 +1,65 @@
-name: Focused onboarding stability investigation
+name: Focused onboarding stability verification
 on:
   push:
     branches: [codex/task-03-2-webkit-onboarding]
   workflow_dispatch:
+    inputs:
+      interaction:
+        description: 'click validates the correction; explicit reproduces the old protocol scroll'
+        type: choice
+        options: [click, explicit, wheel, dom, ready]
+        default: click
 permissions:
   contents: read
 jobs:
-  diagnose:
+  focused:
     strategy:
       fail-fast: false
       matrix:
-        interaction: [wheel, dom, ready]
+        browser: [chromium, firefox, webkit]
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
       - run: npm ci
-      - run: npx playwright install --with-deps webkit
-      - name: Record environment and serve unchanged application
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Record environment, stage opt-in diagnostics and serve application
         run: |
           mkdir -p qa/task032
           cat /etc/os-release > qa/task032/os.txt
           printenv ImageOS ImageVersion > qa/task032/runner-image.txt
           npx playwright --version > qa/task032/playwright.txt
+          cp test/diagnostics/onboarding-stability.mjs qa/task032/onboarding-stability.spec.mjs
+          cp test/diagnostics/onboarding-observer.mjs qa/task032/onboarding-observer.mjs
+          cp test/diagnostics/playwright.config.mjs qa/task032/playwright.config.mjs
           python3 -m http.server 8123 --bind 127.0.0.1 &
           for attempt in $(seq 1 30); do
             if curl -fsS -o /dev/null http://127.0.0.1:8123/index.html; then exit 0; fi
             sleep 1
           done
           exit 1
-      - name: Long-lived browser and real saved-state journeys
+      - name: Repeat the three historically affected journeys
         env:
-          ONBOARDING_INTERACTION: ${{ matrix.interaction }}
+          ENGINE: ${{ matrix.browser }}
+        run: |
+          repeats=3
+          if [ "$ENGINE" = webkit ]; then repeats=10; fi
+          RATE_TRACE=1 npx playwright test test/browser/onboarding.spec.mjs --browser="$ENGINE" --grep 'setup from catalogue|setup from studio|draft survives reload' --repeat-each="$repeats" --workers=2 --reporter=line --output=qa/task032/repeated > qa/task032/repeated.log 2>&1
+      - name: Verify native pointer and keyboard, mobile, motion and delayed images
+        env:
+          ENGINE: ${{ matrix.browser }}
+          ONBOARDING_INTERACTION: ${{ inputs.interaction || 'click' }}
           ONBOARDING_OBSERVE: '1'
-          ONBOARDING_CASES: '12'
-        run: npx playwright test test/browser/onboarding-stability.spec.mjs --browser=webkit --workers=2 --reporter=line --output=qa/task032/warm > qa/task032/warm.log 2>&1
-      - name: Retain every diagnostic outcome without deploying
+          ONBOARDING_VARIANTS: '1'
+          ONBOARDING_CASES: '6'
+        run: npx playwright test --config=qa/task032/playwright.config.mjs --browser="$ENGINE" --workers=2 --reporter=line --output=qa/task032/variants > qa/task032/variants.log 2>&1
+      - name: Retain every focused outcome without deploying
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: task032-onboarding-diagnosis-${{ matrix.interaction }}
+          name: task032-focused-${{ matrix.browser }}
           path: qa/task032
           retention-days: 14
