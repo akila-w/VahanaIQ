@@ -42,17 +42,23 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
   const priced = m => m.offers.filter(o => Number.isFinite(o.amount) && o.amount > 0);
   const lowest = m => representativePriceOffer(m.offers);
   const confirmed = m => priced(m).filter(o => offerEvidenceStatus(o) === 'confirmed');
-  const classification = o => offerEvidenceStatus(o) === 'confirmed' ? 'Source-backed price' : offerEvidenceStatus(o) === 'estimated' ? 'Estimated price — unverified' : 'Unverified price — obtain a quote';
+  const classification = o => {
+    const status = offerEvidenceStatus(o);
+    return status === 'confirmed' ? 'Source-backed price' : status === 'estimated' ? 'Estimated price — unverified' :
+      status === 'disputed' ? 'Disputed price — evidence does not match' : 'Unverified price — obtain a quote';
+  };
   function getOfferForCard(m, type) {
     const pOffers = priced(m);
     if (!pOffers.length) return { offer: null, count: 0 };
     let matching = pOffers;
-    if (type === 'official' || type === 'dealer' || type === 'launch' || type === 'estimated') {
-      const filtered = pOffers.filter(o => o.kind === type);
-      if (filtered.length) matching = filtered;
-    } else if (type === 'priced') {
-      const filtered = pOffers.filter(o => o.kind === 'launch' || o.kind === 'official');
-      if (filtered.length) matching = filtered;
+    if (type === 'priced') {
+      // A positive launch/official amount alone is not evidence of publication.
+      // The Published Prices filter is strictly source-evidence-backed.
+      matching = pOffers.filter(o => offerEvidenceStatus(o) === 'confirmed');
+    } else if (type === 'official' || type === 'dealer' || type === 'launch' || type === 'estimated') {
+      matching = pOffers.filter(o => o.kind === type);
+    } else if (type === 'quote') {
+      matching = [];
     }
     const best = representativePriceOffer(matching);
     return { offer: best, count: matching.length };
