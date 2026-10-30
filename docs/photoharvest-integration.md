@@ -4,9 +4,9 @@ This integration is **curator-only** and **does not publish photos**. PhotoHarve
 
 ## Compatibility boundary
 
-PhotoHarvest currently downloads accepted images into `~/Downloads/PhotoHarvest_…/`. It does **not** write an image-by-image source URL manifest, and its output is **not** the `manifestVersion: 1` export accepted by `scripts/apply-studio-photos.mjs`. Therefore, do **not** feed the review manifest directly to the publishing script or label images as manufacturer-approved.
+PhotoHarvest draft PR #1 now writes `photoharvest-manifest.json` alongside downloads. VahanaIQ validates that acquisition manifest and still produces a **different**, curator-only review manifest. Neither is the `manifestVersion: 1` Photo Studio export accepted by `scripts/apply-studio-photos.mjs`. Therefore, do **not** feed the review manifest directly to the publishing script or label images as manufacturer-approved.
 
-The importer in this PR operates on **local files only**: no browser automation, URL fetching, uploads, or edits to `data/catalogue.json`, `js/catalogue-data.js`, Photo Studio IndexedDB, or public image assets. The `--source-page` argument records the page you *intended* PhotoHarvest to visit, **not** proof that each image originated there. For each candidate, the actual image URL remains `null`, rights and model association remain unverified.
+The importer in this PR operates on **local files only**: no browser automation, URL fetching, uploads, or edits to `data/catalogue.json`, `js/catalogue-data.js`, Photo Studio IndexedDB, or public image assets. By default the importer requires a **completed PhotoHarvest v1 acquisition manifest**. It checks the recorded filenames, SHA-256, bytes, dimensions, source fields and seed. Per-image source URLs are retained as observations—not as proof of ownership, manufacturer origin or licensing. All images remain pending.
 
 ## Local setup
 
@@ -28,13 +28,13 @@ The importer needs Python **3.10+** and Pillow. Keep PhotoHarvest installed sepa
   --dry-run
 ```
 
-If the dry run shows suitable candidates, repeat without `--dry-run`. By default a new, timestamped review bundle is created in `~/Downloads/VahanaIQ-PhotoHarvest-review/`; use `--output-dir` to pick a **new** directory outside the repository.
+The optional `--source-page` must match PhotoHarvest's recorded seed; omit it to use that seed directly. Historical exports lacking `photoharvest-manifest.json` require BOTH `--legacy-without-manifest` and `--source-page`; the resulting review has no per-image attribution. Interrupted harvests are rejected unless `--allow-incomplete` is passed explicitly. If the dry run shows suitable candidates, repeat without `--dry-run`. By default a new, timestamped review bundle is created in `~/Downloads/VahanaIQ-PhotoHarvest-review/`; use `--output-dir` to pick a **new** directory outside the repository.
 
 ## Review bundle format
 
 - `review-manifest.json` — `schemaVersion: 1`, `kind: "vahanaiq-photoharvest-review"`, exact catalogue ID and name, crawl seed, and all candidates marked `pending`
 - `images/<sha256-prefix>.<ext>` — copied, verified image bytes (not re-encoded or published)
-- Candidate metadata: original file name, pixel size, byte length, SHA-256, 64-bit dHash, possible visual duplicate, missing original image URL, and unverified model/rights status
+- Candidate metadata: original file name, pixel size, byte length, SHA-256, 64-bit dHash, possible visual duplicate, observed page/requested/final image URLs, acquisition time and delivery method, and unverified model/rights status
 - `skipped` — rejected candidate names and reasons
 
 Constraints: regular raster files only; symlinks are skipped; raster magic/decoding and pixel size are verified by Pillow; default minimum resolution is 1000×700; default file maximum 12 MiB, maximum 80 candidate images, and 40 million decoded pixels. SHA-256 identifies exact duplicates and dHash provides *possible* near-duplicate hints only. No candidate is auto-approved or auto-published. The scanner does not inspect filenames for correct model attribution; a curator must verify actual vehicle generation and trim.
@@ -51,4 +51,4 @@ Constraints: regular raster files only; symlinks are skipped; raster magic/decod
 
 ## Known limitations / next engineering tasks
 
-PhotoHarvest has no per-image provenance, robust SSRF protection or total download budget. Do not expose it as a network service. Before implementing a direct bridge, extend PhotoHarvest to emit source URL, final URL, page URL, redirects and acquisition timestamp, and apply rate/size/access constraints at every request. This phase intentionally does not modify PhotoHarvest itself, change the calculator, or add an external scraping endpoint.
+PhotoHarvest's per-image provenance is implemented in draft PR #1, not yet merged into `main`. The importer and its validation are in VahanaIQ draft PR #38. Both must be reviewed and verified together before real-image end-to-end testing. PhotoHarvest still lacks robust SSRF protection, explicit robots enforcement and a total download budget; do not expose it as a network service. Acquisition records may contain null URLs where no browser response URL exists, and manual licensing review remains mandatory. This phase intentionally does not modify PhotoHarvest itself, change the calculator, or add an external scraping endpoint.
