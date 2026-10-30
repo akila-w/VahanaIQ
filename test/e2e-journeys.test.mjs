@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { representativePriceOffer, offerEvidenceStatus } from "../js/vehicle-validation.js";
 
 console.log("============================================================");
 console.log("AUTOMATED E2E JOURNEYS TEST SUITE");
@@ -165,7 +166,10 @@ if (shouldRun("Change the catalogue price source")) {
   // Re-evaluate getOfferForCard logic from curated-catalogue.js
   const funcMatch = catalogueJs.match(/function getOfferForCard[\s\S]*?return \{ offer: best, count: matching\.length \};\s*\}/);
   const pricedMatch = catalogueJs.match(/const priced = m => m\.offers\.filter\(o => Number\.isFinite\(o\.amount\) && o\.amount > 0\);/);
-  const evalFunc = new Function(`${pricedMatch[0]}\n${funcMatch[0]}\nreturn getOfferForCard;`)();
+  assert.ok(funcMatch && pricedMatch, "Catalogue price filtering logic must be available for the isolated journey");
+  // Supply the production selection helper to the isolated function. Do not
+  // duplicate its logic: the test must exercise the same confidence ordering.
+  const evalFunc = new Function("representativePriceOffer", `${pricedMatch[0]}\n${funcMatch[0]}\nreturn getOfferForCard;`)(representativePriceOffer);
 
   const a3Priced = evalFunc(a3, "priced");
   const a4Priced = evalFunc(a4, "priced");
@@ -174,6 +178,8 @@ if (shouldRun("Change the catalogue price source")) {
   assert.equal(a3Priced.offer.kind, "launch", "Audi A3 must display Published Launch Price under Published Prices filter");
   assert.equal(a4Priced.offer.kind, "launch", "Audi A4 must display Published Launch Price under Published Prices filter");
   assert.equal(a5Priced.offer.kind, "launch", "Audi A5 must display Published Launch Price under Published Prices filter");
+  assert.equal(offerEvidenceStatus(a3Priced.offer), "disputed", "Audi A3 launch amount must not be treated as verified");
+  assert.equal(offerEvidenceStatus(a4Priced.offer), "disputed", "Audi A4 launch amount must not be treated as verified");
 
   // Under dealer filter, Toyota Yaris Cross shows its Brand New dealer asking price
   const ycDealer = evalFunc(yarisCross, "dealer");
