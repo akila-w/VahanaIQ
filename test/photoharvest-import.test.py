@@ -94,5 +94,101 @@ class ImportTests(unittest.TestCase):
         self.assertTrue(any("Symbolic links" in x["reason"] for x in review["skipped"]))
 
 
+    def write_provenance(self, files=None, status="completed", seed=None):
+        from datetime import datetime
+        files = files if files is not None else [x for x in self.source.iterdir() if x.is_file()]
+        records = []
+        for file in files:
+            with Image.open(file) as picture:
+                width, height = picture.size
+            records.append({
+                "filename": file.name,
+                "sha256": module.sha256_file(file),
+                "bytes": file.stat().st_size,
+                "width": width, "height": height,
+                "sourcePageUrl": "https://example.org/observed",
+                "requestedImageUrl": "https://cdn.example.org/requested.jpg",
+                "resolvedImageUrl": "https://cdn.example.org/final.jpg",
+                "sourceKind": "web-url",
+                "deliveryMethod": "playwright-request",
+                "acquiredAt": "2026-10-30T02:54:00Z",
+                "contentType": "image/jpeg",
+                "reviewStatus": "pending",
+                "rightsStatus": "unverified",
+            })
+        document = {
+            "manifestVersion": 1, "kind": "photoharvest-acquisition",
+            "tool": "PhotoHarvest", "seedUrl": seed or self.page,
+            "status": status, "images": records,
+        }
+        (self.source / module.PROVENANCE_NAME).write_text(json.dumps(document))
+        return document
+
+    def test_provenance_verified_and_transferred(self):
+        original = self.image("001_front.jpg")
+        self.write_provenance()
+        acquisition = module.load_provenance(self.source, self.page)
+        review = module.build_review(self.source, self.model, self.page, provenance=acquisition)
+        self.assertEqual(review["acquisitionManifest"]["version"], 1)
+        self.assertTrue(review["sourcePagePerImageCaptured"])
+        self.assertTrue(review["sourceImageUrlPerImageCaptured"])
+        candidate = review["candidates"][0]
+        self.assertEqual(candidate["originPageUrl"], "https://example.org/observed")
+        self.assertEqual(candidate["resolvedImageUrl"], "https://cdn.example.org/final.jpg")
+        self.assertEqual(candidate["sourceImageUrl"], "https://cdn.example.org/requested.jpg")
+        self.assertEqual(candidate["sha256"], module.sha256_file(original))
+        self.assertFalse(review["publicationAllowed"])
+        self.assertEqual(candidate["rightsStatus"], "unverified")
+
+    def test_reject_tampered_image(self):
+        original = self.image("001_front.jpg")
+        self.write_provenance()
+        original.write_bytes(original.read_bytes() + b"tampered")
+        manifest = module.load_provenance(self.source)
+        with self.assertRaises(module.ImportErrorSafe):
+            module.build_review(self.source, self.model, self.page, provenance=manifest)
+
+    def test_reject_manifest_unsafe_names_and_repeated_names(self):
+        self.image("001_front.jpg")
+        document = self.write_provenance()
+        for filename in ("../outside.jpg", "nested/image.jpg", "001_front.jpg"):
+            altered = json.loads(json.dumps(document))
+            altered["images"][0]["filename"] = filename
+            if filename == "001_front.jpg":
+                altered["images"].append(altered["images"][0].copy())
+            (self.source / module.PROVENANCE_NAME).write_text(json.dumps(altered))
+            with self.subTest(filename=filename), self.assertRaises(module.ImportErrorSafe):
+                module.load_provenance(self.source)
+
+    def test_reject_wrong_seed_and_incomplete(self):
+        self.image("001_front.jpg")
+        self.write_provenance(status="in-progress")
+        with self.assertRaises(module.ImportErrorSafe):
+            module.load_provenance(self.source)
+        self.assertEqual(module.load_provenance(self.source, allow_incomplete=True)["status"], "in-progress")
+        with self.assertRaises(module.ImportErrorSafe):
+            module.load_provenance(self.source, source_page="https://another.example/page")
+
+    def test_manifest_does_not_promote_unrecorded_images(self):
+        a = self.image("001_front.jpg")
+        self.write_provenance(files=[a])
+        self.image("unlisted.jpg", colour="blue")
+        provenance = module.load_provenance(self.source)
+        review = module.build_review(self.source, self.model, self.page, provenance=provenance)
+        self.assertEqual(len(review["candidates"]), 1)
+        self.assertTrue(any("Not listed" in item["reason"] for item in review["skipped"]))
+
+    def test_reject_invalid_manifest_hash_and_claims(self):
+        self.image("001_front.jpg")
+        manifest = self.write_provenance()
+        for field, value in [("sha256", "invalid"), ("rightsStatus", "approved"),
+                             ("reviewStatus", "approved"), ("sourcePageUrl", "file:///tmp/a")]:
+            modified = json.loads(json.dumps(manifest))
+            modified["images"][0][field] = value
+            (self.source / module.PROVENANCE_NAME).write_text(json.dumps(modified))
+            with self.subTest(field=field), self.assertRaises(module.ImportErrorSafe):
+                module.load_provenance(self.source)
+
+
 if __name__ == "__main__":
     unittest.main()
