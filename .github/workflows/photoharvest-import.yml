@@ -4,6 +4,10 @@ on:
     paths:
       - 'scripts/import-photoharvest.py'
       - 'test/photoharvest-import.test.py'
+      - 'test/photoharvest-review.test.mjs'
+      - 'js/photoharvest-review.js'
+      - 'js/catalogue-studio.js'
+      - 'studio.html'
       - '.github/workflows/photoharvest-import.yml'
   pull_request:
     paths:
@@ -20,6 +24,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser review module tests
+        run: node test/photoharvest-review.test.mjs
       - name: Install imaging dependency
         run: python -m pip install 'Pillow>=10,<13'
       - name: Compile importer and tests
