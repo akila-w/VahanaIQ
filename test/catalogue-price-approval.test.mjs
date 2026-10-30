@@ -9,7 +9,7 @@ const offer = model.offers.find(o => o.sourceStatus === 'ok' && o.evidence && o.
 assert.ok(model && offer);
 const fields = ['amount','currency','kind','sourceStatus','sourceUrl','checkedOn','sourcePublishedOn','evidence','note'];
 const proposed = Object.fromEntries(fields.map(k => [k, offer[k] ?? null]));
-const item = { offerId: offer.id, modelId: model.id, expectedFingerprint: fingerprintCurrentOffer(offer), proposed };
+const item = { offerId: offer.id, modelId: model.id, expectedFingerprint: fingerprintCurrentOffer(offer, model), proposed };
 const stage = xs => stageOfferPriceCandidates(catalogue, { schemaVersion: 1, candidates: xs });
 const empty = stage([]);
 assert.deepEqual(empty.summary, { total: 0, blocked: 0, pendingReview: 0 });
@@ -34,6 +34,10 @@ assert.equal(review([{ ...approve, attestations: { ...attestations, matchingAmou
 assert.equal(review([{ ...approve, reviewedOn: '2020-01-01' }]).results[0].status, 'review-invalid');
 assert.equal(review([{ ...approve, decision: 'rejected' }]).results[0].status, 'rejected');
 assert.equal(review([approve, approve]).summary.manifestErrors, 1);
+assert.equal(review([approve, approve]).results[0].status, 'review-invalid', 'All duplicate decisions fail closed');
+assert.equal(review([{ ...approve, decision: 'rejected', proposalFingerprint: 'f'.repeat(64) }]).results[0].status, 'review-invalid');
+assert.equal(review([{ ...approve, decision: 'rejected', reviewer: '' }]).results[0].status, 'review-invalid');
+assert.equal(review([{ ...approve, reviewedOn: '2099-01-01' }]).results[0].status, 'review-invalid');
 assert.equal(review([{ ...approve, offerId: 'no-such-offer' }]).summary.manifestErrors, 1);
 
 const blocked = candidate => stage([candidate]).proposals[0];
@@ -46,12 +50,20 @@ assert.ok(blocked({ ...item, proposed: { ...proposed, sourceUrl: 'http://bad.exa
 assert.ok(blocked({ ...item, proposed: { ...proposed, note: 'The price is for another model' } }).problems.includes('contradictory_evidence'));
 assert.ok(blocked({ ...item, proposed: { ...proposed, amount: 99999999 } }).problems.includes('unsupported_claim_of_source_backing'));
 assert.ok(blocked({ ...item, proposed: { ...proposed, sourcePublishedOn: '2099-01-01' } }).problems.includes('publication_after_check'));
+assert.ok(blocked({ ...item, proposed: { ...proposed, checkedOn: '2099-01-01', sourcePublishedOn: null } }).problems.includes('future_check_date'));
+assert.ok(blocked({ ...item, proposed: { ...proposed, sourcePublishedOn: '2099-01-01' } }).problems.includes('future_publication_date'));
 assert.ok(blocked({ ...item, proposed: { ...proposed, kind: 'quote', amount: null, sourceStatus: 'ok' } }).problems.includes('quote_amount_mismatch'));
 assert.ok(blocked({ ...item, proposed: { ...proposed, kind: 'estimated', sourceStatus: 'ok' } }).problems.includes('estimate_status_mismatch'));
 assert.ok(blocked({ ...item, proposed: { ...proposed, id: 'injected' } }).problems.includes('invalid_proposed_fields'));
 assert.ok(blocked({ ...item, extra: 'bypass' }).problems.includes('invalid_candidate_fields'));
-assert.equal(stage([item,item]).summary.blocked, 1);
-assert.equal(fingerprintCurrentOffer(offer), fingerprintCurrentOffer({ ...offer, image: { changed: true } }));
-assert.notEqual(fingerprintCurrentOffer(offer), fingerprintCurrentOffer({ ...offer, amount: 123 }));
+assert.equal(stage([item,item]).summary.blocked, 2, 'Every duplicate offer candidate must be blocked');
+assert.ok(stage([item,item]).proposals.every(p => p.status === 'blocked'));
+assert.equal(fingerprintCurrentOffer(offer, model), fingerprintCurrentOffer({ ...offer, image: { changed: true } }, model));
+assert.notEqual(fingerprintCurrentOffer(offer, model), fingerprintCurrentOffer(offer, { ...model, name: 'Renamed Vehicle' }));
+const renamed = structuredClone(catalogue);
+renamed.models.find(m => m.id === model.id).name = 'Renamed Vehicle';
+assert.ok(stageOfferPriceCandidates(renamed, { schemaVersion: 1, candidates: [item] })
+  .proposals[0].problems.includes('stale_or_invalid_fingerprint'));
+assert.notEqual(fingerprintCurrentOffer(offer, model), fingerprintCurrentOffer({ ...offer, amount: 123 }, model));
 assert.equal(JSON.stringify(catalogue), original);
 console.log('Catalogue approval Gate B: PASS (preview-only; no published price updates)');

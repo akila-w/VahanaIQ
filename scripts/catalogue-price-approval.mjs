@@ -39,9 +39,16 @@ const httpsUrl = value => {
 
 // The hash locks only offer identity and provenance fields; photo edits do not
 // invalidate a pending price review. Model ownership is checked separately.
-export function fingerprintCurrentOffer(offer) {
-  if (!record(offer)) throw new TypeError('Offer must be an object');
-  return digest(SNAPSHOT_FIELDS.map(field => offer[field] ?? null));
+export function fingerprintCurrentOffer(offer, model) {
+  if (!record(offer) || !record(model) || !nonblank(model.id)) {
+    throw new TypeError('Offer and owning model with an ID are required');
+  }
+  // Lock the owning vehicle identity as well as the offer. Model metadata
+  // changes must invalidate evidence attested against an earlier variant.
+  return digest([
+    [model.id, model.make ?? null, model.model ?? null, model.name ?? null],
+    SNAPSHOT_FIELDS.map(field => offer[field] ?? null)
+  ]);
 }
 
 function canonicalIndex(catalogue) {
@@ -57,7 +64,7 @@ function canonicalIndex(catalogue) {
     models.add(model.id);
     for (const offer of model.offers) {
       if (!nonblank(offer?.id) || offers.has(offer.id)) throw new Error('Invalid or duplicate canonical offer ID');
-      offers.set(offer.id, { offer, modelId: model.id });
+      offers.set(offer.id, { offer, model });
     }
   }
   return offers;
@@ -77,6 +84,9 @@ function proposedPriceIssues(proposed) {
   if (proposed.sourcePublishedOn !== null && !validDay(proposed.sourcePublishedOn)) issues.push('invalid_source_published_on');
   if (validDay(proposed.checkedOn) && validDay(proposed.sourcePublishedOn) &&
       proposed.sourcePublishedOn > proposed.checkedOn) issues.push('publication_after_check');
+  const today = new Date().toISOString().slice(0, 10);
+  if (validDay(proposed.checkedOn) && proposed.checkedOn > today) issues.push('future_check_date');
+  if (validDay(proposed.sourcePublishedOn) && proposed.sourcePublishedOn > today) issues.push('future_publication_date');
   if (!nonblank(proposed.sourceUrl) || !httpsUrl(proposed.sourceUrl)) issues.push('invalid_https_source');
   if (typeof proposed.evidence !== 'string' || typeof proposed.note !== 'string') issues.push('invalid_evidence_or_note');
   if ((proposed.amount === null) !== (proposed.kind === 'quote') ||
@@ -101,7 +111,11 @@ export function stageOfferPriceCandidates(catalogue, manifest) {
   const index = canonicalIndex(catalogue);
   if (!record(manifest) || manifest.schemaVersion !== PRICE_APPROVAL_SCHEMA ||
       !Array.isArray(manifest.candidates)) throw new TypeError('Expected a version 1 price-candidate manifest');
-  const encountered = new Set();
+  const counts = new Map();
+  for (const candidate of manifest.candidates) {
+    const id = typeof candidate?.offerId === 'string' ? candidate.offerId : '';
+    if (nonblank(id)) counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
   const proposals = [];
   for (const candidate of manifest.candidates) {
     const problems = [];
@@ -110,13 +124,12 @@ export function stageOfferPriceCandidates(catalogue, manifest) {
     if (!record(candidate) || Object.keys(candidate).some(key => !PROPOSAL_FIELDS.has(key))) {
       problems.push('invalid_candidate_fields');
     }
-    if (!nonblank(offerId) || encountered.has(offerId)) problems.push('missing_or_duplicate_offer_id');
-    encountered.add(offerId);
+    if (!nonblank(offerId) || (counts.get(offerId) ?? 0) > 1) problems.push('missing_or_duplicate_offer_id');
     const current = index.get(offerId);
     if (!current) problems.push('unknown_exact_offer_id');
-    else if (current.modelId !== modelId) problems.push('wrong_model_owner');
+    else if (current.model.id !== modelId) problems.push('wrong_model_owner');
     if (!/^[a-f0-9]{64}$/.test(String(candidate?.expectedFingerprint ?? '')) ||
-        (current && candidate.expectedFingerprint !== fingerprintCurrentOffer(current.offer))) {
+        (current && candidate.expectedFingerprint !== fingerprintCurrentOffer(current.offer, current.model))) {
       problems.push('stale_or_invalid_fingerprint');
     }
     problems.push(...proposedPriceIssues(candidate?.proposed));
@@ -155,10 +168,12 @@ export function previewOfferPriceDecisions(staged, reviewManifest) {
   if (!record(reviewManifest) || reviewManifest.schemaVersion !== PRICE_APPROVAL_SCHEMA ||
       !Array.isArray(reviewManifest.decisions)) throw new TypeError('Expected version 1 review decisions');
   const decisions = new Map();
+  const duplicateReviewIds = new Set();
   const errors = [];
   for (const decision of reviewManifest.decisions) {
     const id = decision?.offerId;
     if (!nonblank(id) || decisions.has(id)) {
+      if (nonblank(id)) duplicateReviewIds.add(id);
       errors.push({ offerId: id ?? '', reason: 'missing_or_duplicate_review_id' });
       continue;
     }
@@ -170,21 +185,22 @@ export function previewOfferPriceDecisions(staged, reviewManifest) {
     const decision = decisions.get(proposal.offerId);
     if (proposal.status === 'blocked') return { offerId: proposal.offerId, status: 'blocked', problems: proposal.problems };
     if (!decision) return { offerId: proposal.offerId, status: 'pending-human-review', problems: [] };
-    if (decision.decision === 'rejected' && nonblank(decision.reason)) {
-      return { offerId: proposal.offerId, status: 'rejected', problems: [] };
-    }
     const problems = [];
-    if (decision.decision !== 'approved') problems.push('invalid_review_decision');
+    if (duplicateReviewIds.has(proposal.offerId)) problems.push('duplicate_review_id');
+    if (!['approved', 'rejected'].includes(decision.decision)) problems.push('invalid_review_decision');
     if (decision.proposalFingerprint !== proposal.proposalFingerprint) problems.push('stale_review_fingerprint');
     if (!nonblank(decision.reviewer) || !validDay(decision.reviewedOn) ||
         !nonblank(decision.reason) || decision.reason.trim().length < 10) problems.push('missing_review_record');
     if (validDay(decision.reviewedOn) && validDay(proposal.proposed?.checkedOn) &&
         decision.reviewedOn < proposal.proposed.checkedOn) problems.push('review_predates_source_check');
-    if (!record(decision.attestations) ||
-        ATTESTATIONS.some(check => decision.attestations[check] !== true)) problems.push('missing_human_evidence_attestations');
+    if (validDay(decision.reviewedOn) &&
+        decision.reviewedOn > new Date().toISOString().slice(0, 10)) problems.push('future_review_date');
+    if (decision.decision === 'approved' && (!record(decision.attestations) ||
+        ATTESTATIONS.some(check => decision.attestations[check] !== true))) problems.push('missing_human_evidence_attestations');
     return {
       offerId: proposal.offerId,
-      status: problems.length ? 'review-invalid' : 'attestation-complete-not-published',
+      status: problems.length ? 'review-invalid' :
+        decision.decision === 'rejected' ? 'rejected' : 'attestation-complete-not-published',
       problems: problems.sort()
     };
   });

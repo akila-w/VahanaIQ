@@ -30,16 +30,16 @@ This illustrates the **shape only**. It is not a real vehicle price or an approv
 
 Required controls:
 - Existing exact `offerId` and matching `modelId` — no fuzzy make/model match.
-- Fingerprint of the current offer's price and identity fields — stale or altered offers blocked.
+- Fingerprint of the current offer's price and identity fields **and its owning model's identity** — stale or altered offers/models blocked (call `fingerprintCurrentOffer(offer, model)`).
 - Exactly the proposed price/evidence fields; no image, registration, specs, comparison, or user-data edits.
 - Positive LKR amount or an explicit quote (no price); valid dates and HTTPS source.
 - `sourceStatus: "ok"` cannot exceed the existing `offerEvidenceStatus` classifier and contradictory notes always block.
 - Estimates are never silently converted into verified prices.
-- Duplicate IDs, unsupported currency, future publication relative to checked date, and invalid amounts are blocked.
+- All occurrences of duplicate candidate IDs, unsupported currency, future check/publication dates, publication after the source check, and invalid amounts are blocked.
 - Every otherwise valid proposal remains `pending-human-review`.
 
 ## Review decision contract
-Each decision references the exact `offerId` and `proposalFingerprint`. A declared approval requires reviewer, review date, meaningful reason, and all five explicit attestations:
+Each decision references the exact `offerId` and `proposalFingerprint`. **Both approval and rejection** require a reviewer, non-future review date, meaningful reason, and a matching fingerprint. Duplicate review IDs invalidate the associated result. A declared approval additionally requires all five explicit attestations:
 - Matching model and trim
 - Matching market and condition
 - Matching amount and currency
