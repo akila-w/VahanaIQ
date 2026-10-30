@@ -111,9 +111,18 @@
               <div class="block-actions">
                 <label class="btn" for="photoFiles">Add Photos</label>
                 <input id="photoFiles" class="sr-only" type="file" accept="image/*" multiple>
+                <label class="btn-outline" for="harvestFolder">Inspect PhotoHarvest Review Folder</label>
+                <input id="harvestFolder" class="sr-only" type="file" webkitdirectory multiple aria-describedby="harvestHelp">
               </div>
             </div>
             <p class="studio-hint">The photo marked <strong>Cover</strong> is the one the card shows. Add several files at once, drag them onto the strip, or paste a screenshot with ⌘V (Ctrl+V).</p>
+            <section class="harvest-review" id="harvestReview" aria-label="PhotoHarvest candidate review" hidden>
+              <h4>PhotoHarvest candidate review</h4>
+              <p id="harvestHelp">Review folders stay on this device. Importing this folder does not add images to your catalogue or allow publication. Verify image sources, exact vehicle identity and reuse rights separately.</p>
+              <p id="harvestSummary" role="status"></p>
+              <ul id="harvestCandidates"></ul>
+              <button type="button" class="quiet" id="harvestClear">Close review</button>
+            </section>
             <ul class="filmstrip" id="filmstrip"></ul>
             <p class="studio-note is-alert" id="photoError" role="alert" hidden></p>
           </section>
