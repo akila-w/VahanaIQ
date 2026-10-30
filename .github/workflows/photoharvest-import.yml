@@ -13,6 +13,11 @@ on:
     paths:
       - 'scripts/import-photoharvest.py'
       - 'test/photoharvest-import.test.py'
+      - 'test/photoharvest-review.test.mjs'
+      - 'js/photoharvest-review.js'
+      - 'js/catalogue-studio.js'
+      - 'studio.html'
+      - 'css/catalogue-studio.css'
       - '.github/workflows/photoharvest-import.yml'
 permissions:
   contents: read
