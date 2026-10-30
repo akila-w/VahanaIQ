@@ -169,7 +169,7 @@ if (shouldRun("Change the catalogue price source")) {
   assert.ok(funcMatch && pricedMatch, "Catalogue price filtering logic must be available for the isolated journey");
   // Supply the production selection helper to the isolated function. Do not
   // duplicate its logic: the test must exercise the same confidence ordering.
-  const evalFunc = new Function("representativePriceOffer", `${pricedMatch[0]}\n${funcMatch[0]}\nreturn getOfferForCard;`)(representativePriceOffer);
+  const evalFunc = new Function("representativePriceOffer", "offerEvidenceStatus", `${pricedMatch[0]}\n${funcMatch[0]}\nreturn getOfferForCard;`)(representativePriceOffer, offerEvidenceStatus);
 
   const a3Priced = evalFunc(a3, "priced");
   const a4Priced = evalFunc(a4, "priced");
