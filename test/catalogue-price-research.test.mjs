@@ -72,8 +72,15 @@ fail({ observed: { ...entry.observed, sourceExcerpt: 'An unrelated price' } }, '
 fail({ observed: { ...entry.observed, sourceExcerpt: 'Price for another model' } }, 'contradictory_source_excerpt');
 fail({ observed: { ...entry.observed, conflicts: [{ url: 'https://example.invalid/conflict' }] } }, 'conflicting_sources');
 fail({ observed: { ...entry.observed, conflicts: null } }, 'missing_conflict_review');
-fail({ observed: { ...entry.observed, checkedOn: '2026-08-01' } }, 'stale_or_future_source_check');
-fail({ observed: { ...entry.observed, sourcePublishedOn: '2026-01-01' } }, 'stale_or_future_publication');
+fail({ observed: { ...entry.observed, checkedOn: '2026-08-01' } }, 'research_check_date_mismatch');
+fail({
+  proposed: { ...proposed, checkedOn: '2026-09-01', sourcePublishedOn: '2026-08-31' },
+  observed: { ...entry.observed, checkedOn: '2026-09-01', sourcePublishedOn: '2026-08-31' }
+}, 'stale_or_future_source_check');
+fail({
+  proposed: { ...proposed, sourcePublishedOn: '2026-01-01' },
+  observed: { ...entry.observed, sourcePublishedOn: '2026-01-01' }
+}, 'stale_or_future_publication');
 fail({ observed: { ...entry.observed, sourcePublishedOn: null } }, 'missing_or_mismatched_source_publication');
 fail({ observed: { ...entry.observed, extra: true } }, 'invalid_observation_fields');
 fail({ extra: true }, 'invalid_research_fields');
