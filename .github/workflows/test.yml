@@ -76,6 +76,7 @@ jobs:
           node test/copy-privacy.test.mjs
           node test/catalogue-data.test.mjs
           node test/price-evidence.test.mjs
+          node test/catalogue-price-parity.test.mjs
           node test/catalogue-calculator-imagery.test.mjs
           node test/catalogue-studio.test.mjs
           node test/planner.test.mjs
