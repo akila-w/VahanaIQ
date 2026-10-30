@@ -60,3 +60,24 @@ Support depends on browser `webkitdirectory` and `crypto.subtle` (HTTPS or local
 ## Known limitations / next engineering tasks
 
 PhotoHarvest's per-image provenance is implemented in draft PR #1, not yet merged into `main`. The importer and its validation are in VahanaIQ draft PR #38. Both must be reviewed and verified together before real-image end-to-end testing. PhotoHarvest still lacks robust SSRF protection, explicit robots enforcement and a total download budget; do not expose it as a network service. Acquisition records may contain null URLs where no browser response URL exists, and manual licensing review remains mandatory. This phase intentionally does not modify PhotoHarvest itself, change the calculator, or add an external scraping endpoint.
+
+## Synthetic end-to-end browser verification (Milestone 3)
+
+`test/browser/photoharvest-review.spec.mjs` generates a valid deterministic PNG without downloading third-party photographs, writes an acquisition manifest compatible with PhotoHarvest PR #1, invokes the actual Python `scripts/import-photoharvest.py`, then chooses the resulting local folder through the real Studio folder input in Playwright.
+
+Coverage: SHA-256 verification and preview image decoding, source attribution display, unchanged filmstrip and IndexedDB, disabled export when no owner edits exist, refusal of altered image bytes, wrong catalogue model, incomplete acquisition and path traversal. Repeat on both the root and GitHub Pages `/VahanaIQ/` mount.
+
+CI runs the fixture suite against **Chromium, Firefox and WebKit** using isolated local HTTP origins, blocked service workers for this test and aborted external HTTPS; no crawling or deployment happens. Full site-wide CI is a separate release gate.
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install 'Pillow>=10,<13'
+npm ci
+npx playwright install chromium firefox webkit
+# Ensure the importer gets Pillow through PATH or activate the venv first:
+source .venv/bin/activate
+npx playwright test test/browser/photoharvest-review.spec.mjs --browser=chromium --workers=1
+```
+
+Automated browser tests simulate directory selection, not the physical macOS Finder folder picker. Before release, perform a manual Mac check of the chosen review directory in Safari and Firefox; verify browser focus, keyboard access, PNG decoding and temporary object-URL cleanup.
+
