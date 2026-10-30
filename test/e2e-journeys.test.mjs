@@ -175,11 +175,13 @@ if (shouldRun("Change the catalogue price source")) {
   const a4Priced = evalFunc(a4, "priced");
   const a5Priced = evalFunc(a5, "priced");
 
-  assert.equal(a3Priced.offer.kind, "launch", "Audi A3 must display Published Launch Price under Published Prices filter");
-  assert.equal(a4Priced.offer.kind, "launch", "Audi A4 must display Published Launch Price under Published Prices filter");
-  assert.equal(a5Priced.offer.kind, "launch", "Audi A5 must display Published Launch Price under Published Prices filter");
-  assert.equal(offerEvidenceStatus(a3Priced.offer), "disputed", "Audi A3 launch amount must not be treated as verified");
-  assert.equal(offerEvidenceStatus(a4Priced.offer), "disputed", "Audi A4 launch amount must not be treated as verified");
+  assert.equal(a3Priced.offer, null, "Audi A3 mismatched launch source must not appear under Published Prices");
+  assert.equal(a4Priced.offer, null, "Audi A4 unsupported launch amount must not appear under Published Prices");
+  assert.equal(a5Priced.offer, null, "Audi A5 unsupported launch amount must not appear under Published Prices");
+  assert.equal(evalFunc(a3, "launch").offer.kind, "launch", "Explicit launch-source filter may display a disputed amount with a warning");
+  assert.equal(offerEvidenceStatus(evalFunc(a3, "launch").offer), "disputed", "A3 cannot be promoted by an explicit source filter");
+  assert.equal(offerEvidenceStatus(evalFunc(a4, "launch").offer), "disputed", "A4 cannot be promoted by an explicit source filter");
+  assert.ok(catData.models.some(m => evalFunc(m, "priced").offer), "Verified published-price filter must still return valid vehicles");
 
   // Under dealer filter, Toyota Yaris Cross shows its Brand New dealer asking price
   const ycDealer = evalFunc(yarisCross, "dealer");
