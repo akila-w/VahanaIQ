@@ -79,6 +79,7 @@ jobs:
           node test/catalogue-price-parity.test.mjs
           node test/catalogue-price-approval.test.mjs
           node test/catalogue-price-research.test.mjs
+          node test/catalogue-publication.test.mjs
           node test/catalogue-calculator-imagery.test.mjs
           node test/catalogue-studio.test.mjs
           node test/planner.test.mjs
