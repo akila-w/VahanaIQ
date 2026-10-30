@@ -1,0 +1,75 @@
+name: PhotoHarvest Phase 1
+on:
+  push:
+    paths:
+      - 'scripts/import-photoharvest.py'
+      - 'test/photoharvest-import.test.py'
+      - 'test/photoharvest-review.test.mjs'
+      - 'test/browser/photoharvest-review.spec.mjs'
+      - 'js/photoharvest-review.js'
+      - 'js/catalogue-studio.js'
+      - 'studio.html'
+      - '.github/workflows/photoharvest-import.yml'
+  pull_request:
+    paths:
+      - 'scripts/import-photoharvest.py'
+      - 'test/photoharvest-import.test.py'
+      - 'test/photoharvest-review.test.mjs'
+      - 'test/browser/photoharvest-review.spec.mjs'
+      - 'js/photoharvest-review.js'
+      - 'js/catalogue-studio.js'
+      - 'studio.html'
+      - 'css/catalogue-studio.css'
+      - '.github/workflows/photoharvest-import.yml'
+permissions:
+  contents: read
+jobs:
+  local-review-import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Browser review module tests
+        run: node test/photoharvest-review.test.mjs
+      - name: Install imaging dependency
+        run: python -m pip install 'Pillow>=10,<13'
+      - name: Compile importer and tests
+        run: python -m py_compile scripts/import-photoharvest.py test/photoharvest-import.test.py
+      - name: Run local-only fixture tests
+        run: python test/photoharvest-import.test.py
+
+  browser-review:
+    name: review-browser (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit, firefox]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test dependencies
+        run: |
+          npm ci
+          python -m pip install 'Pillow>=10,<13'
+          npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Exercise Photo Studio review with synthetic local files
+        run: npx playwright test test/browser/photoharvest-review.spec.mjs --browser=${{ matrix.browser }} --workers=1 --reporter=list,github
+      - name: Retain failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: photoharvest-review-${{ matrix.browser }}
+          path: test-results/
+          retention-days: 7

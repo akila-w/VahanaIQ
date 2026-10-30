@@ -13,6 +13,7 @@ import {
   uploadItem
 } from "./catalogue-photos.js?v=2.12.0";
 import { clearEdits, deleteEdit, readEdits, writeEdit } from "./catalogue-photo-store.js?v=2.12.0";
+import { readReviewFolder } from "./photoharvest-review.js?v=2.12.0";
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -175,6 +176,7 @@ async function commit(model, record, message) {
 async function selectModel(id) {
   const model = modelById(id);
   if (!model) return;
+  if (state.modelId && state.modelId !== model.id) closeHarvestReview();
   state.modelId = model.id;
   const items = orderedItems(recordFor(model));
   if (!items.some(item => item.id === state.itemId)) state.itemId = items.length ? items[0].id : null;
@@ -294,6 +296,74 @@ async function renderStage(token) {
   note("photoError", "");
   paintStage(item);
 }
+// ---------------------------- PhotoHarvest local candidate review ----------------------------
+// Read-only and ephemeral: not stored in IndexedDB, not owner photos, not exported.
+const harvestUrls = new Set();
+let harvestLoadToken = 0;
+function closeHarvestReview() {
+  ++harvestLoadToken;
+  for (const url of harvestUrls) URL.revokeObjectURL(url);
+  harvestUrls.clear();
+  $("harvestReview").hidden = true;
+  $("harvestCandidates").replaceChildren();
+  $("harvestSummary").textContent = "";
+}
+$("harvestFolder").addEventListener("change", async event => {
+  closeHarvestReview();
+  const token = harvestLoadToken;
+  const input = event.target;
+  const panel = $("harvestReview");
+  const candidatesList = $("harvestCandidates");
+  panel.hidden = false;
+  $("harvestSummary").textContent = "Verifying review manifest and local image hashes…";
+  try {
+    const model = selectedModel();
+    if (!model) throw Error("Choose a catalogue model first.");
+    const bundle = await readReviewFolder(input.files, model.id);
+    if (token !== harvestLoadToken || selectedModel()?.id !== model.id) return;
+    $("harvestSummary").textContent =
+      bundle.matched.length + " candidate photo(s) for " + model.name
+      + ". All are unapproved; none were added to the catalogue.";
+    for (const { file, candidate } of bundle.matched) {
+      const li = document.createElement("li");
+      const picture = document.createElement("img");
+      const url = URL.createObjectURL(file);
+      harvestUrls.add(url);
+      picture.src = url;
+      picture.alt = "Unapproved image candidate: " + (candidate.originalFileName || candidate.file);
+      picture.width = 160;
+      picture.height = 100;
+      picture.loading = "lazy";
+      li.append(picture);
+      const details = document.createElement("div");
+      const strong = document.createElement("strong");
+      strong.textContent = candidate.originalFileName || candidate.file;
+      details.append(strong);
+      const dimensions = document.createElement("p");
+      dimensions.textContent = candidate.width + "×" + candidate.height
+        + " · SHA-256 verified · model match unverified · rights unverified";
+      details.append(dimensions);
+      const source = document.createElement("p");
+      source.textContent = "Observed source: " + (candidate.originPageUrl || "unknown")
+        + " · Requested image: " + (candidate.sourceImageUrl || "unknown")
+        + " · Response: " + (candidate.resolvedImageUrl || "unknown");
+      details.append(source);
+      const notice = document.createElement("p");
+      notice.textContent = "Pending curator review — not eligible for publication";
+      details.append(notice);
+      li.append(details);
+      candidatesList.append(li);
+    }
+  } catch (error) {
+    if (token !== harvestLoadToken) return;
+    $("harvestSummary").textContent = "Review refused: " + error.message;
+    candidatesList.replaceChildren();
+  } finally {
+    input.value = "";
+  }
+});
+$("harvestClear").addEventListener("click", closeHarvestReview);
+
 // ---------------------------- adding photos ----------------------------
 
 function forgetPhotos(items) {
