@@ -104,10 +104,11 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
       save();
       const currentType = $('priceType')?.value || '';
       const low = offer || (currentType ? getOfferForCard(m, currentType).offer : null) || lowest(m) || m.offers?.[0] || {};
-      if (offerEvidenceStatus(low) !== 'confirmed') {
+      const evidenceStatus = offerEvidenceStatus(low);
+      if (!Number.isFinite(low.amount) || low.amount <= 0) {
         delete review.comparison[m.id];
         save();
-        toast('This catalogue price is not verified. Enter a seller quote in the Calculator before comparing.');
+        toast('No catalogue price is available. Enter a seller quote in the Calculator to compare.');
         return;
       }
       const cleanName = shortName(m).replace(/\s+(202[0-9])$/, '');
@@ -118,7 +119,7 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
         name: `${cardTitle} ${m.cardYear || ''}`.trim(),
         make: m.make,
         model: m.model || cleanName,
-        price: offerEvidenceStatus(low) === 'confirmed' ? low.amount : 0,
+        price: low.amount,
         cond: low.condition || 'New',
         financeClass: m.financeClass,
         firstRegisteredOn: low.firstRegisteredOn,
@@ -128,14 +129,19 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
         img: m.images?.[0]?.smallSrc || m.images?.[0]?.src || '',
         custom: true,
         legacy: false,
-        priceBasis: offerEvidenceStatus(low) === 'confirmed' ? (low.kind === 'launch' ? 'starting' : 'published') : 'unpublished',
-        priceVerification: offerEvidenceStatus(low) === 'confirmed' ? 'confirmed' : 'unverified'
+        priceBasis: evidenceStatus === 'confirmed' ? (low.kind === 'launch' ? 'starting' : 'published') : (evidenceStatus === 'disputed' ? 'conflicting' : 'estimated'),
+        priceVerification: evidenceStatus === 'confirmed' ? 'confirmed' : 'unverified',
+        priceCheckedMonth: low.checkedOn?.slice(0, 7) || null,
+        priceVerifiedOn: evidenceStatus === 'confirmed' ? low.checkedOn : null,
+        priceSourceUrl: low.sourceUrl || null
       };
       if (!saved.some(c => c.id === m.id || c.catalogueId === modelId || c.name === carRecord.name)) {
         saved.push(carRecord);
       }
       saveComparisonCars(saved);
-      toast(`Added ${m.name} to comparison.`);
+      toast(evidenceStatus === 'confirmed'
+        ? `Added ${m.name} to comparison.`
+        : `Added ${m.name} with an unverified indicative price. Replace it with a seller quote before relying on the comparison.`);
     }
 
     selectedAffordabilityVehicle = m;
@@ -171,11 +177,11 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
     const currentType = $('priceType')?.value || '';
     const low = (currentType ? getOfferForCard(m, currentType).offer : null) || lowest(m);
     const verified = offerEvidenceStatus(low) === 'confirmed';
-    const price = verified ? low.amount : 0;
+    const price = Number.isFinite(low?.amount) && low.amount > 0 ? low.amount : 0;
 
     const cleanName = shortName(m).replace(/\s+(202[0-9])$/, '');
     const vehicleTitle = cleanName.toLowerCase().startsWith(m.make.toLowerCase()) ? cleanName : `${m.make} ${cleanName}`;
-    if (!verified) return `<div class="affordability-card"><div class="affordability-card-head"><h4>Budget &amp; Affordability Review for ${esc(vehicleTitle)}</h4><span class="tag mid">Price not verified</span></div><p class="affordability-summary-line">This price is indicative or unsupported by matching evidence. Obtain a current seller quote before relying on an affordability result.</p></div>`;
+    if (!price) return `<div class="affordability-card"><div class="affordability-card-head"><h4>Budget &amp; Affordability Review for ${esc(vehicleTitle)}</h4><span class="tag mid">Price on request</span></div><p class="affordability-summary-line">Obtain a current seller quote before calculating affordability.</p></div>`;
 
     const income = settings.income;
     const debt = settings.debt;
@@ -200,7 +206,12 @@ import { rental as calcRental, flatToEffective, minDownFor } from './calculator.
     let statusTag = '';
     let summaryText = '';
 
-    if (income > 0) {
+    if (!verified) {
+      // The arithmetic is still useful as an explicitly illustrative scenario,
+      // but must not be presented as a verified affordability determination.
+      statusTag = `<span class="tag mid">Illustrative only · Price unverified${dtiPct === null ? '' : ` · ${dtiPct.toFixed(1)}% DTI`}</span>`;
+      summaryText = `Using the unverified catalogue amount of LKR ${fmt(price)}, the indicative monthly rental is LKR ${fmt(rental)} with ${downPct}% down. This is not a confirmed seller quote or an affordability decision. Replace the price with a current seller quote before relying on these figures.`;
+    } else if (income > 0) {
       if (downPct >= 100) {
         statusTag = `<span class="tag ok">100% Cash · 0.0% Lease DTI</span>`;
         summaryText = `100% cash purchase (LKR ${fmt(upfrontAmount)} upfront${fees > 0 ? ' including fees' : ''}) — zero monthly lease rental.`;
