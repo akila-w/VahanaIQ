@@ -65,15 +65,31 @@ const reviews = {
   }]
 };
 const { publicKey, privateKey } = generateKeyPairSync('ed25519');
-const trust = { schemaVersion: 1, approvers: [{
+const { publicKey: researchPublicKey, privateKey: researchPrivateKey } = generateKeyPairSync('ed25519');
+const trust = { schemaVersion: 2, approvers: [{
   keyId: 'key-a', reviewerId: 'Reviewer A', enabled: true,
   publicKeyPem: publicKey.export({ type: 'spki', format: 'pem' })
+}], researchers: [{
+  keyId: 'key-research', researcherId: 'Researcher B', enabled: true,
+  publicKeyPem: researchPublicKey.export({ type: 'spki', format: 'pem' })
 }] };
+const researchPayload = {
+  schemaVersion: 1, purpose: 'vahanaiq-independent-price-research',
+  researcherId: 'Researcher B', researchedOn: '2026-10-30',
+  catalogueDigest: digestValue(catalogue), identityDigest: digestValue(identity),
+  researchDigest: digestValue(research), offerIds: [offer.id]
+};
+const signResearch = (body = researchPayload, key = researchPrivateKey) => ({
+  schemaVersion: 1, keyId: 'key-research', payload: body,
+  signature: sign(null, Buffer.from(canonicalJSON(body)), key).toString('base64')
+});
+const researchApproval = signResearch();
 const payload = {
   schemaVersion: 1, purpose: 'vahanaiq-manual-price-publication',
   reviewerId: 'Reviewer A', reviewedOn: '2026-10-30',
   catalogueDigest: digestValue(catalogue), identityDigest: digestValue(identity),
   researchDigest: digestValue(research), reviewDigest: digestValue(reviews),
+  researchAuthorisationDigest: digestValue(researchApproval),
   offerIds: [offer.id], allowSourceStatusPromotionIds: [offer.id]
 };
 const authorise = (body = payload, key = privateKey) => ({
@@ -81,8 +97,9 @@ const authorise = (body = payload, key = privateKey) => ({
   signature: sign(null, Buffer.from(canonicalJSON(body)), key).toString('base64')
 });
 const valid = authorise();
-const build = (c = catalogue, i = identity, r = research, v = reviews, a = valid, t = trust) =>
-  prepareApprovedCataloguePatch(c, i, r, v, a, t, { asOf: '2026-10-30' });
+const build = (c = catalogue, i = identity, r = research, v = reviews, a = valid, t = trust,
+  ra = researchApproval) => prepareApprovedCataloguePatch(c, i, r, v, ra, a, t,
+    { asOf: '2026-10-30' });
 const prepared = build();
 assert.equal(prepared.mode, 'manual-git-pr-only');
 assert.equal(prepared.canPublish, false);
@@ -103,11 +120,29 @@ assert.deepEqual(build().hashes, prepared.hashes, 'Deterministic bytes');
 
 const rejects = (fn, msg) => assert.throws(fn, /./, msg);
 rejects(() => build(catalogue, identity, research, reviews, valid,
-  { schemaVersion: 1, approvers: [] }), 'No trusted approvers must fail');
+  { schemaVersion: 2, approvers: [], researchers: trust.researchers }), 'No trusted approvers must fail');
 rejects(() => build(catalogue, identity, research, reviews, valid,
-  { schemaVersion: 1, approvers: [{ ...trust.approvers[0], enabled: false }] }), 'Disabled key must fail');
+  { ...trust, approvers: [{ ...trust.approvers[0], enabled: false }] }), 'Disabled key must fail');
 rejects(() => build(catalogue, identity, research, reviews,
   { ...valid, signature: Buffer.alloc(64).toString('base64') }), 'Forged signature must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid, trust,
+  { ...researchApproval, signature: Buffer.alloc(64).toString('base64') }),
+  'Forged research signature must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid,
+  { ...trust, researchers: [] }), 'Missing trusted researcher must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid,
+  { ...trust, researchers: [{ ...trust.researchers[0], enabled: false }] }),
+  'Disabled researcher key must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid, trust,
+  signResearch({ ...researchPayload, researcherId: 'Someone else' })),
+  'Changed researcher identity must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid, trust,
+  signResearch({ ...researchPayload, researchedOn: '2026-10-28' })),
+  'Research signed before evidence collection must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid,
+  { ...trust, approvers: [{ ...trust.approvers[0], keyId: 'key-research',
+    publicKeyPem: trust.researchers[0].publicKeyPem }] }),
+  'Same research and reviewer key must fail');
 rejects(() => build(catalogue, identity, research, reviews,
   authorise({ ...payload, allowSourceStatusPromotionIds: [] })), 'Unsigned source promotion must fail');
 rejects(() => build(catalogue, identity, research, reviews,
@@ -142,8 +177,12 @@ assert.equal(JSON.stringify(tracked), originalTracked);
 
 const productionTrust = JSON.parse(fs.readFileSync(
   new URL('../config/catalogue-publication-approvers.json', import.meta.url), 'utf8'));
-assert.deepEqual(productionTrust, { schemaVersion: 1, approvers: [] },
-  'Production trust must not contain fixture keys.');
+assert.equal(productionTrust.schemaVersion, 2);
+assert.ok(Array.isArray(productionTrust.approvers) && Array.isArray(productionTrust.researchers));
+assert.ok([...productionTrust.approvers, ...productionTrust.researchers].every(x =>
+  !Object.hasOwn(x, 'privateKeyPem') && !Object.hasOwn(x, 'privateKey')),
+  'Never commit private key material');
+assert.ok(!JSON.stringify(productionTrust).includes('key-research'), 'Test signer must not be trusted in production');
 assert.throws(() => execFileSync(process.execPath,
   ['scripts/prepare-catalogue-publication.mjs'], { stdio: 'pipe' }));
 console.log('Catalogue publication Gate D: PASS (signed, deterministic, no automatic publication)');

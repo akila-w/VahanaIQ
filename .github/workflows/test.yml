@@ -53,6 +53,16 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
+      - name: Fetch PR base for publication approval verification
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: git fetch --no-tags --depth=1 origin "$PR_BASE_SHA"
+      - name: Verify price publication approvals against protected base
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/verify-catalogue-publication-pr.mjs
       - name: Install dev dependencies (esbuild builds css/style.min.css)
         run: npm ci
       - name: Run regression suites without external services

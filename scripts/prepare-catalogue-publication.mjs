@@ -65,19 +65,60 @@ const indexOffers = catalogue => {
   return index;
 };
 
-function verifySignature(authorisation, trust, expected, research, asOf) {
+
+function verifyResearchAuthorisation(authorisation, trust, catalogue, identity,
+  research, offerIds, asOf) {
+  requireTrue(sameKeys(authorisation, ['schemaVersion','keyId','payload','signature']) &&
+    authorisation.schemaVersion === 1 && nonblank(authorisation.keyId),
+    'Invalid research signature envelope');
+  const payload = authorisation.payload;
+  requireTrue(sameKeys(payload, ['schemaVersion','purpose','researcherId','researchedOn',
+    'catalogueDigest','identityDigest','researchDigest','offerIds']) &&
+    payload.schemaVersion === 1 && payload.purpose === 'vahanaiq-independent-price-research' &&
+    nonblank(payload.researcherId) && payload.researcherId === research.researchedBy &&
+    day(payload.researchedOn) && payload.researchedOn <= asOf,
+    'Invalid research identity or date');
+  requireTrue(payload.catalogueDigest === digestValue(catalogue) &&
+    payload.identityDigest === digestValue(identity) &&
+    payload.researchDigest === digestValue(research) &&
+    exactSortedIds(payload.offerIds) &&
+    JSON.stringify(payload.offerIds) === JSON.stringify(offerIds),
+    'Stale or incomplete signed research evidence');
+  requireTrue(research.entries.every(entry => entry?.proposed?.checkedOn <= payload.researchedOn),
+    'Research attestation predates evidence collection');
+  requireTrue(record(trust) && trust.schemaVersion === 2 && Array.isArray(trust.researchers),
+    'Missing trusted researcher registry');
+  const matches = trust.researchers.filter(x => x?.keyId === authorisation.keyId);
+  requireTrue(matches.length === 1 && matches[0].researcherId === payload.researcherId &&
+    matches[0].enabled === true && nonblank(matches[0].publicKeyPem),
+    'Research signer is not trusted and enabled');
+  const signature = authorisation.signature;
+  requireTrue(typeof signature === 'string' && /^[A-Za-z0-9+/]+={0,2}$/.test(signature) &&
+    Buffer.from(signature, 'base64').toString('base64') === signature,
+    'Invalid research signature encoding');
+  let verified = false;
+  try {
+    const key = createPublicKey(matches[0].publicKeyPem);
+    verified = key.asymmetricKeyType === 'ed25519' &&
+      verify(null, Buffer.from(canonicalJSON(payload)), key, Buffer.from(signature, 'base64'));
+  } catch { verified = false; }
+  requireTrue(verified, 'Researcher signature verification failed');
+  return { payload, publicKeyPem: matches[0].publicKeyPem, keyId: matches[0].keyId };
+}
+
+function verifySignature(authorisation, trust, expected, researcher, asOf) {
   requireTrue(sameKeys(authorisation, ['schemaVersion','keyId','payload','signature']) &&
     authorisation.schemaVersion === 1 && nonblank(authorisation.keyId),
     'Invalid authorisation envelope');
   const payload = authorisation.payload;
   requireTrue(sameKeys(payload, [
     'schemaVersion','purpose','reviewerId','reviewedOn','catalogueDigest',
-    'identityDigest','researchDigest','reviewDigest','offerIds','allowSourceStatusPromotionIds'
+    'identityDigest','researchDigest','reviewDigest','researchAuthorisationDigest','offerIds','allowSourceStatusPromotionIds'
   ]) && payload.schemaVersion === 1 &&
     payload.purpose === 'vahanaiq-manual-price-publication' &&
     nonblank(payload.reviewerId) && day(payload.reviewedOn) &&
     payload.reviewedOn <= asOf, 'Invalid signed approval payload');
-  for (const key of ['catalogueDigest','identityDigest','researchDigest','reviewDigest']) {
+  for (const key of ['catalogueDigest','identityDigest','researchDigest','reviewDigest','researchAuthorisationDigest']) {
     requireTrue(typeof payload[key] === 'string' && /^[a-f0-9]{64}$/.test(payload[key]) &&
       payload[key] === expected[key], 'Invalid or stale signed ' + key);
   }
@@ -86,11 +127,14 @@ function verifySignature(authorisation, trust, expected, research, asOf) {
     'Signed offer selection must match the full research batch');
   requireTrue(payload.allowSourceStatusPromotionIds.every(id => payload.offerIds.includes(id)),
     'Signed status promotion list contains unknown offers');
-  requireTrue(payload.reviewerId.trim().toLowerCase() !== research.researchedBy.trim().toLowerCase(),
+  requireTrue(payload.reviewerId.trim().toLowerCase() !== researcher.payload.researcherId.trim().toLowerCase(),
     'Researcher and reviewer must be different');
-  requireTrue(record(trust) && trust.schemaVersion === 1 && Array.isArray(trust.approvers),
+  requireTrue(record(trust) && trust.schemaVersion === 2 && Array.isArray(trust.approvers),
     'Missing or invalid pinned reviewer registry');
   const matches = trust.approvers.filter(x => x?.keyId === authorisation.keyId);
+  requireTrue(authorisation.keyId !== researcher.keyId &&
+    !matches.some(x => x.publicKeyPem === researcher.publicKeyPem),
+    'Research and review must use distinct trusted signing keys');
   requireTrue(matches.length === 1 && matches[0].reviewerId === payload.reviewerId &&
     matches[0].enabled === true && nonblank(matches[0].publicKeyPem),
     'Reviewer is not trusted and enabled');
@@ -112,7 +156,7 @@ function verifySignature(authorisation, trust, expected, research, asOf) {
 // Pure: signed approval permits generation of a patch for independent PR review,
 // not automatic publication.
 export function prepareApprovedCataloguePatch(catalogue, identity, research, reviews,
-  authorisation, trust, options = {}) {
+  researchAuthorisation, authorisation, trust, options = {}) {
   const asOf = options.asOf ?? new Date().toISOString().slice(0, 10);
   requireTrue(day(asOf), 'Invalid as-of date');
   requireTrue(record(identity) && record(identity.brands) && record(identity.models),
@@ -136,14 +180,18 @@ export function prepareApprovedCataloguePatch(catalogue, identity, research, rev
     'Every candidate needs an independent Gate B approval');
   const offerIds = staged.queue.map(x => x.offerId).sort();
   requireTrue(exactSortedIds(offerIds), 'Duplicate offer IDs');
+  const researcher = verifyResearchAuthorisation(researchAuthorisation, trust,
+    catalogue, identity, research, offerIds, asOf);
   const signed = verifySignature(authorisation, trust, {
     catalogueDigest: digestValue(catalogue),
     identityDigest: digestValue(identity),
     researchDigest: digestValue(research),
     reviewDigest: digestValue(reviews),
+    researchAuthorisationDigest: digestValue(researchAuthorisation),
     offerIds
-  }, research, asOf);
-  requireTrue(reviews.decisions.every(x => x.reviewer === signed.reviewerId &&
+  }, researcher, asOf);
+  requireTrue(signed.reviewedOn >= researcher.payload.researchedOn &&
+    reviews.decisions.every(x => x.reviewer === signed.reviewerId &&
     x.reviewedOn === signed.reviewedOn),
     'Reviewer attestations differ from authenticated signed reviewer/date');
   for (const item of staged.queue) {
@@ -189,16 +237,17 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
   try {
     const { values } = parseArgs({ options: {
       research: { type: 'string' }, reviews: { type: 'string' },
-      authorisation: { type: 'string' }, 'as-of': { type: 'string' },
+      'research-authorisation': { type: 'string' },
+      authorisation: { type: 'string' },
       emit: { type: 'boolean', default: false }
     }, strict: true });
-    requireTrue(values.research && values.reviews && values.authorisation,
-      'Usage: --research file.json --reviews file.json --authorisation signed.json [--emit]');
+    requireTrue(values.research && values.reviews && values['research-authorisation'] && values.authorisation,
+      'Usage: --research file.json --research-authorisation researcher-signed.json --reviews file.json --authorisation reviewer-signed.json [--emit]');
     const load = file => JSON.parse(readFileSync(file, 'utf8'));
     const result = prepareApprovedCataloguePatch(
       load('data/catalogue.json'), load('data/identity.json'),
-      load(values.research), load(values.reviews), load(values.authorisation),
-      load('config/catalogue-publication-approvers.json'), { asOf: values['as-of'] });
+      load(values.research), load(values.reviews), load(values['research-authorisation']),
+      load(values.authorisation), load('config/catalogue-publication-approvers.json'));
     const output = { mode: result.mode, canPublish: false,
       summary: result.summary, hashes: result.hashes };
     if (values.emit) {
