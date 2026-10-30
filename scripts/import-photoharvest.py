@@ -12,6 +12,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import sys
@@ -29,6 +30,10 @@ CATALOGUE = ROOT / "data" / "catalogue.json"
 EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"}
 FORMATS = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp", "GIF": ".gif", "AVIF": ".avif"}
 MAX_PIXEL_COUNT = 40_000_000
+PROVENANCE_NAME = "photoharvest-manifest.json"
+MAX_MANIFEST_BYTES = 2 * 1024 * 1024
+MAX_MANIFEST_IMAGES = 1000
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 Image.MAX_IMAGE_PIXELS = MAX_PIXEL_COUNT
 
 
@@ -108,10 +113,87 @@ def inspect_image(file: Path, min_width: int, min_height: int, max_bytes: int) -
     }
 
 
+
+def load_provenance(input_dir: Path, source_page: str | None = None,
+                    allow_incomplete: bool = False) -> dict:
+    """Load only the known PhotoHarvest acquisition schema; fail on untrusted metadata.
+
+    Manifest records must describe real, directly contained image files. A mismatch
+    between the recorded crawl seed and the optional operator-supplied seed fails.
+    No URLs are fetched and no provenance fields are inferred.
+    """
+    manifest_file = input_dir / PROVENANCE_NAME
+    if manifest_file.is_symlink() or not manifest_file.is_file():
+        raise ImportErrorSafe(f"Missing regular {PROVENANCE_NAME}; use --legacy-without-manifest only for older harvests.")
+    if manifest_file.stat().st_size > MAX_MANIFEST_BYTES:
+        raise ImportErrorSafe("Acquisition manifest exceeds the 2 MiB safety limit.")
+    with manifest_file.open("r", encoding="utf-8") as stream:
+        manifest = json.load(stream)
+    if not isinstance(manifest, dict) or manifest.get("manifestVersion") != 1 or \
+            manifest.get("kind") != "photoharvest-acquisition" or manifest.get("tool") != "PhotoHarvest":
+        raise ImportErrorSafe("Unsupported PhotoHarvest acquisition manifest format or version.")
+    status = manifest.get("status")
+    if status not in {"completed", "in-progress"}:
+        raise ImportErrorSafe("Acquisition manifest has an unknown status.")
+    if status != "completed" and not allow_incomplete:
+        raise ImportErrorSafe("Harvest is incomplete. Finish it or explicitly supply --allow-incomplete.")
+    seed = manifest.get("seedUrl")
+    if not isinstance(seed, str):
+        raise ImportErrorSafe("Acquisition manifest has no crawl seed URL.")
+    validate_seed_url(seed)
+    if source_page is not None and source_page.rstrip("/") != seed.rstrip("/"):
+        raise ImportErrorSafe("--source-page differs from the recorded PhotoHarvest seed URL.")
+    images = manifest.get("images")
+    if not isinstance(images, list) or not images or len(images) > MAX_MANIFEST_IMAGES:
+        raise ImportErrorSafe("Acquisition manifest must contain between 1 and 1000 images.")
+    filenames = set()
+    for image in images:
+        if not isinstance(image, dict):
+            raise ImportErrorSafe("Invalid acquisition image record.")
+        name = image.get("filename")
+        if not isinstance(name, str) or not name or name in {".", ".."} or \
+                Path(name).name != name or "/" in name or "\\" in name or \
+                name.startswith(".") or name in filenames:
+            raise ImportErrorSafe(f"Unsafe or duplicate acquisition filename: {name!r}")
+        filenames.add(name)
+        if Path(name).suffix.lower() not in EXTENSIONS:
+            raise ImportErrorSafe(f"Unsupported acquisition image extension: {name!r}")
+        if not SHA256_PATTERN.fullmatch(str(image.get("sha256", ""))):
+            raise ImportErrorSafe(f"Invalid SHA-256 in acquisition record: {name!r}")
+        for field in ("width", "height", "bytes"):
+            if type(image.get(field)) is not int or image[field] < 1:
+                raise ImportErrorSafe(f"Invalid {field} in acquisition record: {name!r}")
+        for field in ("sourcePageUrl", "requestedImageUrl", "resolvedImageUrl"):
+            url = image.get(field)
+            if url is not None:
+                if not isinstance(url, str):
+                    raise ImportErrorSafe(f"Invalid {field} in acquisition record: {name!r}")
+                # A URL is data from PhotoHarvest, not an authority to fetch it.
+                parsed = urlsplit(url)
+                if parsed.scheme not in {"http", "https"} or not parsed.hostname or \
+                        parsed.username or parsed.password or any(ch.isspace() for ch in url):
+                    raise ImportErrorSafe(f"Unsafe {field} in acquisition record: {name!r}")
+        for field in ("sourceKind", "deliveryMethod", "acquiredAt", "contentType"):
+            value = image.get(field)
+            if not isinstance(value, str) or len(value) > 250:
+                raise ImportErrorSafe(f"Invalid {field} in acquisition record: {name!r}")
+        if image.get("sourceKind") not in {"inline-data", "web-url"}:
+            raise ImportErrorSafe(f"Unknown sourceKind in acquisition record: {name!r}")
+        if image.get("sourceKind") == "inline-data" and \
+                (image.get("requestedImageUrl") is not None or image.get("resolvedImageUrl") is not None):
+            raise ImportErrorSafe(f"Inline data image incorrectly carries web attribution: {name!r}")
+        if image.get("reviewStatus") != "pending" or image.get("rightsStatus") != "unverified":
+            raise ImportErrorSafe(f"Acquisition record claims approval or rights: {name!r}")
+        if (input_dir / name).is_symlink() or not (input_dir / name).is_file():
+            raise ImportErrorSafe(f"Recorded image is missing or not a regular file: {name!r}")
+    return manifest
+
+
 def build_review(input_dir: Path, model: dict, source_page: str,
                  min_width: int = 1000, min_height: int = 700,
                  max_bytes: int = 12 * 1024 * 1024, max_images: int = 80,
-                 created_at: str | None = None) -> dict:
+                 created_at: str | None = None,
+                 provenance: dict | None = None) -> dict:
     """Pure preparation: no file writes, and absolutely no network requests."""
     if min_width < 240 or min_height < 120 or max_images < 1 or max_images > 200:
         raise ImportErrorSafe("Image dimensions or --max-images fall outside allowed limits.")
@@ -121,10 +203,22 @@ def build_review(input_dir: Path, model: dict, source_page: str,
     candidates = []
     skipped = []
     exact = {}
-    for file in sorted(input_dir.iterdir(), key=lambda item: (item.name.lower(), item.name)):
+    records = {record["filename"]: record for record in provenance["images"]} if provenance else {}
+    # When provenance exists, only explicitly recorded acquisitions may be staged.
+    # Unknown files are never silently promoted to review candidates.
+    if provenance:
+        for other in sorted(input_dir.iterdir(), key=lambda item: item.name):
+            if other.suffix.lower() in EXTENSIONS and other.name not in records:
+                skipped.append({"file": other.name, "reason": "Not listed in the acquisition manifest."})
+        files = [input_dir / name for name in sorted(records)]
+    else:
+        files = sorted(input_dir.iterdir(), key=lambda item: (item.name.lower(), item.name))
+    for file in files:
         if file.name.startswith("."):
             continue
         if file.is_symlink():
+            if provenance:
+                raise ImportErrorSafe(f"Recorded acquisition was replaced with a symlink: {file.name}")
             skipped.append({"file": file.name, "reason": "Symbolic links are not imported."})
             continue
         if not file.is_file() or file.suffix.lower() not in EXTENSIONS:
@@ -137,6 +231,14 @@ def build_review(input_dir: Path, model: dict, source_page: str,
         except ImportErrorSafe as exc:
             skipped.append({"file": file.name, "reason": str(exc)})
             continue
+        acquisition = records.get(file.name)
+        if acquisition:
+            # Fail the entire import if PhotoHarvest's observations no longer match
+            # the bytes or decoded dimensions. Do not silently drop corrupted evidence.
+            if info["sha256"] != acquisition["sha256"] or info["bytes"] != acquisition["bytes"]:
+                raise ImportErrorSafe(f"Recorded SHA-256 or byte length disagrees: {file.name}")
+            if info["width"] != acquisition["width"] or info["height"] != acquisition["height"]:
+                raise ImportErrorSafe(f"Recorded dimensions disagree: {file.name}")
         if info["sha256"] in exact:
             skipped.append({"file": file.name, "reason": "Exact duplicate of " + exact[info["sha256"]]})
             continue
@@ -148,8 +250,13 @@ def build_review(input_dir: Path, model: dict, source_page: str,
             "id": image_id,
             "file": "images/" + image_id + info["extension"],
             "originalFileName": file.name,
-            "sourceImageUrl": None,
-            "originPageUrl": None,
+            "sourceImageUrl": acquisition["requestedImageUrl"] if acquisition else None,
+            "resolvedImageUrl": acquisition["resolvedImageUrl"] if acquisition else None,
+            "originPageUrl": acquisition["sourcePageUrl"] if acquisition else None,
+            "acquiredAt": acquisition["acquiredAt"] if acquisition else None,
+            "sourceKind": acquisition["sourceKind"] if acquisition else None,
+            "deliveryMethod": acquisition["deliveryMethod"] if acquisition else None,
+            "contentType": acquisition["contentType"] if acquisition else None,
             "width": info["width"], "height": info["height"],
             "bytes": info["bytes"], "sha256": info["sha256"],
             "dhash": info["dhash"], "possibleDuplicateOf": near,
@@ -167,12 +274,21 @@ def build_review(input_dir: Path, model: dict, source_page: str,
         "catalogueName": model.get("name", model["id"]),
         "catalogueMake": model.get("make", ""),
         "crawlSeedUrl": source_page,
-        "sourcePagePerImageCaptured": False,
-        "sourceImageUrlPerImageCaptured": False,
+        "acquisitionManifest": {
+            "name": PROVENANCE_NAME, "version": 1,
+            "status": provenance["status"],
+            "sha256": sha256_file(input_dir / PROVENANCE_NAME),
+        } if provenance else None,
+        "sourcePagePerImageCaptured": all(candidate["originPageUrl"] is not None for candidate in candidates),
+        "sourceImageUrlPerImageCaptured": all(candidate["sourceImageUrl"] is not None for candidate in candidates),
         "sourceTool": {"name": "PhotoHarvest", "repository": "https://github.com/akila-w/PhotoHarvest"},
         "publicationAllowed": False,
-        "notice": ("PhotoHarvest does not record the original image URLs. "
-                   "Source identity, vehicle match and publication rights require independent verification."),
+        "notice": ("Source and response URLs are unverified observations, not proof of ownership, "
+                   "model match, manufacturer origin or reuse rights. Every candidate requires "
+                   "human review before any separate publication process."
+                   if provenance else
+                   "Legacy harvest without per-image provenance: original URLs are unknown. "
+                   "Model identity and publication rights require independent verification."),
         "candidates": candidates,
         "skipped": skipped,
     }
@@ -223,7 +339,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model-id", required=True, help="Exact ID in data/catalogue.json")
     parser.add_argument("--input-dir", required=True, type=Path, help="Existing PhotoHarvest Downloads folder")
-    parser.add_argument("--source-page", required=True, help="HTTPS page entered into PhotoHarvest (context only)")
+    parser.add_argument("--source-page", help="Optional HTTPS seed; must match the acquisition manifest")
+    parser.add_argument("--legacy-without-manifest", action="store_true",
+                        help="Explicitly permit an older folder without a provenance manifest")
+    parser.add_argument("--allow-incomplete", action="store_true",
+                        help="Review an interrupted manifest, still unapproved (default: refuse)")
     parser.add_argument("--output-dir", type=Path, help="New review folder; must be outside the repository")
     parser.add_argument("--min-width", type=int, default=1000)
     parser.add_argument("--min-height", type=int, default=700)
@@ -233,6 +353,18 @@ def main(argv: list[str] | None = None) -> int:
     try:
         model = catalogue_model(args.model_id)
         source = args.input_dir.expanduser().resolve(strict=True)
+        has_manifest = (source / PROVENANCE_NAME).exists() or (source / PROVENANCE_NAME).is_symlink()
+        if has_manifest:
+            provenance = load_provenance(source, args.source_page, args.allow_incomplete)
+            seed_url = provenance["seedUrl"]
+        elif args.legacy_without_manifest and args.source_page:
+            provenance = None
+            seed_url = validate_seed_url(args.source_page)
+        else:
+            raise ImportErrorSafe(
+                f"Missing {PROVENANCE_NAME}; supply --legacy-without-manifest and "
+                "--source-page only for historical folders."
+            )
         if args.output_dir:
             desired = args.output_dir
         else:
@@ -245,10 +377,13 @@ def main(argv: list[str] | None = None) -> int:
             # Validate dry-run without creating the default parent.
             desired = Path(tempfile.gettempdir()) / desired.name
         source, destination = validate_paths(source, desired)
-        review = build_review(source, model, args.source_page, args.min_width,
-                              args.min_height, max_images=args.max_images)
+        review = build_review(source, model, seed_url, args.min_width,
+                              args.min_height, max_images=args.max_images, provenance=provenance)
         print(f"Model: {model['id']} | accepted: {len(review['candidates'])} | skipped: {len(review['skipped'])}")
-        print("All candidates remain pending; original image URLs and rights are NOT verified.")
+        attributed = sum(1 for item in review["candidates"] if item["sourceImageUrl"])
+        print(f"Requested URLs recorded: {attributed}/{len(review['candidates'])}; "
+              "source attribution remains unverified.")
+        print("All candidates are pending; model identity and reuse rights remain unverified.")
         if args.dry_run:
             print("Dry run: no files written.")
         else:
