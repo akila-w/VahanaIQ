@@ -1,0 +1,42 @@
+name: Trusted Catalogue Publication Approval
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+# Run workflow/code from the protected base branch. Never run untrusted PR code.
+permissions:
+  contents: read
+
+jobs:
+  catalogue-publication-trusted:
+    name: catalogue-publication-trusted
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted base commit without persisting credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Prepare Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Fetch inert PR Git objects without checking out PR code
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          case "$PR_NUMBER" in ''|*[!0-9]*) echo "Invalid PR number" >&2; exit 1 ;; esac
+          case "$PR_HEAD_SHA" in *[!0-9a-f]*|'') echo "Invalid PR head SHA" >&2; exit 1 ;; esac
+          git fetch --no-tags --depth=1 origin "refs/pull/$PR_NUMBER/head"
+          test "$(git rev-parse FETCH_HEAD)" = "$PR_HEAD_SHA"
+          git cat-file -e "$PR_BASE_SHA^{commit}"
+      - name: Verify signed publication using trusted code
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/verify-catalogue-publication-pr.mjs

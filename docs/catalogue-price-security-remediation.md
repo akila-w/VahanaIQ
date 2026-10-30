@@ -41,3 +41,36 @@ Tracking: #39. This is an **infrastructure-only draft**: no vehicle prices, user
 Example values are placeholders and do not constitute a valid authorisation. The complete, non-empty underlying Gate C research and Gate B decisions are mandatory.
 
 Run `node test/catalogue-publication.test.mjs` and review all required PR checks before any merge. No real prices are being published by this remediation.
+
+
+## Security review follow-up — trusted enforcement and deployment prerequisites
+
+The former PR-checkout \`verify\` job no longer executes publication approval. The new
+\`.github/workflows/catalogue-publication-trusted.yml\` uses \`pull_request_target\`,
+checks out the exact trusted base SHA with persisted credentials disabled,
+fetches PR Git objects only as inert data, and executes only **base-branch** code.
+It rejects legacy \`js/market-catalogue.js\` changes until independent approval
+rules are designed. In a catalogue publication, only the two generated catalogue
+files and signed evidence bundle may differ; no workflow or trust changes are allowed.
+
+**IMPORTANT — do not merge on ordinary green checks alone.** The trusted
+workflow is not active until its file reaches the default branch. When this
+draft PR is merged, ensure the workflow triggers on the next safe, non-price PR
+and reports the \`catalogue-publication-trusted\` status on that PR's head commit.
+Then register that exact GitHub Actions check as a required status check.
+GitHub may restrict \`pull_request_target\` execution based on PR origin and
+approval requirements; verify that such a restriction cannot cause skipped
+checks to be interpreted as passing. Where \`pull_request_target\` does not
+provide a required head-SHA status, implement equivalent protected-branch
+enforcement before any real publication.
+
+A repository administrator must separately change main ruleset 25902178 to
+require an independent approving review, dismiss stale reviews, and ideally
+require CODEOWNERS for \`config/catalogue-publication-approvers.json\`,
+\`.github/workflows/**\`, \`scripts/prepare-catalogue-publication.mjs\`,
+\`scripts/verify-catalogue-publication-pr.mjs\`, and all canonical pricing
+files. Restrict access to signing-key onboarding and changes to this workflow.
+The connected integration cannot change the repository ruleset.
+
+No reviewer or researcher keys have been onboarded. Until the trusted check
+is confirmed required and branch governance enforced, publication is disabled.

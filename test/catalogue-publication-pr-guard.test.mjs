@@ -15,8 +15,10 @@ import {
 } from '../scripts/prepare-catalogue-publication.mjs';
 import { verifyPublicationDiff } from '../scripts/verify-catalogue-publication-pr.mjs';
 
+const dayOffset = delta => new Date(Date.now() + delta * 86_400_000).toISOString().slice(0, 10);
+const today = dayOffset(0);
 const base = {
-  schemaVersion: 1, checkedOn: '2026-10-25',
+  schemaVersion: 1, checkedOn: dayOffset(-5),
   models: [{
     id: 'fiction-e1', make: 'Fiction', model: 'E1', name: 'Fiction E1',
     images: [{ src: 'assets/images/curated-catalogue/fiction.webp' }],
@@ -25,7 +27,7 @@ const base = {
       trim: 'Premium', year: 2026, condition: 'New', route: 'Distributor',
       fuel: 'Petrol', amount: 10000000, currency: 'LKR', kind: 'estimated',
       sourceStatus: 'estimated', sourceUrl: 'https://example.invalid/old',
-      checkedOn: '2026-10-21', sourcePublishedOn: '2026-10-20',
+      checkedOn: dayOffset(-9), sourcePublishedOn: dayOffset(-10),
       evidence: 'Estimate LKR 10,000,000', note: 'Fictional estimate'
     }]
   }]
@@ -34,8 +36,8 @@ const baseIdentity = { brands: { Fiction: { localPath: 'assets/identity/fiction.
 const model = base.models[0], offer = model.offers[0];
 const proposed = {
   amount: 11000000, currency: 'LKR', kind: 'dealer', sourceStatus: 'ok',
-  sourceUrl: 'https://example.invalid/new', checkedOn: '2026-10-29',
-  sourcePublishedOn: '2026-10-28', evidence: 'Fiction E1 Premium LKR 11,000,000', note: ''
+  sourceUrl: 'https://example.invalid/new', checkedOn: dayOffset(-1),
+  sourcePublishedOn: dayOffset(-2), evidence: 'Fiction E1 Premium LKR 11,000,000', note: ''
 };
 const research = {
   schemaVersion: 1, researchedBy: 'Fixture Researcher',
@@ -52,7 +54,7 @@ const research = {
     }
   }]
 };
-const staged = stageResearchedOfferPrices(base, research, { asOf: '2026-10-30' });
+const staged = stageResearchedOfferPrices(base, research, { asOf: today });
 assert.equal(staged.queue[0].status, 'pending-human-review');
 const flags = Object.fromEntries([
   'matchingModelAndTrim', 'matchingMarketAndCondition', 'matchingAmountAndCurrency',
@@ -61,7 +63,7 @@ const flags = Object.fromEntries([
 const reviews = {
   schemaVersion: 1, decisions: [{
     offerId: offer.id, proposalFingerprint: staged.queue[0].proposalFingerprint,
-    decision: 'approved', reviewer: 'Fixture Reviewer', reviewedOn: '2026-10-30',
+    decision: 'approved', reviewer: 'Fixture Reviewer', reviewedOn: today,
     reason: 'Checked the exact fictional offer and supporting source.', attestations: flags
   }]
 };
@@ -80,13 +82,13 @@ const envelope = (keyId, payload, privateKey) => ({
 });
 const researchAuth = envelope('fixture-researcher', {
   schemaVersion: 1, purpose: 'vahanaiq-independent-price-research',
-  researcherId: 'Fixture Researcher', researchedOn: '2026-10-30',
+  researcherId: 'Fixture Researcher', researchedOn: today,
   catalogueDigest: digestValue(base), identityDigest: digestValue(baseIdentity),
   researchDigest: digestValue(research), offerIds: [offer.id]
 }, researcher.privateKey);
 const reviewerAuth = envelope('fixture-reviewer', {
   schemaVersion: 1, purpose: 'vahanaiq-manual-price-publication',
-  reviewerId: 'Fixture Reviewer', reviewedOn: '2026-10-30',
+  reviewerId: 'Fixture Reviewer', reviewedOn: today,
   catalogueDigest: digestValue(base), identityDigest: digestValue(baseIdentity),
   researchDigest: digestValue(research), reviewDigest: digestValue(reviews),
   researchAuthorisationDigest: digestValue(researchAuth),
@@ -97,12 +99,12 @@ const bundle = {
   reviews, authorisation: reviewerAuth
 };
 const result = prepareApprovedCataloguePatch(base, baseIdentity, research,
-  reviews, researchAuth, reviewerAuth, trust, { asOf: '2026-10-30' });
+  reviews, researchAuth, reviewerAuth, trust, { asOf: today });
 const DATA = 'data/catalogue.json', JS = 'js/catalogue-data.js';
 const EVIDENCE = 'docs/catalogue-publication-evidence/approval-bundle.json';
 const paths = [DATA, JS, EVIDENCE];
 const check = (files = paths, json = result.files[DATA], js = result.files[JS],
-  evidence = bundle, registry = trust, options = { asOf: '2026-10-30' }) =>
+  evidence = bundle, registry = trust, options = { asOf: today }) =>
   verifyPublicationDiff(files, base, baseIdentity, json, js, evidence, registry, options);
 const blocked = (fn, label) => assert.throws(fn, /./, label);
 const valid = check();
@@ -147,7 +149,7 @@ blocked(() => check(paths, result.files[DATA], result.files[JS], bundle,
   { ...trust, researchers: [{ ...trust.researchers[0], enabled: false }] }),
   'Revoked researcher key must fail');
 blocked(() => check(paths, result.files[DATA], result.files[JS], bundle, trust,
-  { asOf: '2026-12-10' }), 'Stale sources must fail at publication time');
+  { asOf: dayOffset(50) }), 'Stale sources must fail at publication time');
 
 // Exercise the real CLI in disposable Git repos, not just the imported helper.
 // This catches mistakes in diff-file detection, base SHA use and file loading.
@@ -176,7 +178,8 @@ try {
     try {
       return { ok: true, stdout: execFileSync(process.execPath, [entry], {
         cwd: tmp, encoding: 'utf8', env: {
-          ...process.env, GITHUB_EVENT_NAME: 'pull_request', PR_BASE_SHA: baseSHA, ...env
+          ...process.env, GITHUB_EVENT_NAME: 'pull_request_target', PR_BASE_SHA: baseSHA,
+          PR_HEAD_SHA: git('rev-parse', 'HEAD'), ...env
         }
       }) };
     } catch (error) {
@@ -223,6 +226,8 @@ try {
   });
   assert.equal(extraRegistry.ok, false, 'Price PR must not substitute a trust registry');
   const nonPrice = candidate({ 'docs/maintenance-fixture.txt': 'unrelated documentation\n' });
+  const legacy = candidate({ 'js/market-catalogue.js': '// changed prices\n' });
+  assert.equal(legacy.ok, false, 'Unsigned legacy market price update must fail');
   assert.equal(nonPrice.ok, true, 'Unrelated PR must not require price approval');
   assert.equal(invoke({ PR_BASE_SHA: '0'.repeat(40) }).ok, false,
     'Unavailable base SHA cannot authorise price publication');

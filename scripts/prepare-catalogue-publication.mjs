@@ -132,8 +132,10 @@ function verifySignature(authorisation, trust, expected, researcher, asOf) {
   requireTrue(record(trust) && trust.schemaVersion === 2 && Array.isArray(trust.approvers),
     'Missing or invalid pinned reviewer registry');
   const matches = trust.approvers.filter(x => x?.keyId === authorisation.keyId);
+  const fingerprint = pem => createHash('sha256').update(
+    createPublicKey(pem).export({ type: 'spki', format: 'der' })).digest('hex');
   requireTrue(authorisation.keyId !== researcher.keyId &&
-    !matches.some(x => x.publicKeyPem === researcher.publicKeyPem),
+    !matches.some(x => fingerprint(x.publicKeyPem) === fingerprint(researcher.publicKeyPem)),
     'Research and review must use distinct trusted signing keys');
   requireTrue(matches.length === 1 && matches[0].reviewerId === payload.reviewerId &&
     matches[0].enabled === true && nonblank(matches[0].publicKeyPem),

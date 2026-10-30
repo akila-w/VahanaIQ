@@ -1,25 +1,29 @@
 #!/usr/bin/env node
-// Required PR guard: verify actual price-changing file bytes against signed evidence.
-// The PR's branch cannot replace trust keys because base-branch registry is read via git show.
-// No writes, no network, no price publication.
+// Trusted base-branch GitHub Actions guard. PR objects are read as inert Git blobs.
+// NEVER execute code, workflow commands or shell scripts from the PR head.
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { prepareApprovedCataloguePatch } from './prepare-catalogue-publication.mjs';
 
 const dataPath = 'data/catalogue.json';
 const scriptPath = 'js/catalogue-data.js';
 const evidencePath = 'docs/catalogue-publication-evidence/approval-bundle.json';
+const legacyPricePath = 'js/market-catalogue.js';
 const requireTrue = (x, reason) => { if (!x) throw new Error(reason); };
+const protectedFiles = [dataPath, scriptPath, evidencePath];
+const hasPriceFiles = files => protectedFiles.some(p => files.includes(p));
 
 export function verifyPublicationDiff(files, baseCatalogue, identity, proposedJSON,
   proposedJS, bundle, trustedRegistry, options = {}) {
   const changed = new Set(files);
   requireTrue(files.length === changed.size, 'Duplicate diff filenames');
-  const protectedFiles = [dataPath, scriptPath, evidencePath];
-  const some = protectedFiles.some(x => changed.has(x));
-  if (!some) return { status: 'not-a-price-publication', canPublish: false };
+  if (changed.has(legacyPricePath)) {
+    throw new Error('Legacy market price publication is suspended pending separate approval controls');
+  }
+  if (!hasPriceFiles(files)) return { status: 'not-a-price-publication', canPublish: false };
   requireTrue(protectedFiles.every(x => changed.has(x)) && changed.size === protectedFiles.length,
-    'Price PR must change exactly the two catalogue outputs and signed evidence, nothing else');
+    'Price PR must change exactly two catalogue outputs and signed evidence, nothing else');
   requireTrue(bundle && typeof bundle === 'object' && !Array.isArray(bundle) &&
     bundle.schemaVersion === 1 &&
     Object.keys(bundle).sort().join('|') ===
@@ -36,34 +40,42 @@ export function verifyPublicationDiff(files, baseCatalogue, identity, proposedJS
     summary: expected.summary, hashes: expected.hashes };
 }
 
-if (process.argv[1] && process.argv[1].endsWith('/verify-catalogue-publication-pr.mjs')) {
+// Demand exact event commit identifiers, never local HEAD or PR-provided commands.
+export function inspectTrustedDiff(baseSHA, headSHA, git, options = {}) {
+  requireTrue(typeof baseSHA === 'string' && typeof headSHA === 'string' &&
+    /^[a-f0-9]{40}$/.test(baseSHA) && /^[a-f0-9]{40}$/.test(headSHA) &&
+    baseSHA !== headSHA, 'Missing or invalid trusted base/head SHAs');
+  const files = git('diff', '--name-only', '-z', '--no-renames', baseSHA, headSHA)
+    .toString('utf8').split('\0').filter(Boolean);
+  requireTrue(files.length === new Set(files).size, 'Duplicate or ambiguous changed paths');
+  if (!hasPriceFiles(files) && !files.includes(legacyPricePath)) {
+    return { status: 'no-price-data-changes', canPublish: false, examinedFiles: files.length };
+  }
+  requireTrue(!files.includes(legacyPricePath),
+    'Legacy market price publication is suspended pending separate approval controls');
+  requireTrue(files.length === protectedFiles.length &&
+    protectedFiles.every(x => files.includes(x)),
+    'Signed catalogue price PR must contain exactly two generated files and evidence bundle');
+  const file = (sha, filename) => git('show', sha + ':' + filename).toString('utf8');
+  const parsed = (sha, filename) => JSON.parse(file(sha, filename));
+  return verifyPublicationDiff(files,
+    parsed(baseSHA, dataPath), parsed(baseSHA, 'data/identity.json'),
+    file(headSHA, dataPath), file(headSHA, scriptPath),
+    parsed(headSHA, evidencePath),
+    parsed(baseSHA, 'config/catalogue-publication-approvers.json'), options);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    // In Actions, this is injected from github.event.pull_request.base.sha,
-    // never a user-supplied manifest or PR branch field.
-    const baseSHA = process.env.PR_BASE_SHA;
-    requireTrue(process.env.GITHUB_EVENT_NAME === 'pull_request' &&
-      typeof baseSHA === 'string' && /^[a-f0-9]{40}$/.test(baseSHA),
-      'Requires a trusted pull_request event and its exact base commit SHA');
-    const git = (...args) => execFileSync('git', args, { encoding: 'utf8', maxBuffer: 12_000_000 });
-    const files = git('diff', '--name-only', '--diff-filter=ACDMRT', baseSHA, 'HEAD')
-      .trim().split('\n').filter(Boolean);
-    const baseFile = filename => git('show', baseSHA + ':' + filename);
-    const isPricePR = [dataPath, scriptPath, evidencePath].some(p => files.includes(p));
-    if (!isPricePR) {
-      // A tracked trust change must be separately reviewed; it cannot accompany price publication.
-      process.stdout.write('Catalogue approval PR guard: PASS (no published price files modified)\n');
-    } else {
-      const parse = s => JSON.parse(s);
-      const verdict = verifyPublicationDiff(files,
-        parse(baseFile(dataPath)), parse(baseFile('data/identity.json')),
-        readFileSync(dataPath, 'utf8'), readFileSync(scriptPath, 'utf8'),
-        parse(readFileSync(evidencePath, 'utf8')),
-        parse(baseFile('config/catalogue-publication-approvers.json')));
-      process.stdout.write('Catalogue approval PR guard: PASS ' +
-        JSON.stringify(verdict.summary) + '\n');
-    }
+    const baseSHA = process.env.PR_BASE_SHA, headSHA = process.env.PR_HEAD_SHA;
+    requireTrue(process.env.GITHUB_EVENT_NAME === 'pull_request_target',
+      'Guard must run from trusted base-branch pull_request_target workflow');
+    const git = (...args) => execFileSync('git', args, { maxBuffer: 12_000_000 });
+    const result = inspectTrustedDiff(baseSHA, headSHA, git);
+    process.stdout.write('Catalogue trusted approval guard: PASS ' +
+      JSON.stringify({ status: result.status, summary: result.summary ?? null }) + '\n');
   } catch (error) {
-    process.stderr.write('Catalogue approval PR guard: BLOCKED — ' + error.message + '\n');
+    process.stderr.write('Catalogue trusted approval guard: BLOCKED — ' + error.message + '\n');
     process.exitCode = 1;
   }
 }
