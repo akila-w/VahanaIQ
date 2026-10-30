@@ -229,6 +229,8 @@ def build_review(input_dir: Path, model: dict, source_page: str,
         try:
             info = inspect_image(file, min_width, min_height, max_bytes)
         except ImportErrorSafe as exc:
+            if provenance:
+                raise ImportErrorSafe(f"Recorded acquisition failed image validation: {file.name}: {exc}") from exc
             skipped.append({"file": file.name, "reason": str(exc)})
             continue
         acquisition = records.get(file.name)
