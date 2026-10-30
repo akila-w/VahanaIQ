@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import { generateKeyPairSync, sign } from 'node:crypto';
+import { generateKeyPairSync, createPublicKey, sign } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { fingerprintCurrentOffer } from '../scripts/catalogue-price-approval.mjs';
 import { stageResearchedOfferPrices } from '../scripts/stage-catalogue-price-research.mjs';
@@ -143,6 +143,16 @@ rejects(() => build(catalogue, identity, research, reviews, valid,
   { ...trust, approvers: [{ ...trust.approvers[0], keyId: 'key-research',
     publicKeyPem: trust.researchers[0].publicKeyPem }] }),
   'Same research and reviewer key must fail');
+const sameKeyCrLf = trust.researchers[0].publicKeyPem.replaceAll('\n', '\r\n');
+assert.notEqual(sameKeyCrLf, trust.researchers[0].publicKeyPem);
+assert.deepEqual(
+  createPublicKey(sameKeyCrLf).export({ type: 'spki', format: 'der' }),
+  createPublicKey(trust.researchers[0].publicKeyPem).export({ type: 'spki', format: 'der' }),
+  'Both PEM encodings must identify the same public key');
+rejects(() => build(catalogue, identity, research, reviews,
+  authorise(payload, researchPrivateKey),
+  { ...trust, approvers: [{ ...trust.approvers[0], publicKeyPem: sameKeyCrLf }] }),
+  'Different PEM encoding must not bypass same-signing-key detection');
 rejects(() => build(catalogue, identity, research, reviews,
   authorise({ ...payload, allowSourceStatusPromotionIds: [] })), 'Unsigned source promotion must fail');
 rejects(() => build(catalogue, identity, research, reviews,
