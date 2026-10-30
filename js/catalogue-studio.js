@@ -13,6 +13,7 @@ import {
   uploadItem
 } from "./catalogue-photos.js?v=2.12.0";
 import { clearEdits, deleteEdit, readEdits, writeEdit } from "./catalogue-photo-store.js?v=2.12.0";
+import { readReviewFolder } from "./photoharvest-review.js?v=2.12.0";
 
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -294,6 +295,55 @@ async function renderStage(token) {
   note("photoError", "");
   paintStage(item);
 }
+// ---------------------------- PhotoHarvest local candidate review ----------------------------
+// This is deliberately a non-publishing inspection surface. A harvested third-party
+// image must never be misclassified as an owner's photo.
+$("harvestFolder").addEventListener("change", async event => {
+  const input = event.target;
+  const panel = $("harvestReview");
+  const candidatesList = $("harvestCandidates");
+  panel.hidden = false;
+  candidatesList.replaceChildren();
+  $("harvestSummary").textContent = "Verifying review manifest and local image hashes…";
+  try {
+    const model = selectedModel();
+    if (!model) throw Error("Choose a catalogue model first.");
+    const bundle = await readReviewFolder(input.files, model.id);
+    const summary = bundle.manifest;
+    $("harvestSummary").textContent =
+      bundle.matched.length + " candidate photo(s) for " + model.name
+      + ". All are unapproved; no photos were added to the catalogue.";
+    for (const { candidate } of bundle.matched) {
+      const li = document.createElement("li");
+      const strong = document.createElement("strong");
+      strong.textContent = candidate.originalFileName || candidate.file;
+      li.append(strong);
+      const description = document.createElement("p");
+      description.textContent = candidate.width + "×" + candidate.height + " · "
+        + "SHA-256 verified · model match unverified · rights unverified";
+      li.append(description);
+      const source = document.createElement("p");
+      source.textContent = "Observed source: " + (candidate.originPageUrl || "unknown")
+        + " · Original image: " + (candidate.sourceImageUrl || "unknown");
+      li.append(source);
+      const state = document.createElement("p");
+      state.textContent = "Pending curator review — not eligible for publication";
+      li.append(state);
+      candidatesList.append(li);
+    }
+  } catch (error) {
+    $("harvestSummary").textContent = "Review refused: " + error.message;
+    candidatesList.replaceChildren();
+  } finally {
+    input.value = "";
+  }
+});
+$("harvestClear").addEventListener("click", () => {
+  $("harvestReview").hidden = true;
+  $("harvestCandidates").replaceChildren();
+  $("harvestSummary").textContent = "";
+});
+
 // ---------------------------- adding photos ----------------------------
 
 function forgetPhotos(items) {
