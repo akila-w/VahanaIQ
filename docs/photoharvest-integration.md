@@ -39,6 +39,14 @@ The optional `--source-page` must match PhotoHarvest's recorded seed; omit it to
 
 Constraints: regular raster files only; symlinks are skipped; raster magic/decoding and pixel size are verified by Pillow; default minimum resolution is 1000×700; default file maximum 12 MiB, maximum 80 candidate images, and 40 million decoded pixels. SHA-256 identifies exact duplicates and dHash provides *possible* near-duplicate hints only. No candidate is auto-approved or auto-published. The scanner does not inspect filenames for correct model attribution; a curator must verify actual vehicle generation and trim.
 
+## Photo Studio review-folder inspection (implemented in the draft PR)
+
+Open the updated `studio.html` in a browser with folder selection support, choose the same catalogue model used for import, then select **Inspect PhotoHarvest Review Folder** and pick the newly generated review-bundle folder. The client reads `review-manifest.json` and locally hashes every listed file before showing the candidate filename, pixel dimensions, source page, requested image URL and pending status.
+
+**This is inspection, not catalogue import or approval.** Browser-based inspection does not add files to IndexedDB, mark a candidate approved or allow Photo Studio publication. This is intentional: a folder's recorded source URL does not grant permission to republish an image, and the existing Photo Studio would otherwise misclassify third-party images as `owner-upload`.
+
+Support depends on browser `webkitdirectory` and `crypto.subtle` (HTTPS or localhost). Firefox and Safari require manual compatibility checks. No automatic live URL requests are made by this feature. A separate, explicit rights-cleared curation/export process still needs engineering and legal/rights verification before a complete production publication workflow can be claimed.
+
 ## Review-to-publication procedure (future milestone)
 
 1. Inspect every candidate, reject irrelevant or duplicated imagery.
