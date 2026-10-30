@@ -28,6 +28,11 @@ export function canonicalJSON(x) {
   if (Array.isArray(x)) return '[' + x.map(canonicalJSON).join(',') + ']';
   if (record(x)) return '{' + Object.keys(x).sort()
     .map(k => JSON.stringify(k) + ':' + canonicalJSON(x[k])).join(',') + '}';
+  // NaN/±Infinity serialise as "null", which would silently change signed
+  // bytes. Fail closed; finite numbers keep their exact JSON formatting.
+  if (typeof x === 'number' && !Number.isFinite(x)) {
+    throw new TypeError('Non-finite numbers cannot be signed (' + String(x) + ')');
+  }
   const data = JSON.stringify(x);
   if (data === undefined) throw new TypeError('Undefined cannot be signed');
   return data;
@@ -96,6 +101,8 @@ function verifyResearchAuthorisation(authorisation, trust, catalogue, identity,
   requireTrue(typeof signature === 'string' && /^[A-Za-z0-9+/]+={0,2}$/.test(signature) &&
     Buffer.from(signature, 'base64').toString('base64') === signature,
     'Invalid research signature encoding');
+  requireTrue(Buffer.from(signature, 'base64').length === 64,
+    'Decoded Ed25519 research signature must be exactly 64 bytes');
   let verified = false;
   try {
     const key = createPublicKey(matches[0].publicKeyPem);
@@ -144,6 +151,8 @@ function verifySignature(authorisation, trust, expected, researcher, asOf) {
     /^[A-Za-z0-9+/]+={0,2}$/.test(authorisation.signature) &&
     Buffer.from(authorisation.signature, 'base64').toString('base64') === authorisation.signature,
     'Invalid Ed25519 signature encoding');
+  requireTrue(Buffer.from(authorisation.signature, 'base64').length === 64,
+    'Decoded Ed25519 signature must be exactly 64 bytes');
   let accepted = false;
   try {
     const key = createPublicKey(matches[0].publicKeyPem);

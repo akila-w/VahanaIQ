@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -151,6 +151,15 @@ blocked(() => check(paths, result.files[DATA], result.files[JS], bundle,
 blocked(() => check(paths, result.files[DATA], result.files[JS], bundle, trust,
   { asOf: dayOffset(50) }), 'Stale sources must fail at publication time');
 
+// The trusted workflow must re-run when a PR is edited, notably when the base
+// branch is retargeted, so a passing result recorded for the original event
+// cannot survive a base change; the guard then fails closed for non-default
+// base refs (see the first workflow step).
+assert.match(readFileSync(
+  new URL('../.github/workflows/catalogue-publication-trusted.yml', import.meta.url),
+  'utf8'), /types:\s*\[[^\]]*\bedited\b/,
+  'Trusted workflow must re-run on edited PR events (base-branch retargeting)');
+
 // Exercise the real CLI in disposable Git repos, not just the imported helper.
 // This catches mistakes in diff-file detection, base SHA use and file loading.
 const tmp = mkdtempSync(path.join(tmpdir(), 'vahanaiq-pr-guard-fixture-'));
@@ -175,11 +184,17 @@ try {
   const baseSHA = git('rev-parse', 'HEAD');
   const entry = fileURLToPath(new URL('../scripts/verify-catalogue-publication-pr.mjs', import.meta.url));
   const invoke = (env = {}) => {
+    // The trusted runner identifies the event by its default-branch GITHUB_SHA;
+    // a candidate variant may override any binding (an empty string forces
+    // the default to be unset, modelling a missing trusted event SHA).
+    const overrides = { ...env };
+    const headSHA = overrides.PR_HEAD_SHA ?? git('rev-parse', 'HEAD');
+    delete overrides.PR_HEAD_SHA;
     try {
       return { ok: true, stdout: execFileSync(process.execPath, [entry], {
         cwd: tmp, encoding: 'utf8', env: {
           ...process.env, GITHUB_EVENT_NAME: 'pull_request_target', PR_BASE_SHA: baseSHA,
-          PR_HEAD_SHA: git('rev-parse', 'HEAD'), ...env
+          PR_HEAD_SHA: headSHA, GITHUB_SHA: baseSHA, ...overrides
         }
       }) };
     } catch (error) {
@@ -189,10 +204,18 @@ try {
   const candidate = (edits) => {
     git('checkout', '-q', '-B', 'candidate', baseSHA);
     git('clean', '-fdq');
-    for (const [filename, content] of Object.entries(edits)) write(filename, content);
+    for (const [filename, content] of Object.entries(edits)) {
+      if (content === null) git('rm', '-q', '-f', filename);
+      else write(filename, content);
+    }
     git('add', '.');
     git('commit', '-qm', 'fixture candidate');
-    return invoke();
+    const headSHA = git('rev-parse', 'HEAD');
+    // Mirror the trusted runner: the checked-out worktree remains on the exact
+    // base SHA while candidate commits exist only as fetched Git objects.
+    git('checkout', '-q', '--detach', baseSHA);
+    git('clean', '-fdq');
+    return invoke({ PR_HEAD_SHA: headSHA });
   };
   const approved = {
     [DATA]: result.files[DATA], [JS]: result.files[JS],
@@ -233,6 +256,30 @@ try {
     'Unavailable base SHA cannot authorise price publication');
   assert.equal(invoke({ GITHUB_EVENT_NAME: 'push' }).ok, false,
     'Guard must reject untrusted event context');
+  // The guard must fail closed when the trusted event, the PR base SHA and the
+  // checked-out HEAD disagree, or when the trusted event SHA is missing.
+  const eventMismatch = invoke({ GITHUB_SHA: git('rev-parse', 'candidate') });
+  assert.equal(eventMismatch.ok, false,
+    'Trusted event GITHUB_SHA must equal the PR base SHA');
+  assert.match(eventMismatch.stderr, /does not equal the trusted/);
+  assert.equal(invoke({ GITHUB_SHA: '' }).ok, false,
+    'Missing trusted event GITHUB_SHA must fail closed');
+  git('checkout', '-q', '--detach', git('rev-parse', 'candidate'));
+  const headMismatch = invoke();
+  assert.equal(headMismatch.ok, false,
+    'Checked-out HEAD must equal the trusted default-branch GITHUB_SHA');
+  assert.match(headMismatch.stderr, /Checked-out HEAD/);
+  git('checkout', '-q', '--detach', baseSHA);
+  // Deleting a protected catalogue file must never be treated as publication.
+  const deleted = candidate({ [DATA]: null });
+  assert.equal(deleted.ok, false, 'Deleting a protected catalogue file must fail closed');
+  assert.match(deleted.stderr, /BLOCKED/);
+  const deletedAmongApproved = candidate({
+    [DATA]: null, [JS]: result.files[JS], [EVIDENCE]: JSON.stringify(bundle, null, 2) + '\n'
+  });
+  assert.equal(deletedAmongApproved.ok, false,
+    'Deleting a protected catalogue file inside an approved-looking diff must fail closed');
+  assert.match(deletedAmongApproved.stderr, /BLOCKED/);
   console.log('Catalogue approval PR guard: PASS (signed positive and adversarial CLI fixtures)');
 } finally {
   rmSync(tmp, { recursive: true, force: true });

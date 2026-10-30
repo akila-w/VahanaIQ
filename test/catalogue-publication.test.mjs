@@ -17,6 +17,19 @@ assert.equal(JSON.stringify(context.window.__VAHANAIQ_CATALOGUE__), JSON.stringi
 assert.equal(JSON.stringify(context.window.__VAHANAIQ_IDENTITY__), JSON.stringify(trackedIdentity));
 assert.equal(canonicalJSON({ b: 2, a: [3, { z: 1, b: 2 }] }),
   '{"a":[3,{"b":2,"z":1}],"b":2}');
+// Finite numbers keep their exact JSON formatting; non-finite values must be
+// rejected instead of silently serialising as "null" inside signed digests.
+assert.equal(canonicalJSON(1.5), '1.5', 'Valid finite number formatting unchanged');
+assert.equal(canonicalJSON({ b: 1.5, a: -2 }), '{"a":-2,"b":1.5}',
+  'Valid finite number formatting unchanged in objects');
+for (const bad of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
+  assert.throws(() => canonicalJSON(bad), /Non-finite numbers cannot be signed/,
+    'Non-finite top-level value must fail canonical signing');
+  assert.throws(() => canonicalJSON({ b: bad, a: 0 }), /Non-finite numbers cannot be signed/,
+    'Non-finite nested value must fail canonical signing');
+  assert.throws(() => digestValue({ b: bad }), /Non-finite numbers cannot be signed/,
+    'Digesting non-finite values must fail');
+}
 
 const model = {
   id: 'example-e1', make: 'Example', model: 'E1', name: 'Example E1',
@@ -128,6 +141,36 @@ rejects(() => build(catalogue, identity, research, reviews,
 rejects(() => build(catalogue, identity, research, reviews, valid, trust,
   { ...researchApproval, signature: Buffer.alloc(64).toString('base64') }),
   'Forged research signature must fail');
+// A decoded Ed25519 signature must be exactly 64 bytes even when the base64
+// envelope itself is well-formed; shorter or longer blobs fail closed.
+const resizeSignature = (base64, length) => Buffer.from(base64, 'base64')
+  .subarray(0, length).toString('base64');
+const extendSignature = (base64) => Buffer.concat([
+  Buffer.from(base64, 'base64'), Buffer.alloc(1)
+]).toString('base64');
+rejects(() => build(catalogue, identity, research, reviews,
+  { ...valid, signature: resizeSignature(valid.signature, 63) }),
+  'Truncated (63-byte) reviewer signature must fail');
+rejects(() => build(catalogue, identity, research, reviews,
+  { ...valid, signature: extendSignature(valid.signature) }),
+  'Extended (65-byte) reviewer signature must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid, trust,
+  { ...researchApproval, signature: resizeSignature(researchApproval.signature, 63) }),
+  'Truncated (63-byte) research signature must fail');
+rejects(() => build(catalogue, identity, research, reviews, valid, trust,
+  { ...researchApproval, signature: extendSignature(researchApproval.signature) }),
+  'Extended (65-byte) research signature must fail');
+// An approval dated before the authenticated research date is impossible and
+// must fail even though every digest in the freshly signed payload is intact.
+const earlyReviews = {
+  schemaVersion: 1,
+  decisions: [{ ...reviews.decisions[0], reviewedOn: '2026-10-29' }]
+};
+assert.throws(() => build(catalogue, identity, research, earlyReviews,
+  authorise({ ...payload, reviewedOn: '2026-10-29',
+    reviewDigest: digestValue(earlyReviews) })),
+  /Reviewer attestations differ/,
+  'Reviewer approval dated before authenticated research must fail');
 rejects(() => build(catalogue, identity, research, reviews, valid,
   { ...trust, researchers: [] }), 'Missing trusted researcher must fail');
 rejects(() => build(catalogue, identity, research, reviews, valid,
@@ -164,6 +207,66 @@ rejects(() => build(catalogue, identity, research,
 rejects(() => build(catalogue, identity, research,
   { schemaVersion: 1, decisions: [...reviews.decisions, ...reviews.decisions] }),
   'Duplicate approval must fail');
+// Two reviewer identities must never share one approval manifest: the signed
+// authorisation binds exactly one reviewer, so every decision in the manifest
+// has to come from that authenticated reviewer/date. Build a second fictional
+// offer so the manifest can carry two decisions for two distinct offer IDs.
+const twinOffer = {
+  ...model.offers[0], id: 'example-e1-standard', name: 'Example E1 Standard',
+  trim: 'Standard', amount: 12000000, evidence: 'Estimate for test offer only.'
+};
+const twinCatalogue = { ...catalogue,
+  models: [{ ...model, offers: [model.offers[0], twinOffer] }] };
+const twinProposed = {
+  amount: 13000000, currency: 'LKR', kind: 'dealer', sourceStatus: 'ok',
+  sourceUrl: 'https://example.invalid/twin', checkedOn: '2026-10-29',
+  sourcePublishedOn: '2026-10-28', evidence: 'LKR 13,000,000 second fixture',
+  note: ''
+};
+const twinResearch = { ...research, entries: [research.entries[0], {
+  offerId: twinOffer.id, modelId: model.id,
+  expectedFingerprint: fingerprintCurrentOffer(twinOffer, model),
+  proposed: twinProposed,
+  observed: {
+    make: 'Example', model: 'E1', trim: 'Standard', year: 2026,
+    condition: 'New', route: 'Distributor', market: 'Sri Lanka',
+    sourceTitle: 'Second fictional fixture', sourceUrl: twinProposed.sourceUrl,
+    sourceExcerpt: twinProposed.evidence, sourcePublishedOn: twinProposed.sourcePublishedOn,
+    checkedOn: twinProposed.checkedOn, conflicts: []
+  }
+}] };
+const twinStaged = stageResearchedOfferPrices(twinCatalogue, twinResearch,
+  { asOf: '2026-10-30' });
+assert.equal(twinStaged.summary.blocked, 0, 'Both twin candidates must stage cleanly');
+assert.equal(twinStaged.queue.length, 2);
+const twinIds = ['example-e1-premium', 'example-e1-standard'];
+const twinResearchAuth = signResearch({ ...researchPayload,
+  catalogueDigest: digestValue(twinCatalogue),
+  researchDigest: digestValue(twinResearch), offerIds: twinIds });
+const twinPayload = { ...payload,
+  catalogueDigest: digestValue(twinCatalogue),
+  researchDigest: digestValue(twinResearch),
+  researchAuthorisationDigest: digestValue(twinResearchAuth),
+  offerIds: twinIds, allowSourceStatusPromotionIds: twinIds };
+const mismatchedReviews = { schemaVersion: 1, decisions: [
+  reviews.decisions[0],
+  { offerId: twinOffer.id, proposalFingerprint: twinStaged.queue[1].proposalFingerprint,
+    decision: 'approved', reviewer: 'Second Reviewer', reviewedOn: '2026-10-30',
+    reason: 'Independently checked the second fictional offer.', attestations }
+] };
+const unsharedReviews = { schemaVersion: 1, decisions: [
+  reviews.decisions[0],
+  { ...mismatchedReviews.decisions[1], reviewer: 'Reviewer A' }
+] };
+const twinAuthorisation = reviewsFor => authorise({ ...twinPayload,
+  reviewDigest: digestValue(reviewsFor) });
+assert.equal(build(twinCatalogue, identity, twinResearch, unsharedReviews,
+  twinAuthorisation(unsharedReviews), trust, twinResearchAuth).summary.updatedOffers, 2,
+  'One authenticated reviewer behind all decisions stays valid');
+assert.throws(() => build(twinCatalogue, identity, twinResearch, mismatchedReviews,
+  twinAuthorisation(mismatchedReviews), trust, twinResearchAuth),
+  /Reviewer attestations differ/,
+  'A second reviewer identity in the same approval manifest must fail');
 rejects(() => build(catalogue, identity, research,
   { schemaVersion: 1, decisions: [{ ...reviews.decisions[0], decision: 'rejected' }] }),
   'Rejected offer must fail');

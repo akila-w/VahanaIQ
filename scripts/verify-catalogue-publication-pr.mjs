@@ -70,7 +70,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const baseSHA = process.env.PR_BASE_SHA, headSHA = process.env.PR_HEAD_SHA;
     requireTrue(process.env.GITHUB_EVENT_NAME === 'pull_request_target',
       'Guard must run from trusted base-branch pull_request_target workflow');
+    const eventSHA = process.env.GITHUB_SHA;
+    requireTrue(typeof eventSHA === 'string' && /^[a-f0-9]{40}$/.test(eventSHA),
+      'Missing or invalid trusted event GITHUB_SHA');
+    requireTrue(baseSHA === eventSHA,
+      'Event base SHA does not equal the trusted default-branch GITHUB_SHA');
     const git = (...args) => execFileSync('git', args, { maxBuffer: 12_000_000 });
+    requireTrue(git('rev-parse', 'HEAD').toString('utf8').trim() === eventSHA,
+      'Checked-out HEAD does not equal the trusted default-branch GITHUB_SHA');
     const result = inspectTrustedDiff(baseSHA, headSHA, git);
     process.stdout.write('Catalogue trusted approval guard: PASS ' +
       JSON.stringify({ status: result.status, summary: result.summary ?? null }) + '\n');
