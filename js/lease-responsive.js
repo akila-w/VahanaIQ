@@ -11,6 +11,8 @@
   };
   const sync = () => {
     toggle.hidden = !mobile.matches;
+    const tour = document.getElementById('restartOnboardingMobileBtn');
+    if (tour) tour.hidden = !mobile.matches;
     if (!mobile.matches) close();
   };
   toggle.addEventListener('click', () => {
