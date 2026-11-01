@@ -40,7 +40,7 @@ const $ = id => document.getElementById(id);
 // these helpers only tint a figure that changed or ease a graphic from where it was. They do
 // nothing under reduced motion, or where the Web Animations API is missing (the Node test doubles).
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
-const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = () => (typeof document !== "undefined" && document.documentElement?.dataset?.motion === "reduced") || (typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
 const canAnimate = el => !!el && typeof el.animate === "function" && !reducedMotion();
 const activeMotion = new Set();
 const elementMotion = new WeakMap();
@@ -1599,7 +1599,10 @@ $("resetInputsBtn").addEventListener("click", () => {
   clearState();
   for (const id of Object.keys(FIELDS)) clearSnapNote(id);
   activeQuickFilter = "all";
-  applyState({});
+  // Reset returns to the loan defaults chosen in Settings
+  let loanDefaults = {};
+  try { loanDefaults = JSON.parse(localStorage.getItem("vahanaiq_settings_v1"))?.loan || {}; } catch (e) {}
+  applyState(loanDefaults);
   try { history.replaceState(null, "", window.location.pathname + window.location.hash); } catch (e) {}
   render();
   $("rate").focus();

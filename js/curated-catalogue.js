@@ -28,6 +28,9 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
   const historyReady = fetch('data/price-history.json').then(r => { if (!r.ok) throw Error('History unavailable'); return r.json(); }).then(d => { priceHistory = Array.isArray(d.observations) ? d.observations : []; }).catch(() => { priceHistory = null; });
   let data, identity = {}, cards = [], page = 0, reviewOnly = false, current = null, imageIndex = 0, opener = null;
   let selectedAffordabilityVehicle = null;
+  // Showroom choices from settings.html
+  const showroomSettings = (() => { try { return JSON.parse(localStorage.getItem('vahanaiq_settings_v1')) || {}; } catch { return {}; } })();
+  let budgetOnly = showroomSettings.budgetOnly === true;
   const size = 18;
   let review = {flags:{},notes:{},comparison:{}};
   try {
@@ -176,6 +179,18 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
       }
     } catch {}
     return { income: 0, debt: 0, insurance: 0, fees: 0, dti: DEFAULT_DTI, maxprice: 0, down: DEFAULT_DOWN, tenure: DEFAULT_TENURE, rate: DEFAULT_RATE, rateType: DEFAULT_RATE_TYPE };
+  }
+
+  // The rental on the visitor's own terms, by the same rules as the affordability review
+  function monthlyFit(m, offer, settings = getBudgetSettings()) {
+    const price = Number.isFinite(offer?.amount) && offer.amount > 0 ? offer.amount : 0;
+    if (!price) return null;
+    const downPct = Math.min(100, Math.max(settings.down, minDownFor(offer.condition || 'New', m.financeClass, offer.firstRegisteredOn)));
+    const effectiveRate = settings.rateType === 'flat' ? flatToEffective(settings.rate, settings.tenure) : settings.rate;
+    const rental = downPct >= 100 ? 0 : calcRental(price * (1 - downPct / 100), effectiveRate, settings.tenure);
+    if (!settings.income) return { rental, fit: 'na' };
+    const dtiPct = (rental + settings.debt + (settings.insurance > 0 ? settings.insurance / 12 : 0)) / settings.income * 100;
+    return { rental, fit: dtiPct <= settings.dti * 100 + 1e-9 ? 'ok' : dtiPct <= DTI_STRETCH_PCT ? 'mid' : 'bad' };
   }
 
   function buildAffordabilityHtml(m) {
@@ -391,6 +406,11 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
   function list() {
     const q = $('search').value.trim().toLowerCase(), type = $('priceType').value;
     let result = cards.filter(m => (!$('make').value || m.make === $('make').value) && (!$('body').value || m.body === $('body').value) && (!reviewOnly || review.flags[m.id] || review.flags[m.modelId] || review.notes[m.id] || review.notes[m.modelId]) && (!q || [m.name,m.body,m.cardYear,...m.offers.flatMap(o => [o.name,o.trim,o.year,o.fuel])].join(' ').toLowerCase().includes(q)) && (!type || type === 'priced' && confirmed(m).length || type === 'quote' && !priced(m).length || ['official','dealer','launch','estimated'].includes(type) && m.offers.some(o => o.kind === type && o.amount)));
+    if (showroomSettings.hideEstimated) result = result.filter(m => (getOfferForCard(m, type).offer || lowest(m))?.kind !== 'estimated');
+    if (budgetOnly) {
+      const settings = getBudgetSettings();
+      if (settings.income) result = result.filter(m => monthlyFit(m, getOfferForCard(m, type).offer || lowest(m), settings)?.fit === 'ok');
+    }
     const sort = $('sort')?.value || 'make';
     return result.sort((a,b) => {
       const x = (getOfferForCard(a, type).offer || lowest(a))?.amount;
@@ -445,7 +465,32 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
     });
   }
 
+  // Real buttons in the first group; the copy that lets the strip loop is hidden from everyone but the eye
+  function renderBrandStrip() {
+    const wrap = $('brandStripTrack');
+    if (!wrap) return;
+    const makes = [...new Set(cards.map(m => m.make))].filter(make => mark({ make })).sort((a, b) => a.localeCompare(b));
+    const chip = (make, copy) => `<button type="button" class="brand-chip" data-make="${esc(make)}"${copy ? ' tabindex="-1"' : ''} aria-pressed="false">${mark({ make })}<span>${esc(make)}</span></button>`;
+    wrap.innerHTML = `<div class="brand-strip-group">${makes.map(make => chip(make)).join('')}</div><div class="brand-strip-group" aria-hidden="true" inert>${makes.map(make => chip(make, true)).join('')}</div>`;
+    syncBrandStrip();
+  }
+  function syncBrandStrip() {
+    for (const b of document.querySelectorAll('.brand-chip')) b.setAttribute('aria-pressed', String(b.dataset.make === $('make').value));
+  }
+  function syncBudget() {
+    const settings = getBudgetSettings();
+    const effective = settings.rateType === 'flat' ? `${settings.rate}% flat` : `${settings.rate}%`;
+    if ($('termsText')) $('termsText').textContent = `Rentals at ${effective} · ${settings.tenure} months · ${settings.down}% down`;
+    const toggle = $('budgetToggle');
+    if (toggle) {
+      toggle.setAttribute('aria-pressed', String(budgetOnly && Boolean(settings.income)));
+      toggle.textContent = settings.income ? 'Only Cars Within My Budget' : 'Add Your Income to Filter by Budget';
+    }
+  }
+
   function render() {
+    syncBrandStrip();
+    syncBudget();
     const all = list(); page = Math.max(0, Math.min(page, Math.ceil(all.length/size)-1));
     $('resultCount').textContent = `${all.length} ${all.length===1?'Vehicle':'Vehicles'} · ${all.reduce((n,m) => n+m.offers.length,0)} Purchase Options`;
     $('reviewCount').textContent = '('+cards.filter(m => review.flags[m.id] || review.flags[m.modelId] || review.notes[m.id] || review.notes[m.modelId] || isCarInComparison(m)).length+')';
@@ -459,7 +504,9 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
       const cardTitle = cleanName.toLowerCase().startsWith(m.make.toLowerCase()) ? cleanName : `${m.make} ${cleanName}`;
       const isMarked = Boolean(review.flags[m.id] || review.flags[m.modelId]);
       const inComp = isCarInComparison(m);
-      return `<article class="card"><button class="photo-button" data-open="${esc(m.id)}" aria-label="View ${esc(m.name)}">${photo(p,m.name,page === 0 && i === 0)}${mark(m)?`<span class="brand-badge" aria-label="${esc(m.make)}">${mark(m)}</span>`:''}${p.studio && p.origin === "owner-upload" ? '<span class="photo-count">Your Photo</span>' : (m.images.length > 1 ? `<span class="photo-count">${m.images.length} Views</span>` : "")}</button><div class="card-body"><h3>${esc(cardTitle)} <span class="model-year">${esc(m.cardYear)}</span></h3><div class="card-meta"><span><img src="assets/icons/lucide/car.svg" alt="" width="16" height="16" loading="lazy">${esc(m.body)}</span>${fuels.length?`<span><img src="assets/icons/lucide/fuel.svg" alt="" width="16" height="16" loading="lazy">${esc(fuels.join(' / '))}</span>`:''}</div><div class="price-area"><p class="price ${low?'':'quote'}">${low?`${offerCount>1?'From ':''}${money(low.amount)}`:'Price on Request'}</p><p class="price-label">${low?`${esc(kinds[low.kind] || low.kind || '')}${low.year?' · '+esc(low.year):''} · ${esc(classification(low))}`:'Request a Matching Current Quotation'}</p>${low?.kind === 'estimated' ? '<p class="estimate-methodology">Estimated Price based on Sri Lanka Customs Tariff, engine capacity/EV tier &amp; distributor bracket</p>' : ''}</div><div class="sources">${p.sourcePage?`<a href="${safeUrl(p.sourcePage)}" target="_blank" rel="noopener noreferrer" title="${esc(m.make)} · Official Website · Rights Reserved">Photo Source ↗</a>`:p.studio?'<span class="studio-credit">Photo Studio · This Device</span>':''}${low?`<a href="${safeUrl(low.sourceUrl)}" target="_blank" rel="noopener noreferrer">Price Source ↗</a>`:''}</div><div class="card-actions"><button data-open="${esc(m.id)}">${m.offers.length>1?'Compare Purchase Options':'View Details'} <span aria-hidden="true">↗</span></button><button class="flag" data-flag="${esc(m.id)}" aria-label="Mark ${esc(m.name)} for review" aria-pressed="${isMarked}">${isMarked?'✓ Marked':'Mark for Review'}</button><button class="compare-btn" data-compare="${esc(m.id)}" aria-label="Add ${esc(m.name)} to comparison" aria-pressed="${inComp}">${inComp?'✓ In Comparison':'Add to Comparison'}</button></div></div></article>`;
+      const monthly = monthlyFit(m, low);
+      const rentalHtml = monthly && showroomSettings.rentals !== false ? `<p class="card-rental"><span class="card-rental-value">${money(monthly.rental)} <small>a month</small></span>${monthly.fit === 'na' ? '' : `<span class="card-fit" data-fit="${monthly.fit}">${{ ok: 'Comfortable', mid: 'Stretching', bad: 'Out of reach' }[monthly.fit]}</span>`}</p>` : '';
+      return `<article class="card"><button class="photo-button" data-open="${esc(m.id)}" aria-label="View ${esc(m.name)}">${photo(p,m.name,page === 0 && i === 0)}${mark(m)?`<span class="brand-badge" aria-label="${esc(m.make)}">${mark(m)}</span>`:''}${p.studio && p.origin === "owner-upload" ? '<span class="photo-count">Your Photo</span>' : (m.images.length > 1 ? `<span class="photo-count">${m.images.length} Views</span>` : "")}</button><div class="card-body"><h3>${esc(cardTitle)} <span class="model-year">${esc(m.cardYear)}</span></h3><div class="card-meta"><span><img src="assets/icons/lucide/car.svg" alt="" width="16" height="16" loading="lazy">${esc(m.body)}</span>${fuels.length?`<span><img src="assets/icons/lucide/fuel.svg" alt="" width="16" height="16" loading="lazy">${esc(fuels.join(' / '))}</span>`:''}</div><div class="price-area"><p class="price ${low?'':'quote'}">${low?`${offerCount>1?'From ':''}${money(low.amount)}`:'Price on Request'}</p><p class="price-label">${low?`${esc(kinds[low.kind] || low.kind || '')}${low.year?' · '+esc(low.year):''} · ${esc(classification(low))}`:'Request a Matching Current Quotation'}</p>${low?.kind === 'estimated' ? '<p class="estimate-methodology">Estimated Price based on Sri Lanka Customs Tariff, engine capacity/EV tier &amp; distributor bracket</p>' : ''}</div>${rentalHtml}<div class="sources">${p.sourcePage?`<a href="${safeUrl(p.sourcePage)}" target="_blank" rel="noopener noreferrer" title="${esc(m.make)} · Official Website · Rights Reserved">Photo Source ↗</a>`:p.studio?'<span class="studio-credit">Photo Studio · This Device</span>':''}${low?`<a href="${safeUrl(low.sourceUrl)}" target="_blank" rel="noopener noreferrer">Price Source ↗</a>`:''}</div><div class="card-actions"><button data-open="${esc(m.id)}">${m.offers.length>1?'Compare Purchase Options':'View Details'} <span aria-hidden="true">↗</span></button><button class="flag" data-flag="${esc(m.id)}" aria-label="Mark ${esc(m.name)} for review" aria-pressed="${isMarked}">${isMarked?'✓ Marked':'Mark for Review'}</button><button class="compare-btn" data-compare="${esc(m.id)}" aria-label="Add ${esc(m.name)} to comparison" aria-pressed="${inComp}">${inComp?'✓ In Comparison':'Add to Comparison'}</button></div></div></article>`;
     }).join('') || '<div class="empty"><h3>No Vehicles Found</h3><p>Try a different search or reset the filters.</p></div>';
     $('pageCount').textContent = `${all.length?page+1:0} / ${Math.ceil(all.length/size)}`;
     $('previous').disabled = page === 0; $('next').disabled = (page+1)*size >= all.length;
@@ -933,7 +980,27 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
   // Source guidance opens from the footer link, which is always in the page.
   if ($('footerSourceGuide')) $('footerSourceGuide').addEventListener('click', () => $('guide').showModal());
   ['search','make','body','priceType','sort'].forEach(id => { const el = $(id); if (!el) return; const handler = () => { if (!data) return; if ($('vehicles')) $('vehicles').classList.remove('initial-load'); page = 0; render(); }; el.addEventListener('input', handler); el.addEventListener('change', handler); });
-  $('clear').addEventListener('click',() => { if (!data) return; if ($('vehicles')) $('vehicles').classList.remove('initial-load'); for (const id of ['search','make','body','priceType']) $(id).value = ''; $('sort').value = 'make'; reviewOnly = false; page = 0; render(); });
+  $('clear').addEventListener('click',() => { if (!data) return; if ($('vehicles')) $('vehicles').classList.remove('initial-load'); for (const id of ['search','make','body','priceType']) $(id).value = ''; budgetOnly = false; $('sort').value = 'make'; reviewOnly = false; page = 0; render(); });
+  $('brandStripTrack')?.addEventListener('click', e => {
+    const b = e.target.closest('.brand-chip');
+    if (!b || !data) return;
+    $('make').value = $('make').value === b.dataset.make ? '' : b.dataset.make;
+    page = 0;
+    $('vehicles')?.classList.remove('initial-load');
+    render();
+  });
+  $('brandStripPause')?.addEventListener('click', e => {
+    const paused = document.querySelector('.brand-strip').classList.toggle('is-paused');
+    e.currentTarget.textContent = paused ? 'Play Brand Strip' : 'Pause Brand Strip';
+  });
+  $('budgetToggle')?.addEventListener('click', () => {
+    if (!data) return;
+    if (!getBudgetSettings().income) { location.href = 'index.html#budgetPanel'; return; }
+    budgetOnly = !budgetOnly;
+    page = 0;
+    $('vehicles')?.classList.remove('initial-load');
+    render();
+  });
   $('reviewFilter').addEventListener('click',() => { if (!data) return; if ($('vehicles')) $('vehicles').classList.remove('initial-load'); reviewOnly = !reviewOnly; page = 0; render(); });
   function turn(delta) { if ($('vehicles')) $('vehicles').classList.remove('initial-load'); page += delta; render(); $('vehicles').scrollIntoView({block:'start'}); $('vehicles').focus({preventScroll:true}); }
   $('previous').addEventListener('click',() => turn(-1)); $('next').addEventListener('click',() => turn(1));
@@ -984,6 +1051,7 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
         if (applyStudioPhotos) await applyStudioPhotos(data);
       } catch {}
       cards = buildCards(data.models);
+      renderBrandStrip();
       for (const [id,key] of [['make','make'],['body','body']]) $(id).innerHTML += [...new Set(cards.map(m => m[key]))].sort().map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join('');
       $('metrics').innerHTML = [[cards.length,'Vehicles'],[cards.filter(m => confirmed(m).length).length,'With Published Prices'],[new Set(cards.map(m => m.make)).size,'Makes']].map(([n,label]) => `<div><strong>${n}</strong><span>${label}</span></div>`).join('');
       if ($('vehicles')) $('vehicles').classList.add('initial-load');

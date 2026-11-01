@@ -39,6 +39,7 @@
   <link rel="modulepreload" href="js/catalogue-photo-store.js?v=2.12.0">
   <link rel="stylesheet" href="css/tokens.css?v=2.12.0">
   <link rel="stylesheet" href="css/curated-catalogue.css?v=2.12.0">
+  <link rel="stylesheet" href="css/showroom.css?v=2.12.0">
   <script src="js/page-transitions.js?v=2.12.0" defer></script>
   <script src="js/catalogue-data.js?v=2.12.0" defer></script>
   <script type="module" src="js/catalogue-photo-overlay.js?v=2.12.0"></script>
@@ -64,6 +65,7 @@
       <nav aria-label="Main">
         <a href="index.html">Lease</a>
         <a href="catalogue.html" aria-current="page">Showroom</a>
+      <a href="settings.html">Settings</a>
         <button class="header-tour-btn onboarding-restart-btn" id="restartOnboardingBtn" type="button" title="Start or restart 5-step guided onboarding and tour"><svg class="header-tour-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Guided Setup</button>
       </nav>
     </div>
@@ -80,9 +82,11 @@
     </div>
   </header>
   <main>
-    <section class="hero"><div><p class="eyebrow">The Vehicle Collection</p><h1>Find Your Next Vehicle.</h1><p class="intro">Official imagery. Local prices. A clearer starting point.</p></div><div class="hero-aside"><span class="edition">Sri Lanka · October 2026</span><div class="metrics" id="metrics" aria-live="polite"></div><p class="small">Published prices and dealer offers are labelled separately.</p></div></section>
+    <section class="hero"><div><p class="eyebrow">The Vehicle Collection</p><h1>Find a vehicle that fits your rental.</h1><p class="intro">Every car with its price and the monthly rental on your own loan terms.</p></div><div class="hero-aside"><span class="edition">Sri Lanka · October 2026</span><div class="metrics" id="metrics" aria-live="polite"></div><p class="small">Published prices and dealer offers are labelled separately.</p></div></section>
+    <section class="brand-strip" aria-label="Filter by brand"><div class="brand-strip-view"><div class="brand-strip-track" id="brandStripTrack"></div></div><div class="brand-strip-foot"><p class="brand-strip-note">Choose a brand to filter. Choose it again to clear.</p><button type="button" class="brand-strip-pause" id="brandStripPause">Pause Brand Strip</button></div></section>
     <section class="filters" aria-label="Filter Vehicles"><label class="search-field"><span class="sr-only">Search Vehicles</span><img src="assets/icons/lucide/search.svg" alt="" width="20" height="20" loading="lazy"><input id="search" type="search" placeholder="Search make, model or trim…" autocomplete="off"></label><div class="filter-row"><label>Make<select id="make"><option value="">All Makes</option></select></label><label>Body Type<select id="body"><option value="">All Body Types</option></select></label><label>Price Source<select id="priceType"><option value="">All Vehicles</option><option value="priced">Published Prices</option><option value="official">Distributor Prices</option><option value="dealer">Dealer Asking Prices</option><option value="estimated">Estimated Prices</option><option value="quote">Price on Request</option></select></label><label>Sort By<select id="sort"><option value="make" selected>Make (A to Z)</option><option value="make-desc">Make (Z to A)</option><option value="model">Model (A to Z)</option><option value="model-desc">Model (Z to A)</option><option value="low">Price: Low to High</option><option value="high">Price: High to Low</option><option value="year-desc">Year: Newest First</option><option value="year-asc">Year: Oldest First</option></select></label><button id="clear" class="quiet">Reset Filters</button></div></section>
-    <div class="results-line"><p id="resultCount" role="status">Loading the collection…</p><button id="reviewFilter" class="quiet" aria-pressed="false">My Review <span id="reviewCount"></span></button></div>
+    <p class="terms-line"><span id="termsText"></span><a href="index.html#loanTermsHead">Change Terms</a></p>
+    <div class="results-line"><p id="resultCount" role="status">Loading the collection…</p><button id="budgetToggle" class="budget-toggle" type="button" aria-pressed="false">Only Cars Within My Budget</button><button id="reviewFilter" class="quiet" aria-pressed="false">My Review <span id="reviewCount"></span></button></div>
     <section id="vehicles" class="grid" aria-label="Vehicle Catalogue" tabindex="-1"></section>
     <nav class="pagination" aria-label="Catalogue Pages"><button id="previous" disabled>← Previous</button><span id="pageCount"></span><button id="next" disabled>Next →</button></nav>
     <section class="review-bar" id="reviewBar" aria-labelledby="reviewHeading">

@@ -398,3 +398,48 @@ test.describe('Answer first', () => {
     await expect(page.locator('#answerName')).toContainText('Toyota Raize');
   });
 });
+
+test.describe('Showroom and Settings', () => {
+  test('cards show the rental on saved terms, and the budget toggle and brand strip filter', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '350000', rate: '16', tenure: '84', down: '60', dti: '0.4' })));
+    await page.goto(`${BASE_URL}/catalogue.html`);
+    await expect(page.locator('#termsText')).toContainText('16% · 84 months · 60% down');
+    await expect(page.locator('.card-rental').first()).toContainText('a month');
+    const count = async () => parseInt(await page.locator('#resultCount').innerText(), 10);
+    await expect.poll(count).toBeGreaterThan(0);
+    const all = await count();
+    await page.locator('#budgetToggle').click();
+    await expect(page.locator('#budgetToggle')).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(count).toBeLessThan(all);
+    await expect(page.locator('.card-fit[data-fit="bad"]')).toHaveCount(0);
+    await page.locator('#budgetToggle').click();
+    const chip = page.locator('.brand-strip-group:first-child .brand-chip', { hasText: 'Toyota' });
+    await chip.focus();
+    await chip.press('Enter');
+    await expect(chip).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#make')).toHaveValue('Toyota');
+  });
+
+  test('settings apply at once, survive reload, and delete keeps nothing but the sign-in', async ({ page }) => {
+    await page.goto(`${BASE_URL}/settings.html`);
+    await page.getByText('Dark', { exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.locator('input[name="motion"][value="reduced"] + span').click();
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
+    await page.locator('input[name="tenure"][value="60"] + span').click();
+    await page.locator('#hideEstimated').check();
+    await page.reload();
+    await expect(page.locator('input[name="tenure"][value="60"]')).toBeChecked();
+    await expect(page.locator('#hideEstimated')).toBeChecked();
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
+    const download = page.waitForEvent('download');
+    await page.locator('#exportData').click();
+    expect((await download).suggestedFilename()).toBe('vahanaiq-data.json');
+    await page.locator('#askDelete').click();
+    await expect(page.locator('#keepData')).toBeFocused();
+    await page.locator('#deleteData').click();
+    await expect(page.locator('#settingsSaved')).toContainText('deleted');
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
+    expect(await page.evaluate(() => localStorage.getItem('vahanaiq_settings_v1'))).toBeNull();
+  });
+});

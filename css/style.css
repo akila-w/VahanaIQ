@@ -4211,6 +4211,12 @@ button.btn.btn-danger {
    Unified, page-break-safe A4 statutory lease quotation layout conforming
    to Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026.
    ========================================================================== */
+/* settings.html: Reduced turns off motion whatever the device says; tips can be hidden */
+html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-motion="reduced"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html[data-tips="off"] .guide-context{display:none!important}
+html[data-text="large"]{zoom:1.125}
+html[data-text="larger"]{zoom:1.25}
+
 @media print {
   @page {
     size: A4 portrait;
