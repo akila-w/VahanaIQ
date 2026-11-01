@@ -1,4 +1,4 @@
-import { shown } from "./number-format.js?v=2.12.0";
+import { shown as displayAmount } from "./number-format.js?v=2.12.0";
 import { formatDate as displayDate } from "./dates.js?v=2.12.0";
 import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.12.0";
 import { fmt, esc, minDownFor, safeUrl } from "./calculator.js?v=2.12.0";
@@ -138,20 +138,20 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   function rentalLine(v, t) {
     if (!publishedPrice(v) || !t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor(v.cond, v.financeClass, v.firstRegisteredOn));
-    return down < 100 ? `About LKR ${shown(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
+    return down < 100 ? `About LKR ${displayAmount(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
   }
 
   // One line for every car without a price: what each LKR 1.00 million of quote costs a month
   function perMillionLine(t) {
     if (!t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor("New"));
-    return down < 100 ? `No price yet? Each LKR 1.00 million of a brand-new car's quote is about LKR ${shown(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
+    return down < 100 ? `No price yet? Each LKR 1.00 million of a brand-new car's quote is about LKR ${displayAmount(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
   }
 
   function priceText(v) {
     if (v.priceBasis === 'conflicting') return 'Price needs confirmation';
-    if (hasPrice(v) && !publishedPrice(v)) return `Unverified indicative price · LKR ${shown(v.price)}`;
-    if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${shown(v.price)}`;
+    if (hasPrice(v) && !publishedPrice(v)) return `Unverified indicative price · LKR ${displayAmount(v.price)}`;
+    if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${displayAmount(v.price)}`;
     return v.priceBasis === "conflicting" ? "Prices differ between sources" : "Price on request";
   }
 
@@ -324,7 +324,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       if (offers.length > 1) {
         $("catalogueTrimWrap").hidden = false;
         $("catalogueTrimSelect").innerHTML = offers.map((o, idx) =>
-          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${shown(o.amount)}` : ""} (Brand New)</option>`
+          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${displayAmount(o.amount)}` : ""} (Brand New)</option>`
         ).join("");
         $("catalogueTrimSelect").value = "0";
       } else {
