@@ -79,7 +79,7 @@ body::after {
   position: fixed;
   inset: -25%;
   pointer-events: none;
-  filter: blur(65px) saturate(0.5);
+  filter: blur(65px);
   opacity: var(--aurora-opacity, 0.2);
   animation: none;
   transition: opacity var(--duration-base) var(--easing-standard);
