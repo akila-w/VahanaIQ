@@ -1,0 +1,1 @@
+(() => {try {const state=JSON.parse(localStorage.getItem('vahanaiq_comparison_v3'));if(Array.isArray(state?.cars)&&state.cars.length>0)document.getElementById('welcomeResume').hidden=false;}catch {}})();
