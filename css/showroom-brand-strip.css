@@ -1,0 +1,17 @@
+/* Decorative brand marquee; identity assets belong to their respective owners. */
+.showroom-brand-section{margin:4px 0 24px;min-width:0}
+.showroom-brand-intro{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.showroom-brand-intro h2{font-size:clamp(16px,1.7vw,20px);line-height:1.25;margin:3px 0 0;color:var(--ink)}
+.showroom-brand-intro p{color:var(--mute);font-size:12px;margin:0}
+.showroom-brand-intro .showroom-brand-eyebrow{font-size:10px;font-weight:700;letter-spacing:.15em;color:var(--accent-bright)}
+.showroom-brand-viewport{overflow:hidden;min-width:0;max-width:100%;position:relative;mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent);-webkit-mask-image:linear-gradient(to right,transparent,#000 4%,#000 96%,transparent)}
+.showroom-brand-track{width:max-content;display:flex;align-items:stretch;animation:showroom-brand-scroll 48s linear infinite;will-change:transform}
+.showroom-brand-viewport:hover .showroom-brand-track{animation-play-state:paused}
+.showroom-brand-group{display:flex;align-items:stretch;gap:10px;padding-right:10px;flex:none}
+.showroom-brand-chip{height:76px;min-width:142px;padding:10px 16px;display:flex;gap:8px;align-items:center;justify-content:center;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius-card,14px);background:var(--panel);box-shadow:var(--shadow-card);color:var(--ink);box-sizing:border-box}
+.showroom-brand-chip img{display:block;width:auto;max-width:96px;height:32px;object-fit:contain}
+.showroom-brand-chip span{font-size:11px;font-weight:650;line-height:1.2;white-space:nowrap}
+@keyframes showroom-brand-scroll{to{transform:translateX(-50%)}}
+@media(max-width:650px){.showroom-brand-section{margin:6px 0 18px}.showroom-brand-intro{align-items:start;flex-direction:column;gap:4px}.showroom-brand-intro>p{font-size:11px}.showroom-brand-group{gap:8px;padding-right:8px}.showroom-brand-chip{min-width:114px;height:68px;padding:8px 10px}.showroom-brand-chip img{height:28px;max-width:80px}.showroom-brand-track{animation-duration:44s}}
+@media(prefers-reduced-motion:reduce){.showroom-brand-track{width:100%;animation:none!important;will-change:auto}.showroom-brand-group:first-child{max-width:100%;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:6px}.showroom-brand-group:first-child .showroom-brand-chip{scroll-snap-align:start}.showroom-brand-group[aria-hidden="true"]{display:none}.showroom-brand-viewport{mask-image:none;-webkit-mask-image:none}}
+@media print{.showroom-brand-section{display:none!important}}
