@@ -140,3 +140,13 @@ label.btn{cursor:pointer}
 .site-header{
   view-transition-name:site-header;
 }
+/* studio.html is an ordinary not-found page for everyone but the administrator (js/admin.js).
+   While a signed-in visit is being checked, neither view shows, so neither flashes. */
+.account-pending .page-missing{visibility:hidden}
+.page-missing{display:grid;place-items:center;padding:96px 16px;min-height:50vh}
+.missing-card{max-width:520px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;padding:40px 32px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-card)}
+.missing-card h1{margin:0;font-size:30px;letter-spacing:-0.8px}
+.missing-card p{margin:0;color:var(--mute)}
+.missing-card .btn{margin-top:8px;min-height:var(--touch-target)}
+.missing-icon{display:grid;place-items:center;width:56px;height:56px;border-radius:var(--radius-lg);background:var(--selected-bg);color:var(--accent)}
+.admin-badge{margin-left:6px;padding:1px 7px;border-radius:var(--radius-pill);background:var(--accent);color:var(--panel);font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;vertical-align:2px}

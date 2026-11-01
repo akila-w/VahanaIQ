@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { seedReturning } from './returning-user.mjs';
+import { seedReturning, blockFirebase } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 
@@ -24,6 +24,7 @@ const violations = (page) => page.evaluate(() => window.__cspViolations || []);
 test.describe('Content Security Policy & Browser Integrations', () => {
   for (const pageName of PAGES) {
     test(`${pageName}: zero CSP violations, photo bootstrap, and dark theme`, async ({ page }) => {
+      if (pageName === 'studio.html') await blockFirebase(page.context());
       const cspErrors = [];
       const pageErrors = [];
 

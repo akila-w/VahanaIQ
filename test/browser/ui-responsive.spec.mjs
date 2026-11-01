@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { seedReturning } from './returning-user.mjs';
+import { seedReturning, blockFirebase } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 
@@ -35,6 +35,7 @@ test('all six routes fit the requested 375×812 phone viewport in both themes', 
   for (const theme of ['light', 'dark']) {
     const context = await browser.newContext({ ...phone(browserName, { width: 375, height: 812 }), colorScheme: theme });
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     for (const pageName of ['index', 'catalogue', 'studio', 'about', 'privacy', 'terms']) {
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
@@ -51,6 +52,7 @@ test.describe('Layout: nothing is wider than the screen', () => {
       test(`${pageName}.html at ${width}px`, async ({ browser, browserName }) => {
         const context = await browser.newContext(phone(browserName, { width, height }));
         await seedReturning(context);
+        if (pageName === 'studio') await blockFirebase(context);
     const page = await context.newPage();
         await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
         await page.waitForTimeout(400);
@@ -87,6 +89,7 @@ test.describe('Layout: nothing is wider than the screen', () => {
     test(`${pageName}.html fits 320px with a wide fallback font`, async ({ browser, browserName }) => {
       const context = await browser.newContext(phone(browserName, { width: 320, height: 568 }));
       await seedReturning(context);
+        if (pageName === 'studio') await blockFirebase(context);
     const page = await context.newPage();
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
       await page.addStyleTag({ content: '* { font-family: Verdana, "DejaVu Sans", sans-serif !important; }' });
@@ -248,6 +251,7 @@ test.describe('Phone journeys', () => {
   test('every field on a phone is at least 16px, so iOS does not zoom on focus', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     for (const pageName of ['index', 'catalogue', 'studio']) {
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
@@ -262,6 +266,7 @@ test.describe('Phone journeys', () => {
   test('choosing a Photo Studio entry on a phone brings the editor into view', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
     await page.locator('#modelList [data-model]').nth(2).click();

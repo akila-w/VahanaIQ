@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { seedReturning } from './returning-user.mjs';
+import { seedReturning, blockFirebase } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 const BASE = process.env.BASE_URL || 'http://127.0.0.1:8123';
@@ -10,7 +10,7 @@ for (const width of [320, 390, 768, 1440]) for (const motion of ['no-preference'
     const context = await browser.newContext({ viewport: { width, height: 844 }, reducedMotion: motion });
     await seedReturning(context);
     const page = await context.newPage();
-    for (const route of ['index', 'catalogue', 'studio']) {
+    for (const route of ['index', 'catalogue']) {
       await page.goto(`${BASE}/${route}.html`);
       const trigger = route === 'index' ? page.locator('.guide-context').nth(2) : page.locator('.guide-context').first();
       await trigger.click();
@@ -79,8 +79,10 @@ test('rapid chart changes retarget from the visible angle and reduced motion sto
 
 for (const mode of ['desktop', 'reduced', 'touch']) {
   test(`hover feedback is smooth and appropriate on ${mode}`, async ({ browser }) => {
-    const context = await browser.newContext({ viewport: { width: mode === 'touch' ? 390 : 1440, height: 900 }, hasTouch: mode === 'touch', reducedMotion: mode === 'reduced' ? 'reduce' : 'no-preference' });
+    // A worker's requests would pass blockFirebase
+    const context = await browser.newContext({ serviceWorkers: 'block', viewport: { width: mode === 'touch' ? 390 : 1440, height: 900 }, hasTouch: mode === 'touch', reducedMotion: mode === 'reduced' ? 'reduce' : 'no-preference' });
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     for (const [route, selector] of [['index', '#addVehicleBtn'], ['catalogue', '.review-bar button'], ['studio', '#exportBtn']]) {
       await page.goto(`${BASE}/${route}.html`);

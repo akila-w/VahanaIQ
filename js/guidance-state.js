@@ -8,7 +8,7 @@ export function readGuidance(storage) {
     const state = fresh();
     state.welcomed = raw.welcomed === true;
     state.tips = raw.tips !== false;
-    for (const page of ['calculator', 'catalogue', 'studio']) {
+    for (const page of ['calculator', 'catalogue']) {
       const tour = raw.tours?.[page];
       if (tour && ['active', 'skipped', 'completed'].includes(tour.status) && Number.isInteger(tour.step) && tour.step >= 0 && tour.step < 4) {
         state.tours[page] = { status: tour.status, step: tour.step };
