@@ -2818,3 +2818,34 @@ footer.foot { padding-block: 16px !important; }
 
 /* Reduced Aurora saturation in both themes without desaturating interface controls. */
 body::before,body::after{filter:blur(65px) saturate(.5)!important}
+
+
+/* Display modes: essential form controls, disclosures and warnings are never removed. */
+.lease-display-preferences{display:grid;gap:8px;padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-card);margin:14px 0;max-width:100%}
+.lease-display-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lease-display-label{color:var(--mute);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.09em}
+.lease-mode-switch{display:flex;min-width:0;gap:3px;padding:4px;border-radius:12px;background:var(--badge-bg);border:1px solid var(--line)}
+.lease-mode-btn{font:700 13px var(--font-sans);padding:8px 16px;min-height:40px;border:none;border-radius:9px;background:transparent;color:var(--ink);cursor:pointer}
+.lease-mode-btn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.lease-mode-btn:focus-visible{outline:3px solid var(--accent-bright);outline-offset:2px}
+.lease-mode-summary{font-size:12px;color:var(--mute);margin:0}
+.lease-custom-settings{min-width:0;border-top:1px solid var(--line);padding-top:10px}
+.lease-custom-settings summary{font-weight:700;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.lease-custom-settings fieldset{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;border:0;padding:12px 0}
+.lease-custom-settings legend{font-size:12px;font-weight:700;color:var(--mute)}
+.lease-custom-settings label{font-size:13px;font-weight:600;display:flex;gap:9px;align-items:center;margin:0;letter-spacing:0}
+.lease-custom-settings input{width:18px;height:18px;accent-color:var(--accent-bright)}
+.lease-custom-settings .hint{display:block!important}
+:root[data-lease-view="simple"] .strategy-scenarios-wrap,
+:root[data-lease-view="simple"] .terms-panel .terms-slider,
+:root[data-lease-view="simple"] .terms-panel .preset-chips,
+:root[data-lease-view="simple"] #budgetPanel .budget-view-switcher,
+:root[data-lease-view="simple"] #comparisonPanel .quick-filter-chips,
+:root[data-lease-view="simple"] #toggleColsBtn,
+:root[data-lease-view="custom"][data-lease-strategies="false"] .strategy-scenarios-wrap,
+:root[data-lease-view="custom"][data-lease-shortcuts="false"] .terms-panel .terms-slider,
+:root[data-lease-view="custom"][data-lease-shortcuts="false"] .terms-panel .preset-chips,
+:root[data-lease-view="custom"][data-lease-budget-views="false"] #budgetPanel .budget-view-switcher,
+:root[data-lease-view="custom"][data-lease-quick-filters="false"] #comparisonPanel .quick-filter-chips,
+:root[data-lease-view="custom"][data-lease-columns="false"] #toggleColsBtn{display:none!important}
+@media(max-width:650px){.lease-mode-switch{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.lease-mode-btn{padding:10px 5px;min-width:0}.lease-custom-settings fieldset{grid-template-columns:1fr}.lease-display-preferences{padding:12px}.mobile-tour-btn:not([hidden]){display:inline-flex!important}}
