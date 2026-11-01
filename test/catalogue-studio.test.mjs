@@ -371,19 +371,26 @@ console.log("Studio bake: the export becomes catalogue files, and a bad export c
 
 // The studio script reaches for elements by id at load time, so every id it asks for must be in the
 // page. This catches a renamed or missing control long before a browser sees it.
+// Those controls live in the administrator's template (js/studio-page.js puts them on the page).
 const studioHtml = fs.readFileSync(path.join(ROOT, "studio.html"), "utf8");
 const studioScript = fs.readFileSync(path.join(ROOT, "js/catalogue-studio.js"), "utf8");
+const adminView = (studioHtml.match(/<template id="adminView">([\s\S]*?)<\/template>/) || [])[1] || "";
+assert.ok(adminView, "studio.html must keep the studio in its adminView template");
 const pageIds = new Set([...studioHtml.matchAll(/id="([^"]+)"/g)].map(match => match[1]));
+const adminIds = new Set([...adminView.matchAll(/id="([^"]+)"/g)].map(match => match[1]));
 for (const [, id] of studioScript.matchAll(/\$\("([^"]+)"\)/g)) {
   assert.ok(pageIds.has(id), `js/catalogue-studio.js uses #${id}, which studio.html does not define`);
 }
 for (const id of ["photoFiles", "filmstrip", "cropStage", "zoomRange", "frameMode", "fitBtn", "centreBtn",
   "resetFrameBtn", "exportBtn", "exportDialog", "exportDownload", "modelList", "modelSearch", "storageNote"]) {
-  assert.ok(pageIds.has(id), `studio.html is missing #${id}`);
+  assert.ok(adminIds.has(id), `studio.html's adminView template is missing #${id}`);
 }
 assert.match(studioHtml, /type="file"[^>]*multiple/, "The upload control must accept several files at once");
 assert.match(studioHtml, /accept="image\/\*"/);
-assert.match(studioHtml, /type="module" src="js\/catalogue-studio\.js\?v=2\.12\.0"/, "studio.html must load the studio script");
+assert.match(studioHtml, /type="module" src="js\/studio-page\.js\?v=2\.12\.0"/, "studio.html must load the page's gate");
+assert.doesNotMatch(studioHtml, /src="js\/catalogue-studio\.js|href="js\/catalogue-studio\.js/, "Only the administrator's visit loads the studio script");
+const studioPage = fs.readFileSync(path.join(ROOT, "js/studio-page.js"), "utf8");
+assert.match(studioPage, /if \(admin\) await import\("\.\/catalogue-studio\.js\?v=2\.12\.0"\)/, "js/studio-page.js loads the studio for the administrator only");
 assert.match(studioHtml, /href="css\/catalogue-studio\.css\?v=2\.12\.0"/, "studio.html must load the versioned studio stylesheet");
 assert.match(studioHtml, /href="css\/tokens\.css\?v=2\.12\.0"/, "studio.html must load the design tokens");
 assert.match(studioHtml, /id="cropStage"[^>]*aspect|role="img"/, "The crop stage is described to assistive technology");
@@ -422,3 +429,28 @@ assert.match(studioScript, /export async function hasValidImageMagicBytes/, "Stu
 assert.match(studioScript, /image\/svg\+xml/, "Studio must explicitly reject SVG uploads");
 
 console.log("Studio page: every control the script asks for is in studio.html, and the overlay hand-off is wired");
+
+// ---------------------------------------------------------------- nobody else sees it
+
+// Visitors get an ordinary not-found page at studio.html, and no page links to it or names it. The
+// administrator's link is added by js/admin.js, never written into a page.
+const outsideTemplate = studioHtml.replace(/<template id="adminView">[\s\S]*?<\/template>/, "").replace(/<!--[\s\S]*?-->/g, "");
+assert.match(studioHtml, /<title>Page not found · VahanaIQ<\/title>/);
+assert.match(studioHtml, /<meta name="robots" content="noindex">/);
+assert.match(outsideTemplate, /<h1 id="missingTitle">Page not found<\/h1>/);
+assert.match(outsideTemplate, /<a class="btn" href="catalogue\.html">Go to the Showroom<\/a>/);
+const visibleText = html => html.replace(/<(?:script|style)\b[\s\S]*?<\/(?:script|style)>/g, "").replace(/<[^>]*>/g, " ");
+assert.doesNotMatch(visibleText(outsideTemplate), /studio/i, "The not-found page must not name the studio");
+assert.doesNotMatch(outsideTemplate, /href="studio\.html/, "The not-found page must not link to the studio");
+for (const page of ["index.html", "catalogue.html", "about.html", "privacy.html", "terms.html"]) {
+  const html = fs.readFileSync(path.join(ROOT, page), "utf8");
+  assert.doesNotMatch(html, /studio\.html/, `${page} must not link to the studio`);
+  assert.doesNotMatch(visibleText(html), /studio/i, `${page} must not name the studio`);
+}
+assert.doesNotMatch(fs.readFileSync(path.join(ROOT, "scripts/build-info-pages.mjs"), "utf8"), /studio/i, "The information pages must not name the studio");
+assert.doesNotMatch(fs.readFileSync(path.join(ROOT, "js/guidance-content.js"), "utf8"), /studio/i, "The Help Centre and tours must not name the studio");
+assert.doesNotMatch(fs.readFileSync(path.join(ROOT, "sitemap.xml"), "utf8"), /studio/i, "The sitemap must not list the studio");
+assert.doesNotMatch(fs.readFileSync(path.join(ROOT, "robots.txt"), "utf8"), /studio/i, "robots.txt must not advertise the studio's address");
+const catalogueScript = fs.readFileSync(path.join(ROOT, "js/curated-catalogue.js"), "utf8");
+assert.match(catalogueScript, /\$\{isAdminHint\(\) \? `<div class="gallery-toolbar"/, "The Showroom's photo tools are the administrator's");
+console.log("Studio privacy: visitors get a plain not-found page, and no page links to or names the studio");

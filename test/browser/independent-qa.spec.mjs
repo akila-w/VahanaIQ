@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 // Real worker behaviour is covered separately in offline.spec.mjs.
 test.use({ serviceWorkers: 'block' });
 
-import { seedReturning } from './returning-user.mjs';
+import { seedReturning, blockFirebase } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 import fs from 'node:fs';
@@ -21,6 +21,7 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
     test.setTimeout(60000);
     const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce' });
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
@@ -212,6 +213,7 @@ test('catalogue transfer preserves finance class and registration age', async ({
 });
 
 test('Photo Studio accepts the real JPEG fixture and refuses invalid uploads', async ({ page }) => {
+  await blockFirebase(page.context());
   await page.goto(`${BASE}/studio.html`);
   await page.locator('#modelList button').first().click();
   const before = await page.locator('#filmstrip > *').count();

@@ -27,3 +27,9 @@ export const GOOGLE_SIGN_IN_SRC = "https://accounts.google.com/gsi/client?hl=en"
 
 // Firebase's modular SDK, loaded from Google's CDN only when someone signs in
 export const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/12.19.0";
+
+// The Firebase Auth UID of the site's one administrator (Akila). Only that account sees the Photo
+// Studio: everyone else gets no link to it and a not-found page at studio.html (js/admin.js).
+// A UID, never an email address: it identifies the account without publishing a contact detail.
+// Empty means nobody sees the studio.
+export const ADMIN_UID = "UOxuZaqFU0O7NpQ6A2DMssoFJXq2";

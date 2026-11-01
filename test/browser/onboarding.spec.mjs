@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { seedStudioAdmin, blockFirebase } from './returning-user.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 test.use({ trace: process.env.RATE_TRACE === '1' ? 'on' : 'retain-on-failure', screenshot: 'only-on-failure' });
@@ -198,6 +199,7 @@ test('first-use setup is optional and Escape dismisses it', async ({ page }) => 
 });
 
 for (const route of ['catalogue', 'studio']) test(`setup from ${route} preserves saved vehicles and other financing settings`, async ({ page }) => {
+ if (route === 'studio') { await seedStudioAdmin(page.context()); await blockFirebase(page.context()); }
  await page.addInitScript(() => {
   if (localStorage.getItem('vahanaiq_comparison_v3')) return;
   localStorage.setItem('vahanaiq_comparison_v3', JSON.stringify({ version: 3, cars: [{ id: 'saved-car', name: 'Saved vehicle', price: 9000000, cond: 'New' }] }));
@@ -298,4 +300,17 @@ test('landing pauses its motion and stops it for reduced motion', async ({ page 
  await page.reload();
  await expect(page.locator('#landingRowA')).toHaveCSS('animation-name', 'none');
  await expect(page.locator('#landingRowA li[aria-hidden="true"]').first()).toBeHidden();
+});
+
+test('visitors and other accounts get a not-found page that does not name the studio', async ({ page }) => {
+ for (const record of [null, 'someone-else']) {
+  if (record) await page.addInitScript(uid => localStorage.setItem('vahanaiq_account_v1', uid), record);
+  await page.goto(BASE + '/studio.html');
+  await expect(page.locator('h1').first()).toHaveText('Page not found');
+  await expect(page).toHaveTitle(/Page not found/);
+  await expect(page.locator('body')).not.toContainText(/studio/i);
+  await expect(page.locator('#models')).toHaveCount(0);
+  await page.goto(BASE + '/catalogue.html');
+  await expect(page.locator('a[href*="studio"]')).toHaveCount(0);
+ }
 });

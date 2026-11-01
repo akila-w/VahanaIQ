@@ -12,7 +12,7 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, colorScheme: theme, reducedMotion: 'reduce' });
     await seedReturning(context);
     const page = await context.newPage();
-    for (const [route, count] of [['index', 5], ['catalogue', 2], ['studio', 1]]) {
+    for (const [route, count] of [['index', 5], ['catalogue', 2]]) {
       await page.goto(`${BASE}/${route}.html`);
       await expect(page.locator('.guide-context')).toHaveCount(count);
       if (route === 'index' && await page.locator('#toggleTerms').isVisible()) await page.locator('#toggleTerms').click();

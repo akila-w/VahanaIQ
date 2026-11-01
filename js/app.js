@@ -26,6 +26,7 @@ import { FIELDS, readSettings, fieldError, snapField, clearSnapNote, loadState, 
 import { baseVehicles as marketCatalogue } from "./market-catalogue.js?v=2.12.0";
 import { showToast, clearToast } from "./toast.js?v=2.12.0";
 import { initAccount } from "./account.js?v=2.12.0";
+import { watchAdminLinks } from "./admin.js?v=2.12.0";
 import { attachMoneyInput, formatMoneyText } from "./money-input.js?v=2.12.0";
 import { validPrice, vehicleBatchError, conditionPrice } from "./vehicle-validation.js?v=2.12.0";
 import { creditFor, photoForModel, formatCreditHtml, PHOTO_CREDITS } from "./photo-credits.js?v=2.12.0";
@@ -3422,6 +3423,9 @@ if (sharedCars.length) {
   }
 }
 render();
+
+// The Studio link is the administrator's alone, and follows sign-in (see js/admin.js)
+watchAdminLinks();
 
 // Signing in syncs these inputs and vehicles with the person's account (see js/account.js)
 initAccount({
