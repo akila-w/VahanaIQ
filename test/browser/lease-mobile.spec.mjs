@@ -70,3 +70,47 @@ test.describe('Lease mobile layout refresh', () => {
     await context.close();
   });
 });
+
+
+test('Simple, Detailed and Custom preserve numeric inputs and saved display choices', async ({ browser, browserName }) => {
+  const context = await browser.newContext({
+    viewport: {width:390,height:844},hasTouch:true,
+    ...(browserName==='firefox'?{}:{isMobile:true})
+  });
+  await seedReturning(context);
+  const page = await context.newPage();
+  await page.goto(`${BASE_URL}/index.html`,{waitUntil:'load'});
+  await page.locator('#toggleTerms').click();
+  const rate=page.locator('#rate');
+  await rate.fill('17.5');
+  await rate.dispatchEvent('change');
+  await page.locator('[data-lease-view="detailed"]').click();
+  await expect(page.locator('.terms-panel .terms-slider').first()).toBeVisible();
+  await page.locator('[data-lease-view="simple"]').click();
+  await expect(page.locator('.terms-panel .terms-slider').first()).toBeHidden();
+  await expect(rate).toHaveValue('17.5');
+  await page.locator('[data-lease-view="custom"]').click();
+  await page.locator('#leaseCustomSettings summary').click();
+  await page.locator('[data-lease-option="strategies"]').uncheck();
+  await expect(page.locator('.strategy-scenarios-wrap')).toBeHidden();
+  await page.reload({waitUntil:'load'});
+  await expect(page.locator('[data-lease-view="custom"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('#toggleTerms').click();
+  await expect(page.locator('.strategy-scenarios-wrap')).toBeHidden();
+  await expect(page.locator('#rate')).toHaveValue('17.5');
+  await context.close();
+});
+
+test('welcome page offers onboarding and calculator paths without horizontal clipping', async ({browser,browserName}) => {
+  const context=await browser.newContext({viewport:{width:375,height:812},hasTouch:true,...(browserName==='firefox'?{}:{isMobile:true})});
+  await seedReturning(context);
+  const page=await context.newPage();
+  await page.goto(`${BASE_URL}/home.html`,{waitUntil:'load'});
+  await expect(page.locator('h1')).toBeVisible();
+  await expect(page.locator('a[href="index.html?onboarding=1"]').first()).toBeVisible();
+  await expect(page.locator('a[href="index.html#loanTermsHead"]')).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+  await page.locator('a[href="index.html?onboarding=1"]').first().click();
+  await expect(page.locator('dialog#onboarding')).toBeVisible();
+  await context.close();
+});
