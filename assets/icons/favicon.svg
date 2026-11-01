@@ -1,11 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
-  <!-- Full-bleed opaque tile (no rx): Safari and the OS mask the corners, and an opaque
-       perimeter stops Safari adding a white box in dark mode -->
-  <rect width="64" height="64" fill="#0F172A"/>
+  <!-- Transparent: the monogram sits straight on the browser tab. Light tabs get the
+       deep teals so the mark keeps its contrast; dark tabs get the bright brand teals -->
+  <style>
+    .l { fill: #0F766E } .r { fill: #0D9488 } .s { fill: #168265 }
+    @media (prefers-color-scheme: dark) {
+      .l { fill: #2DD4BF } .r { fill: #5EEAD4 } .s { fill: #A7F3D0 }
+    }
+  </style>
 
   <!-- Apex monogram, drawn like the app icons and centred: the wings plus the spark span
        7.3–57 across and 10.4–53.3 down. Flat fills, no glow, so it stays sharp when small -->
-  <path fill="#2DD4BF" d="M7.3 21.3 H18.7 L25.7 45.3 L23.7 53.3 H17.7 Z"/>
-  <path fill="#5EEAD4" d="M41 21.3 H52.7 L41.3 53.3 H36 L32.7 45.3 Z"/>
-  <circle fill="#A7F3D0" cx="52.7" cy="14.7" r="4.3"/>
+  <path class="l" d="M7.3 21.3 H18.7 L25.7 45.3 L23.7 53.3 H17.7 Z"/>
+  <path class="r" d="M41 21.3 H52.7 L41.3 53.3 H36 L32.7 45.3 Z"/>
+  <circle class="s" cx="52.7" cy="14.7" r="4.3"/>
 </svg>

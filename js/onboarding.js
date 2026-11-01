@@ -29,6 +29,12 @@ export function restartOnboarding() {
   init(true);
 }
 
+// Opens setup without clearing a saved draft, e.g. from the landing introduction.
+export function openOnboarding() {
+  if (document.querySelector('dialog#onboarding')) return;
+  init(true);
+}
+
 function init(forcedOpen = false) {
   let storage;
   try { storage = localStorage; } catch {}
@@ -45,6 +51,8 @@ function init(forcedOpen = false) {
   if ((progress.completed || hasComparison) && !forced) {
     return;
   }
+  // First visits to the Lease page open on the landing introduction; its Get Started opens this.
+  if (!forced && document.documentElement.classList.contains('landing-pending')) return;
 
   const draft = read('vahanaiq_onboarding_draft_v1', {});
   let selected = Array.isArray(draft.cars) ? draft.cars.filter(c => !vehicleBatchError([c])).slice(0, 12) : [];
@@ -62,7 +70,9 @@ function init(forcedOpen = false) {
     terms = { ...terms, ...draft.terms };
   }
 
-  let step = selected.length < MIN_SHORTLIST ? Math.min(progress.step, 1) : progress.step;
+  // Steps: 0 Cars, 1 Income, 2 Loan Length, 3 Down Payment, 4 Your Result. Cars come first so
+  // every later step shows rentals for the visitor's own shortlist.
+  let step = selected.length < MIN_SHORTLIST ? 0 : progress.step;
   let models = window.__VAHANAIQ_CATALOGUE__?.models || [];
   let query = '', storageOK = true;
 
@@ -94,6 +104,11 @@ function init(forcedOpen = false) {
     return Number.isFinite(num) ? num : 0;
   };
 
+  // The same down payment and rental the calculator uses for each shortlisted car.
+  const effectiveRate = () => terms.rateType === 'flat' ? flatToEffective(Number(terms.rate), Number(terms.tenure)) : Number(terms.rate);
+  const carDown = car => Math.max(Number(terms.down), minDownFor(car.cond, car.financeClass, car.firstRegisteredOn));
+  const carRental = car => rental(car.price * (1 - carDown(car) / 100), effectiveRate(), Number(terms.tenure));
+
   // Build the dialog
   const dialog = el('dialog', 'onboarding');
   dialog.id = 'onboarding';
@@ -104,14 +119,22 @@ function init(forcedOpen = false) {
 
   const top = el('header', 'onboarding-head');
   const brandGroup = el('div', 'onboarding-brand-group');
+  for (const theme of ['light', 'dark']) {
+    const mark = el('img', `onboarding-mark logo-${theme}`);
+    mark.src = `assets/icons/logo-v-mark-transparent-${theme}.svg`;
+    mark.alt = '';
+    mark.width = 28;
+    mark.height = 28;
+    brandGroup.append(mark);
+  }
   const brandTitle = el('strong', 'onboarding-brand', 'VahanaIQ');
-  const badge = el('span', 'onboarding-badge', 'Sri Lanka Edition');
+  const badge = el('span', 'onboarding-badge', 'Guided Setup');
   brandGroup.append(brandTitle, badge);
 
   // Stepper Progress Indicator - Interactive & Clickable
   const stepper = el('nav', 'onboarding-stepper');
   stepper.setAttribute('aria-label', 'Onboarding progress navigation');
-  const stepLabels = ['Welcome', 'Shortlist', 'Loan Terms', 'Affordability', 'Comparison'];
+  const stepLabels = ['Cars', 'Income', 'Loan Length', 'Down Payment', 'Your Result'];
   const stepItems = stepLabels.map((lbl, idx) => {
     const item = el('button', `onboarding-step-pill ${idx === step ? 'active' : idx < step ? 'done' : ''}`);
     item.type = 'button';
@@ -164,11 +187,9 @@ function init(forcedOpen = false) {
   }
 
   function validateStep(s) {
-    if (s === 0) return true;
-    if (s === 1) return selected.length >= MIN_SHORTLIST && !vehicleBatchError(selected);
-    if (s === 2) return validTerms(terms);
-    if (s === 3) return true; // Income is optional
-    return true;
+    if (s === 0) return selected.length >= MIN_SHORTLIST && !vehicleBatchError(selected);
+    if (s === 2 || s === 3) return validTerms(terms);
+    return true; // Income is optional
   }
 
   function handleStepClick(targetStep) {
@@ -196,10 +217,10 @@ function init(forcedOpen = false) {
     }
 
     if (firstIncomplete !== -1) {
-      if (firstIncomplete === 1) {
-        status.textContent = `Shortlist requires at least ${MIN_SHORTLIST} vehicles. Please complete Step 2 before proceeding.`;
-      } else if (firstIncomplete === 2) {
-        status.textContent = 'Please enter valid loan terms in Step 3 before proceeding.';
+      if (firstIncomplete === 0) {
+        status.textContent = `Choose at least ${MIN_SHORTLIST} cars in Step 1 before moving on.`;
+      } else {
+        status.textContent = `Enter valid loan terms in Step ${firstIncomplete + 1} before moving on.`;
       }
 
       if (step !== firstIncomplete) {
@@ -222,6 +243,7 @@ function init(forcedOpen = false) {
   function updateStepper() {
     stepItems.forEach((item, idx) => {
       item.className = `onboarding-step-pill ${idx === step ? 'active' : idx < step ? 'done' : ''}`;
+      if (idx === step) item.setAttribute('aria-current', 'step'); else item.removeAttribute('aria-current');
       const numSpan = item.querySelector('.step-num');
       if (numSpan) numSpan.textContent = idx < step ? '✓' : String(idx + 1);
     });
@@ -229,7 +251,7 @@ function init(forcedOpen = false) {
     progressLine.setAttribute('style', `width:${pct}%`);
   }
 
-  function title(headText, subText, eyebrow = 'Sri Lanka Vehicle Finance Intelligence') {
+  function title(headText, subText, eyebrow) {
     const wrap = el('div', 'onboarding-title-wrap');
     if (eyebrow) wrap.append(el('p', 'onboarding-eyebrow', eyebrow));
     const h = el('h1', 'onboarding-heading', headText);
@@ -251,21 +273,22 @@ function init(forcedOpen = false) {
     foot.replaceChildren();
     status.textContent = '';
     updateStepper();
+    body.dataset.step = String(step);
 
     if (step > 0) {
       foot.append(button('← Back', () => { step--; persist(); render(); }, 'btn-outline'));
     }
 
     if (step === 0) {
-      renderWelcome();
+      renderCars();
     } else if (step === 1) {
-      renderShortlist();
+      renderIncome();
     } else if (step === 2) {
-      renderTerms();
+      renderTenure();
     } else if (step === 3) {
-      renderAffordability();
+      renderDown();
     } else {
-      renderComparison();
+      renderResult();
     }
 
     // Exit to Lease button in footer
@@ -283,60 +306,111 @@ function init(forcedOpen = false) {
     });
   }
 
-  // STEP 0: WELCOME SCREEN (NO EMOJIS, Professional Cards & Numerals)
-  function renderWelcome() {
-    title(
-      'Know your true monthly vehicle lease before visiting a showroom.',
-      'VahanaIQ is an independent vehicle finance calculator built specifically for the Sri Lankan automotive market — with Central Bank regulations, distributor prices, and private affordability checks.',
-      'Sri Lanka Vehicle Finance Intelligence'
-    );
-
-    const pillars = el('div', 'onboarding-pillars');
-
-    const p1 = el('div', 'onboarding-pillar-card');
-    p1.append(
-      el('span', 'pillar-num', '01'),
-      el('h3', '', 'Sri Lankan Market Database'),
-      el('p', '', 'Over 220+ verified passenger models with official distributor prices and grey-market dealer asking prices in LKR.')
-    );
-
-    const p2 = el('div', 'onboarding-pillar-card');
-    p2.append(
-      el('span', 'pillar-num', '02'),
-      el('h3', '', 'CBSL Regulated Leases'),
-      el('p', '', 'Calculates true reducing-balance repayments and enforces Central Bank Directions No. 01 of 2026 (60% down for new/recond, 40% for >1yr reg).')
-    );
-
-    const p3 = el('div', 'onboarding-pillar-card');
-    p3.append(
-      el('span', 'pillar-num', '03'),
-      el('h3', '', 'Affordability & DTI Gauge'),
-      el('p', '', 'See how lease rentals fit your take-home pay under standard 40% prudent and 50% stretch Debt-to-Income (DTI) banking benchmarks.')
-    );
-
-    pillars.append(p1, p2, p3);
-    body.append(pillars);
-
-    const note = el('div', 'onboarding-privacy-badge');
-    note.innerHTML = `<strong>Client-Side &amp; Private:</strong> No account required, no phone number, and your financial details never leave this browser.`;
-    body.append(note);
-
-    const startBtn = button('Start Guided Setup (Takes 2 min) →', next, 'btn btn-primary onboarding-cta-btn');
-    foot.append(startBtn);
+  // A choice of one, drawn as large buttons that say which is chosen (tick and pressed state).
+  function optionGroup(label, options, current, onPick, cls = '') {
+    const group = el('div', `onboarding-options ${cls}`.trim());
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-label', label);
+    const paint = value => group.querySelectorAll('.onboarding-option').forEach(opt => {
+      const on = opt.dataset.val === value;
+      opt.classList.toggle('active', on);
+      opt.setAttribute('aria-pressed', String(on));
+    });
+    for (const opt of options) {
+      const node = el('button', 'onboarding-option');
+      node.type = 'button';
+      node.dataset.val = opt.value;
+      node.append(el('span', 'option-title', opt.title));
+      if (opt.hint) node.append(el('span', 'option-hint', opt.hint));
+      node.addEventListener('click', () => { paint(opt.value); onPick(opt.value); });
+      group.append(node);
+    }
+    paint(current);
+    return group;
   }
 
-  // STEP 1: SEARCH & SHORTLIST
-  function renderShortlist() {
+  // Rentals for each shortlisted car on the terms chosen so far.
+  function ticker(showDeposit) {
+    const aside = el('aside', 'onboarding-terms-ticker');
+    aside.setAttribute('aria-live', 'polite');
+    const list = el('div', 'ticker-list');
+    aside.append(el('strong', 'ticker-title', 'Your shortlist on these terms'), list);
+    const update = () => {
+      list.replaceChildren();
+      for (const car of selected) {
+        const row = el('div', 'ticker-row');
+        const name = el('span', 'ticker-car-name', car.name);
+        if (showDeposit) name.append(el('small', 'ticker-car-deposit', `${formatLKR(car.price * carDown(car) / 100)} down (${carDown(car)}%)`));
+        row.append(name, el('strong', 'ticker-car-rental', `${formatLKR(carRental(car))} / mo`));
+        list.append(row);
+      }
+    };
+    update();
+    return { aside, update };
+  }
+
+  function carFromOffer(model, offer) {
+    return {
+      id: model.id,
+      catalogueId: model.id,
+      name: [model.name, offer.trim, offer.year].filter(Boolean).join(' ').slice(0, 200),
+      price: offer.amount,
+      cond: offer.condition || 'New',
+      financeClass: model.financeClass,
+      firstRegisteredOn: offer.firstRegisteredOn,
+      w: offer.route === 'Distributor' ? 'Official' : 'Grey',
+      pt: offer.fuel || '',
+      km: '',
+      img: model.images?.[0]?.smallSrc || '',
+      custom: true,
+      priceBasis: offer.kind || 'Published price',
+      priceSourceUrl: offer.sourceUrl
+    };
+  }
+
+  // STEP 1: CARS
+  function renderCars() {
     title(
-      'Choose at least 2 vehicles to compare',
-      'Select vehicles from the curated Sri Lankan catalogue or enter a dealer quote. Choose your preferred trim or variant for each model.',
-      'Step 2 of 5 · Build Your Shortlist'
+      'Which cars are you considering?',
+      `Pick at least ${MIN_SHORTLIST} to compare. Start from a quick pick or search the Showroom, then add or remove cars freely.`,
+      'Step 1 of 5 · Cars'
     );
+
+    // Quick picks add real catalogue cars; the visitor still reviews and edits the shortlist.
+    const quickPicks = [
+      ['Compact SUVs', ['suzuki-fronx', 'toyota-raize']],
+      ['Hybrids and Electric', ['toyota-aqua', 'byd-atto-3', 'honda-vezel']],
+      ['Family SUVs', ['honda-vezel', 'byd-atto-3', 'byd-sealion-5']]
+    ].map(([label, ids]) => [label, ids.map(id => models.find(m => m.id === id)).filter(Boolean)
+      .map(model => [model, (model.offers || []).find(o => validPrice(o.amount))]).filter(([, offer]) => offer)])
+      .filter(([, cars]) => cars.length >= MIN_SHORTLIST);
+    if (quickPicks.length) {
+      const picks = el('div', 'onboarding-quick-picks');
+      picks.setAttribute('role', 'group');
+      picks.setAttribute('aria-label', 'Quick picks');
+      picks.append(el('span', 'quick-picks-label', 'Quick picks'));
+      for (const [label, cars] of quickPicks) {
+        const pick = button('', () => {
+          const added = [];
+          for (const [model, offer] of cars) {
+            if (selected.length >= 12 || selected.some(c => c.catalogueId === model.id)) continue;
+            selected.push(carFromOffer(model, offer));
+            added.push(model.name);
+          }
+          persist();
+          paint();
+          status.textContent = added.length ? `Added ${added.join(', ')}.` : 'These cars are already in your shortlist.';
+        }, 'onboarding-quick-pick');
+        pick.append(el('span', 'quick-pick-title', `+ ${label}`), el('span', 'quick-pick-cars', cars.map(([m]) => m.name).join(', ')));
+        picks.append(pick);
+      }
+      body.append(picks);
+    }
 
     const searchWrap = el('div', 'onboarding-search-wrap');
     const search = el('input', 'onboarding-search');
     search.type = 'search';
-    search.placeholder = 'Search by make or model (e.g. Toyota, BYD, Suzuki, Vezel, Taisor)…';
+    search.placeholder = 'Search by make or model, e.g. Toyota, BYD, Vezel';
     search.setAttribute('aria-label', 'Search vehicles');
     search.value = query;
     searchWrap.append(search);
@@ -409,7 +483,7 @@ function init(forcedOpen = false) {
     manual.append(form);
     body.append(manual);
 
-    const continueButton = button('Continue to Loan Terms →', next, 'btn btn-primary');
+    const continueButton = button('Continue to Income →', next, 'btn btn-primary');
     foot.append(continueButton);
 
     let limit = 12;
@@ -426,7 +500,7 @@ function init(forcedOpen = false) {
       // Shortlist tray counter
       const trayHeader = el('div', 'tray-header');
       const trayTitle = el('strong', '', `Shortlist (${selected.length} of 12 selected)`);
-      const trayHint = el('span', 'tray-hint', selected.length < MIN_SHORTLIST ? `Need at least ${MIN_SHORTLIST - selected.length} more` : 'Ready to proceed');
+      const trayHint = el('span', 'tray-hint', selected.length < MIN_SHORTLIST ? `Need at least ${MIN_SHORTLIST - selected.length} more` : 'Ready to continue');
       trayHeader.append(trayTitle, trayHint);
       tray.append(trayHeader);
 
@@ -445,7 +519,7 @@ function init(forcedOpen = false) {
         trayPills.append(pill);
       }
       if (!selected.length) {
-        trayPills.append(el('p', 'tray-empty-text', 'No vehicles selected yet. Browse below or search by make/model.'));
+        trayPills.append(el('p', 'tray-empty-text', 'No cars yet. Use a quick pick, or search and add below.'));
       }
       tray.append(trayPills);
 
@@ -543,22 +617,7 @@ function init(forcedOpen = false) {
             return;
           }
           const existingIndex = selected.findIndex(c => c.catalogueId === model.id);
-          const carObj = {
-            id: model.id,
-            catalogueId: model.id,
-            name: [model.name, offer.trim, offer.year].filter(Boolean).join(' ').slice(0, 200),
-            price: offer.amount,
-            cond: offer.condition || 'New',
-            financeClass: model.financeClass,
-            firstRegisteredOn: offer.firstRegisteredOn,
-            w: offer.route === 'Distributor' ? 'Official' : 'Grey',
-            pt: offer.fuel || '',
-            km: '',
-            img: model.images?.[0]?.smallSrc || '',
-            custom: true,
-            priceBasis: offer.kind || 'Published price',
-            priceSourceUrl: offer.sourceUrl
-          };
+          const carObj = carFromOffer(model, offer);
 
           if (existingIndex !== -1) {
             selected[existingIndex] = carObj;
@@ -584,7 +643,7 @@ function init(forcedOpen = false) {
       if (!found.length) {
         results.append(
           el('div', 'onboarding-no-results', [
-            el('p', '', models.length ? 'No matching vehicles found. Try another make or model name, or enter a quote above.' : 'Loading catalogue database…')
+            el('p', '', models.length ? 'No matching vehicles found. Try another make or model name, or enter a quote below.' : 'Loading catalogue database…')
           ])
         );
       }
@@ -593,187 +652,12 @@ function init(forcedOpen = false) {
     paint();
   }
 
-  // STEP 2: LOAN TERMS
-  function renderTerms() {
+  // STEP 2: INCOME (optional)
+  function renderIncome() {
     title(
-      'Set your lease financing terms',
-      'Under Sri Lankan Central Bank regulations (CBSL Directions No. 01 of 2026), vehicle leases follow strict down payment and tenure guidelines.',
-      'Step 3 of 5 · Financing Parameters'
-    );
-
-    const wrap = el('div', 'onboarding-terms-layout');
-    const form = el('form', 'onboarding-fields onboarding-terms-form');
-
-    // Interest rate
-    const rateGroup = el('div', 'terms-field-group');
-    const rateLabel = el('label', 'field-label', 'Annual Interest Rate (%)');
-    const rateInput = el('input');
-    rateInput.type = 'number';
-    rateInput.min = '0';
-    rateInput.max = '40';
-    rateInput.step = '0.1';
-    rateInput.required = true;
-    rateInput.value = terms.rate || '16.0';
-    rateInput.addEventListener('input', () => {
-      terms.rate = rateInput.value;
-      updateLiveTicker();
-      persist();
-    });
-    rateLabel.append(rateInput);
-
-    const ratePresets = el('div', 'terms-chip-row');
-    [['14.0', '14.0% (Prime Bank)'], ['16.0', '16.0% (Standard)'], ['18.5', '18.5% (Finance Co)']].forEach(([val, label]) => {
-      const chip = button(label, () => {
-        terms.rate = val;
-        rateInput.value = val;
-        highlightChip(ratePresets, val);
-        updateLiveTicker();
-        persist();
-      }, `terms-preset-chip ${terms.rate === val ? 'active' : ''}`);
-      chip.dataset.val = val;
-      ratePresets.append(chip);
-    });
-    rateGroup.append(rateLabel, ratePresets);
-
-    // Rate type
-    const typeGroup = el('div', 'terms-field-group');
-    const typeLabel = el('label', 'field-label', 'Interest Calculation Type');
-    const typeSelect = el('select');
-    typeSelect.setAttribute('aria-label', 'Rate type');
-    [['reducing', 'Reducing Balance (Standard for Leases)'], ['flat', 'Flat Rate (Fixed on Initial Principal)']].forEach(([val, text]) => {
-      const opt = el('option', '', text);
-      opt.value = val;
-      typeSelect.append(opt);
-    });
-    typeSelect.value = terms.rateType || 'reducing';
-    typeSelect.addEventListener('change', () => {
-      terms.rateType = typeSelect.value;
-      updateLiveTicker();
-      persist();
-    });
-    typeLabel.append(typeSelect);
-    const typeHint = el('p', 'field-hint', 'Regulated Sri Lankan leases use reducing balance. Flat rate quotes look lower but cost significantly more in total interest.');
-    typeGroup.append(typeLabel, typeHint);
-
-    // Tenure
-    const tenureGroup = el('div', 'terms-field-group');
-    const tenureLabel = el('label', 'field-label', 'Loan Tenure (Months)');
-    const tenureInput = el('input');
-    tenureInput.type = 'number';
-    tenureInput.min = '6';
-    tenureInput.max = '84';
-    tenureInput.step = '1';
-    tenureInput.required = true;
-    tenureInput.value = terms.tenure || '84';
-    tenureInput.addEventListener('input', () => {
-      terms.tenure = tenureInput.value;
-      updateLiveTicker();
-      persist();
-    });
-    tenureLabel.append(tenureInput);
-
-    const tenurePresets = el('div', 'terms-chip-row');
-    [['36', '36m (3 yrs)'], ['60', '60m (5 yrs)'], ['84', '84m (CBSL Max 7 yrs)']].forEach(([val, label]) => {
-      const chip = button(label, () => {
-        terms.tenure = val;
-        tenureInput.value = val;
-        highlightChip(tenurePresets, val);
-        updateLiveTicker();
-        persist();
-      }, `terms-preset-chip ${terms.tenure === val ? 'active' : ''}`);
-      chip.dataset.val = val;
-      tenurePresets.append(chip);
-    });
-    tenureGroup.append(tenureLabel, tenurePresets);
-
-    // Down payment
-    const downGroup = el('div', 'terms-field-group');
-    const downLabel = el('label', 'field-label', 'Down Payment (% of vehicle price)');
-    const downInput = el('input');
-    downInput.type = 'number';
-    downInput.min = '40';
-    downInput.max = '100';
-    downInput.step = '1';
-    downInput.required = true;
-    downInput.value = terms.down || '60';
-    downInput.addEventListener('input', () => {
-      terms.down = downInput.value;
-      updateLiveTicker();
-      persist();
-    });
-    downLabel.append(downInput);
-
-    const downPresets = el('div', 'terms-chip-row');
-    [['40', '40% Min (>1yr Reg)'], ['60', '60% Min (New / Recond)'], ['70', '70% (Higher Equity)']].forEach(([val, label]) => {
-      const chip = button(label, () => {
-        terms.down = val;
-        downInput.value = val;
-        highlightChip(downPresets, val);
-        updateLiveTicker();
-        persist();
-      }, `terms-preset-chip ${terms.down === val ? 'active' : ''}`);
-      chip.dataset.val = val;
-      downPresets.append(chip);
-    });
-    downGroup.append(downLabel, downPresets);
-
-    form.append(rateGroup, typeGroup, tenureGroup, downGroup);
-    wrap.append(form);
-
-    // Live Rental Preview Box
-    const ticker = el('aside', 'onboarding-terms-ticker');
-    const tickerTitle = el('strong', 'ticker-title', 'Shortlist Monthly Lease Estimates');
-    const tickerList = el('div', 'ticker-list');
-    ticker.append(tickerTitle, tickerList);
-    wrap.append(ticker);
-
-    body.append(wrap);
-
-    function highlightChip(container, activeVal) {
-      container.querySelectorAll('.terms-preset-chip').forEach(c => {
-        c.classList.toggle('active', c.dataset.val === activeVal);
-      });
-    }
-
-    function updateLiveTicker() {
-      tickerList.replaceChildren();
-      const r = Number(terms.rate);
-      const tenure = Number(terms.tenure);
-      const effRate = terms.rateType === 'flat' ? flatToEffective(r, tenure) : r;
-
-      if (!selected.length) {
-        tickerList.append(el('p', 'ticker-empty', 'Select at least 2 vehicles in Step 2 to see live rental estimates.'));
-        return;
-      }
-
-      for (const car of selected) {
-        const d = Math.max(Number(terms.down), minDownFor(car.cond, car.financeClass, car.firstRegisteredOn));
-        const financed = car.price * (1 - d / 100);
-        const monthly = rental(financed, effRate, tenure);
-
-        const row = el('div', 'ticker-row');
-        row.append(
-          el('span', 'ticker-car-name', car.name),
-          el('strong', 'ticker-car-rental', `${formatLKR(monthly)} / mo`)
-        );
-        tickerList.append(row);
-      }
-    }
-
-    updateLiveTicker();
-
-    foot.append(button('Continue to Affordability Check →', () => {
-      if (!form.reportValidity() || !validTerms(terms)) return;
-      next();
-    }, 'btn btn-primary'));
-  }
-
-  // STEP 3: AFFORDABILITY & CURRENCY INPUT (NO EMOJIS)
-  function renderAffordability() {
-    title(
-      'Test your monthly affordability',
-      'Sri Lankan financial institutions follow prudent Debt-to-Income (DTI) thresholds — standard 40% prudent limit and 50% maximum stretch ceiling.',
-      'Step 4 of 5 · Net Income & Commitments'
+      'What do you take home each month?',
+      'Used only to check what you can afford. It stays in this browser and is never sent anywhere.',
+      'Step 2 of 5 · Income'
     );
 
     const layout = el('div', 'onboarding-affordability-layout');
@@ -787,7 +671,7 @@ function init(forcedOpen = false) {
     const incInput = el('input', 'currency-input');
     incInput.type = 'text';
     incInput.inputMode = 'numeric';
-    incInput.placeholder = 'e.g. 250,000 (Optional)';
+    incInput.placeholder = 'After tax, e.g. 250,000';
     incInput.value = terms.income ? Math.round(parseNumber(terms.income)).toLocaleString('en-LK') : '';
     incWrap.append(incPrefix, incInput);
     incLabel.append(incWrap);
@@ -815,14 +699,14 @@ function init(forcedOpen = false) {
     const debtInput = el('input', 'currency-input');
     debtInput.type = 'text';
     debtInput.inputMode = 'numeric';
-    debtInput.placeholder = '0 if none';
+    debtInput.placeholder = 'Monthly total, 0 if none';
     debtInput.value = terms.debt ? Math.round(parseNumber(terms.debt)).toLocaleString('en-LK') : '';
     debtWrap.append(debtPrefix, debtInput);
     debtLabel.append(debtWrap);
 
     // Preset chips for debt
     const debtChips = el('div', 'terms-chip-row');
-    [['0', 'LKR 0 (No debts)'], ['25000', 'LKR 25k'], ['50000', 'LKR 50k'], ['100000', 'LKR 100k']].forEach(([val, label]) => {
+    [['0', 'None'], ['25000', 'LKR 25k'], ['50000', 'LKR 50k'], ['100000', 'LKR 100k']].forEach(([val, label]) => {
       const chip = button(label, () => {
         terms.debt = val;
         debtInput.value = val === '0' ? '0' : Math.round(Number(val)).toLocaleString('en-LK');
@@ -840,7 +724,7 @@ function init(forcedOpen = false) {
 
     // Interactive DTI feedback card
     const dtiCard = el('div', 'onboarding-dti-card');
-    const dtiHeader = el('strong', 'dti-card-title', 'Affordability & DTI Feedback');
+    const dtiHeader = el('strong', 'dti-card-title', 'How your shortlist fits');
     const dtiMeter = el('div', 'onboarding-dti-meter');
     const dtiBar = el('div', 'onboarding-dti-bar');
     const dtiFill = el('div', 'onboarding-dti-fill');
@@ -881,22 +765,11 @@ function init(forcedOpen = false) {
       if (!income) {
         dtiFill.setAttribute('style', `width:${0}%`);
         dtiFill.className = 'onboarding-dti-fill';
-        dtiText.innerHTML = `<strong>Optional:</strong> Entering your income unlocks your personal Debt-to-Income gauge and cashflow spectrum. You can skip this step at any time.`;
+        dtiText.innerHTML = `<strong>Optional:</strong> add your income to see which cars are comfortable, a stretch or out of reach. You can skip this and add it later.`;
         return;
       }
 
-      let avgRental = 0;
-      if (selected.length) {
-        const r = Number(terms.rate);
-        const tenure = Number(terms.tenure);
-        const effRate = terms.rateType === 'flat' ? flatToEffective(r, tenure) : r;
-        const total = selected.reduce((acc, car) => {
-          const d = Math.max(Number(terms.down), minDownFor(car.cond, car.financeClass, car.firstRegisteredOn));
-          return acc + rental(car.price * (1 - d / 100), effRate, tenure);
-        }, 0);
-        avgRental = total / selected.length;
-      }
-
+      const avgRental = selected.length ? selected.reduce((acc, car) => acc + carRental(car), 0) / selected.length : 0;
       const totalCommitments = debt + avgRental;
       const dtiPct = Math.round((totalCommitments / income) * 100);
       const cappedBar = Math.min(100, Math.max(5, dtiPct));
@@ -905,13 +778,13 @@ function init(forcedOpen = false) {
       if (dtiPct <= 40) {
         dtiFill.className = 'onboarding-dti-fill safe';
         const buffer = Math.round((income * 0.4) - totalCommitments);
-        dtiText.innerHTML = `<span class="tag ok">Prudent (${dtiPct}% DTI)</span> Total debt servicing is comfortably within Sri Lankan 40% prudent lending guidelines. Buffer remaining: <strong>${formatLKR(buffer)} / month</strong>.`;
+        dtiText.innerHTML = `<span class="tag ok">Comfortable (${dtiPct}% of income)</span> An average car on your shortlist fits within the recommended 40% limit, with <strong>${formatLKR(buffer)} a month</strong> to spare.`;
       } else if (dtiPct <= 50) {
         dtiFill.className = 'onboarding-dti-fill mid';
-        dtiText.innerHTML = `<span class="tag warn">Stretch (${dtiPct}% DTI)</span> Within the CBSL 50% ceiling, but leaves less buffer for comprehensive insurance, fuel and vehicle upkeep.`;
+        dtiText.innerHTML = `<span class="tag mid">Stretching (${dtiPct}% of income)</span> Within the 50% maximum, but it leaves less room for insurance, fuel and upkeep.`;
       } else {
         dtiFill.className = 'onboarding-dti-fill bad';
-        dtiText.innerHTML = `<span class="tag alert">High Commitment (${dtiPct}% DTI)</span> Exceeds prudent 50% debt-to-income benchmarks. Consider a higher down payment or longer tenure to lower the monthly payment.`;
+        dtiText.innerHTML = `<span class="tag bad">Out of reach (${dtiPct}% of income)</span> Above the 50% maximum. A longer term or a larger down payment lowers the rental; you can try both next.`;
       }
     }
 
@@ -923,29 +796,129 @@ function init(forcedOpen = false) {
         terms.debt = '';
         next();
       }, 'btn-outline'),
-      button('See My Comparison →', next, 'btn btn-primary')
+      button('Continue to Loan Length →', next, 'btn btn-primary')
     );
   }
 
-  // STEP 4: COMPARISON SCREEN (NO EMOJIS)
-  function renderComparison() {
+  // STEP 3: LOAN LENGTH AND RATE
+  function renderTenure() {
     title(
-      'Your vehicle finance comparison is ready',
-      `Based on ${terms.rate}% ${terms.rateType} rate over ${terms.tenure} months with a ${terms.down}% baseline deposit. Everything can be adjusted live in the calculator.`,
-      'Step 5 of 5 · Summary & Review'
+      'How long would you like to pay?',
+      'Longer terms lower the monthly rental but cost more interest overall. You can change this any time.',
+      'Step 3 of 5 · Loan Length'
     );
 
+    const wrap = el('div', 'onboarding-terms-layout');
+    const form = el('form', 'onboarding-fields onboarding-terms-form');
+    const live = ticker(false);
+
+    const tenureGroup = el('div', 'terms-field-group');
+    tenureGroup.append(el('span', 'field-label', 'Loan Tenure'));
+    tenureGroup.append(optionGroup('Loan tenure', [36, 48, 60, 72, 84].map(m => ({ value: String(m), title: `${m}m`, hint: `${m / 12} years` })),
+      String(terms.tenure), value => { terms.tenure = value; live.update(); persist(); }, 'onboarding-options-tenure'));
+
+    // Rate: the planner's typical 16% reducing balance, editable for a lender's quote.
+    const rateGroup = el('div', 'terms-field-group onboarding-rate-row');
+    const rateLabel = el('label', 'field-label', 'Annual Interest Rate (%)');
+    const rateInput = el('input');
+    rateInput.type = 'number';
+    rateInput.min = '0';
+    rateInput.max = '40';
+    rateInput.step = '0.1';
+    rateInput.required = true;
+    rateInput.value = terms.rate || String(DEFAULT_RATE);
+    rateInput.addEventListener('input', () => {
+      terms.rate = rateInput.value;
+      live.update();
+      persist();
+    });
+    rateLabel.append(rateInput);
+
+    const typeLabel = el('label', 'field-label', 'Rate Type');
+    const typeSelect = el('select');
+    [['reducing', 'Reducing balance'], ['flat', 'Flat rate']].forEach(([val, text]) => {
+      const opt = el('option', '', text);
+      opt.value = val;
+      typeSelect.append(opt);
+    });
+    typeSelect.value = terms.rateType || 'reducing';
+    typeSelect.addEventListener('change', () => {
+      terms.rateType = typeSelect.value;
+      live.update();
+      persist();
+    });
+    typeLabel.append(typeSelect);
+    rateGroup.append(rateLabel, typeLabel,
+      el('p', 'field-hint', 'We start you at a typical 16% reducing balance. Enter your lender’s quote if you have one; flat-rate quotes are converted for you.'));
+
+    form.append(tenureGroup, rateGroup);
+    wrap.append(form, live.aside);
+    body.append(wrap);
+
+    foot.append(button('Continue to Down Payment →', () => {
+      if (!form.reportValidity() || !validTerms(terms)) return;
+      next();
+    }, 'btn btn-primary'));
+  }
+
+  // STEP 4: DOWN PAYMENT
+  function renderDown() {
+    title(
+      'How much will you put down?',
+      'CBSL Directions No. 01 of 2026 set the minimum: 60% for a new or recently registered car, 40% once it has been registered for over a year.',
+      'Step 4 of 5 · Down Payment'
+    );
+
+    const wrap = el('div', 'onboarding-terms-layout');
+    const form = el('form', 'onboarding-fields onboarding-down-form');
+    const live = ticker(true);
+    form.append(optionGroup('Down payment', [
+      { value: '40', title: '40%', hint: 'Registered over a year' },
+      { value: '50', title: '50%', hint: 'Above the used minimum' },
+      { value: '60', title: '60%', hint: 'New or recently registered' },
+      { value: '70', title: '70%', hint: 'Lower monthly rental' }
+    ], String(terms.down), value => { terms.down = value; live.update(); persist(); }, 'onboarding-options-down'),
+    el('p', 'field-hint', 'A car that needs more than you choose uses its own CBSL minimum, shown beside it.'));
+    wrap.append(form, live.aside);
+    body.append(wrap);
+
+    foot.append(button('See My Result →', () => {
+      if (!validTerms(terms)) return;
+      next();
+    }, 'btn btn-primary'));
+  }
+
+  // STEP 5: RESULT
+  function renderResult() {
+    title(
+      'Here is where you stand.',
+      `${terms.tenure} months at ${terms.rate}% ${terms.rateType === 'flat' ? 'flat' : 'reducing balance'}, with at least ${terms.down}% down. Everything can be changed in the planner.`,
+      'Step 5 of 5 · Your Result'
+    );
+
+    const income = parseNumber(terms.income);
+    const debt = parseNumber(terms.debt);
+    const summary = el('div', 'onboarding-summary');
+    if (income) {
+      // The most a new car can cost while rental plus existing payments stay within 40%.
+      const down = Math.max(Number(terms.down), minDownFor('New'));
+      const perMillion = rental(1e6 * (1 - down / 100), effectiveRate(), Number(terms.tenure));
+      const room = income * 0.4 - debt;
+      summary.append(el('span', 'summary-label', 'You can comfortably consider new cars up to'),
+        el('strong', 'summary-value', room > 0 && perMillion > 0 ? formatLKR(room / perMillion * 1e6) : 'No room yet'),
+        el('span', 'summary-note', room > 0
+          ? `Keeps the rental and your existing payments within 40% of your ${formatLKR(income)} take-home pay.`
+          : 'Your existing payments already use 40% of your income. A larger down payment or longer term will help.'));
+    } else {
+      summary.append(el('span', 'summary-label', 'Monthly rentals for your shortlist'),
+        el('span', 'summary-note', 'Add your income in the planner to see which cars are comfortable and your budget ceiling.'));
+    }
+    body.append(summary);
+
     const list = el('div', 'onboarding-results');
-    const r = Number(terms.rate);
-    const tenure = Number(terms.tenure);
-    const effRate = terms.rateType === 'flat' ? flatToEffective(r, tenure) : r;
-
     for (const car of selected) {
-      const d = Math.max(Number(terms.down), minDownFor(car.cond, car.financeClass, car.firstRegisteredOn));
-      const financed = car.price * (1 - d / 100);
-      const monthly = rental(financed, effRate, tenure);
-      const depositAmount = car.price * (d / 100);
-
+      const d = carDown(car);
+      const monthly = carRental(car);
       const card = el('article', 'onboarding-result');
       if (car.img) {
         const thumb = el('img', 'result-thumb');
@@ -957,15 +930,16 @@ function init(forcedOpen = false) {
         el('h3', 'result-name', car.name),
         el('p', 'result-price', `${formatLKR(car.price)} · ${car.priceBasis || 'Published'}`),
         el('strong', 'result-rental', `${formatLKR(monthly)} / mo`),
-        el('p', 'result-meta', `${formatLKR(depositAmount)} deposit (${d}%) · ${tenure} months`)
+        el('p', 'result-meta', `${formatLKR(car.price * d / 100)} down (${d}%) · ${terms.tenure} months`)
       );
+      if (income) {
+        const share = (monthly + debt) / income;
+        const [cls, word] = share <= 0.4 ? ['ok', 'Comfortable'] : share <= 0.5 ? ['mid', 'Stretching'] : ['bad', 'Out of reach'];
+        card.append(el('span', `tag ${cls} result-fit`, `${word} · ${Math.round(share * 100)}%`));
+      }
       list.append(card);
     }
     body.append(list);
-
-    const tourPrompt = el('div', 'onboarding-tour-callout');
-    tourPrompt.innerHTML = `<strong>Guided App Tour Available:</strong> Take a 60-second interactive tour of the loan terms, affordability gauge, and comparison schedules.`;
-    body.append(tourPrompt);
 
     const tourBtn = button('Take a 60-Second Guided Tour', () => {
       finish(true);
@@ -1015,4 +989,150 @@ function init(forcedOpen = false) {
       location.href = startTour ? 'index.html?guide=tour#loanTermsHead' : 'index.html#comparisonPanel';
     }
   }
+}
+
+// --- Landing introduction (index.html) ---------------------------------------------
+// js/boot.js decides before first paint whether this visit opens on the landing introduction.
+const root = document.documentElement;
+const landing = document.getElementById('landing');
+
+// Popular models first; any that leave the catalogue are skipped, and the belts are topped up
+// from the rest of the priced catalogue so they are never empty.
+const FEATURED = ['toyota-raize', 'suzuki-fronx', 'toyota-aqua', 'byd-atto-3', 'honda-vezel', 'suzuki-swift', 'toyota-yaris-cross',
+  'byd-sealion-5', 'kia-sportage', 'nissan-x-trail', 'suzuki-wagon-r', 'byd-dolphin', 'toyota-corolla-cross-z', 'mitsubishi-triton'];
+
+const lkr = n => 'LKR ' + Math.round(n).toLocaleString('en-LK');
+
+// The rental each card shows: catalogue price, the CBSL minimum (never below the planner's
+// default), the planner's default rate and tenure. The same sums the planner itself runs.
+function quote(model) {
+  const offer = (model.offers || []).find(o => validPrice(o.amount));
+  const photo = model.images?.[0]?.smallSrc || model.images?.[0]?.src;
+  if (!offer || !photo) return null;
+  const down = Math.max(DEFAULT_DOWN, minDownFor(offer.condition || 'New', model.financeClass, offer.firstRegisteredOn));
+  return { model, photo, price: offer.amount, down, monthly: rental(offer.amount * (1 - down / 100), DEFAULT_RATE, DEFAULT_TENURE) };
+}
+
+function pickModels(models) {
+  const byId = new Map(models.map(m => [m.id, m]));
+  const chosen = FEATURED.map(id => byId.get(id)).filter(Boolean).map(quote).filter(Boolean);
+  for (const model of models) {
+    if (chosen.length >= 14) break;
+    if (!FEATURED.includes(model.id)) { const q = quote(model); if (q) chosen.push(q); }
+  }
+  return chosen;
+}
+
+function tile(q, copy) {
+  const li = document.createElement('li');
+  if (copy) li.setAttribute('aria-hidden', 'true');
+  const a = document.createElement('a');
+  a.className = 'landing-tile';
+  a.href = 'catalogue.html';
+  a.dataset.landingLeave = '';
+  if (copy) a.tabIndex = -1;
+  a.setAttribute('aria-label', `${q.model.name}, from ${lkr(q.price)}, about ${lkr(q.monthly)} a month. Open the Showroom`);
+  const photo = document.createElement('span');
+  photo.className = 'landing-tile-photo';
+  const img = document.createElement('img');
+  img.src = safeImageUrl(q.photo);
+  img.alt = '';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  photo.append(img);
+  const text = document.createElement('span');
+  text.className = 'landing-tile-text';
+  const name = document.createElement('span');
+  name.className = 'landing-tile-name';
+  name.textContent = q.model.name;
+  const price = document.createElement('span');
+  price.className = 'landing-tile-price';
+  price.textContent = lkr(q.price);
+  const monthly = document.createElement('span');
+  monthly.className = 'landing-tile-rental';
+  monthly.append(lkr(q.monthly));
+  const per = document.createElement('small');
+  per.textContent = ' /mo';
+  monthly.append(per);
+  text.append(name, price, monthly);
+  a.append(photo, text);
+  li.append(a);
+  return li;
+}
+
+// Each belt holds its cars twice; the CSS moves it by half its width, so the loop is seamless.
+// The second copy is hidden from assistive technology and the tab order.
+function fillBelt(list, quotes) {
+  list.replaceChildren(...quotes.map(q => tile(q, false)), ...quotes.map(q => tile(q, true)));
+}
+
+function fillExample(q) {
+  const figure = document.getElementById('landingExample');
+  if (!figure || !q) return;
+  const img = figure.querySelector('img');
+  img.src = safeImageUrl(q.model.images?.[0]?.src || q.photo);
+  img.alt = `${q.model.name}, manufacturer image`;
+  figure.querySelector('.landing-example-label').textContent = `Example · ${q.model.name} · ${lkr(q.price)}`;
+  const rentalLine = figure.querySelector('.landing-example-rental');
+  const per = document.createElement('small');
+  per.textContent = ' a month';
+  rentalLine.replaceChildren(lkr(q.monthly), per);
+  figure.querySelector('.landing-example-terms').textContent =
+    `${lkr(q.price * q.down / 100)} down (${q.down}%) · ${DEFAULT_TENURE} months at ${DEFAULT_RATE}%`;
+  figure.hidden = false;
+}
+
+// Once the visitor moves on, the introduction leaves the page, so the planner keeps its
+// single h1 and returning visitors never carry the extra markup.
+function closeLanding() {
+  root.classList.remove('landing-pending');
+  landing?.remove();
+}
+
+// Leaving for the planner or Showroom counts as dismissing setup, as Exit to Lease does; the
+// Guided Setup button stays in the header for later.
+function dismissLanding() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ONBOARDING_KEY) || 'null');
+    if (!saved?.completed) localStorage.setItem(ONBOARDING_KEY, JSON.stringify({ version: 1, completed: true, step: Number.isInteger(saved?.step) ? saved.step : 0 }));
+  } catch {}
+}
+
+if (landing && !root.classList.contains('landing-pending')) landing.remove();
+else if (landing) {
+  const quotes = pickModels(window.__VAHANAIQ_CATALOGUE__?.models || []);
+  if (quotes.length >= 4) {
+    const half = Math.ceil(quotes.length / 2);
+    fillBelt(document.getElementById('landingRowA'), quotes.slice(0, half));
+    fillBelt(document.getElementById('landingRowB'), quotes.slice(half));
+    document.getElementById('landingBelts').hidden = false;
+  }
+  fillExample(quotes[0]);
+
+  landing.addEventListener('click', event => {
+    const start = event.target.closest('[data-landing-start]');
+    const leave = event.target.closest('[data-landing-leave]');
+    if (start) {
+      closeLanding();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      openOnboarding();
+    } else if (leave) {
+      dismissLanding();
+      // The planner is this page: reveal it without a reload.
+      if (new URL(leave.href).pathname === location.pathname) {
+        event.preventDefault();
+        closeLanding();
+        history.replaceState(null, '', location.pathname);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        document.getElementById('h-terms')?.focus({ preventScroll: true });
+      }
+    }
+  });
+
+  const pause = document.getElementById('landingPause');
+  pause.addEventListener('click', () => {
+    const paused = landing.classList.toggle('is-paused');
+    pause.setAttribute('aria-pressed', String(paused));
+    pause.textContent = paused ? 'Play Animation' : 'Pause Animation';
+  });
 }

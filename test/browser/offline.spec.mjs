@@ -255,15 +255,16 @@ test('empty-profile first-use setup remains functional immediately offline', asy
     await setOffline(context, true);
     const observed = errors(page);
     await page.reload();
-    await page.getByRole('button', { name: 'Start Guided Setup (Takes 2 min) →', exact: true }).click();
+    await page.locator('#landing').getByRole('button', { name: 'Get Started', exact: true }).first().click();
     const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
     for (const name of ['Toyota Aqua', 'Toyota Camry Hybrid']) {
       await search.fill(name);
       await page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true }).click();
     }
-    await page.getByRole('button', { name: 'Continue to Loan Terms →', exact: true }).click();
-    await page.getByRole('button', { name: 'Continue to Affordability Check →', exact: true }).click();
+    await page.getByRole('button', { name: 'Continue to Income →', exact: true }).click();
     await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
+    await page.getByRole('button', { name: 'Continue to Down Payment →', exact: true }).click();
+    await page.getByRole('button', { name: 'See My Result →', exact: true }).click();
     await page.getByRole('button', { name: 'Open My Lease →', exact: true }).click();
     await expect(page.locator('#rows tr')).toHaveCount(2);
     expect(observed.failed).toEqual([]);

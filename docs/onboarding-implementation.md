@@ -51,3 +51,10 @@ All other pre-existing changes belong to the earlier work and were preserved. No
 Keep financial explanations aligned with the calculator and information pages when those change. Tour selectors reference static page anchors; adding or removing a page section should include updating its tour and browser checks. Guidance is deliberately independent of account sync. Changing a browser preference must not emit financial-save events or reset other storage.
 
 Run `node test/guidance.test.mjs`. Serve the repository at `http://127.0.0.1:8123`, then run `npx playwright test test/browser/guidance.spec.mjs --browser=chromium` (or `--browser=webkit`). The CI workflow also runs Firefox.
+
+## Landing introduction and five-step setup, 01/11/2026
+
+- `js/boot.js` adds `html.landing-pending` before first paint on a first visit to the Lease page (no completed or dismissed setup, no saved vehicles, no `?onboarding` or `#onboarding`). `?welcome` shows the introduction to anyone.
+- The landing markup is the `#landing` section in `index.html`; its styles are the "Landing introduction" section of `css/experience.css` and its script is the landing section at the end of `js/onboarding.js`. They live in those existing shell files so every released service worker, whose cached file list predates the landing, still serves a consistent page during an upgrade.
+- Get Started calls `openOnboarding()`, which keeps any saved draft. Leaving for the planner or the Showroom marks setup dismissed, like Exit to Lease. Once the visitor moves on, the landing section is removed from the page.
+- Setup steps: 0 Cars, 1 Income (optional), 2 Loan Length and rate, 3 Down Payment, 4 Your Result. Cars come first because setup must have the visitor choose cars (decision of 27/10/2026), and so every later step can show rentals for that shortlist. A draft saved under the previous step order resumes on the step with the same number.

@@ -3,8 +3,13 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 test.use({ trace: process.env.RATE_TRACE === '1' ? 'on' : 'retain-on-failure', screenshot: 'only-on-failure' });
 const BASE=process.env.BASE_URL||'http://127.0.0.1:8123';
+// First visits to the Lease page open on the landing introduction; Get Started opens setup.
+async function startFromLanding(page) {
+ await expect(page.locator('#landing')).toBeVisible();
+ await page.locator('#landing').getByRole('button',{name:'Get Started',exact:true}).first().click();
+ await expect(page.locator('#onboarding')).toBeVisible();
+}
 async function selectCars(page) {
- await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();
  const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
  for (const [index, name] of ['Toyota Aqua', 'Toyota Camry Hybrid'].entries()) {
   await search.fill(name);
@@ -13,9 +18,15 @@ async function selectCars(page) {
   await expect(add).toBeInViewport();
   await add.click();
   await expect(page.locator('.onboarding-tray')).toContainText(`${index + 1} of 12 selected`);
-  if (index === 0) await expect(page.getByRole('button', { name: 'Continue to Loan Terms →' })).toBeDisabled();
+  if (index === 0) await expect(page.getByRole('button', { name: 'Continue to Income →' })).toBeDisabled();
  }
- await page.getByRole('button',{name:'Continue to Loan Terms →'}).click();
+ await page.getByRole('button',{name:'Continue to Income →'}).click();
+}
+// Income is optional; the rate is on Loan Length, after it.
+async function toResult(page) {
+ await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
+ await page.getByRole('button', { name: 'Continue to Down Payment →', exact: true }).click();
+ await page.getByRole('button', { name: 'See My Result →', exact: true }).click();
 }
 // Observe the real completion event and normal persisted state; no production hooks.
 async function reviewedTerms(page, testInfo, deferFocus = false) {
@@ -45,8 +56,9 @@ async function reviewedTerms(page, testInfo, deferFocus = false) {
  const snapshot = async phase => checkpoints.push(await page.evaluate(phase => ({ phase, fieldRate: document.querySelector('#onboarding .onboarding-terms-form input')?.value, draftRate: JSON.parse(localStorage.getItem('vahanaiq_onboarding_draft_v1') || '{}').terms?.rate, calculatorRate: document.querySelector('#rate')?.value, active: document.activeElement?.tagName }), phase));
  try {
   await page.goto(BASE + '/index.html');
-  await expect(page.locator('#onboarding')).toBeVisible();
+  await startFromLanding(page);
   await selectCars(page);
+  await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
   const rate = page.getByLabel('Annual Interest Rate (%)', { exact: true });
   if (deferFocus) {
    // Deliver the queued render callback between the selection and text phases
@@ -60,10 +72,10 @@ async function reviewedTerms(page, testInfo, deferFocus = false) {
   await snapshot('after-fill');
   await expect(rate).toHaveValue('12');
   await expect.poll(draftRate).toBe('12');
-  await page.getByRole('button', { name: 'Continue to Affordability Check →', exact: true }).click();
+  await page.getByRole('button', { name: 'Continue to Down Payment →', exact: true }).click();
   await snapshot('after-leaving-field');
   expect(await draftRate()).toBe('12');
-  await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
+  await page.getByRole('button', { name: 'See My Result →', exact: true }).click();
   await expect(page.locator('.onboarding-result')).toHaveCount(2);
   await snapshot('before-completion');
   expect(await draftRate()).toBe('12');
@@ -102,19 +114,19 @@ test('draft survives reload and direct catalogue entry uses the same required fl
   await page.goto(BASE+'/catalogue.html', { waitUntil: 'domcontentloaded' });
   await expect(page.locator('#onboarding')).toBeVisible();
   await selectCars(page);
-  await expect(page.locator('#onboardingTitle')).toHaveText('Set your lease financing terms');
+  await expect(page.locator('#onboardingTitle')).toHaveText('What do you take home each month?');
  });
  await test.step('Reload the page and recover the finance step', async () => {
   // Setup is ready when its own controls render; optional external SDKs do not
   // need to finish downloading for a saved draft to be restored.
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#onboardingTitle')).toHaveText('Set your lease financing terms');
+  await expect(page.locator('#onboardingTitle')).toHaveText('What do you take home each month?');
  });
  await test.step('Return to the shortlist and enforce the two-car minimum', async () => {
   await page.getByRole('button',{name:'← Back',exact:true}).click();
   await expect(page.locator('.onboarding-tray')).toContainText('2 of 12 selected');
   await page.getByRole('button',{name:/Remove Toyota Aqua/}).click();
-  await expect(page.getByRole('button',{name:'Continue to Loan Terms →'})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Continue to Income →'})).toBeDisabled();
  });
 });
 test('existing comparisons survive without compulsory setup',async({page})=>{
@@ -122,7 +134,7 @@ test('existing comparisons survive without compulsory setup',async({page})=>{
  await page.goto(BASE+'/index.html');await expect(page.locator('#onboarding')).toHaveCount(0);await expect(page.locator('#rows')).toContainText('Existing car');
 });
 test('required flow fits a narrow phone',async({page})=>{
- await page.setViewportSize({width:320,height:568});await page.goto(BASE+'/index.html');await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);await expect(page.getByRole('button',{name:'Continue to Loan Terms →'})).toBeInViewport();
+ await page.setViewportSize({width:320,height:568});await page.goto(BASE+'/index.html');expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);await startFromLanding(page);expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);await expect(page.getByRole('button',{name:'Continue to Income →'})).toBeInViewport();
 });
 
 test('all five onboarding progress steps stay visible on narrow phones', async ({ page }) => {
@@ -130,7 +142,7 @@ test('all five onboarding progress steps stay visible on narrow phones', async (
  const layouts = [];
  for (const [width, height] of [[320, 568], [360, 800], [375, 812], [390, 844], [430, 932]]) {
   await page.setViewportSize({ width, height });
-  await page.goto(BASE + '/index.html');
+  await page.goto(BASE + '/index.html?onboarding=1');
   const steps = page.locator('#onboarding .onboarding-step-pill');
   await expect(steps).toHaveCount(5);
   await page.locator('#onboarding').evaluate(el => Promise.all(el.getAnimations().filter(a => a.effect?.target === el).map(a => a.finished)));
@@ -176,11 +188,13 @@ test('history renders only comparable reviewed observations and handles missing 
 
 test('first-use setup is optional and Escape dismisses it', async ({ page }) => {
  await page.goto(BASE+'/index.html');
- await expect(page.locator('#onboarding')).toBeVisible();
+ await startFromLanding(page);
  await page.keyboard.press('Escape');
  await expect(page.locator('#onboarding')).toHaveCount(0);
+ await expect(page.locator('#landing')).toBeHidden();
  await page.reload();
  await expect(page.locator('#onboarding')).toHaveCount(0);
+ await expect(page.locator('#landing')).toBeHidden();
 });
 
 for (const route of ['catalogue', 'studio']) test(`setup from ${route} preserves saved vehicles and other financing settings`, async ({ page }) => {
@@ -191,8 +205,7 @@ for (const route of ['catalogue', 'studio']) test(`setup from ${route} preserves
  });
  await page.goto(`${BASE}/${route}.html?onboarding=1`);
  await selectCars(page);
- await page.getByRole('button', { name: 'Continue to Affordability Check →' }).click();
- await page.getByRole('button', { name: 'Skip Income' }).click();
+ await toResult(page);
  await page.getByRole('button', { name: 'Open My Lease →' }).click();
  await expect(page.locator('#rows tr')).toHaveCount(3);
  await expect(page.locator('#rows')).toContainText('Saved vehicle');
@@ -202,7 +215,7 @@ for (const route of ['catalogue', 'studio']) test(`setup from ${route} preserves
 
 test('repeated Guided Setup clicks create only one dialog per click', async ({ page }) => {
  await page.goto(BASE+'/index.html');
- await expect(page.locator('#onboarding')).toBeVisible();
+ await startFromLanding(page);
  await page.evaluate(() => {
   window.setupInsertions = 0;
   new MutationObserver(records => {
@@ -220,13 +233,69 @@ test('repeated Guided Setup clicks create only one dialog per click', async ({ p
 test('completing setup starts the Calculator tour and preserves existing cost settings', async ({ page }) => {
  await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ insurance: '120000', fees: '45000' })));
  await page.goto(BASE+'/index.html');
+ await startFromLanding(page);
  await selectCars(page);
- await page.getByRole('button', { name: 'Continue to Affordability Check →' }).click();
- await page.getByRole('button', { name: 'Skip Income' }).click();
+ await toResult(page);
  await page.getByRole('button', { name: 'Take a 60-Second Guided Tour' }).click();
  await expect(page.locator('#onboarding')).toHaveCount(0);
  await expect(page.locator('#guidedTour')).toBeVisible();
  await expect(page.locator('#guidedTour')).toContainText('1 of 4');
  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1')));
  expect(saved).toMatchObject({ insurance: '120000', fees: '45000' });
+});
+
+test('first visit opens on the landing introduction with real Showroom cars', async ({ page }) => {
+ await page.goto(BASE + '/index.html');
+ await expect(page.locator('#landingTitle')).toHaveText('See the monthly lease rental of any car in Sri Lanka.');
+ await expect(page.locator('.site-header')).toBeHidden();
+ await expect(page.locator('#onboarding')).toHaveCount(0);
+ // Each belt holds its cars twice for the loop; only the first copy is exposed.
+ const tiles = page.locator('#landingRowA li:not([aria-hidden="true"]) .landing-tile');
+ expect(await tiles.count()).toBeGreaterThanOrEqual(2);
+ await expect(tiles.first()).toContainText(/LKR [\d,]+ \/mo/);
+ await expect(page.locator('#landingRowA li[aria-hidden="true"] a').first()).toHaveAttribute('tabindex', '-1');
+ await expect(page.locator('#landingExample')).toBeVisible();
+ await startFromLanding(page);
+ await expect(page.locator('#onboardingTitle')).toHaveText('Which cars are you considering?');
+});
+
+test('leaving the landing for the planner dismisses it for good', async ({ page }) => {
+ await page.goto(BASE + '/index.html');
+ await page.locator('#landing').getByRole('link', { name: 'Lease Planner', exact: true }).click();
+ await expect(page.locator('#landing')).toBeHidden();
+ await expect(page.locator('.site-header')).toBeVisible();
+ await expect(page.locator('#onboarding')).toHaveCount(0);
+ await page.reload();
+ await expect(page.locator('#landing')).toBeHidden();
+ await expect(page.locator('#onboarding')).toHaveCount(0);
+});
+
+test('returning visitors and direct setup links skip the landing', async ({ page }) => {
+ await page.goto(BASE + '/index.html?onboarding=1');
+ await expect(page.locator('#landing')).toBeHidden();
+ await expect(page.locator('#onboarding')).toBeVisible();
+ await page.keyboard.press('Escape');
+ await page.goto(BASE + '/index.html');
+ await expect(page.locator('#landing')).toBeHidden();
+ await page.goto(BASE + '/index.html?welcome');
+ await expect(page.locator('#landing')).toBeVisible();
+});
+
+test('quick picks add real catalogue cars to the shortlist', async ({ page }) => {
+ await page.goto(BASE + '/index.html');
+ await startFromLanding(page);
+ await page.getByRole('button', { name: /Compact SUVs/ }).click();
+ await expect(page.locator('.onboarding-tray')).toContainText('2 of 12 selected');
+ await expect(page.getByRole('button', { name: 'Continue to Income →' })).toBeEnabled();
+});
+
+test('landing pauses its motion and stops it for reduced motion', async ({ page }) => {
+ await page.goto(BASE + '/index.html');
+ await page.getByRole('button', { name: 'Pause Animation' }).click();
+ await expect(page.locator('#landingRowA')).toHaveCSS('animation-play-state', 'paused');
+ await expect(page.getByRole('button', { name: 'Play Animation' })).toHaveAttribute('aria-pressed', 'true');
+ await page.emulateMedia({ reducedMotion: 'reduce' });
+ await page.reload();
+ await expect(page.locator('#landingRowA')).toHaveCSS('animation-name', 'none');
+ await expect(page.locator('#landingRowA li[aria-hidden="true"]').first()).toBeHidden();
 });

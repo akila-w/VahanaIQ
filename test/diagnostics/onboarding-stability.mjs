@@ -43,7 +43,6 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
    await page.route('**/assets/images/**',async route=>{heldImages++;await gate;await route.continue();});
   }
   await page.goto(`${base}/${route}.html?onboarding=1`,{waitUntil:delayedImages?'domcontentloaded':'load'});
-  await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();
   await expect(page.locator('.onboarding-body')).toHaveCSS('overflow-anchor',cssVariant==='baseline-auto'?'auto':'none');
   const search=page.getByRole('searchbox',{name:'Search vehicles',exact:true});
   for(const [index,name]of ['Toyota Aqua','Toyota Camry Hybrid'].entries()){
@@ -90,9 +89,10 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
    expect(heldImages).toBeGreaterThan(0);
    await page.locator('.onboarding-car img').evaluateAll(images=>Promise.all(images.map(image=>image.decode())));
   }
-  await page.getByRole('button',{name:'Continue to Loan Terms →'}).click();
-  await page.getByRole('button',{name:'Continue to Affordability Check →'}).click();
+  await page.getByRole('button',{name:'Continue to Income →'}).click();
   await page.getByRole('button',{name:'Skip Income'}).click();
+  await page.getByRole('button',{name:'Continue to Down Payment →'}).click();
+  await page.getByRole('button',{name:'See My Result →'}).click();
   await page.getByRole('button',{name:'Open My Lease →'}).click();
   await expect(page.locator('#rows tr')).toHaveCount(3);
   await expect(page.locator('#rows')).toContainText('Saved vehicle');
