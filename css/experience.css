@@ -2704,3 +2704,114 @@ footer.foot { padding-block: 16px !important; }
 }
 
 .linear-seg-insurance { background: var(--mid-ink); color: var(--panel); }
+
+
+/* Lease responsive refresh (2026-11-01): progressive disclosure, not smaller controls. */
+.header-utility-controls { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mobile-tools-toggle[hidden] { display: none !important; }
+.budget-empty-message { display: none; }
+
+@media screen and (max-width: 650px) {
+  .site-header { align-items: stretch !important; gap: 8px !important; }
+  .header-brand-group { width: 100%; flex: 1 1 100% !important; }
+  .site-header nav { gap: 10px !important; }
+  .site-header nav a { padding: 8px 2px !important; font-size: 12px !important; }
+  .site-header nav .header-tour-btn { display: none !important; }
+  .header-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    width: 100% !important;
+    gap: 8px !important;
+    margin: 0 !important;
+    position: relative;
+  }
+  .header-actions > #addVehicleBtn {
+    order: 0 !important;
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+  }
+  .header-actions > .mobile-tools-toggle {
+    display: inline-flex !important;
+    order: 1 !important;
+    flex: 0 0 auto !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px !important;
+    padding: 8px 12px !important;
+  }
+  .header-utility-controls {
+    display: none !important;
+    order: 2;
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    background: var(--panel);
+    padding: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+  }
+  .header-utility-controls.mobile-tools-open { display: flex !important; }
+  .header-utility-controls > button { flex: 1 1 auto; min-height: 44px !important; }
+  .header-utility-controls .theme-switch { order: initial !important; grid-column: auto !important; margin: 0 !important; }
+  .header-utility-controls .theme-switch label { min-height: 40px !important; }
+  .header-utility-controls #printBtn {
+    display: inline-flex !important;
+    width: auto !important;
+    font-size: 13px !important;
+    gap: 6px !important;
+    padding: 8px 12px !important;
+  }
+  .hero .intro { max-width: 48ch; }
+  main > .hero { gap: 8px !important; margin-bottom: 8px !important; }
+  .hero-aside { margin-top: 6px !important; }
+  .terms-panel, #budgetPanel, #comparisonPanel, #savingsPanel { min-width: 0; }
+  .terms-panel .panel-head { align-items: center; flex-wrap: wrap; gap: 8px; }
+  .terms-panel .panel-head > div:first-child { flex: 1 1 150px; min-width: 0; }
+  .terms-panel .panel-subtitle { display: none; }
+  .terms-panel #toggleTerms { flex: 0 0 auto; min-height: 44px; }
+  .terms-panel .compact-terms { line-height: 1.5; padding: 2px 0 8px; }
+  .terms-panel .terms-grid:not(.mobile-collapsed) { gap: 12px !important; }
+  .terms-panel .strategy-scenarios-pills { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .terms-panel .strategy-pill { padding: 12px 8px; min-width: 0; }
+  .terms-panel .terms-subcard { padding: 14px !important; }
+  .terms-panel .terms-subcard-head .tag { display: none; }
+  .terms-panel .terms-subcard-grid { grid-template-columns: 1fr !important; gap: 18px !important; }
+  .terms-panel .terms-subcard-grid .span-2 { grid-column: auto !important; }
+  .terms-panel .terms-field { min-width: 0; }
+  .terms-panel .stepper-wrap { width: 100%; max-width: 100%; }
+  .terms-panel .preset-chips { flex-wrap: wrap; }
+  .terms-panel .drawer-toggle { flex-wrap: wrap; gap: 5px 8px; text-align: left; }
+  .terms-panel .drawer-toggle-meta { max-width: 100%; }
+  #budgetPanel .panel-head { gap: 12px; }
+  #budgetPanel .budget-view-switcher { width: 100%; max-width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+  #budgetPanel .budget-mode-btn { min-width: 0; width: 100%; padding: 10px 5px; white-space: normal; line-height: 1.25; }
+  #budgetPanel .in-budget-panel .terms-subcard-grid { grid-template-columns: 1fr !important; gap: 14px; }
+  #budgetPanel:has(#budgetGraphic.is-pending) .gauge-wrapper { display: none !important; }
+  #budgetPanel:has(#budgetGraphic.is-pending) .budget-empty-message {
+    display: block;
+    margin: 10px 0;
+    padding: 14px;
+    border-radius: var(--radius-card);
+    background: var(--hover-bg);
+    color: var(--mute);
+    line-height: 1.5;
+  }
+  #comparisonPanel .comparison-tools { flex-wrap: wrap; justify-content: flex-start; }
+  #comparisonPanel .quick-filter-chips { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding: 4px 2px 10px; max-width: 100%; }
+  #comparisonPanel .quick-filter-chips .qf-chip { flex: 0 0 auto; white-space: nowrap; }
+  #comparisonPanel .wrap { max-width: 100%; }
+  .page-nav { max-width: calc(100% + 8vw); }
+  .page-nav a { min-width: 0; }
+}
+
+@media screen and (max-width: 375px) {
+  .site-header nav { gap: 8px !important; }
+  .brand-title { font-size: 17px !important; }
+  .header-actions > .mobile-tools-toggle { padding-inline: 9px !important; font-size: 12px !important; }
+  .terms-panel .strategy-pill-title { font-size: 11px; }
+}
