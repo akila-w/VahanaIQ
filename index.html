@@ -62,6 +62,7 @@
 <link rel="stylesheet" href="css/experience.css?v=2.12.0">
 <script type="module" src="js/experience.js?v=2.12.0"></script>
 <script type="module" src="js/onboarding.js?v=2.12.0"></script>
+<script src="js/lease-responsive.js?v=2.12.0" defer></script>
 </head>
 <body>
 <a class="skip" href="#h-terms">Skip to Calculator</a>
@@ -85,6 +86,8 @@
   </div>
     <div class="header-actions">
       <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
+      <button class="btn-outline mobile-tools-toggle" id="mobileToolsToggle" type="button" aria-expanded="false" aria-controls="headerUtilityControls" hidden>More options</button>
+      <div class="header-utility-controls" id="headerUtilityControls">
       <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
     <fieldset class="theme-switch" id="themeSwitch">
       <legend class="sr-only">Theme</legend>
@@ -93,6 +96,7 @@
       <label title="Dark"><input type="radio" name="theme" value="dark"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="sr-only">Dark</span></label>
     </fieldset>
     <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign In</button>
+      </div>
   </div>
 </header>
 
@@ -140,7 +144,7 @@
         <h2 id="h-terms">Loan Terms</h2>
         <p class="panel-subtitle">Interest rates, loan tenure, and CBSL statutory down payments.</p>
       </div>
-      <button class="btn-outline mobile-only" id="toggleTerms" type="button" aria-expanded="false" aria-controls="loanTermsGrid">Edit</button>
+      <button class="btn-outline mobile-only" id="toggleTerms" type="button" aria-expanded="false" aria-controls="loanTermsGrid">Edit Terms</button>
       <button class="link-btn quiet" id="resetInputsBtn" type="button">Reset Inputs</button>
     </div>
     <p class="compact-terms mobile-only" id="compactTerms"></p><div class="grid terms-grid mobile-collapsed" id="loanTermsGrid">
@@ -432,6 +436,7 @@
         </div>
       </div>
     </div>
+    <p class="budget-empty-message" id="budgetEmptyMessage">Add your net monthly income above to see your affordability breakdown. You can still compare vehicle rentals without it.</p>
     <div id="budgetLinearView" class="budget-linear-view" hidden>
       <div class="linear-budget-card">
         <div class="linear-budget-header">
