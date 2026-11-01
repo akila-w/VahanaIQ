@@ -64,8 +64,9 @@
 <script type="module" src="js/experience.js?v=2.12.0"></script>
 <script type="module" src="js/onboarding.js?v=2.12.0"></script>
 </head>
-<body>
-<a class="skip" href="#h-terms">Skip to Calculator</a>
+<body class="has-ambient">
+<div class="ambient" aria-hidden="true"><span class="ambient-glow ambient-glow-a"></span><span class="ambient-glow ambient-glow-b"></span><span class="ambient-grid"></span></div>
+<a class="skip" href="#answerPanel">Skip to Your Monthly Rental</a>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
 <section class="landing" id="landing" aria-labelledby="landingTitle">
   <div class="landing-hero">
@@ -146,14 +147,14 @@
       </div>
     </a>
     <nav aria-label="Main">
-      <a href="index.html" aria-current="page">Lease</a>
-      <a href="catalogue.html">Showroom</a>
-      <a href="studio.html">Studio</a>
+      <a class="nav-icon-link" href="index.html" aria-current="page"><svg class="nav-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h.01M12 19h.01M16 19h.01"/></svg>Lease</a>
+      <a class="nav-icon-link" href="catalogue.html"><svg class="nav-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2v-4l-3-5H6l-4 5v4h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M9 17h6"/></svg>Showroom</a>
+      <a href="studio.html" hidden>Studio</a>
       <button class="header-tour-btn onboarding-restart-btn" id="restartOnboardingBtn" type="button" title="Start or restart 5-step guided onboarding and tour"><svg class="header-tour-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Guided Setup</button>
     </nav>
   </div>
     <div class="header-actions">
-      <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
+      <button class="btn-outline" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
       <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
     <fieldset class="theme-switch" id="themeSwitch">
       <legend class="sr-only">Theme</legend>
@@ -170,8 +171,8 @@
   <section class="hero">
     <div>
       <p class="eyebrow">Sri Lanka Vehicle Finance</p>
-      <h1>Your vehicle finance comparison.</h1>
-      <p class="intro">Set your terms, add the cars you are considering, and see what you can genuinely afford — before you walk into a showroom.</p>
+      <h1>Know your monthly rental before you walk into a showroom.</h1>
+      <p class="intro">Set your terms, add the cars you are considering and see what you can genuinely afford.</p>
       <details class="quick-start-guide" id="quickStartGuide">
         <summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> First time here? How to use VahanaIQ &amp; key Sri Lankan lease terms</summary>
         <div class="quick-start-body">
@@ -200,6 +201,44 @@
         </div>
         <span class="seal-arrow" aria-hidden="true">&rarr;</span>
       </a>
+    </div>
+  </section>
+
+  <section class="answer-panel" id="answerPanel" aria-labelledby="answerTitle" tabindex="-1">
+    <h2 class="sr-only" id="answerTitle">Your Monthly Rental</h2>
+    <div class="answer-card is-empty" id="answerCard" data-fit="na">
+      <div class="answer-top">
+        <div class="answer-figure">
+          <p class="answer-eyebrow" id="answerName">Monthly rental</p>
+          <p class="answer-rental"><span id="answerRental" aria-hidden="true">LKR 0.00</span><span class="sr-only" id="answerRentalText"></span></p>
+          <p class="answer-terms" id="answerTerms"></p>
+          <p class="answer-empty" id="answerEmpty">Add the cars you are considering and the rental for the one you choose appears here.</p>
+        </div>
+        <div class="answer-photo" id="answerPhoto" hidden></div>
+      </div>
+      <div class="answer-dti">
+        <div class="answer-dti-head">
+          <span class="answer-dti-label">Debt-to-income <button type="button" class="answer-help-btn" id="answerHelpBtn" aria-expanded="false" aria-controls="answerHelp"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>What is this?</button></span>
+          <span class="answer-reading"><span class="answer-dti-value" id="answerDti">&mdash;</span><span class="answer-status" id="answerStatus"><span class="answer-status-dot" aria-hidden="true"></span><span id="answerStatusText">Enter your income</span></span></span>
+        </div>
+        <p class="answer-help" id="answerHelp" hidden>The share of your take-home pay that goes on this rental, monthly insurance and your existing loan and card payments. VahanaIQ calls up to 40% Comfortable, up to 50% Stretching and anything higher Out of reach.</p>
+        <div class="answer-meter" id="answerMeter" role="img" aria-label="Debt-to-income: enter your income"></div>
+        <div class="answer-scale" aria-hidden="true"><span>0%</span><span class="at-40">40%</span><span class="at-50">50%</span><span class="at-end">60%+</span></div>
+      </div>
+      <dl class="answer-stats">
+        <div><dt>Down payment</dt><dd id="answerDown">&mdash;</dd></div>
+        <div><dt>Amount financed</dt><dd id="answerFinanced">&mdash;</dd></div>
+        <div><dt>Income needed</dt><dd id="answerNeed">&mdash;</dd></div>
+      </dl>
+      <p class="sr-only" id="answerLive" role="status"></p>
+    </div>
+    <div class="answer-ceiling">
+      <span class="answer-ceiling-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+      <div class="answer-ceiling-copy">
+        <p class="answer-ceiling-label">Your ceiling at these terms</p>
+        <p class="answer-ceiling-value" id="answerCeiling">Add your income to see it</p>
+      </div>
+      <button class="btn answer-cta" id="browseBudgetBtn" type="button"><span id="browseBudgetLabel">Browse Cars</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
     </div>
   </section>
 
@@ -547,15 +586,21 @@
   <section class="panel" id="comparisonPanel" aria-labelledby="h-list">
     <div class="panel-head">
       <div>
-        <h2 id="h-list" tabindex="-1">Vehicles</h2>
-        <p class="panel-subtitle">Side-by-side repayment estimates, CBSL deposits, and budget compatibility.</p>
+        <h2 id="h-list" tabindex="-1">Your Shortlist</h2>
+        <p class="panel-subtitle">Every vehicle recalculates as you change the terms. Choose one to see it above.</p>
       </div>
       <div class="comparison-tools"><button class="btn-outline" id="toggleColsBtn" type="button" aria-pressed="false">Show Full Columns</button><button class="btn-outline" id="openCatalogueBtn" type="button" hidden>Add Another Vehicle</button><span id="resetCatalogWrap" hidden><button class="link-btn" id="shareBtn" type="button"><span class="glyph glyph-share-2" aria-hidden="true"></span> Share</button><button class="link-btn" id="resetCatalogBtn" type="button"><span class="glyph glyph-trash-2" aria-hidden="true"></span> Remove All Vehicles</button></span></div>
     </div>
+    <div class="undo-bar" id="undoBar" hidden>
+      <p class="undo-bar-text" id="undoText" role="status"></p>
+      <button class="undo-bar-btn" id="undoRemovalBtn" type="button">Undo Removal</button>
+      <button class="undo-bar-close" id="undoDismissBtn" type="button" aria-label="Dismiss"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+    </div>
     <div class="empty-state" id="emptyState" hidden>
-      <h3>Start Your Comparison</h3>
-      <p>Add the cars you're considering to see each one's down payment, monthly rental and whether it fits your budget.</p>
-      <div class="empty-actions"><button class="btn" id="browseEmptyBtn" type="button">Browse the Catalogue</button><button class="btn-outline" id="aiEmptyBtn" type="button"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search with AI</button></div>
+      <h3>Start from a ready-made shortlist</h3>
+      <p>Pick one to compare rentals straight away. You can add or remove cars afterwards.</p>
+      <div class="ready-shortlists" id="readyShortlists" role="group" aria-label="Ready-made shortlists"></div>
+      <div class="empty-actions"><button class="btn-outline" id="browseEmptyBtn" type="button">Browse the Catalogue</button><button class="btn-outline" id="aiEmptyBtn" type="button"><img class="gemini-mark" src="assets/identity/gemini.png" alt="" width="20" height="20"> Search with AI</button></div>
     </div>
     <div id="comparisonBody"><p id="comparisonCount" class="hint" role="status"></p>
     <details class="calculation-basis"><summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> Using Your Inputs</summary><p class="hint" id="calculationBasis"></p></details>

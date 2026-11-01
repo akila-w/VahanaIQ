@@ -284,7 +284,7 @@ test('returning visitors and direct setup links skip the landing', async ({ page
 test('quick picks add real catalogue cars to the shortlist', async ({ page }) => {
  await page.goto(BASE + '/index.html');
  await startFromLanding(page);
- await page.getByRole('button', { name: /Compact SUVs/ }).click();
+ await page.locator('.onboarding-quick-pick', { hasText: 'Compact SUVs' }).click();
  await expect(page.locator('.onboarding-tray')).toContainText('2 of 12 selected');
  await expect(page.getByRole('button', { name: 'Continue to Income →' })).toBeEnabled();
 });

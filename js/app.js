@@ -9,10 +9,12 @@ import {
   MAX_INPUT_RATE,
   DTI_STANDARD_PCT,
   DTI_STRETCH_PCT,
-  STRATEGY_PRESETS
+  STRATEGY_PRESETS,
+  READY_SHORTLISTS
 } from "./constants.js?v=2.12.0";
 import { baseVehicles } from "./catalog.js?v=2.12.0";
-import { initCatalogue } from "./catalogue-browser.js?v=2.12.0";
+import { initCatalogue, getUnifiedCatalogue } from "./catalogue-browser.js?v=2.12.0";
+import { prepareBulkSelection } from "./bulk-selection.js?v=2.12.0";
 import { APP_VERSION } from "./config.js?v=2.12.0";
 import { normalizeImageToStudio } from "./canvas-utils.js?v=2.12.0";
 import { fetchVehicleStudioImage, NO_PHOTO } from "./image-fetcher.js?v=2.12.0";
@@ -58,6 +60,7 @@ motionPreference?.addEventListener?.('change', event => {
     // Underlying values already hold the final reading; cancelling reveals it immediately.
     for (const animation of activeMotion) animation.cancel();
     activeMotion.clear();
+    settleRental();
   }
 });
 
@@ -217,11 +220,11 @@ function summaryHtml(s, f, room) {
 <div class="stat"><span>Enter your net monthly income above to see which vehicles fit and the highest price you can finance.</span></div>`;
 }
 
-function rowActions(r) {
+function rowActions(r, shown) {
   const name = esc(r.name);
   const key = esc(r._key);
   const isPinned = pinnedKeys.has(r._key);
-  return `<button class="row-btn pin-btn${isPinned ? " active" : ""}" type="button" data-act="pin" data-key="${key}" aria-pressed="${isPinned}" title="${isPinned ? "Pinned for head-to-head comparison" : "Pin for head-to-head comparison"}" aria-label="${isPinned ? "Pinned for head-to-head comparison" : "Compare head-to-head"}, ${name}">${isPinned ? "Pinned" : "Compare"}</button><button class="row-btn" type="button" data-act="details" data-key="${key}" aria-label="Lease details, ${name}">Details</button><button class="icon-btn remove-row-btn" type="button" data-act="remove" data-key="${key}" title="Remove ${name}" aria-label="Remove ${name}">&times;</button>`;
+  return `<button class="row-btn focus-btn${shown ? " active" : ""}" type="button" data-act="focus" data-key="${key}" aria-pressed="${shown}" aria-label="${shown ? "Showing above" : "Show above"}, ${name}">${shown ? "Showing Above" : "Show Above"}</button><button class="row-btn pin-btn${isPinned ? " active" : ""}" type="button" data-act="pin" data-key="${key}" aria-pressed="${isPinned}" title="${isPinned ? "Pinned for head-to-head comparison" : "Pin for head-to-head comparison"}" aria-label="${isPinned ? "Pinned for head-to-head comparison" : "Compare head-to-head"}, ${name}">${isPinned ? "Pinned" : "Compare"}</button><button class="row-btn" type="button" data-act="details" data-key="${key}" aria-label="Lease details, ${name}">Details</button><button class="icon-btn remove-row-btn" type="button" data-act="remove" data-key="${key}" title="Remove ${name}" aria-label="Remove ${name}">&times;</button>`;
 }
 
 const UNKNOWN_SPEC = "Specifications to confirm";
@@ -334,10 +337,11 @@ function setThumb(tr, r) {
   slot.replaceChildren(img);
 }
 
-function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) {
+function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles, shownKey }) {
   const q = sel => tr.querySelector(sel);
   const cl = condLabel(r.cond);
   tr.classList.toggle("is-pinned", pinnedKeys.has(r._key));
+  tr.classList.toggle("is-shown", r._key === shownKey);
   setThumb(tr, r);
   q(".v-name").textContent = r.name;
 
@@ -370,7 +374,7 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
     : r.downRaised
     ? `<span class="ltv-warn" title="CBSL Directions No. 01 of 2026, cl. 2.1: brand new, reconditioned and recently registered cars need at least ${r.downPct}% down, so this car is calculated at ${r.downPct}% instead of ${s.down}%">${r.downPct}% down (CBSL minimum)</span>`
     : "");
-  setHtml(q(".row-actions"), rowActions(r));
+  setHtml(q(".row-actions"), rowActions(r, r._key === shownKey));
   setFigure(q(".price-val"), fmt(r.price));
   q(".edit-price").setAttribute("aria-label", `Edit price, ${r.name}`);
   if (q(".edit-dp")) q(".edit-dp").setAttribute("aria-label", `Override down payment percentage, ${r.name}`);
@@ -467,6 +471,120 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles }) 
   setHtml(q(".v-status"), statusHtml);
 }
 
+// Answer first (Lease planner artboard, 01/11/2026): the chosen car's monthly rental, its
+// debt-to-income fit and the budget ceiling at the top of the page. Every figure comes from
+// the computeLeaseTable rows the comparison uses; nothing here calculates a lease itself.
+const SHOWN_KEY = "vahanaiq_lease_shown_v1";
+let shownKey = null;
+try { shownKey = localStorage.getItem(SHOWN_KEY); } catch (e) {}
+
+// The rental counts from the previous reading to the new one. The screen-reader copy and the
+// final text are written at once; under reduced motion, or in a hidden tab, there is no count.
+let rentalShown = null, rentalTarget = null, rentalFrame = 0;
+const rentalText = value => `LKR ${fmt(value)}`;
+function settleRental() {
+  if (rentalTarget === null || rentalShown === rentalTarget) return;
+  if (typeof cancelAnimationFrame === "function") cancelAnimationFrame(rentalFrame);
+  rentalShown = rentalTarget;
+  if ($("answerRental")) $("answerRental").textContent = rentalText(rentalTarget);
+}
+function showRental(el, value) {
+  if (!el || value === rentalTarget) return;
+  const from = rentalShown;
+  rentalTarget = value;
+  if (typeof cancelAnimationFrame === "function") cancelAnimationFrame(rentalFrame);
+  const hiddenTab = typeof document !== "undefined" && document.hidden;
+  if (from === null || reducedMotion() || hiddenTab || typeof requestAnimationFrame !== "function" || typeof performance === "undefined") {
+    settleRental();
+    return;
+  }
+  const start = performance.now();
+  const step = now => {
+    const p = Math.min(1, (now - start) / 450);
+    if (p >= 1) { settleRental(); return; }
+    rentalShown = from + (value - from) * (1 - Math.pow(1 - p, 3));
+    el.textContent = rentalText(rentalShown);
+    rentalFrame = requestAnimationFrame(step);
+  };
+  rentalFrame = requestAnimationFrame(step);
+}
+
+let answerPhotoKey = null, answerMeterPct = 0;
+function setAnswerPhoto(r) {
+  const slot = $("answerPhoto");
+  if (!slot) return;
+  const photo = r ? photoForModel(r) : "";
+  slot.hidden = !photo;
+  const sig = r ? `${r._key}|${photo}` : "";
+  if (sig === answerPhotoKey) return;
+  const changedCar = answerPhotoKey !== null && sig && answerPhotoKey.split("|")[0] !== r._key;
+  answerPhotoKey = sig;
+  if (!photo) { slot.replaceChildren(); return; }
+  const img = new Image();
+  img.alt = `${r.name}, manufacturer image`;
+  img.addEventListener("error", () => { slot.hidden = true; });
+  img.src = photo;
+  slot.replaceChildren(img);
+  if (changedCar) animateMotion(img, [{ opacity: 0, transform: "translateX(32px) scale(0.96)" }, { opacity: 1, transform: "none" }], { duration: 600, easing: EASE_OUT });
+}
+
+function updateAnswer(r, s, f, room) {
+  const card = $("answerCard");
+  if (!card) return;
+  card.classList.toggle("is-empty", !r);
+  $("answerName").textContent = r ? `Monthly rental · ${r.name}` : "Monthly rental";
+  setAnswerPhoto(r);
+  if (!r) {
+    rentalTarget = rentalShown = null;
+    $("answerRental").textContent = "";
+    $("answerRentalText").textContent = "";
+    $("answerTerms").textContent = "";
+  } else {
+    showRental($("answerRental"), r.rental);
+    $("answerRentalText").textContent = `${rentalText(r.rental)} a month`;
+    $("answerTerms").textContent = r.downPct >= 100
+      ? `Paid in full: no lease on LKR ${fmt(r.price)}`
+      : `${s.n} months at ${s.rateInput}% ${s.rateType === "flat" ? "flat" : "reducing"} · ${r.downPct}% down on LKR ${fmt(r.price)}`;
+  }
+
+  // The same debt-to-income reading as the comparison's status column
+  let fit = "na", dti = 0;
+  if (r && s.income) {
+    dti = ((r.rental + (s.insurance ? s.insurance / 12 : 0) + s.debt) / s.income) * 100;
+    fit = dti <= DTI_STANDARD_PCT ? "ok" : dti <= DTI_STRETCH_PCT ? "mid" : "bad";
+  }
+  card.dataset.fit = fit;
+  const status = { ok: "Comfortable", mid: "Stretching", bad: "Out of reach", na: "Enter your income" }[fit];
+  $("answerDti").textContent = fit === "na" ? "—" : `${dti.toFixed(1)}%`;
+  $("answerStatusText").textContent = status;
+
+  // The fill is drawn at its final width at once; a transform eases it from the old width
+  const meter = $("answerMeter");
+  const pct = fit === "na" ? 0 : Math.min(dti, 60) / 60 * 100;
+  meter.setAttribute("aria-label", fit === "na" ? "Debt-to-income: enter your income" : `Debt-to-income ${dti.toFixed(1)}%: ${status}. Markers at 40% and 50%.`);
+  if (pct !== answerMeterPct || !meter.firstElementChild) {
+    const from = answerMeterPct;
+    answerMeterPct = pct;
+    meter.innerHTML = `<span class="answer-meter-fill" style="width:${pct}%"></span><span class="answer-meter-mark mark-40"></span><span class="answer-meter-mark mark-50"></span>`;
+    const fill = meter.firstElementChild;
+    if (fill && pct > 0 && from !== pct) animateMotion(fill, [{ transform: `scaleX(${from / pct})` }, { transform: "none" }], { duration: 700, easing: EASE_OUT });
+  }
+
+  $("answerDown").textContent = r ? `LKR ${fmt(r.dp)}` : "—";
+  $("answerFinanced").textContent = r ? `LKR ${fmt(r.loan)}` : "—";
+  $("answerNeed").textContent = r ? `LKR ${fmt(r.need)}` : "—";
+
+  // The ceiling is the summary's highest price at these terms, whichever car is shown
+  let ceiling = "Add your income to see it", within = false;
+  if (s.income) {
+    if (s.down >= 100) ceiling = "Paying in full needs no lease";
+    else if (room <= 0) ceiling = "No room for a lease rental at your limit";
+    else { ceiling = `Vehicles up to LKR ${fmt(room / f / (1 - s.down / 100))}`; within = true; }
+  }
+  $("answerCeiling").textContent = ceiling;
+  if ($("browseBudgetLabel")) $("browseBudgetLabel").textContent = within ? "Browse Cars Within Budget" : "Browse Cars";
+}
+
 function render() {
   // The shared deposit control permits 40% only when a selected vehicle can use it, or 40% is selected.
   const eligibleForForty = cars.some(c => !c.hidden && minDownFor(c.cond, c.financeClass, c.firstRegisteredOn) === 40);
@@ -551,7 +669,9 @@ function render() {
     }
   }
 
-  const ctx = { s, room, scale, labels, minRental, totalVehicles: rows.length };
+  const shown = rows.find(r => r._key === shownKey) || list[0] || rows[0] || null;
+  updateAnswer(shown, s, f, room);
+  const ctx = { s, room, scale, labels, minRental, totalVehicles: rows.length, shownKey: shown?._key };
   const tbody = $("rows");
   const wanted = list.slice(0, comparisonLimit).map(r => {
     let tr = rowEls.get(r._key);
@@ -1544,6 +1664,77 @@ function changeWithUndo(idx, message, mutate) {
   if (undoBtn) undoBtn.focus();
 }
 
+// Show Above: the chosen car leads the answer card, and the card is brought into view
+function showAbove(car) {
+  const panel = $("answerPanel");
+  const outOfView = !!panel && typeof panel.getBoundingClientRect === "function" && panel.getBoundingClientRect().top < 0;
+  shownKey = car._key;
+  try { localStorage.setItem(SHOWN_KEY, shownKey); } catch (e) {}
+  render();
+  // The pressed button keeps focus without pulling the page back to it
+  const btn = $("rows").querySelector(`[data-key="${car._key}"][data-act="focus"]`);
+  if (btn) btn.focus({ preventScroll: true });
+  if ($("answerLive")) $("answerLive").textContent = `Showing ${car.name} above: ${$("answerRentalText").textContent}.`;
+  if (outOfView) panel.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+}
+
+// Removing a vehicle shows Undo Removal above the shortlist until it is used or dismissed,
+// another vehicle is removed, or the comparison is replaced
+let pendingRemoval = null;
+function hideUndoBar() {
+  pendingRemoval = null;
+  if ($("undoBar")) $("undoBar").hidden = true;
+}
+function removeWithUndo(idx) {
+  const car = Object.assign({}, cars[idx]);
+  cars.splice(idx, 1);
+  saveCars(cars);
+  pendingRemoval = { car, idx };
+  render();
+  $("undoText").textContent = `${car.name} removed from your shortlist.`;
+  $("undoBar").hidden = false;
+  $("undoRemovalBtn").focus();
+}
+if ($("undoRemovalBtn")) $("undoRemovalBtn").addEventListener("click", () => {
+  if (!pendingRemoval) return;
+  const { car, idx } = pendingRemoval;
+  hideUndoBar();
+  if (indexOfKey(car._key) < 0) cars.splice(Math.min(idx, cars.length), 0, car);
+  saveCars(cars);
+  render();
+  focusRowControl(car._key, "focus");
+});
+if ($("undoDismissBtn")) $("undoDismissBtn").addEventListener("click", () => { hideUndoBar(); $("h-list").focus(); });
+
+// An empty shortlist offers the guided setup's ready-made shortlists from the Showroom
+let readyShortlists = [];
+function renderReadyShortlists() {
+  const wrap = $("readyShortlists");
+  if (!wrap) return;
+  const catalogue = getUnifiedCatalogue();
+  readyShortlists = READY_SHORTLISTS
+    .map(([title, ids]) => [title, prepareBulkSelection(ids.map(id => catalogue.find(v => v.id === id)).filter(Boolean)).eligible])
+    .filter(([, list]) => list.length >= 2);
+  wrap.innerHTML = readyShortlists.map(([title, list], i) => `<button type="button" class="ready-shortlist" data-ready="${i}"><span class="ready-shortlist-title">${esc(title)}</span><span class="ready-shortlist-cars">${esc(list.map(v => v.name).join(", "))}</span><span class="ready-shortlist-use">Use This Shortlist <span aria-hidden="true">→</span></span></button>`).join("");
+  wrap.hidden = !readyShortlists.length;
+}
+if ($("readyShortlists")) $("readyShortlists").addEventListener("click", e => {
+  const b = e.target.closest("button[data-ready]");
+  const list = b && readyShortlists[Number(b.dataset.ready)]?.[1];
+  if (!list) return;
+  const batch = list.filter(v => !cars.some(c => c.catalogueId === v.id && !c.hidden))
+    .map(v => ({ ...v, id: newVehicleId(), catalogueId: v.id, cond: v.cond || "New", conditionAssumed: !v.cond, img: v.img || photoForModel(v), custom: true, legacy: false }));
+  if (!batch.length || !addCars(batch)) return;
+  hideUndoBar();
+  shownKey = batch[0]._key;
+  try { localStorage.setItem(SHOWN_KEY, shownKey); } catch (e) {}
+  saveCars(cars);
+  render();
+  showToast(`Added ${batch.map(v => v.name).join(", ")}.`);
+  $("h-list").focus();
+});
+renderReadyShortlists();
+
 // Table actions: remove/hide/reset, condition cycling, inline price editing
 $("rows").addEventListener("click", e => {
   const b = e.target.closest("button[data-act]");
@@ -1556,7 +1747,10 @@ $("rows").addEventListener("click", e => {
 
   if (act === "remove") {
     pinnedKeys.delete(key);
-    changeWithUndo(idx, `Removed ${car.name}.`, () => { cars.splice(idx, 1); });
+    if ($("undoBar")) removeWithUndo(idx);
+    else changeWithUndo(idx, `Removed ${car.name}.`, () => { cars.splice(idx, 1); });
+  } else if (act === "focus") {
+    showAbove(car);
   } else if (act === "details") {
     openDetails(car, b);
   } else if (act === "pin") {
@@ -1705,6 +1899,7 @@ function startPriceEdit(btn, car, { clearInitial = false } = {}) {
 }
 
 $("resetCatalogBtn").addEventListener("click", () => {
+  hideUndoBar();
   const before = cars;
   cars = [];
   saveCars(cars);
@@ -3119,6 +3314,11 @@ refreshCatalogue = initCatalogue({
     return true;
   }
 });
+if ($('answerHelpBtn')) $('answerHelpBtn').addEventListener('click', () => {
+  const open = $('answerHelpBtn').getAttribute('aria-expanded') !== 'true';
+  $('answerHelpBtn').setAttribute('aria-expanded', String(open));
+  $('answerHelp').hidden = !open;
+});
 if ($('showMoreVehicles')) $('showMoreVehicles').addEventListener('click', () => { comparisonLimit += 24; render(); });
 if ($('toggleTerms')) $('toggleTerms').addEventListener('click', () => {
   const open = $('toggleTerms').getAttribute('aria-expanded') !== 'true';
@@ -3228,6 +3428,7 @@ initAccount({
   beforeApply() {
     copyGeneration++;
     clearToast();
+    hideUndoBar();
     clearState();
     for (const id of ['detailModal', 'h2hModal', 'shareModal', 'aiModal', 'catalogueAddModal']) {
       const modal = $(id);

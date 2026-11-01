@@ -103,6 +103,14 @@ label, .field-label, .filter-row label, .studio-field {
   white-space: nowrap !important;
 }
 
+/* Lease page section links carry an icon; the current one is a tinted tab (01/11/2026). */
+.site-header nav a.nav-icon-link {
+  padding: 8px 12px !important;
+}
+@media (max-width: 600px) {
+  .site-header nav a.nav-icon-link { padding: 6px 10px !important; }
+}
+
 .header-actions {
   display: flex !important;
   align-items: center !important;

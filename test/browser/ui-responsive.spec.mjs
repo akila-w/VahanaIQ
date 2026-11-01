@@ -361,3 +361,35 @@ test.describe('Motion', () => {
     expect(after).not.toBe(before);
   });
 });
+
+test.describe('Answer first', () => {
+  test('a ready-made shortlist fills the card, and Show Above and Undo Removal keep it true', async ({ page }) => {
+    await page.goto(`${BASE_URL}/index.html`);
+    await page.locator('#readyShortlists button', { hasText: 'Compact SUVs' }).click();
+    await expect(page.locator('#rows tr')).toHaveCount(2);
+    await expect(page.locator('#answerName')).toContainText('Suzuki Fronx');
+
+    const raize = page.locator('#rows tr', { hasText: 'Toyota Raize' });
+    const rental = (await raize.locator('.v-rent').innerText()).trim();
+    await raize.locator('[data-act="focus"]').click();
+    await expect(page.locator('#answerName')).toContainText('Toyota Raize');
+    await expect(raize.locator('[data-act="focus"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#answerRental')).toHaveText(/^LKR [\d,]+\.\d\d$/);
+    await expect(page.locator('#answerRentalText')).toContainText(rental);
+
+    await page.fill('#income', '350000');
+    await page.locator('#income').dispatchEvent('change');
+    await expect(page.locator('#answerDti')).toHaveText(/^\d+\.\d%$/);
+    await expect(page.locator('#answerStatusText')).toHaveText(/Comfortable|Stretching|Out of reach/);
+    await expect(page.locator('#answerCeiling')).toContainText('Vehicles up to LKR');
+
+    await raize.locator('[data-act="remove"]').click();
+    await expect(page.locator('#undoText')).toContainText('Toyota Raize');
+    await expect(page.locator('#answerName')).toContainText('Suzuki Fronx');
+    await expect(page.locator('#undoRemovalBtn')).toBeFocused();
+    await page.locator('#undoRemovalBtn').click();
+    await expect(page.locator('#rows tr')).toHaveCount(2);
+    await expect(page.locator('#undoBar')).toBeHidden();
+    await expect(page.locator('#answerName')).toContainText('Toyota Raize');
+  });
+});

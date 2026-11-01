@@ -249,6 +249,13 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   };
   for (const id of ["addVehicleBtn", "openCatalogueBtn"]) if ($(id)) $(id).addEventListener("click", () => open($(id)));
   $("browseEmptyBtn").addEventListener("click", () => open($("browseEmptyBtn")));
+  // The Lease page's ceiling opens the catalogue filtered to the visitor's monthly budget
+  if ($("browseBudgetBtn")) $("browseBudgetBtn").addEventListener("click", () => {
+    const t = terms?.();
+    $("catalogueAffordability").value = t?.income && t.room > 0 ? "within" : "";
+    page = 0;
+    open($("browseBudgetBtn"));
+  });
   $("closeCatalogueBtn").addEventListener("click", () => closeModal($("catalogueModal")));
   $("catalogueSearch").addEventListener("input", () => { page = 0; render(); });
   for (const id of [...FILTERS, "catalogueSort"]) $(id).addEventListener("change", () => { page = 0; render(); });

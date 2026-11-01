@@ -225,13 +225,14 @@ main.page-exit {
   }
   main > .terms-panel {
     grid-column: 1;
-    grid-row: 2 / span 3;
+    grid-row: 2 / span 4;
     margin-bottom: 0;
     padding: 14px;
     position: relative;
     max-height: none;
     overflow: visible;
   }
+  main > .answer-panel,
   main > #budgetPanel,
   main > #comparisonPanel,
   main > #savingsPanel {
@@ -5440,6 +5441,14 @@ button.btn.btn-danger {
     color: var(--mute) !important;
     text-decoration: none !important;
   }
+
+  /* Answer panel: the figures print; the interactive and decorative parts do not */
+  .ambient,
+  .answer-ceiling,
+  .undo-bar,
+  .answer-help-btn,
+  .answer-photo { display: none !important; }
+  .answer-card { box-shadow: none; border: 1px solid var(--line); }
 }
 
 /* Catalogue actions, savings goals and compact mobile presentation. */
@@ -8023,10 +8032,10 @@ tbody tr.is-pinned {
    height, while ending flush with the bottom of the results column above the footer. */
 @media screen and (min-width: 1366px) {
   main {
-    grid-template-rows: auto auto auto 1fr;
+    grid-template-rows: auto auto auto auto 1fr;
   }
   main > .terms-panel {
-    grid-row: 2 / span 3;
+    grid-row: 2 / span 4;
     position: sticky;
     top: var(--space-16);
     max-height: calc(100vh - 32px);
@@ -8586,6 +8595,7 @@ main > .panel {
 }
 main > .hero .hero-aside { animation-delay: 40ms; }
 main > .terms-panel { animation-delay: 60ms; }
+main > .answer-panel { animation: rise-in var(--duration-enter) var(--easing-out) 80ms backwards; }
 main > #budgetPanel { animation-delay: 100ms; }
 main > #comparisonPanel { animation-delay: 140ms; }
 main > #savingsPanel { animation-delay: 180ms; }
@@ -8823,4 +8833,434 @@ main > #savingsPanel { animation-delay: 180ms; }
   width: 14px;
   height: 14px;
   margin: auto;
+}
+
+/* --- LEASE PLANNER, 01/11/2026 (Claude Design canvas, "Lease planner" artboard) ---
+   Answer first: the chosen car's monthly rental on a dark emerald card, its debt-to-income
+   fit and the budget ceiling, over a soft ambient background. Every animation here moves
+   only transform or opacity, so WebKit composites it without repainting the page. */
+
+/* Ambient background: two drifting glows and a faint grid of Apex monograms behind the
+   solid cards. It replaces the blurred aurora on this page. */
+.has-ambient::before,
+.has-ambient::after { display: none !important; }
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-glow {
+  position: absolute;
+  width: 80vmax;
+  height: 80vmax;
+  border-radius: var(--radius-circle);
+  will-change: transform;
+}
+.ambient-glow-a {
+  left: -26vmax;
+  top: -34vmax;
+  background: radial-gradient(closest-side, var(--ambient-glow-a), transparent);
+  animation: ambient-float-a 26s ease-in-out infinite alternate;
+}
+.ambient-glow-b {
+  right: -30vmax;
+  bottom: -38vmax;
+  background: radial-gradient(closest-side, var(--ambient-glow-b), transparent);
+  animation: ambient-float-b 32s ease-in-out infinite alternate;
+}
+/* The tile repeats every 88px, so an 88px move loops without a seam. */
+.ambient-grid {
+  position: absolute;
+  inset: 0 -88px -88px 0;
+  background: var(--ambient-mark);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg transform='translate(24 24) scale(.4)'%3E%3Cpath d='M15 26H33L47 76H32Z'/%3E%3Cpath d='M53 76H68L85 26H69L51 68Z'/%3E%3Ccircle cx='85' cy='16' r='6'/%3E%3C/g%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg transform='translate(24 24) scale(.4)'%3E%3Cpath d='M15 26H33L47 76H32Z'/%3E%3Cpath d='M53 76H68L85 26H69L51 68Z'/%3E%3Ccircle cx='85' cy='16' r='6'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-size: 88px 88px;
+  mask-size: 88px 88px;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+  will-change: transform;
+  animation: ambient-drift 48s linear infinite;
+}
+@keyframes ambient-float-a { to { transform: translate(16vmax, 10vmax) scale(1.08); } }
+@keyframes ambient-float-b { to { transform: translate(-14vmax, -12vmax) scale(1.12); } }
+@keyframes ambient-drift { to { transform: translate(-88px, -88px); } }
+
+/* Header: an icon on each section link; the current one is a tinted tab, not an underline. */
+.site-header nav a.nav-icon-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  border-radius: var(--radius-control);
+  text-decoration: none;
+}
+.site-header nav a.nav-icon-link[aria-current="page"] {
+  border-bottom: 0;
+  background: var(--badge-bg);
+  color: var(--badge-ink);
+  font-weight: 700;
+}
+.nav-icon { flex: none; }
+
+/* The answer card */
+.answer-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+  margin-bottom: var(--space-20);
+  scroll-margin-top: var(--space-16);
+}
+.answer-panel:focus { outline: none; }
+.answer-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-20);
+  padding: 26px 28px;
+  border-radius: var(--radius-dialog);
+  background: var(--answer-bg);
+  color: var(--answer-ink);
+  box-shadow: var(--glass-shadow, var(--shadow-card));
+}
+.answer-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-20);
+}
+.answer-figure {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.answer-figure p { margin: 0; }
+.answer-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--answer-eyebrow);
+  overflow-wrap: anywhere;
+}
+.answer-rental {
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 1.2rem + 3vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.answer-terms,
+.answer-empty {
+  font-size: 14px;
+  color: var(--answer-soft);
+}
+.answer-empty { display: none; max-width: 46ch; font-size: 16px; }
+.answer-card.is-empty .answer-empty { display: block; }
+.answer-card.is-empty :is(.answer-rental, .answer-terms, .answer-dti, .answer-stats) { display: none; }
+.answer-photo {
+  flex: 0 1 240px;
+  min-width: 0;
+  height: 140px;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  background: var(--plate);
+}
+.answer-photo img {
+  max-width: 100%;
+  max-height: 124px;
+  object-fit: contain;
+}
+
+.answer-dti { display: flex; flex-direction: column; gap: var(--space-10); }
+.answer-dti-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8) var(--space-12);
+}
+.answer-dti-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 14px;
+  color: var(--answer-soft);
+}
+button.answer-help-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: var(--touch-target);
+  padding: 0 var(--space-12);
+  border: 1px solid var(--answer-track);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--answer-ink);
+  font: 600 12px var(--font-sans);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--easing-out);
+}
+button.answer-help-btn:hover { border-color: var(--answer-soft); }
+button.answer-help-btn:active { transform: scale(0.97); }
+.answer-reading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.answer-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--answer-chip);
+  color: var(--answer-soft);
+}
+.answer-status-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  background: currentColor;
+}
+/* A slow ring breathes out of the status dot: scale and opacity only. */
+.answer-status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  animation: answer-pulse 2.4s ease-out infinite;
+}
+@keyframes answer-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+.answer-card[data-fit="na"] .answer-status-dot::after { animation: none; }
+.answer-card[data-fit="ok"] .answer-status { color: var(--answer-ok); }
+.answer-card[data-fit="mid"] .answer-status { color: var(--answer-mid); }
+.answer-card[data-fit="bad"] .answer-status { color: var(--answer-bad); }
+p.answer-help {
+  margin: 0;
+  max-width: 60ch;
+  padding: var(--space-12) var(--space-14);
+  border-radius: var(--radius-xl);
+  background: var(--answer-chip);
+  color: var(--answer-ink);
+  font-size: 14px;
+}
+p.answer-help:not([hidden]) { animation: answer-pop var(--duration-moderate) var(--easing-out); }
+@keyframes answer-pop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The meter runs from 0% to 60%: the 40% marker sits at two thirds, the 50% one at five sixths. */
+.answer-meter {
+  position: relative;
+  height: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--answer-track);
+}
+.answer-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--answer-fill);
+  transform-origin: left center;
+}
+.answer-card[data-fit="mid"] .answer-meter-fill { background: var(--answer-mid); }
+.answer-card[data-fit="bad"] .answer-meter-fill { background: var(--answer-bad); }
+.answer-meter-mark {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--answer-ink);
+}
+.answer-meter-mark.mark-40 { left: 66.667%; }
+.answer-meter-mark.mark-50 { left: 83.333%; opacity: 0.6; }
+.answer-scale {
+  position: relative;
+  height: 16px;
+  font-size: 12px;
+  color: var(--answer-soft);
+}
+.answer-scale span { position: absolute; left: 0; }
+.answer-scale .at-40 { left: 66.667%; transform: translateX(-50%); }
+.answer-scale .at-50 { left: 83.333%; transform: translateX(-50%); }
+.answer-scale .at-end { left: auto; right: 0; }
+
+.answer-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-16);
+  margin: 0;
+  padding-top: var(--space-18);
+  border-top: 1px solid var(--answer-track);
+}
+.answer-stats div { min-width: 0; }
+.answer-stats dt { font-size: 12px; color: var(--answer-soft); }
+.answer-stats dd {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* The ceiling and the page's one primary action */
+.answer-ceiling {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-16);
+  padding: var(--space-20) var(--space-24);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-dialog);
+  background: var(--panel);
+  box-shadow: var(--glass-shadow, var(--shadow-card));
+}
+.answer-ceiling-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  border-radius: var(--radius-control);
+  background: var(--badge-bg);
+  color: var(--badge-ink);
+}
+.answer-ceiling-copy { flex: 1 1 220px; min-width: 0; }
+.answer-ceiling-copy p { margin: 0; }
+.answer-ceiling-label { font-size: 13px; color: var(--mute); }
+.answer-ceiling-value {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+button.answer-cta { flex: 0 1 auto; min-height: 48px; }
+button.answer-cta svg { transition: transform var(--duration-base) var(--easing-out); }
+button.answer-cta:hover svg { transform: translateX(4px); }
+
+/* Shortlist: Show Above marks the row on the answer card */
+button.row-btn.focus-btn.active {
+  border-color: var(--accent);
+  background: var(--badge-bg);
+  color: var(--badge-ink);
+}
+#rows tr.is-shown > td { background: var(--selected-bg); }
+#rows tr.is-shown > td:first-child { box-shadow: inset 4px 0 0 var(--accent); }
+td.v-actions .row-actions { grid-template-columns: auto 1fr auto; }
+td.v-actions .row-actions .pin-btn { grid-row: 2; grid-column: 1 / -1; }
+
+/* Undo Removal: stays until it is used or dismissed */
+.undo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8) var(--space-12);
+  margin-bottom: var(--space-12);
+  padding: var(--space-8) var(--space-8) var(--space-8) var(--space-16);
+  border-radius: var(--radius-xl);
+  background: var(--ink);
+  color: var(--panel);
+}
+.undo-bar:not([hidden]) { animation: answer-rise var(--duration-slow) var(--easing-out); }
+@keyframes answer-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+p.undo-bar-text { flex: 1 1 200px; margin: 0; font-size: 14px; }
+button.undo-bar-btn {
+  min-height: var(--touch-target);
+  padding: 0 var(--space-14);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--mark-spark);
+  color: var(--mark-tile);
+  font: 700 14px var(--font-sans);
+  cursor: pointer;
+}
+button.undo-bar-close {
+  display: grid;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+button.undo-bar-close:hover { background: var(--glass-border); }
+
+/* Ready-made shortlists in the empty shortlist */
+#emptyState { text-align: left; }
+#emptyState h3 { font-family: var(--font-display); font-size: 1.1875rem; }
+#emptyState p { margin-left: 0; }
+.ready-shortlists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--space-12);
+  margin-bottom: var(--space-16);
+}
+button.ready-shortlist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: var(--touch-target);
+  padding: var(--space-18) var(--space-20);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--chip);
+  color: var(--chip-ink);
+  font: 500 14px var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--duration-base) var(--easing-out);
+}
+button.ready-shortlist:hover { transform: translateY(-3px); border-color: var(--accent); }
+button.ready-shortlist:active { transform: scale(0.98); }
+.ready-shortlist-title { font-weight: 700; font-size: 15px; }
+.ready-shortlist-cars { color: var(--mute); }
+.ready-shortlist-use { margin-top: var(--space-6); color: var(--accent); font-weight: 700; }
+
+@media (max-width: 760px) {
+  .answer-card { padding: var(--space-20); gap: var(--space-16); border-radius: var(--radius-dialog); }
+  .answer-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); }
+  .answer-photo { flex-basis: 100%; height: 120px; }
+  .answer-ceiling { padding: var(--space-16); }
+  button.answer-cta { flex: 1 1 100%; }
+}
+@media screen and (max-width: 979px) {
+  #comparisonPanel td.v-actions .row-actions .focus-btn { grid-column: 1 / -1; }
+  #rows tr.is-shown { border-color: var(--accent); }
+  #rows tr.is-shown > td:first-child { box-shadow: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-glow,
+  .ambient-grid,
+  .answer-status-dot::after,
+  main > .answer-panel,
+  p.answer-help:not([hidden]),
+  .undo-bar:not([hidden]) { animation: none !important; }
+  button.answer-cta svg,
+  button.ready-shortlist,
+  button.answer-help-btn { transition: none !important; }
 }

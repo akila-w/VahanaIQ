@@ -12,6 +12,7 @@ Landing introduction and a redesigned guided setup, from the VahanaIQ Redesign c
 ### Added
 - **Landing introduction on the Lease page (`index.html`)**: first-time visitors see what VahanaIQ is before the calculator: a headline, an example rental for a real Showroom car, two belts of Showroom cars with their rentals at the planner's default terms, how it works, and Get Started. The hero runs a slow emerald gradient with a drifting Apex monogram matrix; every animation moves only transform, there is a Pause Animation button, and reduced motion stops it all. `js/boot.js` decides before first paint (`html.landing-pending`), so returning visitors, anyone who finished or dismissed setup, and `?onboarding` links go straight to the calculator; `?welcome` shows the introduction again.
 - **Quick picks in setup**: Compact SUVs, Hybrids and Electric, and Family SUVs add real catalogue cars to the shortlist, which the visitor still reviews.
+- **Answer first on the Lease page**: the chosen car's monthly rental, debt-to-income meter, down payment, amount financed, income needed and the budget ceiling now lead the page. Every figure comes from the rows the comparison already uses. Show Above picks the car, Undo Removal restores a removed one, and an empty shortlist offers the ready-made shortlists.
 - **Browser checks** for the landing (first visit, dismissal, returning visitors, quick picks, pause and reduced motion) in `test/browser/onboarding.spec.mjs`.
 
 ### Changed
