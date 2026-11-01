@@ -63,6 +63,7 @@
 <script type="module" src="js/experience.js?v=2.12.0"></script>
 <script type="module" src="js/onboarding.js?v=2.12.0"></script>
 <script src="js/lease-responsive.js?v=2.12.0" defer></script>
+<script src="js/lease-display.js?v=2.12.0" defer></script>
 </head>
 <body>
 <a class="skip" href="#h-terms">Skip to Calculator</a>
@@ -88,6 +89,7 @@
       <button class="btn" id="addVehicleBtn" type="button"><span class="glyph glyph-plus" aria-hidden="true"></span> Add a Vehicle</button>
       <button class="btn-outline mobile-tools-toggle" id="mobileToolsToggle" type="button" aria-expanded="false" aria-controls="headerUtilityControls" hidden>More options</button>
       <div class="header-utility-controls" id="headerUtilityControls">
+      <button class="header-tour-btn onboarding-restart-btn mobile-tour-btn" type="button" id="restartOnboardingMobileBtn" hidden>Guided Setup</button>
       <button class="btn-outline" id="printBtn" type="button"><span class="glyph glyph-printer" aria-hidden="true"></span> Print</button>
     <fieldset class="theme-switch" id="themeSwitch">
       <legend class="sr-only">Theme</legend>
@@ -107,6 +109,30 @@
       <p class="eyebrow">Sri Lanka Vehicle Finance</p>
       <h1>Your vehicle finance comparison.</h1>
       <p class="intro">Set your terms, add the cars you are considering, and see what you can genuinely afford — before you walk into a showroom.</p>
+      <section class="lease-display-preferences" id="leaseDisplayPreferences" aria-label="Lease display preferences">
+        <div class="lease-display-toolbar">
+          <span class="lease-display-label" id="leaseDisplayLabel">View</span>
+          <div class="lease-mode-switch" role="group" aria-labelledby="leaseDisplayLabel">
+            <button type="button" class="lease-mode-btn" data-lease-view="simple" aria-pressed="false">Simple</button>
+            <button type="button" class="lease-mode-btn" data-lease-view="detailed" aria-pressed="false">Detailed</button>
+            <button type="button" class="lease-mode-btn" data-lease-view="custom" aria-pressed="false">Custom</button>
+          </div>
+        </div>
+        <p class="lease-mode-summary" id="leaseModeSummary" role="status">Choose how much detail you want to see.</p>
+        <details id="leaseCustomSettings" class="lease-custom-settings" hidden>
+          <summary>Choose what appears in Custom view</summary>
+          <fieldset>
+            <legend>Optional display elements</legend>
+            <label><input type="checkbox" data-lease-option="strategies" checked> Financing strategy presets</label>
+            <label><input type="checkbox" data-lease-option="shortcuts" checked> Rate, tenure and deposit shortcuts</label>
+            <label><input type="checkbox" data-lease-option="budgetViews" checked> Alternative budget charts</label>
+            <label><input type="checkbox" data-lease-option="quickFilters" checked> Quick vehicle filters</label>
+            <label><input type="checkbox" data-lease-option="columns" checked> Full comparison columns control</label>
+          </fieldset>
+          <p class="hint">These settings change the layout only. Your calculations, vehicle selections, financial inputs, warnings and CBSL constraints stay in place. Other optional sections retain their own expand controls.</p>
+          <button class="link-btn" id="leaseResetCustom" type="button">Reset Custom choices</button>
+        </details>
+      </section>
       <details class="quick-start-guide" id="quickStartGuide">
         <summary><span class="glyph glyph-circle-help" aria-hidden="true"></span> First time here? How to use VahanaIQ &amp; key Sri Lankan lease terms</summary>
         <div class="quick-start-body">
