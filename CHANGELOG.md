@@ -10,7 +10,8 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 Landing introduction and a redesigned guided setup, from the VahanaIQ Redesign canvas. No calculation, threshold, rounding or number format changed. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-6`.
 
 ### Added
-- **Settings page (`settings.html`)**: theme, text size, motion, loan defaults, Showroom choices, tips, data download and delete. Currency label, whole rupees, lakhs and date formats from the canvas are not included.
+- **Settings page (`settings.html`)**: theme, text size, motion, loan defaults, Showroom choices, tips, data download and delete. Numbers and Dates choose the currency label, whole rupees, millions or lakhs, and the date format; these change what is displayed, never a calculation.
+- **Phone tabs**: Lease, Showroom and Settings stay at the bottom of the screen on phones.
 - **Showroom**: a brand strip that filters by brand, the monthly rental and fit on each card, the terms in use with Change Terms, and Only Cars Within My Budget.
 - **About page**: How Rentals Are Worked Out, and Prices and Sources.
 - **Photo Studio is the administrator's alone**: `studio.html` is an ordinary not-found page unless the signed-in Firebase account matches `ADMIN_UID`. Studio links, photo tools, guided tour, help and policy text no longer appear for anyone else. The check decides what the page shows; the studio's photos stay in that browser and there is no server data behind it.

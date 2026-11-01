@@ -1,3 +1,4 @@
+import { shown } from "./number-format.js?v=2.12.0";
 import { formatDate } from "./dates.js?v=2.12.0";
 import { fmt, esc, num, computeLeaseTable, rental, yearlySchedule, rateLabel, CONDITIONS, minDownFor, safeUrl } from "./calculator.js?v=2.12.0";
 import {
@@ -201,23 +202,23 @@ function summaryHtml(s, f, room) {
     if (s.down >= 100) {
       return `<div class="stat"><b>100% Cash</b><span>100% cash purchase — LKR 0.00 monthly lease loan</span></div>
 <div class="stat"><b>LKR 0.00</b><span>Monthly lease rental commitment</span></div>
-<div class="stat"><b>LKR ${fmt(room)}</b><span>Monthly room available for other commitments</span></div>`;
+<div class="stat"><b>LKR ${shown(room)}</b><span>Monthly room available for other commitments</span></div>`;
     }
     if (room <= 0) {
       return `<div class="stat stat-wide"><b class="bad">No room for a lease rental</b><span>Your existing monthly payments already use up your ${limit}% limit — no room for a lease rental.</span></div>`;
     }
     const maxPrice = room / f / (1 - s.down / 100);
-    return `<div class="stat"><b>LKR ${fmt(room)}</b><span>Highest monthly rental at a ${limit}% limit${s.debt ? " after existing payments" : ""}${s.insurance ? " and monthly insurance" : ""}</span></div>
-<div class="stat"><b>LKR ${fmt(maxPrice)}</b><span>Highest vehicle price you can finance with ${s.down}% down${s.down < 60 ? " (cars registered over a year only)" : ""}</span></div>
-<div class="stat"><b>LKR ${fmt(maxPrice * s.down / 100 + (s.fees || 0))}</b><span>Cash Needed Up Front for that vehicle${s.fees ? ", with fees" : ""}</span></div>`;
+    return `<div class="stat"><b>LKR ${shown(room)}</b><span>Highest monthly rental at a ${limit}% limit${s.debt ? " after existing payments" : ""}${s.insurance ? " and monthly insurance" : ""}</span></div>
+<div class="stat"><b>LKR ${shown(maxPrice)}</b><span>Highest vehicle price you can finance with ${s.down}% down${s.down < 60 ? " (cars registered over a year only)" : ""}</span></div>
+<div class="stat"><b>LKR ${shown(maxPrice * s.down / 100 + (s.fees || 0))}</b><span>Cash Needed Up Front for that vehicle${s.fees ? ", with fees" : ""}</span></div>`;
   }
   if (s.down >= 100) {
     return `<div class="stat"><b>LKR 0.00</b><span>Monthly rental (100% down payment)</span></div>
 <div class="stat"><b>100% Cash</b><span>Zero lease financing needed</span></div>
 <div class="stat"><span>Enter your net monthly income above to evaluate affordability and budget room.</span></div>`;
   }
-  return `<div class="stat"><b>LKR ${fmt(1e6 * f * (1 - s.down / 100))}</b><span>Monthly rental for every LKR 1.00 million of vehicle price</span></div>
-<div class="stat"><b>LKR ${fmt(1e6 * f * (1 - s.down / 100) / s.dti)}</b><span>Net Income Needed per LKR 1.00 million of price at a ${limit}% limit</span></div>
+  return `<div class="stat"><b>LKR ${shown(1e6 * f * (1 - s.down / 100))}</b><span>Monthly rental for every LKR 1.00 million of vehicle price</span></div>
+<div class="stat"><b>LKR ${shown(1e6 * f * (1 - s.down / 100) / s.dti)}</b><span>Net Income Needed per LKR 1.00 million of price at a ${limit}% limit</span></div>
 <div class="stat"><span>Enter your net monthly income above to see which vehicles fit and the highest price you can finance.</span></div>`;
 }
 
@@ -386,7 +387,7 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles, sh
       setHtml(q(".v-rent-sub"), '<small class="micro-sub ok">100% Cash</small>');
     } else if (s.insurance) {
       const insMonthly = s.insurance / 12;
-      setHtml(q(".v-rent-sub"), `<small class="micro-sub" title="LKR ${fmt(insMonthly)}/mo insurance included in budget">+Ins LKR ${fmt(insMonthly)}/mo</small>`);
+      setHtml(q(".v-rent-sub"), `<small class="micro-sub" title="LKR ${shown(insMonthly)}/mo insurance included in budget">+Ins LKR ${shown(insMonthly)}/mo</small>`);
     } else {
       setHtml(q(".v-rent-sub"), `<small class="micro-sub" title="Monthly lease repayment over ${s.n} months">${s.n} instalments</small>`);
     }
@@ -402,7 +403,7 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles, sh
     if (r.downPct >= 100) {
       setHtml(q(".v-dp-sub"), `<small class="micro-sub ok">100% paid upfront${resetBtn}</small>`);
     } else if (s.fees) {
-      setHtml(q(".v-dp-sub"), `<small class="micro-sub" title="LKR ${fmt(r.dp)} deposit + LKR ${fmt(s.fees)} fees">${r.downPct}%${r.downCustom ? " custom" : " down"} · Upfront: LKR ${fmt(r.upfront)}${resetBtn}</small>`);
+      setHtml(q(".v-dp-sub"), `<small class="micro-sub" title="LKR ${shown(r.dp)} deposit + LKR ${shown(s.fees)} fees">${r.downPct}%${r.downCustom ? " custom" : " down"} · Upfront: LKR ${shown(r.upfront)}${resetBtn}</small>`);
     } else {
       setHtml(q(".v-dp-sub"), `<small class="micro-sub">${r.downPct}% ${r.downCustom ? "custom deposit" : "cash deposit"}${resetBtn}</small>`);
     }
@@ -436,17 +437,17 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles, sh
   let barMicro = "";
   if (s.income) {
     if (r.downPct >= 100) {
-      barMicro = `<div class="bar-micro-metric ok">Full room: LKR ${fmt(room)}/mo</div>`;
+      barMicro = `<div class="bar-micro-metric ok">Full room: LKR ${shown(room)}/mo</div>`;
     } else if (r.rental <= room) {
-      barMicro = `<div class="bar-micro-metric ok">+LKR ${fmt(room - r.rental)}/mo left</div>`;
+      barMicro = `<div class="bar-micro-metric ok">+LKR ${shown(room - r.rental)}/mo left</div>`;
     } else {
-      barMicro = `<div class="bar-micro-metric bad">-LKR ${fmt(r.rental - room)}/mo over</div>`;
+      barMicro = `<div class="bar-micro-metric bad">-LKR ${shown(r.rental - room)}/mo over</div>`;
     }
   }
   const inlineStatus = s.income ? `<div class="v-bar-status-inline">${statusHtml}</div>` : "";
   setBarHtml(q(".v-bar"), s.income
-    ? `<div class="v-bar-inner">${inlineStatus}<div class="track" role="img" aria-label="Rental LKR ${fmt(r.rental)} against your highest affordable rental of LKR ${fmt(room)}"><span class="fill ${r.status}" style="width:${w}%"></span><span class="mark" style="left:${markPos}%" title="Your highest affordable rental"></span></div>${barMicro}</div>`
-    : `<div class="v-bar-inner v-bar-no-income"><span class="v-bar-need-fallback">Need LKR ${fmt(r.need)}/mo</span><span class="na bar-empty">At ${limit}% limit · Add income</span></div>`);
+    ? `<div class="v-bar-inner">${inlineStatus}<div class="track" role="img" aria-label="Rental LKR ${shown(r.rental)} against your highest affordable rental of LKR ${shown(room)}"><span class="fill ${r.status}" style="width:${w}%"></span><span class="mark" style="left:${markPos}%" title="Your highest affordable rental"></span></div>${barMicro}</div>`
+    : `<div class="v-bar-inner v-bar-no-income"><span class="v-bar-need-fallback">Need LKR ${shown(r.need)}/mo</span><span class="na bar-empty">At ${limit}% limit · Add income</span></div>`);
 
   q(".v-interest").textContent = fmt(r.interest);
   q(".v-total").textContent = fmt(r.total);
@@ -462,7 +463,7 @@ function updateRow(tr, r, { s, room, scale, labels, minRental, totalVehicles, sh
       if (diff >= 0) {
         setHtml(q(".v-need-sub"), '<small class="micro-sub ok">Income meets limit</small>');
       } else {
-        setHtml(q(".v-need-sub"), `<small class="micro-sub bad">+LKR ${fmt(Math.abs(diff))} gap</small>`);
+        setHtml(q(".v-need-sub"), `<small class="micro-sub bad">+LKR ${shown(Math.abs(diff))} gap</small>`);
       }
     } else {
       setHtml(q(".v-need-sub"), `<small class="micro-sub">At ${limit}% limit</small>`);
@@ -482,7 +483,7 @@ try { shownKey = localStorage.getItem(SHOWN_KEY); } catch (e) {}
 // The rental counts from the previous reading to the new one. The screen-reader copy and the
 // final text are written at once; under reduced motion, or in a hidden tab, there is no count.
 let rentalShown = null, rentalTarget = null, rentalFrame = 0;
-const rentalText = value => `LKR ${fmt(value)}`;
+const rentalText = value => `LKR ${shown(value)}`;
 function settleRental() {
   if (rentalTarget === null || rentalShown === rentalTarget) return;
   if (typeof cancelAnimationFrame === "function") cancelAnimationFrame(rentalFrame);
@@ -544,8 +545,8 @@ function updateAnswer(r, s, f, room) {
     showRental($("answerRental"), r.rental);
     $("answerRentalText").textContent = `${rentalText(r.rental)} a month`;
     $("answerTerms").textContent = r.downPct >= 100
-      ? `Paid in full: no lease on LKR ${fmt(r.price)}`
-      : `${s.n} months at ${s.rateInput}% ${s.rateType === "flat" ? "flat" : "reducing"} · ${r.downPct}% down on LKR ${fmt(r.price)}`;
+      ? `Paid in full: no lease on LKR ${shown(r.price)}`
+      : `${s.n} months at ${s.rateInput}% ${s.rateType === "flat" ? "flat" : "reducing"} · ${r.downPct}% down on LKR ${shown(r.price)}`;
   }
 
   // The same debt-to-income reading as the comparison's status column
@@ -571,16 +572,16 @@ function updateAnswer(r, s, f, room) {
     if (fill && pct > 0 && from !== pct) animateMotion(fill, [{ transform: `scaleX(${from / pct})` }, { transform: "none" }], { duration: 700, easing: EASE_OUT });
   }
 
-  $("answerDown").textContent = r ? `LKR ${fmt(r.dp)}` : "—";
-  $("answerFinanced").textContent = r ? `LKR ${fmt(r.loan)}` : "—";
-  $("answerNeed").textContent = r ? `LKR ${fmt(r.need)}` : "—";
+  $("answerDown").textContent = r ? `LKR ${shown(r.dp)}` : "—";
+  $("answerFinanced").textContent = r ? `LKR ${shown(r.loan)}` : "—";
+  $("answerNeed").textContent = r ? `LKR ${shown(r.need)}` : "—";
 
   // The ceiling is the summary's highest price at these terms, whichever car is shown
   let ceiling = "Add your income to see it", within = false;
   if (s.income) {
     if (s.down >= 100) ceiling = "Paying in full needs no lease";
     else if (room <= 0) ceiling = "No room for a lease rental at your limit";
-    else { ceiling = `Vehicles up to LKR ${fmt(room / f / (1 - s.down / 100))}`; within = true; }
+    else { ceiling = `Vehicles up to LKR ${shown(room / f / (1 - s.down / 100))}`; within = true; }
   }
   $("answerCeiling").textContent = ceiling;
   if ($("browseBudgetLabel")) $("browseBudgetLabel").textContent = within ? "Browse Cars Within Budget" : "Browse Cars";
@@ -690,14 +691,14 @@ function render() {
   if ($('comparisonCount')) $('comparisonCount').textContent = `${Math.min(comparisonLimit, list.length)} of ${list.length} matching vehicles · ${rows.length} in your comparison`;
   if ($('showMoreVehicles')) $('showMoreVehicles').hidden = list.length <= comparisonLimit;
   if ($('compactTerms')) $('compactTerms').textContent = `${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing'} · ${s.n} months · ${s.down}% down`;
-  if ($('calculationBasis')) $('calculationBasis').textContent = `Calculated from each selected vehicle's price, ${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing-balance'} interest, ${s.n} months and your ${s.down}% deposit (or the vehicle's higher legal minimum). ${s.income ? `Monthly budget uses your LKR ${fmt(s.income)} income, LKR ${fmt(s.debt)} existing payments and ${Math.round(s.dti * 100)}% limit.` : 'Add income to calculate a personal monthly budget.'} Fees and insurance use the amounts you enter. Catalogue prices are sourced amounts or clearly labelled estimates.`;
+  if ($('calculationBasis')) $('calculationBasis').textContent = `Calculated from each selected vehicle's price, ${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing-balance'} interest, ${s.n} months and your ${s.down}% deposit (or the vehicle's higher legal minimum). ${s.income ? `Monthly budget uses your LKR ${shown(s.income)} income, LKR ${shown(s.debt)} existing payments and ${Math.round(s.dti * 100)}% limit.` : 'Add income to calculate a personal monthly budget.'} Fees and insurance use the amounts you enter. Catalogue prices are sourced amounts or clearly labelled estimates.`;
   refreshPlanner();
 
   const costsMetaEl = $("costsDrawerMeta");
   if (costsMetaEl) {
     const costParts = [];
-    if (s.insurance) costParts.push(`Ins: LKR ${fmt(s.insurance)}/yr`);
-    if (s.fees) costParts.push(`Fees: LKR ${fmt(s.fees)}`);
+    if (s.insurance) costParts.push(`Ins: LKR ${shown(s.insurance)}/yr`);
+    if (s.fees) costParts.push(`Fees: LKR ${shown(s.fees)}`);
     costsMetaEl.textContent = costParts.length ? costParts.join(" · ") : "Optional";
   }
   const ltvMetaEl = $("ltvDrawerMeta");
@@ -820,8 +821,8 @@ function updateBudgetExtras(s, f, room, rows) {
       const propRent = s.down >= 100 ? 0 : (rows.length > 0 ? rows[0].rental : 1e6 * f * (1 - s.down / 100));
       const subEl = $("budgetDtiSub");
       if (subEl) subEl.textContent = rows.length > 0
-        ? `LKR ${fmt(propRent)} / month rental`
-        : `LKR ${fmt(propRent)} / LKR 1M price`;
+        ? `LKR ${shown(propRent)} / month rental`
+        : `LKR ${shown(propRent)} / LKR 1M price`;
 
       const pillEl = $("budgetDtiPill");
       if (pillEl) pillEl.className = "classic-dti-pill pending";
@@ -870,7 +871,7 @@ function updateBudgetExtras(s, f, room, rows) {
         const bar3W = Math.min(100, Math.max(0, Math.round(s.dti * 100)));
         const downW = Math.min(100, Math.max(0, Math.round(s.down)));
 
-        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ok">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-rental" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ok">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ok">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${downW}%"></div></div></div>`;
+        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ok">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${shown(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-rental" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${shown(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ok">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${shown(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ok">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${shown(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${downW}%"></div></div></div>`;
       }
     } else {
       budgetGraphic.hidden = false;
@@ -906,8 +907,8 @@ function updateBudgetExtras(s, f, room, rows) {
       if (heroEl) heroEl.classList.toggle("is-critical", isOffScale);
       const subEl = $("budgetDtiSub");
       setFigure(subEl, isOverIncome
-        ? `LKR ${fmt(totalMonthlyDebt)} / month · Shortfall LKR ${fmt(totalMonthlyDebt - s.income)}`
-        : `LKR ${fmt(totalMonthlyDebt)} / month`);
+        ? `LKR ${shown(totalMonthlyDebt)} / month · Shortfall LKR ${shown(totalMonthlyDebt - s.income)}`
+        : `LKR ${shown(totalMonthlyDebt)} / month`);
 
       let statusClass = "ok";
       let statusText = `Within ${DTI_STANDARD_PCT}% Standard Limit`;
@@ -943,17 +944,17 @@ function updateBudgetExtras(s, f, room, rows) {
       const labelEl = $("budgetCashflowLabel");
       if (isOverIncome) {
         const shortfall = totalMonthlyDebt - s.income;
-        const text = `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Monthly shortfall: LKR ${fmt(shortfall)})`;
+        const text = `LKR ${shown(totalMonthlyDebt)} / LKR ${shown(s.income)} (${dtiStr} of net monthly income committed · Monthly shortfall: LKR ${shown(shortfall)})`;
         setFigure(labelEl, text);
         if (typeof document !== "undefined" && typeof document.createElement === "function" && labelEl && labelEl.innerHTML !== undefined) {
-          labelEl.innerHTML = `<span class="cf-metric-main"><strong class="cf-num val-debt">LKR ${fmt(totalMonthlyDebt)}</strong> <span class="cf-slash">/</span> <span class="cf-income">LKR ${fmt(s.income)}</span></span> <span class="cf-metric-badge is-critical">${dtiStr} of net monthly income committed</span> <span class="cf-metric-badge is-shortfall">Monthly shortfall: LKR ${fmt(shortfall)}</span>`;
+          labelEl.innerHTML = `<span class="cf-metric-main"><strong class="cf-num val-debt">LKR ${shown(totalMonthlyDebt)}</strong> <span class="cf-slash">/</span> <span class="cf-income">LKR ${shown(s.income)}</span></span> <span class="cf-metric-badge is-critical">${dtiStr} of net monthly income committed</span> <span class="cf-metric-badge is-shortfall">Monthly shortfall: LKR ${shown(shortfall)}</span>`;
         }
       } else {
         const remainingIncome = Math.max(0, s.income - totalMonthlyDebt);
-        const text = `LKR ${fmt(totalMonthlyDebt)} / LKR ${fmt(s.income)} (${dtiStr} of net monthly income committed · Remaining: LKR ${fmt(remainingIncome)})`;
+        const text = `LKR ${shown(totalMonthlyDebt)} / LKR ${shown(s.income)} (${dtiStr} of net monthly income committed · Remaining: LKR ${shown(remainingIncome)})`;
         setFigure(labelEl, text);
         if (typeof document !== "undefined" && typeof document.createElement === "function" && labelEl && labelEl.innerHTML !== undefined) {
-          labelEl.innerHTML = `<span class="cf-metric-main"><strong class="cf-num">LKR ${fmt(totalMonthlyDebt)}</strong> <span class="cf-slash">/</span> <span class="cf-income">LKR ${fmt(s.income)}</span></span> <span class="cf-metric-badge is-committed">${dtiStr} of net monthly income committed</span> <span class="cf-metric-badge is-remaining">Remaining: LKR ${fmt(remainingIncome)}</span>`;
+          labelEl.innerHTML = `<span class="cf-metric-main"><strong class="cf-num">LKR ${shown(totalMonthlyDebt)}</strong> <span class="cf-slash">/</span> <span class="cf-income">LKR ${shown(s.income)}</span></span> <span class="cf-metric-badge is-committed">${dtiStr} of net monthly income committed</span> <span class="cf-metric-badge is-remaining">Remaining: LKR ${shown(remainingIncome)}</span>`;
         }
       }
 
@@ -970,14 +971,14 @@ function updateBudgetExtras(s, f, room, rows) {
           const rLabel = rW >= 12 ? `Rental ${fmtPct(rentalPctOfIncome)}` : "";
           const dLabel = dW >= 8 ? `Debt ${fmtPct(debtPctOfIncome)}` : "";
           const iLabel = iW >= 8 ? `Ins ${fmtPct(insPctOfIncome)}` : "";
-          const sLabel = `Monthly shortfall: LKR ${fmt(shortfall)} · ${(dtiPct - 100).toFixed(1)}% beyond income`;
+          const sLabel = `Monthly shortfall: LKR ${shown(shortfall)} · ${(dtiPct - 100).toFixed(1)}% beyond income`;
 
           if (typeof barEl.setAttribute === "function") {
             barEl.setAttribute("role", "img");
-            barEl.setAttribute("aria-label", `Net income cashflow spectrum: ${dtiStr} of net monthly income committed. Lease rental LKR ${fmt(leaseRental)} (${rentalPctOfIncome.toFixed(1)}%), existing debt LKR ${fmt(s.debt)} (${debtPctOfIncome.toFixed(1)}%)${monthlyInsurance > 0 ? `, monthly insurance LKR ${fmt(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}%)` : ""}. Monthly shortfall: LKR ${fmt(shortfall)}.`);
+            barEl.setAttribute("aria-label", `Net income cashflow spectrum: ${dtiStr} of net monthly income committed. Lease rental LKR ${shown(leaseRental)} (${rentalPctOfIncome.toFixed(1)}%), existing debt LKR ${shown(s.debt)} (${debtPctOfIncome.toFixed(1)}%)${monthlyInsurance > 0 ? `, monthly insurance LKR ${shown(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}%)` : ""}. Monthly shortfall: LKR ${shown(shortfall)}.`);
           }
 
-          setBars(barEl, `<div class="cashflow-income-track"><div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: LKR ${fmt(leaseRental)} (${rentalPctOfIncome.toFixed(1)}% of net income)">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: LKR ${fmt(s.debt)} (${debtPctOfIncome.toFixed(1)}% of net income)">${dLabel}</div>${iW > 0 ? `<div class="cashflow-seg-ins" style="width:${iW}%" title="Monthly Insurance: LKR ${fmt(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}% of net income)">${iLabel}</div>` : ""}</div><div class="cashflow-seg-shortfall">${sLabel}<span class="cashflow-breakdown">Rental ${fmtPct(rentalPctOfIncome)} · Existing payments ${fmtPct(debtPctOfIncome)}${monthlyInsurance > 0 ? ` · Insurance ${fmtPct(insPctOfIncome)}` : ""}</span></div>`, "[class^=\"cashflow-seg\"]");
+          setBars(barEl, `<div class="cashflow-income-track"><div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: LKR ${shown(leaseRental)} (${rentalPctOfIncome.toFixed(1)}% of net income)">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: LKR ${shown(s.debt)} (${debtPctOfIncome.toFixed(1)}% of net income)">${dLabel}</div>${iW > 0 ? `<div class="cashflow-seg-ins" style="width:${iW}%" title="Monthly Insurance: LKR ${shown(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}% of net income)">${iLabel}</div>` : ""}</div><div class="cashflow-seg-shortfall">${sLabel}<span class="cashflow-breakdown">Rental ${fmtPct(rentalPctOfIncome)} · Existing payments ${fmtPct(debtPctOfIncome)}${monthlyInsurance > 0 ? ` · Insurance ${fmtPct(insPctOfIncome)}` : ""}</span></div>`, "[class^=\"cashflow-seg\"]");
         } else {
           const ceilingPct = s.dti * 100;
           const committedPct = rentalPctOfIncome + debtPctOfIncome + insPctOfIncome;
@@ -1001,7 +1002,7 @@ function updateBudgetExtras(s, f, room, rows) {
             barEl.setAttribute("aria-label", `Net income cashflow spectrum: ${dtiStr} of net monthly income committed. Lease rental ${rentalPctOfIncome.toFixed(1)}%, existing debt ${debtPctOfIncome.toFixed(1)}%${monthlyInsurance > 0 ? `, monthly insurance ${insPctOfIncome.toFixed(1)}%` : ""}, available buffer within ${limit}% limit ${safeRoomPctOfIncome.toFixed(1)}%, discretionary uncommitted income ${freeIncomePct.toFixed(1)}%.`);
           }
 
-          setBars(barEl, `<div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: LKR ${fmt(leaseRental)} (${rentalPctOfIncome.toFixed(1)}%)">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: LKR ${fmt(s.debt)} (${debtPctOfIncome.toFixed(1)}%)">${dLabel}</div>${iW > 0 ? `<div class="cashflow-seg-ins" style="width:${iW}%" title="Monthly Insurance: LKR ${fmt(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}%)">${iLabel}</div>` : ""}<div class="cashflow-seg-room" style="width:${roomW}%" title="Buffer Within ${limit}% Limit: LKR ${fmt(room)} (${safeRoomPctOfIncome.toFixed(1)}%)">${roomLabel}</div><div class="cashflow-seg-free" style="width:${freeW}%" title="Discretionary: ${freeIncomePct.toFixed(1)}%">${freeLabel}</div>`, "[class^=\"cashflow-seg\"]");
+          setBars(barEl, `<div class="cashflow-seg-rental" style="width:${rW}%" title="Lease Rental: LKR ${shown(leaseRental)} (${rentalPctOfIncome.toFixed(1)}%)">${rLabel}</div><div class="cashflow-seg-debt" style="width:${dW}%" title="Existing Debt: LKR ${shown(s.debt)} (${debtPctOfIncome.toFixed(1)}%)">${dLabel}</div>${iW > 0 ? `<div class="cashflow-seg-ins" style="width:${iW}%" title="Monthly Insurance: LKR ${shown(monthlyInsurance)} (${insPctOfIncome.toFixed(1)}%)">${iLabel}</div>` : ""}<div class="cashflow-seg-room" style="width:${roomW}%" title="Buffer Within ${limit}% Limit: LKR ${shown(room)} (${safeRoomPctOfIncome.toFixed(1)}%)">${roomLabel}</div><div class="cashflow-seg-free" style="width:${freeW}%" title="Discretionary: ${freeIncomePct.toFixed(1)}%">${freeLabel}</div>`, "[class^=\"cashflow-seg\"]");
         }
       }
 
@@ -1028,9 +1029,9 @@ function updateBudgetExtras(s, f, room, rows) {
           card1TagClass = rows[0].status === "ok" ? "ok" : "bad";
           card1Val = rows[0].rental;
           if (isOverIncome) {
-            card1Sub = `${esc(rows[0].name)} · Shortfall LKR ${fmt(totalMonthlyDebt - s.income)}/mo`;
+            card1Sub = `${esc(rows[0].name)} · Shortfall LKR ${shown(totalMonthlyDebt - s.income)}/mo`;
           } else if (rows[0].rental > room) {
-            card1Sub = `${esc(rows[0].name)} · LKR ${fmt(rows[0].rental - room)}/mo over ${limit}% limit`;
+            card1Sub = `${esc(rows[0].name)} · LKR ${shown(rows[0].rental - room)}/mo over ${limit}% limit`;
           } else {
             card1Sub = `${esc(rows[0].name)} (${rentalPctOfIncome.toFixed(1)}% of income)`;
           }
@@ -1060,7 +1061,7 @@ function updateBudgetExtras(s, f, room, rows) {
         let card4Tag = s.fees ? "Deposit + Fees" : "Deposit";
         let card4TagClass = "ok";
         let card4Val = maxUpfront;
-        let card4Sub = s.fees ? `Includes LKR ${fmt(s.fees)} fees` : `Deposit for highest price`;
+        let card4Sub = s.fees ? `Includes LKR ${shown(s.fees)} fees` : `Deposit for highest price`;
 
         if (s.down >= 100) {
           card3Title = "Cash Purchase";
@@ -1076,14 +1077,14 @@ function updateBudgetExtras(s, f, room, rows) {
           card4Sub = "No lease possible";
         }
 
-        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ${card1TagClass}">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${fmt(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill ${bar1Class}" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ${card3TagClass}">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ${card4TagClass}">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${fmt(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${bar4W}%"></div></div></div>`;
+        gridEl.innerHTML = `<div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card1Title}</span><span class="tag ${card1TagClass}">${card1Tag}</span></div><div class="telemetry-card-val val-rental">LKR ${shown(card1Val)}</div><div class="telemetry-card-sub"><span>${card1Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill ${bar1Class}" style="width:${bar1W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card2Title}</span><span class="tag ${card2TagClass}">${card2Tag}</span></div><div class="telemetry-card-val">LKR ${shown(card2Val)}</div><div class="telemetry-card-sub"><span>${card2Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-debt" style="width:${bar2W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card3Title}</span><span class="tag ${card3TagClass}">${card3Tag}</span></div><div class="telemetry-card-val">LKR ${shown(card3Val)}</div><div class="telemetry-card-sub"><span>${card3Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-price" style="width:${bar3W}%"></div></div></div><div class="telemetry-card"><div class="telemetry-card-top"><span class="telemetry-card-title">${card4Title}</span><span class="tag ${card4TagClass}">${card4Tag}</span></div><div class="telemetry-card-val">LKR ${shown(card4Val)}</div><div class="telemetry-card-sub"><span>${card4Sub}</span></div><div class="telemetry-micro-bar"><div class="telemetry-micro-fill bar-upfront" style="width:${bar4W}%"></div></div></div>`;
       }
     }
   }
 
   let sentence = "", bar = "";
   if (!s.income) {
-    sentence = `Monthly rental is LKR ${fmt(1e6 * f * (1 - s.down / 100))} for every LKR 1.00 million of price.`;
+    sentence = `Monthly rental is LKR ${shown(1e6 * f * (1 - s.down / 100))} for every LKR 1.00 million of price.`;
   } else if (s.down >= 100) {
     sentence = "100% cash purchase, no lease rental.";
   } else if (room <= 0) {
@@ -1092,15 +1093,15 @@ function updateBudgetExtras(s, f, room, rows) {
     const totalMonthlyDebt = leaseRental + s.debt + monthlyInsurance;
     if (totalMonthlyDebt > s.income) {
       const shortfall = totalMonthlyDebt - s.income;
-      sentence = bar = `Commitments use ${((totalMonthlyDebt / s.income) * 100).toFixed(1)}% of net monthly income. Monthly shortfall: LKR ${fmt(shortfall)}.`;
+      sentence = bar = `Commitments use ${((totalMonthlyDebt / s.income) * 100).toFixed(1)}% of net monthly income. Monthly shortfall: LKR ${shown(shortfall)}.`;
     } else {
       sentence = bar = `Your existing payments already use up your ${limit}% limit. No room for a lease rental.`;
     }
   } else {
     const maxPrice = room / f / (1 - s.down / 100);
     const ok = rows.filter(r => r.status === "ok").length;
-    sentence = `Highest monthly rental LKR ${fmt(room)}. Highest vehicle price LKR ${fmt(maxPrice)}. ${ok} of ${rows.length} vehicles fit your budget.`;
-    bar = `Max rental LKR ${fmt(room)} · Max price LKR ${fmt(maxPrice)}`;
+    sentence = `Highest monthly rental LKR ${shown(room)}. Highest vehicle price LKR ${shown(maxPrice)}. ${ok} of ${rows.length} vehicles fit your budget.`;
+    bar = `Max rental LKR ${shown(room)} · Max price LKR ${shown(maxPrice)}`;
   }
   budgetBarText = bar;
   $("budgetBar").textContent = bar;
@@ -1146,8 +1147,8 @@ function updateBudgetExtras(s, f, room, rows) {
     if ($("linearDtiText")) $("linearDtiText").textContent = statusText;
     if ($("linearBudgetSubtitle")) {
       $("linearBudgetSubtitle").textContent = rows.length > 0
-        ? `Evaluating ${rows[0].name} against LKR ${fmt(s.income)}/mo net income`
-        : `Evaluating ceiling against LKR ${fmt(s.income)}/mo net income`;
+        ? `Evaluating ${rows[0].name} against LKR ${shown(s.income)}/mo net income`
+        : `Evaluating ceiling against LKR ${shown(s.income)}/mo net income`;
     }
 
     const rentalPct = Math.min(100, (leaseRental / s.income) * 100);
@@ -1157,10 +1158,10 @@ function updateBudgetExtras(s, f, room, rows) {
 
     if (linearStackEl) {
       linearStackEl.innerHTML = `
-        <div class="linear-stack-seg linear-seg-debt" style="width:${debtPct}%" title="Existing Debt: LKR ${fmt(s.debt)} (${debtPct.toFixed(1)}%)">Debt ${debtPct.toFixed(1)}%</div>
-        <div class="linear-stack-seg linear-seg-lease ${isOffScale ? "is-critical" : dtiPct > DTI_STANDARD_PCT ? "is-stretch" : ""}" style="width:${rentalPct}%" title="Lease: LKR ${fmt(leaseRental)} (${rentalPct.toFixed(1)}%)">Lease ${rentalPct.toFixed(1)}%</div>
-        <div class="linear-stack-seg linear-seg-insurance" style="width:${insurancePct}%" title="Insurance: LKR ${fmt(monthlyInsurance)} (${insurancePct.toFixed(1)}%)">Insurance ${insurancePct.toFixed(1)}%</div>
-        <div class="linear-stack-seg linear-seg-buffer" style="width:${bufferPct}%" title="Living Buffer: LKR ${fmt(Math.max(0, s.income - totalMonthlyDebt))} (${bufferPct.toFixed(1)}%)">Buffer ${bufferPct.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-debt" style="width:${debtPct}%" title="Existing Debt: LKR ${shown(s.debt)} (${debtPct.toFixed(1)}%)">Debt ${debtPct.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-lease ${isOffScale ? "is-critical" : dtiPct > DTI_STANDARD_PCT ? "is-stretch" : ""}" style="width:${rentalPct}%" title="Lease: LKR ${shown(leaseRental)} (${rentalPct.toFixed(1)}%)">Lease ${rentalPct.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-insurance" style="width:${insurancePct}%" title="Insurance: LKR ${shown(monthlyInsurance)} (${insurancePct.toFixed(1)}%)">Insurance ${insurancePct.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-buffer" style="width:${bufferPct}%" title="Living Buffer: LKR ${shown(Math.max(0, s.income - totalMonthlyDebt))} (${bufferPct.toFixed(1)}%)">Buffer ${bufferPct.toFixed(1)}%</div>
       `;
     }
 
@@ -1168,17 +1169,17 @@ function updateBudgetExtras(s, f, room, rows) {
       linearMetricsEl.innerHTML = `
         <div class="linear-metric-card">
           <span class="linear-metric-label">Monthly Commitments</span>
-          <span class="linear-metric-val">LKR ${fmt(totalMonthlyDebt)}</span>
+          <span class="linear-metric-val">LKR ${shown(totalMonthlyDebt)}</span>
           <span class="linear-metric-sub">${dtiStr} of net income (${statusText})</span>
         </div>
         <div class="linear-metric-card">
           <span class="linear-metric-label">Primary Lease Rental</span>
-          <span class="linear-metric-val">LKR ${fmt(leaseRental)}</span>
+          <span class="linear-metric-val">LKR ${shown(leaseRental)}</span>
           <span class="linear-metric-sub">${rows.length > 0 ? esc(rows[0].name) : "Lease room"}</span>
         </div>
         <div class="linear-metric-card">
           <span class="linear-metric-label">Remaining Living Buffer</span>
-          <span class="linear-metric-val">LKR ${fmt(Math.max(0, s.income - totalMonthlyDebt))}</span>
+          <span class="linear-metric-val">LKR ${shown(Math.max(0, s.income - totalMonthlyDebt))}</span>
           <span class="linear-metric-sub">${bufferPct.toFixed(1)}% uncommitted cash flow</span>
         </div>
       `;
@@ -1192,18 +1193,18 @@ function updateBudgetExtras(s, f, room, rows) {
       ceilingGridEl.innerHTML = `
         <div class="ceiling-stat-card">
           <span class="ceiling-stat-label">Safe Monthly Lease Room</span>
-          <span class="ceiling-stat-val">LKR ${fmt(room)}</span>
+          <span class="ceiling-stat-val">LKR ${shown(room)}</span>
           <span class="ceiling-stat-sub">Maximum safe rental at your ${limit}% limit</span>
         </div>
         <div class="ceiling-stat-card">
           <span class="ceiling-stat-label">Highest Vehicle Price</span>
-          <span class="ceiling-stat-val">LKR ${fmt(maxP)}</span>
+          <span class="ceiling-stat-val">LKR ${shown(maxP)}</span>
           <span class="ceiling-stat-sub">With ${s.down}% cash deposit (${s.down < 60 ? "Over 1yr reg" : "All cars"})</span>
         </div>
         <div class="ceiling-stat-card">
           <span class="ceiling-stat-label">Up-front Cash Needed</span>
-          <span class="ceiling-stat-val">LKR ${fmt(maxUpfront)}</span>
-          <span class="ceiling-stat-sub">${s.down}% deposit${s.fees ? ` + LKR ${fmt(s.fees)} fees` : ""}</span>
+          <span class="ceiling-stat-val">LKR ${shown(maxUpfront)}</span>
+          <span class="ceiling-stat-sub">${s.down}% deposit${s.fees ? ` + LKR ${shown(s.fees)} fees` : ""}</span>
         </div>
       `;
     }
@@ -1214,14 +1215,14 @@ function updateBudgetExtras(s, f, room, rows) {
 
     if (ceilingBarEl) {
       ceilingBarEl.innerHTML = `
-        <div class="linear-stack-seg linear-seg-debt" style="width:${debtW}%" title="Existing Debt: LKR ${fmt(s.debt)}">Debt ${debtW.toFixed(1)}%</div>
-        <div class="linear-stack-seg linear-seg-lease" style="width:${roomW}%" title="Available Safe Room: LKR ${fmt(room)}">Room ${roomW.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-debt" style="width:${debtW}%" title="Existing Debt: LKR ${shown(s.debt)}">Debt ${debtW.toFixed(1)}%</div>
+        <div class="linear-stack-seg linear-seg-lease" style="width:${roomW}%" title="Available Safe Room: LKR ${shown(room)}">Room ${roomW.toFixed(1)}%</div>
         <div class="linear-stack-seg linear-seg-buffer" style="width:${unborrowedW}%" title="Unborrowed Living Buffer: ${(unborrowedW).toFixed(1)}%">Buffer ${unborrowedW.toFixed(1)}%</div>
       `;
     }
     if ($("ceilingRoomRatioText")) {
       $("ceilingRoomRatioText").textContent = room > 0
-        ? `LKR ${fmt(room)} / mo available for vehicle lease`
+        ? `LKR ${shown(room)} / mo available for vehicle lease`
         : "Existing commitments exceed limit — no lease room";
     }
   } else {
@@ -1238,7 +1239,7 @@ function updateBudgetExtras(s, f, room, rows) {
         </div>
         <div class="linear-metric-card">
           <span class="linear-metric-label">Primary Lease Rental</span>
-          <span class="linear-metric-val">LKR ${fmt(rows.length > 0 ? rows[0].rental : 0)}</span>
+          <span class="linear-metric-val">LKR ${shown(rows.length > 0 ? rows[0].rental : 0)}</span>
           <span class="linear-metric-sub">${rows.length > 0 ? esc(rows[0].name) : "No car selected"}</span>
         </div>
         <div class="linear-metric-card">
@@ -1253,12 +1254,12 @@ function updateBudgetExtras(s, f, room, rows) {
       ceilingGridEl.innerHTML = `
         <div class="ceiling-stat-card">
           <span class="ceiling-stat-label">Rental / LKR 1M</span>
-          <span class="ceiling-stat-val">LKR ${fmt(1e6 * f * (1 - s.down / 100))}</span>
+          <span class="ceiling-stat-val">LKR ${shown(1e6 * f * (1 - s.down / 100))}</span>
           <span class="ceiling-stat-sub">Monthly rental per 1M price</span>
         </div>
         <div class="ceiling-stat-card">
           <span class="ceiling-stat-label">Income Needed / LKR 1M</span>
-          <span class="ceiling-stat-val">LKR ${fmt(card3Val)}</span>
+          <span class="ceiling-stat-val">LKR ${shown(card3Val)}</span>
           <span class="ceiling-stat-sub">At ${limit}% limit</span>
         </div>
         <div class="ceiling-stat-card">
@@ -1288,9 +1289,9 @@ function updateLtvBar(s, rows) {
     else { badgeEl.className = "tag bad"; badgeEl.textContent = "Below CBSL Minimum"; }
   }
   const detailDp = $("ltvDetailDp");
-  if (detailDp) detailDp.textContent = rows.length > 0 ? `LKR ${fmt(rows[0].dp)} (${dpPct}%)` : `${dpPct}% Deposit`;
+  if (detailDp) detailDp.textContent = rows.length > 0 ? `LKR ${shown(rows[0].dp)} (${dpPct}%)` : `${dpPct}% Deposit`;
   const detailLoan = $("ltvDetailLoan");
-  if (detailLoan) detailLoan.textContent = rows.length > 0 ? `LKR ${fmt(rows[0].loan)} (${loanPct.toFixed(1)}% LTV)` : `${loanPct.toFixed(1)}% LTV`;
+  if (detailLoan) detailLoan.textContent = rows.length > 0 ? `LKR ${shown(rows[0].loan)} (${loanPct.toFixed(1)}% LTV)` : `${loanPct.toFixed(1)}% LTV`;
   const detailCeiling = $("ltvDetailCeiling");
   if (detailCeiling) detailCeiling.textContent = dpPct >= 100 ? "Zero Loan (100% Cash)" : dpPct >= 60 ? "Max 40% Loan (All Cars)" : "Max 60% Loan (>1yr Reg)";
   const detailStatus = $("ltvDetailStatus");
@@ -2075,7 +2076,7 @@ function updateDonutContent(car, r, s, mode) {
       const dash = (pct * circ).toFixed(2);
       const gap = (circ - parseFloat(dash)).toFixed(2);
       const off = (-cumOffset).toFixed(2);
-      segsHtml += `<circle cx="50" cy="50" r="38" class="donut-seg ${item.segClass}" data-seg-idx="${i}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${off}" tabindex="0" role="button" aria-label="${esc(item.label)}: LKR ${fmt(item.val)} (${pctStr})"><title>${esc(item.label)}: LKR ${fmt(item.val)} (${pctStr})</title></circle>`;
+      segsHtml += `<circle cx="50" cy="50" r="38" class="donut-seg ${item.segClass}" data-seg-idx="${i}" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${off}" tabindex="0" role="button" aria-label="${esc(item.label)}: LKR ${shown(item.val)} (${pctStr})"><title>${esc(item.label)}: LKR ${shown(item.val)} (${pctStr})</title></circle>`;
       cumOffset += pct * circ;
     });
   }
@@ -2086,7 +2087,7 @@ function updateDonutContent(car, r, s, mode) {
     const hasSeg = item.segIdx !== undefined && item.segIdx >= 0;
     const pctStr = total > 0 && item.val > 0 ? ((item.val / total) * 100).toFixed(1) + "%" : "0.0%";
     legendHtml += `
-      <div class="legend-item" data-legend-idx="${hasSeg ? item.segIdx : -1}" tabindex="0" role="button" aria-label="${esc(item.label)}: LKR ${fmt(item.val)} (${pctStr})">
+      <div class="legend-item" data-legend-idx="${hasSeg ? item.segIdx : -1}" tabindex="0" role="button" aria-label="${esc(item.label)}: LKR ${shown(item.val)} (${pctStr})">
         <div class="legend-lead">
           <span class="legend-dot ${item.dotClass}"></span>
           <div>
@@ -2095,7 +2096,7 @@ function updateDonutContent(car, r, s, mode) {
           </div>
         </div>
         <div>
-          <div class="legend-val">LKR ${fmt(item.val)}</div>
+          <div class="legend-val">LKR ${shown(item.val)}</div>
           <div class="legend-pct">${pctStr} of total</div>
         </div>
       </div>
@@ -2120,7 +2121,7 @@ function updateDonutContent(car, r, s, mode) {
     });
     centerLabel.textContent = item.label;
     centerAmount.textContent = "LKR " + fmtM(item.val);
-    if (centerPct) centerPct.textContent = `${pctStr} · LKR ${fmt(item.val)}`;
+    if (centerPct) centerPct.textContent = `${pctStr} · LKR ${shown(item.val)}`;
   }
 
   function resetSegment() {
@@ -2186,8 +2187,8 @@ function buildAmortizationSvg(r, s, years) {
   const hitW = (xStep * 0.9).toFixed(1);
 
   markersHtml += `
-    <g class="amort-point-group" data-year="0" data-x="${xStart}" tabindex="0" role="button" aria-label="Year 0: Initial Principal LKR ${fmt(r.loan)}, Interest LKR 0.00">
-      <rect x="${(xStart - hitW / 2).toFixed(1)}" y="20" width="${hitW}" height="140" class="amort-hitzone"><title>Year 0: Initial Principal LKR ${fmt(r.loan)}</title></rect>
+    <g class="amort-point-group" data-year="0" data-x="${xStart}" tabindex="0" role="button" aria-label="Year 0: Initial Principal LKR ${shown(r.loan)}, Interest LKR 0.00">
+      <rect x="${(xStart - hitW / 2).toFixed(1)}" y="20" width="${hitW}" height="140" class="amort-hitzone"><title>Year 0: Initial Principal LKR ${shown(r.loan)}</title></rect>
       <circle cx="${xStart}" cy="${y(r.loan)}" r="4.5" class="amort-marker-principal"></circle>
       <circle cx="${xStart}" cy="${y(0)}" r="4" class="amort-marker-interest"></circle>
     </g>
@@ -2204,8 +2205,8 @@ function buildAmortizationSvg(r, s, years) {
     intPts.push(`${x},${yI}`);
 
     markersHtml += `
-      <g class="amort-point-group" data-year="${yr.year}" data-x="${x}" tabindex="0" role="button" aria-label="Year ${yr.year}: Principal Remaining LKR ${fmt(yr.balance)}, Cumulative Interest LKR ${fmt(cumInterest)}">
-        <rect x="${(x - hitW / 2).toFixed(1)}" y="20" width="${hitW}" height="140" class="amort-hitzone"><title>Year ${yr.year}: Principal Remaining LKR ${fmt(yr.balance)} · Interest LKR ${fmt(cumInterest)}</title></rect>
+      <g class="amort-point-group" data-year="${yr.year}" data-x="${x}" tabindex="0" role="button" aria-label="Year ${yr.year}: Principal Remaining LKR ${shown(yr.balance)}, Cumulative Interest LKR ${shown(cumInterest)}">
+        <rect x="${(x - hitW / 2).toFixed(1)}" y="20" width="${hitW}" height="140" class="amort-hitzone"><title>Year ${yr.year}: Principal Remaining LKR ${shown(yr.balance)} · Interest LKR ${shown(cumInterest)}</title></rect>
         <circle cx="${x}" cy="${yP}" r="4.5" class="amort-marker-principal"></circle>
         <circle cx="${x}" cy="${yI}" r="4" class="amort-marker-interest"></circle>
       </g>
@@ -2282,7 +2283,7 @@ function setupAmortizationInteractions(r, s, years) {
       panel.innerHTML = `
         <div class="amort-inspect-active">
           <span class="amort-inspect-yr">Year 0 (Start)</span>
-          <span class="amort-inspect-metric principal"><b>Initial Principal Financed:</b> LKR ${fmt(r.loan)}</span>
+          <span class="amort-inspect-metric principal"><b>Initial Principal Financed:</b> LKR ${shown(r.loan)}</span>
           <span class="amort-inspect-metric interest"><b>Cumulative Interest:</b> LKR 0.00</span>
         </div>
       `;
@@ -2294,9 +2295,9 @@ function setupAmortizationInteractions(r, s, years) {
         panel.innerHTML = `
           <div class="amort-inspect-active">
             <span class="amort-inspect-yr">Year ${yrData.year}${yrData.months < 12 ? ` (${yrData.months}m)` : ""}</span>
-            <span class="amort-inspect-metric principal"><b>Principal Remaining:</b> LKR ${fmt(yrData.balance)}</span>
-            <span class="amort-inspect-metric interest"><b>Cumulative Interest:</b> LKR ${fmt(cumInt)}</span>
-            <span class="amort-inspect-metric paid"><b>Rentals in Year:</b> LKR ${fmt(yrData.paid)}</span>
+            <span class="amort-inspect-metric principal"><b>Principal Remaining:</b> LKR ${shown(yrData.balance)}</span>
+            <span class="amort-inspect-metric interest"><b>Cumulative Interest:</b> LKR ${shown(cumInt)}</span>
+            <span class="amort-inspect-metric paid"><b>Rentals in Year:</b> LKR ${shown(yrData.paid)}</span>
           </div>
         `;
       }
@@ -2342,20 +2343,20 @@ function openDetails(car, opener) {
   if (photo) {
     html += `<div class="detail-photo"><img src="${esc(photo)}" alt="${esc(car.name || "Vehicle")}" loading="lazy"></div>${credit ? `<div class="source-links detail-source">${formatCreditHtml(credit)}</div>` : ""}`;
   }
-  html += `<p class="detail-sub">${esc(condLabel(car.cond))} · LKR ${fmt(car.price)} · ${esc(rateLabel(s))} over ${s.n} months</p><dl class="detail-list">`;
+  html += `<p class="detail-sub">${esc(condLabel(car.cond))} · LKR ${shown(car.price)} · ${esc(rateLabel(s))} over ${s.n} months</p><dl class="detail-list">`;
   if (r.downPct >= 100) {
-    html += line("Paid in cash", `LKR ${fmt(car.price)}`) + "</dl><p class=\"hint\">With a 100% down payment there's no lease to repay.</p>";
+    html += line("Paid in cash", `LKR ${shown(car.price)}`) + "</dl><p class=\"hint\">With a 100% down payment there's no lease to repay.</p>";
     html += renderCostDonutMarkup();
   } else {
     const extras = s.fees || s.insurance;
-    html += line(`Down payment (${r.downPct}%${r.downCustom ? ", custom override for this car" : r.downRaised ? ", the CBSL minimum for this car" : ""})`, `LKR ${fmt(r.dp)}`) +
-      (s.fees ? line("Up-front fees", `LKR ${fmt(s.fees)}`) + line("Cash Needed Up Front", `<b>LKR ${fmt(r.upfront)}</b>`) : "") +
-      line("Amount Financed", `LKR ${fmt(r.loan)}`) +
-      line(`Monthly rental × ${s.n}`, `<b>LKR ${fmt(r.rental)}</b>`) +
-      (s.insurance ? line("Monthly cost with insurance", `LKR ${fmt(r.monthlyCost)}`) : "") +
-      line("Total Interest", `LKR ${fmt(r.interest)}`) +
-      line(`Total Paid (down payment, rentals${extras ? ", fees and insurance" : ""})`, `LKR ${fmt(r.total)}`) +
-      line(`Net Income Needed at a ${limit}% limit`, `LKR ${fmt(r.need)}`) + "</dl>";
+    html += line(`Down payment (${r.downPct}%${r.downCustom ? ", custom override for this car" : r.downRaised ? ", the CBSL minimum for this car" : ""})`, `LKR ${shown(r.dp)}`) +
+      (s.fees ? line("Up-front fees", `LKR ${shown(s.fees)}`) + line("Cash Needed Up Front", `<b>LKR ${shown(r.upfront)}</b>`) : "") +
+      line("Amount Financed", `LKR ${shown(r.loan)}`) +
+      line(`Monthly rental × ${s.n}`, `<b>LKR ${shown(r.rental)}</b>`) +
+      (s.insurance ? line("Monthly cost with insurance", `LKR ${shown(r.monthlyCost)}`) : "") +
+      line("Total Interest", `LKR ${shown(r.interest)}`) +
+      line(`Total Paid (down payment, rentals${extras ? ", fees and insurance" : ""})`, `LKR ${shown(r.total)}`) +
+      line(`Net Income Needed at a ${limit}% limit`, `LKR ${shown(r.need)}`) + "</dl>";
     html += renderCostDonutMarkup();
     const years = yearlySchedule(r.loan, s.rate, s.n);
     html += buildAmortizationSvg(r, s, years);
@@ -2415,17 +2416,17 @@ function openHeadToHead(opener) {
       <div class="h2h-callout-chip">
         <span class="h2h-callout-label">Lowest Monthly Rental</span>
         <strong>${esc(rentWinner.name)}</strong>
-        <span class="h2h-callout-delta ok">${maxRent > minRent ? `Saves up to LKR ${fmt(maxRent - minRent)}/mo` : "Equal monthly rental"}</span>
+        <span class="h2h-callout-delta ok">${maxRent > minRent ? `Saves up to LKR ${shown(maxRent - minRent)}/mo` : "Equal monthly rental"}</span>
       </div>
       <div class="h2h-callout-chip">
         <span class="h2h-callout-label">Lowest Cash Up Front</span>
         <strong>${esc(upfrontWinner.name)}</strong>
-        <span class="h2h-callout-delta ok">${maxUpfront > minUpfront ? `LKR ${fmt(maxUpfront - minUpfront)} less upfront` : "Equal upfront cash"}</span>
+        <span class="h2h-callout-delta ok">${maxUpfront > minUpfront ? `LKR ${shown(maxUpfront - minUpfront)} less upfront` : "Equal upfront cash"}</span>
       </div>
       <div class="h2h-callout-chip">
         <span class="h2h-callout-label">Lowest Lifetime Outlay</span>
         <strong>${esc(totalWinner.name)}</strong>
-        <span class="h2h-callout-delta ok">${maxTotal > minTotal ? `Saves up to LKR ${fmt(maxTotal - minTotal)} over ${s.n}m` : "Equal total outlay"}</span>
+        <span class="h2h-callout-delta ok">${maxTotal > minTotal ? `Saves up to LKR ${shown(maxTotal - minTotal)} over ${s.n}m` : "Equal total outlay"}</span>
       </div>
     </div>
   </div>`;
@@ -2479,7 +2480,7 @@ function openHeadToHead(opener) {
             <span class="tag">${r.w === "Official" ? "Official agent" : r.w === "Grey" ? "Grey import" : "Independent"}</span>
           </div>
           <h3 class="h2h-car-title">${esc(r.name)}</h3>
-          <div class="h2h-car-price">LKR ${fmt(r.price)}</div>
+          <div class="h2h-car-price">LKR ${shown(r.price)}</div>
         </div>
       </div>
 
@@ -2487,36 +2488,36 @@ function openHeadToHead(opener) {
         <div class="h2h-metric-row${isBestRent ? " winner" : ""}">
           <div class="h2h-metric-top">
             <span class="h2h-metric-label">Monthly Lease Rental</span>
-            ${isBestRent ? '<span class="h2h-win-badge">Lowest Rental</span>' : `<span class="h2h-delta-sub">+LKR ${fmt(rentDelta)}/mo</span>`}
+            ${isBestRent ? '<span class="h2h-win-badge">Lowest Rental</span>' : `<span class="h2h-delta-sub">+LKR ${shown(rentDelta)}/mo</span>`}
           </div>
-          <strong class="h2h-metric-val">LKR ${fmt(r.rental)}</strong>
-          <small class="micro-sub">${r.downPct >= 100 ? "100% Cash purchase" : `${s.n} monthly instalments${s.insurance ? ` (+Ins LKR ${fmt(s.insurance / 12)}/mo)` : ""}`}</small>
+          <strong class="h2h-metric-val">LKR ${shown(r.rental)}</strong>
+          <small class="micro-sub">${r.downPct >= 100 ? "100% Cash purchase" : `${s.n} monthly instalments${s.insurance ? ` (+Ins LKR ${shown(s.insurance / 12)}/mo)` : ""}`}</small>
         </div>
 
         <div class="h2h-metric-row${isBestUpfront ? " winner" : ""}">
           <div class="h2h-metric-top">
             <span class="h2h-metric-label">Down Payment &amp; Upfront</span>
-            ${isBestUpfront ? '<span class="h2h-win-badge">Lowest Upfront</span>' : `<span class="h2h-delta-sub">+LKR ${fmt(upfrontDelta)}</span>`}
+            ${isBestUpfront ? '<span class="h2h-win-badge">Lowest Upfront</span>' : `<span class="h2h-delta-sub">+LKR ${shown(upfrontDelta)}</span>`}
           </div>
-          <strong class="h2h-metric-val">LKR ${fmt(r.upfront)}</strong>
-          <small class="micro-sub">${r.downPct}% deposit (LKR ${fmt(r.dp)})${r.downCustom ? " · Custom override" : r.downRaised ? " · CBSL floor" : ""}${s.fees ? ` + LKR ${fmt(s.fees)} fees` : ""}</small>
+          <strong class="h2h-metric-val">LKR ${shown(r.upfront)}</strong>
+          <small class="micro-sub">${r.downPct}% deposit (LKR ${shown(r.dp)})${r.downCustom ? " · Custom override" : r.downRaised ? " · CBSL floor" : ""}${s.fees ? ` + LKR ${shown(s.fees)} fees` : ""}</small>
         </div>
 
         <div class="h2h-metric-row">
           <div class="h2h-metric-top">
             <span class="h2h-metric-label">Amount Financed &amp; Interest</span>
-            ${intDelta > 0 ? `<span class="h2h-delta-sub">+LKR ${fmt(intDelta)} int.</span>` : '<span class="h2h-win-badge">Lowest Interest</span>'}
+            ${intDelta > 0 ? `<span class="h2h-delta-sub">+LKR ${shown(intDelta)} int.</span>` : '<span class="h2h-win-badge">Lowest Interest</span>'}
           </div>
-          <strong class="h2h-metric-val">LKR ${fmt(r.loan)}</strong>
-          <small class="micro-sub">Total interest: LKR ${fmt(r.interest)} (${(100 - r.downPct).toFixed(0)}% LTV)</small>
+          <strong class="h2h-metric-val">LKR ${shown(r.loan)}</strong>
+          <small class="micro-sub">Total interest: LKR ${shown(r.interest)} (${(100 - r.downPct).toFixed(0)}% LTV)</small>
         </div>
 
         <div class="h2h-metric-row${isBestTotal ? " winner" : ""}">
           <div class="h2h-metric-top">
             <span class="h2h-metric-label">Total Lifetime Outlay</span>
-            ${isBestTotal ? '<span class="h2h-win-badge">Lowest Total Cost</span>' : `<span class="h2h-delta-sub">+LKR ${fmt(totalDelta)}</span>`}
+            ${isBestTotal ? '<span class="h2h-win-badge">Lowest Total Cost</span>' : `<span class="h2h-delta-sub">+LKR ${shown(totalDelta)}</span>`}
           </div>
-          <strong class="h2h-metric-val">LKR ${fmt(r.total)}</strong>
+          <strong class="h2h-metric-val">LKR ${shown(r.total)}</strong>
           <small class="micro-sub">Deposit + ${s.n} rentals${s.fees || s.insurance ? " + fees/insurance" : ""}</small>
         </div>
 
@@ -2525,8 +2526,8 @@ function openHeadToHead(opener) {
             <span class="h2h-metric-label">Net Income Needed (${limit}% DTI)</span>
             ${statusPill}
           </div>
-          <strong class="h2h-metric-val">LKR ${fmt(r.need)}/mo</strong>
-          <small class="micro-sub">${s.income ? (r.rental <= room ? `+LKR ${fmt(room - r.rental)}/mo buffer` : `-LKR ${fmt(r.rental - room)}/mo over limit`) : "Enter income to check personal buffer"}</small>
+          <strong class="h2h-metric-val">LKR ${shown(r.need)}/mo</strong>
+          <small class="micro-sub">${s.income ? (r.rental <= room ? `+LKR ${shown(room - r.rental)}/mo buffer` : `-LKR ${shown(r.rental - room)}/mo over limit`) : "Enter income to check personal buffer"}</small>
         </div>
 
         <div class="h2h-specs-box">
@@ -3090,7 +3091,7 @@ function renderDiscoveryChecklist(vehicles) {
       <div class="discovery-body">
         <div class="discovery-title">
           <b>${esc(title)}</b>
-          <b class="discovery-price">LKR ${fmt(v.price_lkr)}</b>
+          <b class="discovery-price">LKR ${shown(v.price_lkr)}</b>
         </div>
         <div class="discovery-spec">${esc(v.powertrain || "")}${v.fuel_economy_kml ? " · " + esc(v.fuel_economy_kml) : ""}</div>
         <div class="discovery-tags">

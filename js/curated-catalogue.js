@@ -1,3 +1,4 @@
+import { shown, numericDates } from './number-format.js?v=2.12.0';
 import { mountPriceHistory } from './price-history.js?v=2.12.0';
 'use strict';
 import { safeUrl, safeImageUrl } from './safe-url.js?v=2.12.0';
@@ -20,8 +21,8 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const safeImgUrl = safeImageUrl;
-  const money = n => 'LKR ' + Number(n).toLocaleString('en-LK', {minimumFractionDigits:2, maximumFractionDigits:2});
-  const date = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? new Date(value+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) : 'Date Not Specified';
+  const money = n => 'LKR ' + shown(n);
+  const date = value => /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? (numericDates() ? value.split('-').reverse().join('-') : new Date(value+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})) : 'Date Not Specified';
   const fmt = n => Number(n).toLocaleString('en-LK', {minimumFractionDigits:2, maximumFractionDigits:2});
   const kinds = {official:'Distributor Price',dealer:'Dealer Asking Price',launch:'Published Launch Price',estimated:'Estimated Price',quote:'Price on Request'};
   let priceHistory = [];
@@ -232,34 +233,34 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
       // The arithmetic is still useful as an explicitly illustrative scenario,
       // but must not be presented as a verified affordability determination.
       statusTag = `<span class="tag mid">Illustrative only · Price unverified${dtiPct === null ? '' : ` · ${dtiPct.toFixed(1)}% DTI`}</span>`;
-      summaryText = `Using the unverified catalogue amount of LKR ${fmt(price)}, the indicative monthly rental is LKR ${fmt(rental)} with ${downPct}% down. This is not a confirmed seller quote or an affordability decision. Replace the price with a current seller quote before relying on these figures.`;
+      summaryText = `Using the unverified catalogue amount of LKR ${shown(price)}, the indicative monthly rental is LKR ${shown(rental)} with ${downPct}% down. This is not a confirmed seller quote or an affordability decision. Replace the price with a current seller quote before relying on these figures.`;
     } else if (income > 0) {
       if (downPct >= 100) {
         statusTag = `<span class="tag ok">100% Cash · 0.0% Lease DTI</span>`;
-        summaryText = `100% cash purchase (LKR ${fmt(upfrontAmount)} upfront${fees > 0 ? ' including fees' : ''}) — zero monthly lease rental.`;
+        summaryText = `100% cash purchase (LKR ${shown(upfrontAmount)} upfront${fees > 0 ? ' including fees' : ''}) — zero monthly lease rental.`;
       } else if (rental <= monthlyRoom && dtiPct <= dti * 100 + 1e-9) {
         statusTag = `<span class="tag ok">Within Budget · ${dtiPct.toFixed(1)}% DTI</span>`;
-        summaryText = `At LKR ${fmt(rental)}/mo (${downPct}% down, ${tenure}m @ ${rate}% ${settings.rateType === 'flat' ? 'flat' : 'reducing'}), this vehicle fits within your ${Math.round(dti * 100)}% DTI monthly budget ceiling of LKR ${fmt(monthlyRoom)}.`;
+        summaryText = `At LKR ${shown(rental)}/mo (${downPct}% down, ${tenure}m @ ${rate}% ${settings.rateType === 'flat' ? 'flat' : 'reducing'}), this vehicle fits within your ${Math.round(dti * 100)}% DTI monthly budget ceiling of LKR ${shown(monthlyRoom)}.`;
       } else if (dtiPct <= DTI_STRETCH_PCT) {
         statusTag = `<span class="tag mid">Stretch Budget · ${dtiPct.toFixed(1)}% DTI</span>`;
-        summaryText = `At LKR ${fmt(rental)}/mo, this vehicle exceeds your standard ${Math.round(dti * 100)}% DTI limit but remains within the ${DTI_STRETCH_PCT}% stretch limit.`;
+        summaryText = `At LKR ${shown(rental)}/mo, this vehicle exceeds your standard ${Math.round(dti * 100)}% DTI limit but remains within the ${DTI_STRETCH_PCT}% stretch limit.`;
       } else {
-        const shortfall = monthlyCommitment > income ? ` (Monthly shortfall: LKR ${fmt(monthlyCommitment - income)})` : '';
+        const shortfall = monthlyCommitment > income ? ` (Monthly shortfall: LKR ${shown(monthlyCommitment - income)})` : '';
         statusTag = `<span class="tag bad">Above Budget · ${dtiPct.toFixed(1)}% DTI</span>`;
-        summaryText = `Total monthly commitment (LKR ${fmt(monthlyCommitment)}) exceeds the ${DTI_STRETCH_PCT}% DTI ceiling on your entered monthly income of LKR ${fmt(income)}${shortfall}.`;
+        summaryText = `Total monthly commitment (LKR ${shown(monthlyCommitment)}) exceeds the ${DTI_STRETCH_PCT}% DTI ceiling on your entered monthly income of LKR ${shown(income)}${shortfall}.`;
       }
     } else if (maxprice > 0) {
       if (price <= maxprice) {
         statusTag = `<span class="tag ok">Within Budget</span>`;
-        summaryText = `At LKR ${fmt(price)}, this vehicle is LKR ${fmt(maxprice - price)} under your entered budget ceiling of LKR ${fmt(maxprice)}.`;
+        summaryText = `At LKR ${shown(price)}, this vehicle is LKR ${shown(maxprice - price)} under your entered budget ceiling of LKR ${shown(maxprice)}.`;
       } else {
         statusTag = `<span class="tag bad">Above Budget</span>`;
-        summaryText = `At LKR ${fmt(price)}, this vehicle is LKR ${fmt(price - maxprice)} above your entered budget ceiling of LKR ${fmt(maxprice)}.`;
+        summaryText = `At LKR ${shown(price)}, this vehicle is LKR ${shown(price - maxprice)} above your entered budget ceiling of LKR ${shown(maxprice)}.`;
       }
     } else {
       statusTag = `<span class="tag ok">Indicative Quote</span>`;
       summaryText = price > 0
-        ? `Estimated monthly lease rental: LKR ${fmt(rental)}/mo (${downPct}% down payment: LKR ${fmt(depositAmount)}${fees > 0 ? ` + LKR ${fmt(fees)} fees` : ''}, ${tenure} months). Configure your income in the Calculator to test DTI affordability.`
+        ? `Estimated monthly lease rental: LKR ${shown(rental)}/mo (${downPct}% down payment: LKR ${shown(depositAmount)}${fees > 0 ? ` + LKR ${shown(fees)} fees` : ''}, ${tenure} months). Configure your income in the Calculator to test DTI affordability.`
         : `Request a verified quote to calculate monthly lease rental and test affordability against your budget.`;
     }
 

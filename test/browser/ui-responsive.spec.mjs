@@ -443,3 +443,31 @@ test.describe('Showroom and Settings', () => {
     expect(await page.evaluate(() => localStorage.getItem('vahanaiq_settings_v1'))).toBeNull();
   });
 });
+
+test.describe('Number choices and phone tabs', () => {
+  test('choices change what is displayed, not the amount worked out', async ({ page }) => {
+    await page.goto(`${BASE_URL}/index.html`);
+    await page.locator('#readyShortlists button').first().click();
+    await expect(page.locator('#answerRental')).toHaveText(/^LKR [\d,]+\.\d\d$/);
+    await page.evaluate(() => localStorage.setItem('vahanaiq_settings_v1', JSON.stringify({ currency: 'rs', cents: 'no', large: 'lakhs' })));
+    await page.reload();
+    await expect(page.locator('#answerRental')).toHaveText(/^Rs\. [\d,]+$/);
+    await expect(page.locator('#answerDown')).toContainText('lakhs');
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_comparison_v3')).cars[0].price);
+    expect(Number.isFinite(stored) && stored > 1e6).toBe(true);
+  });
+
+  test('phones get bottom tabs, wider screens do not', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    for (const [file, tab] of [['index.html', 'Lease'], ['catalogue.html', 'Showroom'], ['settings.html', 'Settings']]) {
+      await page.goto(`${BASE_URL}/${file}`);
+      await expect(page.locator('.tab-bar a[aria-current="page"]')).toHaveText(tab);
+      expect(await pageWidth(page)).toBeLessThanOrEqual(390);
+    }
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page.locator('.tab-bar')).toBeHidden();
+    await context.close();
+  });
+});

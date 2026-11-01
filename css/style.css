@@ -8877,31 +8877,8 @@ main > #savingsPanel { animation-delay: 180ms; }
   animation: ambient-float-b 32s ease-in-out infinite alternate;
 }
 /* The tile repeats every 88px, so an 88px move loops without a seam. */
-.ambient-grid {
-  position: absolute;
-  inset: 0 -88px -88px 0;
-  background: var(--ambient-mark);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg transform='translate(24 24) scale(.4)'%3E%3Cpath d='M15 26H33L47 76H32Z'/%3E%3Cpath d='M53 76H68L85 26H69L51 68Z'/%3E%3Ccircle cx='85' cy='16' r='6'/%3E%3C/g%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg transform='translate(24 24) scale(.4)'%3E%3Cpath d='M15 26H33L47 76H32Z'/%3E%3Cpath d='M53 76H68L85 26H69L51 68Z'/%3E%3Ccircle cx='85' cy='16' r='6'/%3E%3C/g%3E%3C/svg%3E");
-  -webkit-mask-size: 88px 88px;
-  mask-size: 88px 88px;
-  -webkit-mask-repeat: repeat;
-  mask-repeat: repeat;
-  will-change: transform;
-  animation: ambient-drift 48s linear infinite;
-}
 @keyframes ambient-float-a { to { transform: translate(16vmax, 10vmax) scale(1.08); } }
 @keyframes ambient-float-b { to { transform: translate(-14vmax, -12vmax) scale(1.12); } }
-@keyframes ambient-drift { to { transform: translate(-88px, -88px); } }
-
-/* Header: an icon on each section link; the current one is a tinted tab, not an underline. */
-.site-header nav a.nav-icon-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-6);
-  border-radius: var(--radius-control);
-  text-decoration: none;
-}
 .site-header nav a.nav-icon-link[aria-current="page"] {
   border-bottom: 0;
   background: var(--badge-bg);
@@ -9261,7 +9238,6 @@ button.ready-shortlist:active { transform: scale(0.98); }
 
 @media (prefers-reduced-motion: reduce) {
   .ambient-glow,
-  .ambient-grid,
   .answer-status-dot::after,
   main > .answer-panel,
   p.answer-help:not([hidden]),

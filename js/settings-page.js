@@ -1,5 +1,7 @@
 // settings.html: preferences that apply straight away and stay in this browser. js/boot.js applies
 // text size, motion and tips before first paint; js/curated-catalogue.js reads the Showroom choices.
+import { shown } from "./number-format.js?v=2.12.0";
+
 const SETTINGS_KEY = "vahanaiq_settings_v1";
 const THEME_KEY = "vahanaiq_theme";
 const INPUTS_KEY = "vahanaiq_inputs_v1";
@@ -54,6 +56,12 @@ function check(name, value) {
   if (input) input.checked = true;
 }
 
+function preview(settings) {
+  const label = settings.currency === "rs" ? "Rs." : "LKR";
+  const day = settings.date === "numeric" ? "22-10-2026" : "22 Oct 2026";
+  $("numberPreview").textContent = `Price ${label} ${shown(12250000, settings)} · ${label} ${shown(97324.17, settings)} a month · Checked ${day}`;
+}
+
 function restore() {
   const settings = read(SETTINGS_KEY);
   const inputs = read(INPUTS_KEY);
@@ -62,6 +70,11 @@ function restore() {
   check("theme", theme || "system");
   check("text", settings.text || "standard");
   check("motion", settings.motion || "system");
+  check("currency", settings.currency || "lkr");
+  check("cents", settings.cents || "yes");
+  check("large", settings.large || "full");
+  check("date", settings.date || "friendly");
+  preview(settings);
   check("rateType", inputs.rateType || settings.loan?.rateType || "reducing");
   check("tenure", inputs.tenure || settings.loan?.tenure || 84);
   check("down", inputs.down || settings.loan?.down || 60);
@@ -77,6 +90,7 @@ document.addEventListener("change", event => {
   const { name, value, id, checked } = event.target;
   if (name === "theme") applyTheme(value);
   else if (name === "text" || name === "motion") saveSetting(name, value);
+  else if (["currency", "cents", "large", "date"].includes(name)) { preview(saveSetting(name, value)); }
   else if (name === "rateType" || name === "tenure" || name === "down" || name === "dti") saveLoan(name, value);
   else if (["rentals", "budgetOnly", "hideEstimated", "tips"].includes(id)) saveSetting(id, checked);
 });
