@@ -479,9 +479,8 @@ test.describe('Showroom verdicts need a confirmed price', () => {
   const search = async (page, text) => { await page.fill('#search', text); await expect(cards(page).first().or(page.locator('#resultCount', { hasText: /^0 /}))).toBeVisible(); };
 
   test('a disputed or unverified price gets no verdict and stays out of the budget filter', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '1000000' })));
     await page.goto(`${BASE_URL}/catalogue.html`);
-    await page.evaluate(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '1000000' })));
-    await page.reload();
 
     // The representative offer: the A3's only price comes from a page about another model.
     await search(page, 'Audi A3');
@@ -555,14 +554,17 @@ test.describe('The budget bar on phones', () => {
     test(`sits above the tabs at ${width}px and hides nothing`, async ({ browser, browserName }) => {
       const context = await browser.newContext(phone(browserName, { width, height }));
       await seedReturning(context);
+      // Seed before any page script runs: written after the page has rendered, the income is
+      // overwritten when that render's autosave fires, so the bar has nothing to show.
+      await context.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '500000' })));
       const page = await context.newPage();
       await page.goto(`${BASE_URL}/index.html`);
-      await page.evaluate(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '500000' })));
-      await page.reload();
-      const toEnd = () => page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
-      await toEnd();
-      await expect(page.locator('#budgetBar')).toBeVisible();
       await expect(page.locator('#budgetBar')).toContainText('Max rental');
+      const toEnd = () => page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+
+      // The page can still grow as it loads, so keep going until the budget panel has really left the screen.
+      await expect.poll(async () => { await toEnd(); return page.evaluate(() => document.querySelector('#budgetPanel').getBoundingClientRect().bottom <= 0); }, { message: 'the budget panel has scrolled out of view' }).toBe(true);
+      await expect(page.locator('#budgetBar')).toBeVisible();
 
       // The bar's arrival makes the page longer, so go to the new end before measuring.
       await expect.poll(async () => { await toEnd(); return page.evaluate(() => document.querySelector('footer.foot').getBoundingClientRect().bottom <= document.querySelector('#budgetBar').getBoundingClientRect().top + 0.5); }, { message: 'the end of the page clears the bar' }).toBe(true);
