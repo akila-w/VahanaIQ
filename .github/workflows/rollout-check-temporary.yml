@@ -1,0 +1,21 @@
+# TEMPORARY rollout test. This file is never merged.
+name: Rollout check temporary
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  spoof:
+    name: catalogue-publication-trusted
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Same-named job from a pull request workflow"
+  secret-access:
+    name: rollout-secret-access
+    runs-on: ubuntu-latest
+    environment:
+      name: catalogue-publisher
+      deployment: false
+    steps:
+      - env:
+          KEY: ${{ secrets.CHECK_PUBLISHER_KEY }}
+        run: if [ -n "$KEY" ]; then echo "key present"; exit 1; else echo "key absent"; fi
