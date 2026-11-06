@@ -6,34 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>Photo Studio · VahanaIQ</title>
-  <meta name="description" content="Arrange, frame and upload the photos of any entry in the VahanaIQ vehicle catalogue.">
+  <title>Page not found · VahanaIQ</title>
   <meta name="robots" content="noindex">
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg?v=20261020" sizes="any">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
   <script src="js/boot.js?v=2.12.0"></script>
   <link rel="preload" href="css/tokens.css?v=2.12.0" as="style">
   <link rel="preload" href="css/curated-catalogue.css?v=2.12.0" as="style">
-  <link rel="preload" href="css/catalogue-studio.css?v=2.12.0" as="style">
-  <link rel="preload" href="js/catalogue-data.js?v=2.12.0" as="script">
-  <link rel="modulepreload" href="js/catalogue-studio.js?v=2.12.0">
+  <link rel="modulepreload" href="js/studio-page.js?v=2.12.0">
   <link rel="modulepreload" href="js/config.js?v=2.12.0">
-  <link rel="modulepreload" href="js/photo-frame.js?v=2.12.0">
-  <link rel="modulepreload" href="js/catalogue-photos.js?v=2.12.0">
-  <link rel="modulepreload" href="js/catalogue-photo-store.js?v=2.12.0">
+  <link rel="modulepreload" href="js/admin.js?v=2.12.0">
   <link rel="stylesheet" href="css/tokens.css?v=2.12.0">
   <link rel="stylesheet" href="css/curated-catalogue.css?v=2.12.0">
   <link rel="stylesheet" href="css/catalogue-studio.css?v=2.12.0">
   <script src="js/page-transitions.js?v=2.12.0" defer></script>
-  <script src="js/catalogue-data.js?v=2.12.0" defer></script>
-  <script type="module" src="js/catalogue-studio.js?v=2.12.0"></script>
+  <script type="module" src="js/studio-page.js?v=2.12.0"></script>
 <link rel="stylesheet" href="css/guidance.css?v=2.12.0">
   <script type="module" src="js/guidance.js?v=2.12.0"></script>
 <link rel="stylesheet" href="css/experience.css?v=2.12.0">
-  <script type="module" src="js/onboarding.js?v=2.12.0"></script>
 </head>
 <body>
-  <a class="skip" href="#models">Skip to Catalogue Entries</a>
+  <a class="skip" id="skipLink" href="#main">Skip to Main Content</a>
   <header class="site-header">
     <div class="header-brand-group">
       <a class="brand" href="index.html">
@@ -47,10 +40,20 @@
       <nav aria-label="Main">
         <a href="index.html">Lease</a>
         <a href="catalogue.html">Showroom</a>
-        <a href="studio.html" aria-current="page">Studio</a>
-        <button class="header-tour-btn onboarding-restart-btn" id="restartOnboardingBtn" type="button" title="Start or restart 5-step guided onboarding and tour"><svg class="header-tour-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Guided Setup</button>
       </nav>
     </div>
+  </header>
+  <main id="main" class="page-missing">
+    <section class="missing-card" aria-labelledby="missingTitle">
+      <span class="missing-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+      <h1 id="missingTitle">Page not found</h1>
+      <p>This page doesn’t exist. Head to the Showroom to see every car and its monthly rental.</p>
+      <a class="btn" href="catalogue.html">Go to the Showroom</a>
+    </section>
+  </main>
+  <!-- Shown only to the site's administrator, by js/studio-page.js; see js/admin.js -->
+  <template id="adminView">
+    <button class="header-tour-btn onboarding-restart-btn" id="restartOnboardingBtn" type="button" title="Start or restart 5-step guided onboarding and tour"><svg class="header-tour-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px; margin-right: 5px;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Guided Setup</button>
     <div class="header-actions">
       <button class="btn-outline" id="exportBtn" type="button">Export My Photos</button>
       <fieldset class="theme-switch" id="themeSwitch">
@@ -61,127 +64,125 @@
       </fieldset>
       <button class="btn-outline account-btn" id="accountBtn" type="button" aria-label="Sign in to sync">Sign In</button>
     </div>
-  </header>
-  <main class="studio">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Catalogue Photos</p>
-        <h1>Photo Studio</h1>
-        <p class="intro">Upload your own pictures, frame any photo at 8:5, arrange the order and choose the cover for an entry in the Vehicle Catalogue. Every photo and setting stays on this device.</p>
-      </div>
-      <div class="hero-aside">
-        <span class="edition">Sri Lanka · Studio Edition</span>
-        <div class="metrics">
-          <div><strong>8:5</strong><span>Aspect Ratio</span></div>
-          <div><strong>Local</strong><span>On-Device Only</span></div>
-          <div><strong>227</strong><span>Models</span></div>
+    <main id="main" class="studio">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Catalogue Photos</p>
+          <h1>Photo Studio</h1>
+          <p class="intro">Upload your own pictures, frame any photo at 8:5, arrange the order and choose the cover for an entry in the Vehicle Catalogue. Every photo and setting stays on this device.</p>
         </div>
-      </div>
-    </section>
-    <div class="studio-layout">
-      <section id="models" class="studio-panel studio-models" aria-labelledby="modelsTitle">
-        <h2 id="modelsTitle">Catalogue Entries</h2>
-        <label class="studio-field" for="modelSearch">Find a model
-          <input id="modelSearch" type="search" placeholder="Make or model…" autocomplete="off" spellcheck="false">
-        </label>
-        <label class="studio-field" for="modelFilter">Show
-          <select id="modelFilter">
-            <option value="all">All entries</option>
-            <option value="edited">Entries I have changed</option>
-          </select>
-        </label>
-        <p class="studio-note" id="modelCount" role="status"></p>
-        <ul class="model-list" id="modelList"></ul>
-      </section>
-      <section class="studio-panel studio-editor" aria-labelledby="editorTitle">
-        <header class="editor-head">
-          <div>
-            <p class="eyebrow" id="editorMake">Vehicle Framing</p>
-            <h2 id="editorTitle">Choose a Catalogue Entry</h2>
+        <div class="hero-aside">
+          <span class="edition">Sri Lanka · Studio Edition</span>
+          <div class="metrics">
+            <div><strong>8:5</strong><span>Aspect Ratio</span></div>
+            <div><strong>Local</strong><span>On-Device Only</span></div>
+            <div><strong>227</strong><span>Models</span></div>
           </div>
-          <div class="editor-actions">
-            <a class="btn-outline" id="openCatalogue" href="catalogue.html">Open In Catalogue ↗</a>
-            <button class="btn-outline" id="resetModelBtn" type="button" hidden>Undo My Changes</button>
-          </div>
-        </header>
-        <p class="studio-empty" id="editorEmpty">Pick a model on the left to arrange its photos. Changes are saved as you make them.</p>
-        <div id="editorWork" hidden>
-          <section class="studio-block" aria-labelledby="photosTitle">
-            <div class="block-head">
-              <h3 id="photosTitle">Photos <span class="count-chip" id="photoCount">0</span></h3>
-              <div class="block-actions">
-                <label class="btn" for="photoFiles">Add Photos</label>
-                <input id="photoFiles" class="sr-only" type="file" accept="image/*" multiple>
-              </div>
-            </div>
-            <p class="studio-hint">The photo marked <strong>Cover</strong> is the one the card shows. Add several files at once, drag them onto the strip, or paste a screenshot with ⌘V (Ctrl+V).</p>
-            <ul class="filmstrip" id="filmstrip"></ul>
-            <p class="studio-note is-alert" id="photoError" role="alert" hidden></p>
-          </section>
-          <section class="studio-block" aria-labelledby="frameTitle">
-            <div class="block-head">
-              <h3 id="frameTitle">Frame</h3>
-              <span class="count-chip" id="frameItem">No photo selected</span>
-            </div>
-            <div class="crop-area">
-              <div class="crop-stage">
-                <canvas id="cropStage" width="800" height="500" tabindex="0" role="img" aria-label="Preview of the framed catalogue photo. Drag to move the photo, scroll or use the zoom slider to zoom, and use the arrow keys to nudge it."></canvas>
-                <div class="crop-guides" id="cropGuides" aria-hidden="true">
-                  <div class="guide-grid">
-                    <span class="grid-line grid-v grid-v-1"></span>
-                    <span class="grid-line grid-v grid-v-2"></span>
-                    <span class="grid-line grid-h grid-h-1"></span>
-                    <span class="grid-line grid-h grid-h-2"></span>
-                  </div>
-                  <div class="guide-margins">
-                    <span class="margin-line margin-left" title="Safe margin (8%)"></span>
-                    <span class="margin-line margin-right" title="Safe margin (8%)"></span>
-                  </div>
-                  <div class="guide-line guide-roofline">
-                    <span class="guide-label">Roofline Baseline</span>
-                  </div>
-                  <div class="guide-line guide-tyreline">
-                    <span class="guide-label">Tyre Baseline</span>
-                  </div>
-                </div>
-                <p class="crop-hint" id="cropHint">Choose a photo above to frame it.</p>
-              </div>
-              <div class="crop-controls">
-                <p class="studio-field is-label">Zoom <span class="count-chip" id="zoomValue">1.00×</span></p>
-                <input id="zoomRange" type="range" min="0.5" max="3" step="0.05" value="1" aria-label="Zoom">
-                <div class="button-row">
-                  <button class="btn-outline" id="zoomOut" type="button" aria-label="Zoom out">−</button>
-                  <button class="btn-outline" id="zoomIn" type="button" aria-label="Zoom in">+</button>
-                </div>
-                <label class="studio-field" for="frameMode">Framing</label>
-                <select id="frameMode" disabled>
-                  <option value="auto">Automatic: ask the photo</option>
-                  <option value="plate">Vehicle on a white plate</option>
-                  <option value="scene">Fill the frame (8:5 crop)</option>
-                </select>
-                <div class="button-row">
-                  <button class="btn-outline" id="fitBtn" type="button" disabled>Fit</button>
-                  <button class="btn-outline" id="centreBtn" type="button" disabled>Centre</button>
-                </div>
-                <button class="quiet" id="resetFrameBtn" type="button" disabled>Reset this frame</button>
-                <div class="studio-guides-control">
-                  <p class="studio-field is-label">Framing Guides</p>
-                  <div class="guide-toggles">
-                    <button class="btn-outline btn-guide active" id="toggleBaselinesBtn" type="button" aria-pressed="true">Baselines</button>
-                    <button class="btn-outline btn-guide active" id="toggleGridBtn" type="button" aria-pressed="true">Grid</button>
-                    <button class="btn-outline btn-guide active" id="toggleMarginsBtn" type="button" aria-pressed="true">Margins</button>
-                  </div>
-                </div>
-                <p class="studio-hint">Drag the photo to move it · scroll to zoom · the arrow keys nudge it by 1%.</p>
-              </div>
-            </div>
-            <p class="studio-note" id="frameStatus"></p>
-          </section>
         </div>
       </section>
-    </div>
-  </main>
-  <footer class="foot">
+      <div class="studio-layout">
+        <section id="models" class="studio-panel studio-models" aria-labelledby="modelsTitle">
+          <h2 id="modelsTitle">Catalogue Entries</h2>
+          <label class="studio-field" for="modelSearch">Find a model
+            <input id="modelSearch" type="search" placeholder="Make or model…" autocomplete="off" spellcheck="false">
+          </label>
+          <label class="studio-field" for="modelFilter">Show
+            <select id="modelFilter">
+              <option value="all">All entries</option>
+              <option value="edited">Entries I have changed</option>
+            </select>
+          </label>
+          <p class="studio-note" id="modelCount" role="status"></p>
+          <ul class="model-list" id="modelList"></ul>
+        </section>
+        <section class="studio-panel studio-editor" aria-labelledby="editorTitle">
+          <header class="editor-head">
+            <div>
+              <p class="eyebrow" id="editorMake">Vehicle Framing</p>
+              <h2 id="editorTitle">Choose a Catalogue Entry</h2>
+            </div>
+            <div class="editor-actions">
+              <a class="btn-outline" id="openCatalogue" href="catalogue.html">Open In Catalogue ↗</a>
+              <button class="btn-outline" id="resetModelBtn" type="button" hidden>Undo My Changes</button>
+            </div>
+          </header>
+          <p class="studio-empty" id="editorEmpty">Pick a model on the left to arrange its photos. Changes are saved as you make them.</p>
+          <div id="editorWork" hidden>
+            <section class="studio-block" aria-labelledby="photosTitle">
+              <div class="block-head">
+                <h3 id="photosTitle">Photos <span class="count-chip" id="photoCount">0</span></h3>
+                <div class="block-actions">
+                  <label class="btn" for="photoFiles">Add Photos</label>
+                  <input id="photoFiles" class="sr-only" type="file" accept="image/*" multiple>
+                </div>
+              </div>
+              <p class="studio-hint">The photo marked <strong>Cover</strong> is the one the card shows. Add several files at once, drag them onto the strip, or paste a screenshot with ⌘V (Ctrl+V).</p>
+              <ul class="filmstrip" id="filmstrip"></ul>
+              <p class="studio-note is-alert" id="photoError" role="alert" hidden></p>
+            </section>
+            <section class="studio-block" aria-labelledby="frameTitle">
+              <div class="block-head">
+                <h3 id="frameTitle">Frame</h3>
+                <span class="count-chip" id="frameItem">No photo selected</span>
+              </div>
+              <div class="crop-area">
+                <div class="crop-stage">
+                  <canvas id="cropStage" width="800" height="500" tabindex="0" role="img" aria-label="Preview of the framed catalogue photo. Drag to move the photo, scroll or use the zoom slider to zoom, and use the arrow keys to nudge it."></canvas>
+                  <div class="crop-guides" id="cropGuides" aria-hidden="true">
+                    <div class="guide-grid">
+                      <span class="grid-line grid-v grid-v-1"></span>
+                      <span class="grid-line grid-v grid-v-2"></span>
+                      <span class="grid-line grid-h grid-h-1"></span>
+                      <span class="grid-line grid-h grid-h-2"></span>
+                    </div>
+                    <div class="guide-margins">
+                      <span class="margin-line margin-left" title="Safe margin (8%)"></span>
+                      <span class="margin-line margin-right" title="Safe margin (8%)"></span>
+                    </div>
+                    <div class="guide-line guide-roofline">
+                      <span class="guide-label">Roofline Baseline</span>
+                    </div>
+                    <div class="guide-line guide-tyreline">
+                      <span class="guide-label">Tyre Baseline</span>
+                    </div>
+                  </div>
+                  <p class="crop-hint" id="cropHint">Choose a photo above to frame it.</p>
+                </div>
+                <div class="crop-controls">
+                  <p class="studio-field is-label">Zoom <span class="count-chip" id="zoomValue">1.00×</span></p>
+                  <input id="zoomRange" type="range" min="0.5" max="3" step="0.05" value="1" aria-label="Zoom">
+                  <div class="button-row">
+                    <button class="btn-outline" id="zoomOut" type="button" aria-label="Zoom out">−</button>
+                    <button class="btn-outline" id="zoomIn" type="button" aria-label="Zoom in">+</button>
+                  </div>
+                  <label class="studio-field" for="frameMode">Framing</label>
+                  <select id="frameMode" disabled>
+                    <option value="auto">Automatic: ask the photo</option>
+                    <option value="plate">Vehicle on a white plate</option>
+                    <option value="scene">Fill the frame (8:5 crop)</option>
+                  </select>
+                  <div class="button-row">
+                    <button class="btn-outline" id="fitBtn" type="button" disabled>Fit</button>
+                    <button class="btn-outline" id="centreBtn" type="button" disabled>Centre</button>
+                  </div>
+                  <button class="quiet" id="resetFrameBtn" type="button" disabled>Reset this frame</button>
+                  <div class="studio-guides-control">
+                    <p class="studio-field is-label">Framing Guides</p>
+                    <div class="guide-toggles">
+                      <button class="btn-outline btn-guide active" id="toggleBaselinesBtn" type="button" aria-pressed="true">Baselines</button>
+                      <button class="btn-outline btn-guide active" id="toggleGridBtn" type="button" aria-pressed="true">Grid</button>
+                      <button class="btn-outline btn-guide active" id="toggleMarginsBtn" type="button" aria-pressed="true">Margins</button>
+                    </div>
+                  </div>
+                  <p class="studio-hint">Drag the photo to move it · scroll to zoom · the arrow keys nudge it by 1%.</p>
+                </div>
+              </div>
+              <p class="studio-note" id="frameStatus"></p>
+            </section>
+          </div>
+        </section>
+      </div>
+    </main>
     <div class="foot-cols">
       <section aria-labelledby="footStorage">
         <h3 class="foot-h" id="footStorage">On-Device Storage</h3>
@@ -196,39 +197,38 @@
         <p>Export your photos and run the bake script to update the repository data. VahanaIQ is an independent personal project.</p>
       </section>
     </div>
-    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html">Lease</a><a href="catalogue.html">Showroom</a><a href="studio.html" aria-current="page">Studio</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav></div><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+    <dialog id="exportDialog" aria-labelledby="exportTitle">
+      <header class="dialog-head">
+        <div><p class="eyebrow">Photo Studio</p><h2 id="exportTitle">Export My Photos</h2></div>
+        <button id="exportClose" class="close" aria-label="Close Export">✕</button>
+      </header>
+      <div class="export-body">
+        <p id="exportSummary" role="status"></p>
+        <p class="studio-note is-alert" id="exportProblems" role="alert" hidden></p>
+        <ol class="export-list" id="exportList"></ol>
+        <div class="export-actions">
+          <button class="btn" id="exportDownload" type="button">Download The Export File</button>
+          <button class="quiet" id="exportClear" type="button" hidden>Remove all studio photos</button>
+        </div>
+        <details class="export-help">
+          <summary>What to do with the file</summary>
+          <ol>
+            <li>Keep the download beside the working files (exports are not committed).</li>
+            <li>From the project folder run <code>node scripts/apply-studio-photos.mjs vahanaiq-studio-photos-DATE.json</code>. It writes the framed photos into <code>assets/images/curated-catalogue/</code> and updates <code>data/catalogue.json</code> and <code>js/catalogue-data.js</code> together, so the two can never drift.</li>
+            <li>Review the change, then commit and push. The published catalogue will then show your photos, your order and your cover.</li>
+          </ol>
+          <p>Published photos you removed are left out of the export; the rest of the entry's prices are untouched.</p>
+        </details>
+      </div>
+    </dialog>
+  </template>
+  <footer class="foot">
+    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html">Lease</a><a href="catalogue.html">Showroom</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav></div><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
-      <button class="link-btn" id="footerSourceGuide" type="button">Source Guide</button>
-      <button class="link-btn" id="openPhotoCreditsBtn" type="button">Photo Credits</button>
       <span>VahanaIQ v2.12.0</span>
     </p>
   </footer>
-  <dialog id="exportDialog" aria-labelledby="exportTitle">
-    <header class="dialog-head">
-      <div><p class="eyebrow">Photo Studio</p><h2 id="exportTitle">Export My Photos</h2></div>
-      <button id="exportClose" class="close" aria-label="Close Export">✕</button>
-    </header>
-    <div class="export-body">
-      <p id="exportSummary" role="status"></p>
-      <p class="studio-note is-alert" id="exportProblems" role="alert" hidden></p>
-      <ol class="export-list" id="exportList"></ol>
-      <div class="export-actions">
-        <button class="btn" id="exportDownload" type="button">Download The Export File</button>
-        <button class="quiet" id="exportClear" type="button" hidden>Remove all studio photos</button>
-      </div>
-      <details class="export-help">
-        <summary>What to do with the file</summary>
-        <ol>
-          <li>Keep the download beside the working files (exports are not committed).</li>
-          <li>From the project folder run <code>node scripts/apply-studio-photos.mjs vahanaiq-studio-photos-DATE.json</code>. It writes the framed photos into <code>assets/images/curated-catalogue/</code> and updates <code>data/catalogue.json</code> and <code>js/catalogue-data.js</code> together, so the two can never drift.</li>
-          <li>Review the change, then commit and push. The published catalogue will then show your photos, your order and your cover.</li>
-        </ol>
-        <p>Published photos you removed are left out of the export; the rest of the entry's prices are untouched.</p>
-      </details>
-    </div>
-  </dialog>
   <p class="toast" id="toast" role="status" hidden></p>
-  <noscript><p class="load-error">The Photo Studio needs JavaScript: it frames photos on a canvas and keeps them in this browser's own storage.</p></noscript>
 </body>
 </html>

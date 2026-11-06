@@ -11,6 +11,12 @@ try {
   rootStyle.setProperty("--aurora-delay-2", "-" + (now % 56).toFixed(2) + "s");
 } catch (e) {}
 
+// A signed-in visit to studio.html shows nothing until js/studio-page.js has decided between its
+// two views, so neither flashes first; a visit with no sign-in sees the not-found view at once.
+try {
+  if (localStorage.getItem("vahanaiq_account_v1")) document.documentElement.classList.add("account-pending");
+} catch (e) {}
+
 // First visit to the Lease page: show the landing introduction instead of the calculator.
 // Decided here, before first paint, so the calculator never flashes first. js/onboarding.js
 // takes over from this class; anyone who finished or dismissed setup, or already has

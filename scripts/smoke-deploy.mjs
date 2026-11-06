@@ -22,7 +22,7 @@ const REPORT_PATHS = reports.flatMap(name => [name, name.replace(/\.md$/, '.html
 const PAGES = ['catalogue.html', 'studio.html', 'about.html', 'privacy.html', 'terms.html'];
 const ASSETS = [
   'css/experience.css', 'css/tokens.css', 'css/style.css', 'css/style.min.css', 'css/curated-catalogue.css', 'css/catalogue-studio.css', 'js/app.js', 'js/config.js',
-  'js/catalogue-data.js', 'js/curated-catalogue.js', 'js/catalogue-studio.js', 'js/catalogue-photo-overlay.js',
+  'js/catalogue-data.js', 'js/curated-catalogue.js', 'js/admin.js', 'js/studio-page.js', 'js/catalogue-studio.js', 'js/catalogue-photo-overlay.js',
   'js/catalogue-photos.js', 'js/catalogue-photo-store.js', 'js/photo-frame.js', 'js/official-photo-data.js', 'sw.js',
   'manifest.json', 'sitemap.xml', 'robots.txt', 'data/catalogue.json', 'data/identity.json',
   'assets/icons/favicon.svg', 'assets/icons/og-image.png',

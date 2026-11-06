@@ -24,6 +24,10 @@ const store = {
   set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
   remove: k => { try { localStorage.removeItem(k); } catch (e) {} }
 };
+// Sign-in and sign-out are announced so the administrator's links follow them (js/admin.js reads
+// SIGNED_IN_KEY and listens for ACCOUNT_EVENT)
+export const ACCOUNT_EVENT = "vahanaiq:account";
+const announce = () => { try { window.dispatchEvent(new Event(ACCOUNT_EVENT)); } catch (e) {} };
 
 // --- What is synced (pure, tested in test/account.test.mjs)
 
@@ -152,6 +156,7 @@ function onUser(u) {
     store.remove(AGREED_KEY);
     conflict = null;
   }
+  announce();
   renderAccount();
 }
 
@@ -361,6 +366,7 @@ async function signOutHere(message, { flush = true, clear = "if-synced" } = {}) 
   if (user && !current(ctx)) return;
   window.google?.accounts?.id?.disableAutoSelect?.();
   user = null;
+  announce();
   if (isOpen($("accountModal"))) closeModal($("accountModal"));
   renderAccount();
   if (clear === "always" || !unsynced) {

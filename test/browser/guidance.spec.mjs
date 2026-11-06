@@ -153,7 +153,7 @@ test('quick explanations fit a short touch viewport and reposition after rotatio
   await context.close();
 });
 
-for (const [name, steps] of [['catalogue', 3], ['studio', 3]]) {
+for (const [name, steps] of [['catalogue', 3]]) {
   test(`${name} tour works with page controls and completes`, async ({ page }) => {
     await go(page, `${name}.html?guide=tour`);
     await expect(page.locator('#guidedTour')).toContainText(`1 of ${steps}`);

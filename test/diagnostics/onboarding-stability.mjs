@@ -3,6 +3,7 @@ import {test,expect} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
 import {observeOnboarding} from './onboarding-observer.mjs';
+import {seedStudioAdmin,blockFirebase} from '../browser/returning-user.mjs';
 const base=process.env.BASE_URL||'http://127.0.0.1:8123';
 const mode=process.env.ONBOARDING_INTERACTION||'focus-explicit';
 const cssVariant=process.env.ONBOARDING_CSS||'current';
@@ -30,6 +31,7 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
  test.describe(`${route} case ${i}`,()=>{
  if(process.env.ONBOARDING_VARIANTS==='1'&&i%3===2)test.use({serviceWorkers:'block'});
  test(`${mode} saved-state journey`,async({page,browserName})=>{
+  if(route==='studio'){await seedStudioAdmin(page.context());await blockFirebase(page.context());}
   const variants=process.env.ONBOARDING_VARIANTS==='1';
   const width=Number(process.env.ONBOARDING_WIDTH||(variants?[1280,390,1440][i%3]:1280));
   await page.setViewportSize({width,height:width===1280?720:844});

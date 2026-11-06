@@ -35,6 +35,8 @@ if (typeof navigator !== \"undefined\" && \"serviceWorker\" in navigator && wind
 }
 
 applyState(loadState());`));
+      // Earlier workers run against today's pages here, so their fixed shells need the modules those pages import
+      if ((state.legacy || state.previousFonts || state.previousAnchoring) && relative === 'sw.js') data = Buffer.from(data.toString().replace('const SHELL = [', 'const SHELL = [\n  "js/admin.js?v=2.12.0",\n  "js/studio-page.js?v=2.12.0",'));
       if (state.revision && relative === 'sw.js') data = Buffer.from(data.toString().replace(/(const CACHE = ")[^"]+/, `$1vahanaiq-test-${state.revision}`));
       if (relative.startsWith('js/')) data = Buffer.from(data.toString() + `\n(window.__offlineModules ||= {})[${JSON.stringify(relative)}] = ${JSON.stringify(state.revision)};`);
       if (relative === 'js/boot.js') data = Buffer.from(data.toString() + `\nwindow.__offlineRevision = ${JSON.stringify(state.revision)};`);

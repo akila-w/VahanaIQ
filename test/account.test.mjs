@@ -158,3 +158,24 @@ assert.equal(syncDirection(overCopy, underCopy, agreedFingerprint), 'upload', 's
 // Clear any toast timeouts so Node process exits immediately
 const { clearToast } = await import('../js/toast.js?v=2.12.0');
 clearToast();
+
+// The Photo Studio is the administrator's alone (js/admin.js). Its check reads the record this file
+// writes, by the same names, and identifies the administrator by Firebase UID, never by email.
+const admin = await import('../js/admin.js?v=2.12.0');
+const { ADMIN_UID } = await import('../js/config.js?v=2.12.0');
+assert.equal(admin.SIGNED_IN_KEY, account.match(/const SIGNED_IN_KEY = "([^"]+)"/)[1], 'js/admin.js must read the key js/account.js writes');
+assert.equal(admin.ACCOUNT_EVENT, account.match(/export const ACCOUNT_EVENT = "([^"]+)"/)[1], 'js/admin.js must listen for the event js/account.js fires');
+assert.equal(typeof ADMIN_UID, 'string');
+assert.doesNotMatch(ADMIN_UID, /@/, 'ADMIN_UID is a Firebase UID, never an email address');
+assert.equal(admin.isAdminHint(null), false);
+assert.equal(admin.isAdminHint('1'), false, 'the legacy "1" record never identifies the administrator');
+assert.equal(admin.isAdminHint('someone-else'), false);
+assert.equal(admin.isAdminHint(''), false, 'an empty ADMIN_UID or record admits nobody');
+if (ADMIN_UID) assert.equal(admin.isAdminHint(ADMIN_UID), true);
+// Studio photos stay in the browser; should anything of the studio's reach Firestore, the rules must
+// check the same UID.
+for (const file of ['admin.js', 'studio-page.js', 'catalogue-studio.js', 'catalogue-photo-store.js', 'catalogue-photo-overlay.js']) {
+  assert.doesNotMatch(fs.readFileSync(new URL(`../js/${file}`, import.meta.url), 'utf8'), /firestore/i, `js/${file} must not write to Firestore`);
+}
+if (/studio/i.test(rules)) assert.ok(ADMIN_UID && rules.includes(ADMIN_UID), 'Studio rules in firestore.rules must check ADMIN_UID');
+console.log("Studio admin: identified by Firebase UID from the record js/account.js writes");
