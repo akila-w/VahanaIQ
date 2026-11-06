@@ -1,7 +1,7 @@
 // One complete, immutable offline shell per worker revision. Bump the cache
 // revision whenever a shell file changes, even when APP_VERSION stays the same.
 // Tests walk the entry-point dependency graph to guard this explicit manifest.
-const CACHE = "vahanaiq-v2.12.0-offline-10";
+const CACHE = "vahanaiq-v2.12.0-offline-14";
 const SHELL = [
   "js/price-history.js?v=2.12.0",
   "data/price-history.json",
@@ -18,6 +18,8 @@ const SHELL = [
   "catalogue.html",
   "studio.html",
   "about.html",
+  "settings.html",
+  "js/settings-page.js?v=2.12.0",
   "privacy.html",
   "terms.html",
   "manifest.json",
@@ -30,6 +32,10 @@ const SHELL = [
   "css/style.css?v=2.12.0",
   "css/style.min.css?v=2.12.0",
   "css/curated-catalogue.css?v=2.12.0",
+  "css/showroom.css?v=2.12.0",
+  "css/tab-bar.css?v=2.12.0",
+  "js/number-format.js?v=2.12.0",
+  "css/settings.css?v=2.12.0",
   "css/catalogue-studio.css?v=2.12.0",
   "js/boot.js?v=2.12.0",
   "js/canvas-utils.js?v=2.12.0",

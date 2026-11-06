@@ -1,3 +1,4 @@
+import { shown as displayAmount } from "./number-format.js?v=2.12.0";
 import { formatDate as displayDate } from "./dates.js?v=2.12.0";
 import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.12.0";
 import { fmt, esc, minDownFor, safeUrl } from "./calculator.js?v=2.12.0";
@@ -137,20 +138,20 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   function rentalLine(v, t) {
     if (!publishedPrice(v) || !t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor(v.cond, v.financeClass, v.firstRegisteredOn));
-    return down < 100 ? `About LKR ${fmt(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
+    return down < 100 ? `About LKR ${displayAmount(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
   }
 
   // One line for every car without a price: what each LKR 1.00 million of quote costs a month
   function perMillionLine(t) {
     if (!t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor("New"));
-    return down < 100 ? `No price yet? Each LKR 1.00 million of a brand-new car's quote is about LKR ${fmt(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
+    return down < 100 ? `No price yet? Each LKR 1.00 million of a brand-new car's quote is about LKR ${displayAmount(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
   }
 
   function priceText(v) {
     if (v.priceBasis === 'conflicting') return 'Price needs confirmation';
-    if (hasPrice(v) && !publishedPrice(v)) return `Unverified indicative price · LKR ${fmt(v.price)}`;
-    if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${fmt(v.price)}`;
+    if (hasPrice(v) && !publishedPrice(v)) return `Unverified indicative price · LKR ${displayAmount(v.price)}`;
+    if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${displayAmount(v.price)}`;
     return v.priceBasis === "conflicting" ? "Prices differ between sources" : "Price on request";
   }
 
@@ -249,6 +250,13 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   };
   for (const id of ["addVehicleBtn", "openCatalogueBtn"]) if ($(id)) $(id).addEventListener("click", () => open($(id)));
   $("browseEmptyBtn").addEventListener("click", () => open($("browseEmptyBtn")));
+  // The Lease page's ceiling opens the catalogue filtered to the visitor's monthly budget
+  if ($("browseBudgetBtn")) $("browseBudgetBtn").addEventListener("click", () => {
+    const t = terms?.();
+    $("catalogueAffordability").value = t?.income && t.room > 0 ? "within" : "";
+    page = 0;
+    open($("browseBudgetBtn"));
+  });
   $("closeCatalogueBtn").addEventListener("click", () => closeModal($("catalogueModal")));
   $("catalogueSearch").addEventListener("input", () => { page = 0; render(); });
   for (const id of [...FILTERS, "catalogueSort"]) $(id).addEventListener("change", () => { page = 0; render(); });
@@ -316,7 +324,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       if (offers.length > 1) {
         $("catalogueTrimWrap").hidden = false;
         $("catalogueTrimSelect").innerHTML = offers.map((o, idx) =>
-          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${fmt(o.amount)}` : ""} (Brand New)</option>`
+          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${displayAmount(o.amount)}` : ""} (Brand New)</option>`
         ).join("");
         $("catalogueTrimSelect").value = "0";
       } else {

@@ -42,7 +42,8 @@ test('rapid chart changes retarget from the visible angle and reduced motion sto
   if (await page.locator('#toggleTerms').isVisible()) await page.locator('#toggleTerms').click();
   await expect(page.locator('#income')).toBeVisible();
   await page.fill('#income', '2500000'); await page.locator('#income').dispatchEvent('change');
-  await page.evaluate(() => Promise.all(document.getAnimations().map(a => a.finished.catch(() => {}))));
+  // The page background loops for ever, so only finite animations can be waited for
+  await page.evaluate(() => Promise.all(document.getAnimations().filter(a => a.effect.getComputedTiming().iterations !== Infinity).map(a => a.finished.catch(() => {}))));
   const result = await page.locator('#rate').evaluate(async input => {
     const needle = document.querySelector('#budgetNeedle'), swing = needle.querySelector('.dial-needle-swing');
     const angle = () => parseFloat(needle.getAttribute('transform').slice(7)) + (parseFloat(getComputedStyle(swing).rotate) || 0);

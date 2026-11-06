@@ -3,7 +3,7 @@ import { searchCatalogue } from './catalogue-search.js?v=2.12.0';
 import { rental, flatToEffective, minDownFor } from './calculator.js?v=2.12.0';
 import { validPrice, vehicleBatchError } from './vehicle-validation.js?v=2.12.0';
 import { safeImageUrl } from './safe-url.js?v=2.12.0';
-import { DEFAULT_RATE, DEFAULT_TENURE, DEFAULT_DOWN, CONDITIONS } from './constants.js?v=2.12.0';
+import { DEFAULT_RATE, DEFAULT_TENURE, DEFAULT_DOWN, CONDITIONS, READY_SHORTLISTS } from './constants.js?v=2.12.0';
 
 // Each trigger has one stable listener for the lifetime of this page.
 function handleRestartClick(event) {
@@ -377,11 +377,7 @@ function init(forcedOpen = false) {
     );
 
     // Quick picks add real catalogue cars; the visitor still reviews and edits the shortlist.
-    const quickPicks = [
-      ['Compact SUVs', ['suzuki-fronx', 'toyota-raize']],
-      ['Hybrids and Electric', ['toyota-aqua', 'byd-atto-3', 'honda-vezel']],
-      ['Family SUVs', ['honda-vezel', 'byd-atto-3', 'byd-sealion-5']]
-    ].map(([label, ids]) => [label, ids.map(id => models.find(m => m.id === id)).filter(Boolean)
+    const quickPicks = READY_SHORTLISTS.map(([label, ids]) => [label, ids.map(id => models.find(m => m.id === id)).filter(Boolean)
       .map(model => [model, (model.offers || []).find(o => validPrice(o.amount))]).filter(([, offer]) => offer)])
       .filter(([, cars]) => cars.length >= MIN_SHORTLIST);
     if (quickPicks.length) {
