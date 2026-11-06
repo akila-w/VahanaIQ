@@ -438,12 +438,25 @@ console.log("Studio page: every control the script asks for is in studio.html, a
 
 // Visitors get an ordinary not-found page at studio.html, and no page links to it or names it. The
 // administrator's link is added by js/admin.js, never written into a page.
-const outsideTemplate = studioHtml.replace(/<template id="adminView">[\s\S]*?<\/template>/, "").replace(/<!--[\s\S]*?-->/g, "");
+// Cuts every open...close span, in any letter case. An unclosed span runs to the end of the text.
+const withoutSpans = (html, open, close) => {
+  const lower = html.toLowerCase(), opening = open.toLowerCase();
+  let kept = "", at = 0;
+  for (let start = lower.indexOf(opening); start !== -1; start = lower.indexOf(opening, at)) {
+    kept += html.slice(at, start);
+    const end = lower.indexOf(close, start + open.length);
+    if (end === -1) return kept;
+    at = end + close.length;
+  }
+  return kept + html.slice(at);
+};
+const outsideTemplate = withoutSpans(withoutSpans(studioHtml, '<template id="adminView">', "</template>"), "<!--", "-->");
 assert.match(studioHtml, /<title>Page not found · VahanaIQ<\/title>/);
 assert.match(studioHtml, /<meta name="robots" content="noindex">/);
 assert.match(outsideTemplate, /<h1 id="missingTitle">Page not found<\/h1>/);
 assert.match(outsideTemplate, /<a class="btn" href="catalogue\.html">Go to the Showroom<\/a>/);
-const visibleText = html => html.replace(/<(?:script|style)\b[\s\S]*?<\/(?:script|style)>/g, "").replace(/<[^>]*>/g, " ");
+const visibleText = html => withoutSpans(withoutSpans(withoutSpans(html, "<!--", "-->"), "<script", "</script>"), "<style", "</style>")
+  .split("<").map(part => part.slice(part.indexOf(">") + 1)).join(" ");
 assert.doesNotMatch(visibleText(outsideTemplate), /studio/i, "The not-found page must not name the studio");
 assert.doesNotMatch(outsideTemplate, /href="studio\.html/, "The not-found page must not link to the studio");
 assert.doesNotMatch(outsideTemplate, /header-actions|restartOnboardingBtn|footerSourceGuide|openPhotoCreditsBtn/, "The not-found page must have no controls that only the studio's scripts answer");
