@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seedStudioAdmin, blockFirebase } from './returning-user.mjs';
+import { seedStudioAdmin, blockFirebase, ADMIN_UID, ONBOARDING_KEY } from './returning-user.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 test.use({ trace: process.env.RATE_TRACE === '1' ? 'on' : 'retain-on-failure', screenshot: 'only-on-failure' });
@@ -310,7 +310,79 @@ test('visitors and other accounts get a not-found page that does not name the st
   await expect(page).toHaveTitle(/Page not found/);
   await expect(page.locator('body')).not.toContainText(/studio/i);
   await expect(page.locator('#models')).toHaveCount(0);
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await expect(page.locator('.header-actions, #restartOnboardingBtn')).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Go to the Showroom' })).toHaveAttribute('href', 'catalogue.html');
   await page.goto(BASE + '/catalogue.html');
   await expect(page.locator('a[href*="studio"]')).toHaveCount(0);
  }
+});
+
+test('a visitor downloads no studio code and meets no photo tools in the Showroom', async ({ page }) => {
+ const requests = [];
+ page.on('request', request => requests.push(request.url()));
+ await page.goto(BASE + '/studio.html');
+ await expect(page.locator('h1').first()).toHaveText('Page not found');
+ await page.waitForLoadState('networkidle');
+ expect(requests.filter(url => /catalogue-studio\.js|catalogue-data\.js|onboarding\.js|firebase/.test(url))).toEqual([]);
+ await page.addInitScript(key => localStorage.setItem(key, JSON.stringify({ version: 1, completed: true, step: 4 })), ONBOARDING_KEY);
+ await page.goto(BASE + '/catalogue.html');
+ await page.locator('[data-open]').first().click();
+ await expect(page.locator('#detail')).toBeVisible();
+ await expect(page.locator('#galleryToolbar, #galleryStudioBtn')).toHaveCount(0);
+ await expect(page.locator('#detail')).not.toContainText(/studio/i);
+});
+
+// Firebase answers for the record in this browser: a stand-in SDK says who is really signed in.
+const firebaseSays = (context, uid) => context.route(/firebase-(app|auth)\.js/, route => route.fulfill({
+ contentType: 'text/javascript',
+ headers: { 'Access-Control-Allow-Origin': '*' },
+ body: route.request().url().includes('firebase-app')
+  ? 'export const getApps = () => []; export const getApp = () => ({}); export const initializeApp = () => ({});'
+  : `export const indexedDBLocalPersistence = {}; export const browserLocalPersistence = {};
+     export const initializeAuth = () => ({ authStateReady: async () => {}, currentUser: ${JSON.stringify(uid ? { uid } : null)} });`
+}));
+const adminRecord = (context, uid = ADMIN_UID) => context.addInitScript(([key, record]) => {
+ localStorage.setItem(key, JSON.stringify({ version: 1, completed: true, step: 4 }));
+ localStorage.setItem('vahanaiq_account_v1', record);
+ localStorage.setItem('vahanaiq_account_name_v1', 'Akila');
+}, [ONBOARDING_KEY, uid]);
+
+for (const [case_, uid] of [['nobody', null], ['another account', 'someone-else']]) test(`the administrator's record alone does not open the studio when Firebase says ${case_} is signed in`, async ({ browser }) => {
+ const context = await browser.newContext({ serviceWorkers: 'block' });
+ await adminRecord(context);
+ await firebaseSays(context, uid);
+ const page = await context.newPage();
+ await page.goto(BASE + '/studio.html');
+ await expect(page.locator('h1').first()).toHaveText('Page not found');
+ await expect(page).toHaveTitle(/Page not found/);
+ await expect(page.locator('#models')).toHaveCount(0);
+ await expect(page.locator('body')).not.toContainText(/studio/i);
+ await context.close();
+});
+
+test('the administrator gets the studio, an Admin badge and the links', async ({ browser }) => {
+ const context = await browser.newContext({ serviceWorkers: 'block' });
+ await adminRecord(context);
+ await firebaseSays(context, ADMIN_UID);
+ const page = await context.newPage();
+ await page.goto(BASE + '/studio.html');
+ await expect(page).toHaveTitle(/Photo Studio/);
+ await expect(page.locator('#modelList [data-model]').first()).toBeVisible();
+ const link = page.locator('nav[aria-label="Main"] a[data-admin-link]');
+ await expect(link).toHaveAttribute('aria-current', 'page');
+ await expect(link.locator('.admin-badge')).toHaveText('Admin');
+ await expect(page.locator('.page-missing')).toHaveCount(0);
+ await expect(page.locator('#exportBtn')).toBeVisible();
+ await expect(page.locator('#accountBtn')).toHaveText('Akila');
+ for (const route of ['index', 'catalogue']) {
+  await page.goto(`${BASE}/${route}.html`);
+  await expect(page.locator('nav[aria-label="Main"] a[data-admin-link]')).toHaveAttribute('href', 'studio.html');
+  await expect(page.locator('nav[aria-label="Explore"] a[data-admin-link]')).toHaveCount(1);
+ }
+ await page.locator('[data-open]').first().click();
+ await expect(page.locator('#galleryStudioBtn')).toBeVisible();
+ await page.evaluate(() => { localStorage.removeItem('vahanaiq_account_v1'); window.dispatchEvent(new Event('vahanaiq:account')); });
+ await expect(page.locator('a[data-admin-link]')).toHaveCount(0);
+ await context.close();
 });

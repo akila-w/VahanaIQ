@@ -390,7 +390,11 @@ assert.match(studioHtml, /accept="image\/\*"/);
 assert.match(studioHtml, /type="module" src="js\/studio-page\.js\?v=2\.12\.0"/, "studio.html must load the page's gate");
 assert.doesNotMatch(studioHtml, /src="js\/catalogue-studio\.js|href="js\/catalogue-studio\.js/, "Only the administrator's visit loads the studio script");
 const studioPage = fs.readFileSync(path.join(ROOT, "js/studio-page.js"), "utf8");
-assert.match(studioPage, /if \(admin\) await import\("\.\/catalogue-studio\.js\?v=2\.12\.0"\)/, "js/studio-page.js loads the studio for the administrator only");
+const adminBranch = (studioPage.match(/if \(admin\) \{([\s\S]*?)\n\}/) || [])[1] || "";
+for (const script of ["catalogue-data", "catalogue-studio", "onboarding"]) {
+  assert.ok(adminBranch.includes(`import("./${script}.js?v=2.12.0")`), `js/studio-page.js loads ${script} for the administrator only`);
+  assert.ok(!studioHtml.includes(`src="js/${script}.js`), `studio.html must not load ${script} for visitors`);
+}
 assert.match(studioHtml, /href="css\/catalogue-studio\.css\?v=2\.12\.0"/, "studio.html must load the versioned studio stylesheet");
 assert.match(studioHtml, /href="css\/tokens\.css\?v=2\.12\.0"/, "studio.html must load the design tokens");
 assert.match(studioHtml, /id="cropStage"[^>]*aspect|role="img"/, "The crop stage is described to assistive technology");
@@ -442,6 +446,7 @@ assert.match(outsideTemplate, /<a class="btn" href="catalogue\.html">Go to the S
 const visibleText = html => html.replace(/<(?:script|style)\b[\s\S]*?<\/(?:script|style)>/g, "").replace(/<[^>]*>/g, " ");
 assert.doesNotMatch(visibleText(outsideTemplate), /studio/i, "The not-found page must not name the studio");
 assert.doesNotMatch(outsideTemplate, /href="studio\.html/, "The not-found page must not link to the studio");
+assert.doesNotMatch(outsideTemplate, /header-actions|restartOnboardingBtn|footerSourceGuide|openPhotoCreditsBtn/, "The not-found page must have no controls that only the studio's scripts answer");
 for (const page of ["index.html", "catalogue.html", "about.html", "privacy.html", "terms.html"]) {
   const html = fs.readFileSync(path.join(ROOT, page), "utf8");
   assert.doesNotMatch(html, /studio\.html/, `${page} must not link to the studio`);

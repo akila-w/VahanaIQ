@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const source = fs.readFileSync(new URL('../../js/onboarding-state.js', import.meta.url), 'utf8');
 export const ONBOARDING_KEY = source.match(/export const ONBOARDING_KEY = '([^']+)'/)[1];
 
-const ADMIN_UID = fs.readFileSync(new URL('../../js/config.js', import.meta.url), 'utf8').match(/export const ADMIN_UID = "([^"]*)"/)[1];
+export const ADMIN_UID = fs.readFileSync(new URL('../../js/config.js', import.meta.url), 'utf8').match(/export const ADMIN_UID = "([^"]*)"/)[1];
 
 // studio.html opens only for the administrator (js/admin.js), so every context carries that sign-in
 // record on that page alone. Offline, or with blockFirebase below, the record decides. Routing turns
