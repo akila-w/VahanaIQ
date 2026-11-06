@@ -140,9 +140,10 @@ Create the environment **before** merging the workflow change. A workflow can
 create a missing environment by naming it, and that environment would have no
 branch rule.
 
-1. In the app's settings, generate a new private key rather than reusing an
-   existing one. Confirm the app has `Checks: write` and is installed only on
-   this repository.
+1. In your account's **Settings → Developer settings → GitHub Apps**, click
+   **Edit** next to the app, then **Key pairs → New key**. Use a new key rather
+   than reusing an existing one. Confirm the app has `Checks: write` and is
+   installed only on this repository.
 2. Go to **Settings → Environments → New environment** and name it
    `catalogue-publisher`.
 3. Under **Deployment branches and tags**, choose **Selected branches and tags**
@@ -150,9 +151,11 @@ branch rule.
 4. Add the environment secret `CHECK_PUBLISHER_KEY`, then delete the downloaded
    key file.
 5. Merge the workflow change. Check 1 below must pass on the next PR.
-6. In **Settings → Rules → Rulesets → Protect Main Branch**, change the source of
-   `catalogue-publication-trusted` from GitHub Actions to
-   `vahanaiq-trusted-check-publisher`.
+6. In the repository's **Settings**, under "Code, planning, and automation", open
+   **Rulesets → Rulesets → Protect Main Branch**. Under the required status checks
+   rule, change the source of `catalogue-publication-trusted` from GitHub Actions
+   to `vahanaiq-trusted-check-publisher`, then click **Save changes**. GitHub only
+   offers an app that has recently submitted a check run, which check 1 provides.
 7. Run checks 2 to 6 below, then record the result here and in `SECURITY.md`.
 
 To roll back, set the source in step 6 back to GitHub Actions.
