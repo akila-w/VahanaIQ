@@ -141,7 +141,7 @@ create a missing environment by naming it, and that environment would have no
 branch rule.
 
 1. In your account's **Settings → Developer settings → GitHub Apps**, click
-   **Edit** next to the app, then **Key pairs → New key**. Use a new key rather
+   **Edit** next to the app, then **Credentials → Key pairs → New key**. Use a new key rather
    than reusing an existing one. Confirm the app has `Checks: write` and is
    installed only on this repository.
 2. Go to **Settings → Environments → New environment** and name it
