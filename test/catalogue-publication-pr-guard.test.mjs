@@ -248,6 +248,21 @@ try {
       JSON.stringify({ schemaVersion: 2, approvers: [], researchers: [] })
   });
   assert.equal(extraRegistry.ok, false, 'Price PR must not substitute a trust registry');
+  // A non-price PR must not be able to change what the guard or publisher trusts.
+  for (const [filename, content] of Object.entries({
+    '.github/workflows/added-by-pr.yml': 'on: pull_request\n',
+    '.github/workflows/catalogue-publication-trusted.yml': '# Attempted bypass\n',
+    '.GitHub/workflows/case-variant.yml': 'on: pull_request\n',
+    'scripts/verify-catalogue-publication-pr.mjs': '// Attempted bypass\n',
+    'scripts/publish-catalogue-check.mjs': '// Attempted bypass\n',
+    'config/catalogue-publication-approvers.json': '{}\n',
+    'js/vehicle-validation.js': '// Attempted bypass\n',
+    'data/identity.json': '{}\n'
+  })) {
+    const trustRootEdit = candidate({ [filename]: content });
+    assert.equal(trustRootEdit.ok, false, 'Trust-root edit must fail: ' + filename);
+    assert.match(trustRootEdit.stderr, /trust-root/, 'Wrong refusal for ' + filename);
+  }
   const nonPrice = candidate({ 'docs/maintenance-fixture.txt': 'unrelated documentation\n' });
   const legacy = candidate({ 'js/market-catalogue.js': '// changed prices\n' });
   assert.equal(legacy.ok, false, 'Unsigned legacy market price update must fail');
