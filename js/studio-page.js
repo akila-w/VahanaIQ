@@ -23,8 +23,10 @@ function showStudio() {
   document.querySelector('nav[aria-label="Main"] a[data-admin-link]')?.append(badge);
   // Sync only loads on the calculator, which records the signed-in name for this page to show
   const name = localStorage.getItem("vahanaiq_account_name_v1") || "Account";
-  $("accountBtn").textContent = name;
-  $("accountBtn").setAttribute("aria-label", `Account: ${name}`);
+  const words = name.trim().split(/\s+/);
+  $("accountInitials").textContent = (words[0][0] + (words.length > 1 ? words[words.length - 1][0] : "")).toUpperCase();
+  $("accountBtn").setAttribute("aria-label", `Signed in · Admin. Account: ${name}`);
+  $("accountBtn").title = name;
   $("accountBtn").addEventListener("click", () => { location.href = "index.html#account"; });
 }
 

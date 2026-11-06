@@ -16,10 +16,16 @@ Landing introduction and a redesigned guided setup, from the VahanaIQ Redesign c
 - **Browser checks** for the landing (first visit, dismissal, returning visitors, quick picks, pause and reduced motion) in `test/browser/onboarding.spec.mjs`.
 
 ### Changed
+- **Photo Studio's admin view** follows the Studio artboard (offline shell revision `vahanaiq-v2.12.0-offline-13`). The heading is "Frame every Showroom photo." with a note that changes stay in this browser until exported. The left list has search, All and Edited counts and an Edited tag; the model header has View in Showroom and Upload Photos; the stage has a Cover badge above thumbnails with Add Photo; and the header has Export Changes (.json) and a Signed in · Admin pill. A Frame panel holds Zoom (now shown as a percentage), Position, Background, Save Frame and a reset link. Position and Background are two views of the existing framing setting, so saved records and the export format are unchanged. Frames still save as they change; Save Frame writes any waiting save and confirms it. Reset to original photos, formerly Undo My Changes, now asks first. −, +, Fit, Centre, Reset this frame and the baseline, grid and margin guides moved under More framing tools.
 - **Guided setup**: five one-question steps, cars first: Cars, Income, Loan Length (tenure and rate), Down Payment (CBSL minimums explained) and Your Result, which leads with the budget ceiling and marks each car Comfortable, Stretching or Out of reach. Later steps show live rentals for the visitor's own shortlist. The welcome step is gone: the landing introduction does that job on the Lease page. The two-car minimum, saved drafts, Escape, Exit to Lease and the hand-over to the calculator are unchanged.
 - **Setup on phones** is a true full-screen sheet (the browser's default dialog gutters are removed) with its header and footer padded clear of the Dynamic Island and home indicator. The backdrop is a still emerald gradient with the monogram matrix, with no blur.
 - **Home-screen app on iPhone**: `apple-mobile-web-app-status-bar-style` is `black-translucent` on the Lease, Showroom and Studio pages, so the page runs under the status bar.
 - **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
+
+### Fixed
+- **Photo Studio's reset control and other hidden elements** no longer show when marked hidden: shared button rules gave them a display value that beat the `hidden` attribute, so Undo My Changes showed with nothing changed.
+- **Photo Studio animation**: colour, border and shadow transitions on its controls are gone, and the guides no longer use a drop-shadow filter; only transform and opacity animate, and all of it stops under reduced motion.
+- **Grid guide colour in light mode**: the page no longer applies the dark theme's grid colour when the theme follows the device.
 
 ---
 

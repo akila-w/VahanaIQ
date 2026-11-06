@@ -381,8 +381,9 @@ const adminIds = new Set([...adminView.matchAll(/id="([^"]+)"/g)].map(match => m
 for (const [, id] of studioScript.matchAll(/\$\("([^"]+)"\)/g)) {
   assert.ok(pageIds.has(id), `js/catalogue-studio.js uses #${id}, which studio.html does not define`);
 }
-for (const id of ["photoFiles", "filmstrip", "cropStage", "zoomRange", "frameMode", "fitBtn", "centreBtn",
-  "resetFrameBtn", "exportBtn", "exportDialog", "exportDownload", "modelList", "modelSearch", "storageNote"]) {
+for (const id of ["photoFiles", "filmstrip", "cropStage", "zoomRange", "positionAuto", "positionManual", "backgroundPlate",
+  "backgroundOriginal", "saveFrameBtn", "resetModelBtn", "stageBadge", "filterAll", "filterEdited", "zoomOut", "zoomIn",
+  "toggleBaselinesBtn", "toggleGridBtn", "toggleMarginsBtn", "cropGuides", "fitBtn", "centreBtn", "resetFrameBtn", "exportBtn", "exportDialog", "exportDownload", "modelList", "modelSearch", "storageNote"]) {
   assert.ok(adminIds.has(id), `studio.html's adminView template is missing #${id}`);
 }
 assert.match(studioHtml, /type="file"[^>]*multiple/, "The upload control must accept several files at once");

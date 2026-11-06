@@ -263,6 +263,79 @@ test.describe('Phone journeys', () => {
     await context.close();
   });
 
+  test('Photo Studio: Reset stays hidden until an entry changes, and the Frame panel edits the one saved setting', async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    const reset = page.locator('#resetModelBtn');
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#stageBadge')).toHaveText('Cover · 8:5');
+    await expect(page.locator('#filterAll')).toHaveText(/^All \d+$/);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await expect(page.locator('#positionAuto')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.model-flag')).toHaveCount(0);
+
+    // The tools the artboard does not show are still there, one click away
+    await page.locator('.frame-tools summary').click();
+    for (const id of ['#zoomIn', '#zoomOut', '#fitBtn', '#centreBtn', '#resetFrameBtn', '#toggleBaselinesBtn', '#toggleGridBtn', '#toggleMarginsBtn']) await expect(page.locator(id)).toBeVisible();
+    await page.locator('#toggleGridBtn').click();
+    await expect(page.locator('#cropGuides')).toHaveClass(/hide-grid/);
+    await expect(page.locator('.guide-grid')).toBeHidden();
+
+    const pressedBackground = await page.locator('#backgroundPlate').getAttribute('aria-pressed') === 'true' ? '#backgroundOriginal' : '#backgroundPlate';
+    await page.locator(pressedBackground).click();
+    await expect(page.locator(pressedBackground)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#positionManual')).toHaveAttribute('aria-pressed', 'true');
+    await expect(reset).toBeVisible();
+    await expect(reset).toHaveText(/^Reset .+ to original photos…$/);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
+    await expect(page.locator('.model-flag')).toHaveText('Edited');
+
+    await page.locator('#saveFrameBtn').click();
+    await expect(page.locator('#toast')).toContainText('saved in this browser');
+    await page.locator('#filterEdited').click();
+    await expect(page.locator('#modelList [data-model]')).toHaveCount(1);
+
+    // Automatic undoes a manual choice, so the entry is no longer edited
+    await page.locator('#positionAuto').click();
+    await expect(page.locator('#positionAuto')).toHaveAttribute('aria-pressed', 'true');
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+
+    // Reset asks first: declining keeps the edit, accepting restores the published photos
+    await page.locator('#filterAll').click();
+    await page.locator(pressedBackground).click();
+    await expect(reset).toBeVisible();
+    page.once('dialog', dialog => dialog.dismiss());
+    await reset.click();
+    await expect(reset).toBeVisible();
+    page.once('dialog', dialog => dialog.accept());
+    await reset.click();
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#zoomValue')).toHaveText('100%');
+    await context.close();
+  });
+
+  test('Photo Studio controls are 44px touch targets on a phone', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await page.locator('.frame-tools summary').click();
+    const small = await page.evaluate(() => [...document.querySelectorAll('#main button, #main a, #main summary, #main label.btn, .film-add label, .site-header .header-actions button, .site-header .header-actions label, .header-tour-btn')]
+      .filter(el => el.offsetParent)
+      .map(el => ({ name: el.id || el.className, box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.height < 43.5 || box.width < 43.5)
+      .map(({ name, box }) => `${name} ${Math.round(box.width)}x${Math.round(box.height)}`));
+    expect(small).toEqual([]);
+    await context.close();
+  });
+
   test('choosing a Photo Studio entry on a phone brings the editor into view', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
