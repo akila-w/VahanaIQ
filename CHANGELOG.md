@@ -5,6 +5,23 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ---
 
+## [Unreleased] - 01/11/2026
+
+Landing introduction and a redesigned guided setup, from the VahanaIQ Redesign canvas. No calculation, threshold, rounding or number format changed. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-6`.
+
+### Added
+- **Landing introduction on the Lease page (`index.html`)**: first-time visitors see what VahanaIQ is before the calculator: a headline, an example rental for a real Showroom car, two belts of Showroom cars with their rentals at the planner's default terms, how it works, and Get Started. The hero runs a slow emerald gradient with a drifting Apex monogram matrix; every animation moves only transform, there is a Pause Animation button, and reduced motion stops it all. `js/boot.js` decides before first paint (`html.landing-pending`), so returning visitors, anyone who finished or dismissed setup, and `?onboarding` links go straight to the calculator; `?welcome` shows the introduction again.
+- **Quick picks in setup**: Compact SUVs, Hybrids and Electric, and Family SUVs add real catalogue cars to the shortlist, which the visitor still reviews.
+- **Browser checks** for the landing (first visit, dismissal, returning visitors, quick picks, pause and reduced motion) in `test/browser/onboarding.spec.mjs`.
+
+### Changed
+- **Guided setup**: five one-question steps, cars first: Cars, Income, Loan Length (tenure and rate), Down Payment (CBSL minimums explained) and Your Result, which leads with the budget ceiling and marks each car Comfortable, Stretching or Out of reach. Later steps show live rentals for the visitor's own shortlist. The welcome step is gone: the landing introduction does that job on the Lease page. The two-car minimum, saved drafts, Escape, Exit to Lease and the hand-over to the calculator are unchanged.
+- **Setup on phones** is a true full-screen sheet (the browser's default dialog gutters are removed) with its header and footer padded clear of the Dynamic Island and home indicator. The backdrop is a still emerald gradient with the monogram matrix, with no blur.
+- **Home-screen app on iPhone**: `apple-mobile-web-app-status-bar-style` is `black-translucent` on the Lease, Showroom and Studio pages, so the page runs under the status bar.
+- **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
+
+---
+
 ## [2.12.0] - 26/10/2026
 
 UI/UX pass: mobile layout, touch, focus and motion. No calculation, threshold, rounding or number format changed; every displayed figure was checked against the live v2.11.6 site for 8 term scenarios. Reports: `docs/uiux-audit.md`, `docs/uiux-improvements.md`, `docs/uiux-qa-results.md`, `docs/motion-design.md`, `docs/iphone-qa-checklist.md`, `docs/release-readiness.md`.

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://accounts.google.com https://vahanaiq-search-71962876227.asia-south1.run.app; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self';">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>VahanaIQ — Sri Lanka Vehicle Lease Calculator</title>
   <meta name="description" content="Smart vehicle lease and affordability discovery for Sri Lanka. Down payments follow CBSL Directions No. 01 of 2026 (cl. 2.1). Terms of up to 84 months.">
@@ -66,6 +67,74 @@
 <body>
 <a class="skip" href="#h-terms">Skip to Calculator</a>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
+<section class="landing" id="landing" aria-labelledby="landingTitle">
+  <div class="landing-hero">
+    <div class="landing-bg" aria-hidden="true"><span class="landing-glow landing-glow-a"></span><span class="landing-glow landing-glow-b"></span><span class="landing-matrix"></span></div>
+    <header class="landing-head">
+      <a class="landing-brand" href="index.html?welcome">
+        <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" width="36" height="36">
+        <span class="landing-brand-text"><span class="landing-brand-name">Vahana<span>IQ</span></span><span class="landing-brand-tag">Sri Lanka vehicle lease calculator</span></span>
+      </a>
+      <nav class="landing-nav" aria-label="Introduction">
+        <a href="catalogue.html" data-landing-leave>Showroom</a>
+        <a href="index.html" data-landing-leave>Lease Planner</a>
+        <button type="button" class="landing-cta-small" data-landing-start>Get Started</button>
+      </nav>
+    </header>
+    <div class="landing-intro">
+      <div class="landing-copy">
+        <ul class="landing-chips" aria-label="At a glance"><li>Free</li><li>No sign-up</li><li>CBSL 2026 rules built in</li></ul>
+        <h1 id="landingTitle" tabindex="-1">See the monthly lease rental of any car in Sri Lanka.</h1>
+        <p class="landing-lede">Pick a car and enter your income. VahanaIQ shows the down payment, the monthly rental and whether it fits your budget.</p>
+        <div class="landing-actions">
+          <button type="button" class="landing-cta" data-landing-start>Get Started<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+          <a class="landing-secondary" href="catalogue.html" data-landing-leave>Browse the Showroom First</a>
+        </div>
+        <p class="landing-note">Takes about 2 minutes. Nothing you enter leaves your browser.</p>
+      </div>
+      <figure class="landing-example" id="landingExample" hidden>
+        <div class="landing-example-photo"><img alt="" width="320" height="200"></div>
+        <figcaption>
+          <span class="landing-example-label"></span>
+          <strong class="landing-example-rental"></strong>
+          <span class="landing-example-terms"></span>
+        </figcaption>
+      </figure>
+    </div>
+    <div class="landing-belts" id="landingBelts" hidden>
+      <div class="landing-belts-head">
+        <p>From the Showroom · rentals at 84 months with the minimum down payment</p>
+        <button type="button" class="landing-pause" id="landingPause" aria-pressed="false">Pause Animation</button>
+      </div>
+      <div class="landing-belt"><ul class="landing-row" id="landingRowA"></ul></div>
+      <div class="landing-belt"><ul class="landing-row landing-row-reverse" id="landingRowB"></ul></div>
+    </div>
+  </div>
+  <div class="landing-sections">
+    <section class="landing-how" aria-labelledby="landingHowTitle">
+      <p class="landing-eyebrow">How it works</p>
+      <h2 id="landingHowTitle">Three steps to a number you can trust.</h2>
+      <ol class="landing-steps">
+        <li><span class="landing-step-icon" aria-hidden="true"><span class="glyph glyph-car"></span></span><h3><span>1.</span> Choose cars</h3><p>Pick from the Showroom’s new vehicles, with every price labelled by its source.</p></li>
+        <li><span class="landing-step-icon" aria-hidden="true"><span class="glyph glyph-wallet"></span></span><h3><span>2.</span> Add your income</h3><p>Enter your take-home pay and existing payments. They stay on your device.</p></li>
+        <li><span class="landing-step-icon" aria-hidden="true"><span class="glyph glyph-circle-check"></span></span><h3><span>3.</span> See what fits</h3><p>Get the down payment, the monthly rental and a clear Comfortable, Stretching or Out of Reach.</p></li>
+      </ol>
+    </section>
+    <section class="landing-why" aria-label="Why VahanaIQ">
+      <div><h3>Built on CBSL Directions No. 01 of 2026</h3><p>Minimum down payments follow clause 2.1: 60% for a new or recently registered car, 40% once it has been registered for over a year.</p></div>
+      <div><h3>Prices you can check</h3><p>Official, launch, dealer and estimated prices are labelled, with a link to each source.</p></div>
+      <div><h3>Private by default</h3><p>No account needed. Sign in with Google only if you want your shortlist on another device.</p></div>
+    </section>
+    <section class="landing-band" aria-labelledby="landingBandTitle">
+      <div><h2 id="landingBandTitle">Know your number before the showroom does.</h2><p>Five short steps, then your own lease planner.</p></div>
+      <button type="button" class="landing-cta" data-landing-start>Get Started<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+    </section>
+    <footer class="landing-foot">
+      <p>Estimates only, not financial advice. VahanaIQ is an independent personal project, not affiliated with the Central Bank of Sri Lanka, any lender or any vehicle brand.</p>
+      <p>© 2026 Akila Wickramasinghe · <a href="about.html">About</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    </footer>
+  </div>
+</section>
 <header class="site-header">
   <div class="header-brand-group">
     <a class="brand" href="index.html">

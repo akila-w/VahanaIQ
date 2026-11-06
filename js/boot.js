@@ -11,6 +11,20 @@ try {
   rootStyle.setProperty("--aurora-delay-2", "-" + (now % 56).toFixed(2) + "s");
 } catch (e) {}
 
+// First visit to the Lease page: show the landing introduction instead of the calculator.
+// Decided here, before first paint, so the calculator never flashes first. js/onboarding.js
+// takes over from this class; anyone who finished or dismissed setup, or already has
+// vehicles saved, goes straight to the calculator.
+try {
+  var onLeasePage = /\/(?:index\.html)?$/.test(location.pathname);
+  var asked = /[?&]onboarding\b/.test(location.search) || location.hash === "#onboarding";
+  var welcome = /[?&]welcome\b/.test(location.search);
+  var setup = JSON.parse(localStorage.getItem("vahanaiq_onboarding_v3") || "null");
+  var saved = JSON.parse(localStorage.getItem("vahanaiq_comparison_v3") || "null");
+  var returning = (setup && setup.completed === true) || (saved && Array.isArray(saved.cars) && saved.cars.length > 0);
+  if (onLeasePage && !asked && (welcome || !returning)) document.documentElement.classList.add("landing-pending");
+} catch (e) {}
+
 // js/catalogue-photo-overlay.js fills this in with the photos saved by the Photo Studio. The
 // promise is made here, before any deferred script runs, so the page can wait for the overlay
 // whichever of the two finishes first.
