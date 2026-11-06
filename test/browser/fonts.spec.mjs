@@ -24,7 +24,8 @@ for (const route of ['index', 'catalogue', 'studio', 'about', 'privacy', 'terms'
         await expect(page.locator('h1')).toBeVisible();
         if (route === 'index') await expect(page.locator('#rate')).not.toHaveValue('');
         if (route === 'catalogue') await expect(page.locator('#vehicles .card').first()).toBeVisible();
-        if (route === 'studio') await expect(page.locator('#modelList button').first()).toBeVisible();
+        // The frame description arrives after the photo loads, and moves everything below it
+        if (route === 'studio') await expect(page.locator('#frameStatus')).not.toBeEmpty();
         // Closed dialogs contain asynchronously populated catalogue controls;
         // compare the visible page, not hidden modal contents at arbitrary times.
         const geometry = await page.evaluate(() => [...document.querySelectorAll('h1,h2,nav,button,input,select')]

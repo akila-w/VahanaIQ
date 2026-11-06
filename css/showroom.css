@@ -5,7 +5,7 @@
 .brand-strip-view:hover .brand-strip-track,.brand-strip-view:focus-within .brand-strip-track,.brand-strip.is-paused .brand-strip-track{animation-play-state:paused}
 .brand-strip-group{display:flex;gap:8px;padding-right:8px;flex:none}
 .brand-chip{min-width:104px;min-height:64px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font:600 12px/1.2 inherit;cursor:pointer}
-.brand-chip img{display:block;max-width:72px;height:26px;width:auto;object-fit:contain}
+.brand-chip img{display:block;width:72px;height:26px;object-fit:contain}
 .brand-chip:hover{border-color:var(--accent)}
 .brand-chip[aria-pressed="true"]{border:2px solid var(--accent);padding:7px 11px}
 .brand-strip-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
@@ -27,7 +27,6 @@
 .card-fit[data-fit="mid"]{--fit:#d97706}
 .card-fit[data-fit="bad"]{--fit:#dc2626}
 
-@media(max-width:650px){.brand-chip{min-width:92px}}
 @media(prefers-reduced-motion:reduce){
   .brand-strip-track{animation:none;width:auto}
   .brand-strip-view{overflow-x:auto;mask-image:none;-webkit-mask-image:none}
