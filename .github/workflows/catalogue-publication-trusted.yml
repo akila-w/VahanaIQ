@@ -60,3 +60,41 @@ jobs:
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: node scripts/verify-catalogue-publication-pr.mjs
+
+  # Holds the app key, so it reads the guard's result only and never PR content.
+  # A workflow from a PR cannot use this environment: it is limited to the default
+  # branch, and pull_request runs are evaluated against refs/pull/N/merge.
+  catalogue-publication-publish:
+    name: catalogue-publication-publish
+    needs: catalogue-publication-trusted
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment:
+      name: catalogue-publisher
+      deployment: false
+    steps:
+      - name: Checkout trusted default-branch code without persisting credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Require the checked-out HEAD to be the trusted GITHUB_SHA
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Prepare Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Publish the guard result under the dedicated app
+        env:
+          CHECK_PUBLISHER_KEY: ${{ secrets.CHECK_PUBLISHER_KEY }}
+          CHECK_PUBLISHER_APP_ID: '5560876'
+          GUARD_RESULT: ${{ needs.catalogue-publication-trusted.result }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: node scripts/publish-catalogue-check.mjs
