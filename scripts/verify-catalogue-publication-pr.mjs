@@ -14,6 +14,27 @@ const requireTrue = (x, reason) => { if (!x) throw new Error(reason); };
 const protectedFiles = [dataPath, scriptPath, evidencePath];
 const hasPriceFiles = files => protectedFiles.some(p => files.includes(p));
 
+// Everything the guard or the check publisher executes or trusts. Any workflow
+// on the default branch can name the publisher's environment, so all of
+// `.github/` counts. A change here needs the maintainer's deliberate ruleset step.
+const trustRootPrefixes = ['.github/', 'config/'];
+const trustRootFiles = [
+  'scripts/verify-catalogue-publication-pr.mjs',
+  'scripts/prepare-catalogue-publication.mjs',
+  'scripts/catalogue-price-approval.mjs',
+  'scripts/stage-catalogue-price-research.mjs',
+  'scripts/publish-catalogue-check.mjs',
+  'js/vehicle-validation.js',
+  'data/identity.json'
+];
+export function trustRootChanges(files) {
+  return files.filter(file => {
+    const name = file.toLowerCase();
+    return trustRootPrefixes.some(prefix => name.startsWith(prefix)) ||
+      trustRootFiles.includes(name);
+  });
+}
+
 export function verifyPublicationDiff(files, baseCatalogue, identity, proposedJSON,
   proposedJS, bundle, trustedRegistry, options = {}) {
   const changed = new Set(files);
@@ -48,6 +69,9 @@ export function inspectTrustedDiff(baseSHA, headSHA, git, options = {}) {
   const files = git('diff', '--name-only', '-z', '--no-renames', baseSHA, headSHA)
     .toString('utf8').split('\0').filter(Boolean);
   requireTrue(files.length === new Set(files).size, 'Duplicate or ambiguous changed paths');
+  const trustRoot = trustRootChanges(files);
+  requireTrue(trustRoot.length === 0,
+    'PR changes trust-root files, which needs a deliberate maintainer step: ' + trustRoot.join(', '));
   if (!hasPriceFiles(files) && !files.includes(legacyPricePath)) {
     return { status: 'no-price-data-changes', canPublish: false, examinedFiles: files.length };
   }
