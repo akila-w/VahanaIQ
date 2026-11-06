@@ -9227,6 +9227,7 @@ button.ready-shortlist:active { transform: scale(0.98); }
   .answer-card { padding: var(--space-20); gap: var(--space-16); border-radius: var(--radius-dialog); }
   .answer-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); }
   .answer-photo { flex-basis: 100%; height: 120px; }
+  .answer-photo img { max-height: 104px; }
   .answer-ceiling { padding: var(--space-16); }
   button.answer-cta { flex: 1 1 100%; }
 }

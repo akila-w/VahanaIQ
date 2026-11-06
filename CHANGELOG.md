@@ -7,7 +7,7 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ## [Unreleased] - 01/11/2026
 
-Landing introduction and a redesigned guided setup, from the VahanaIQ Redesign canvas. No calculation, threshold, rounding or number format changed. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-6`.
+Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-10`.
 
 ### Added
 - **Settings page (`settings.html`)**: theme, text size, motion, loan defaults, Showroom choices, tips, data download and delete. Numbers and Dates choose the currency label, whole rupees, millions or lakhs, and the date format; these change what is displayed, never a calculation.
