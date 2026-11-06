@@ -7,7 +7,7 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ## [Unreleased] - 01/11/2026
 
-Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-12`.
+Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-13`.
 
 ### Added
 - **Settings page (`settings.html`)**: theme, text size, motion, loan defaults, Showroom choices, tips, data download and delete. Numbers and Dates choose the currency label, whole rupees, millions or lakhs, and the date format; these change what is displayed, never a calculation.
@@ -17,7 +17,7 @@ Landing introduction, a redesigned guided setup and an answer-first Lease page, 
 - **Photo Studio is the administrator's alone**: `studio.html` is an ordinary not-found page unless the signed-in Firebase account matches `ADMIN_UID`. Studio links, photo tools, guided tour, help and policy text no longer appear for anyone else. The check decides what the page shows; the studio's photos stay in that browser and there is no server data behind it.
 - **Landing introduction on the Lease page (`index.html`)**: first-time visitors see what VahanaIQ is before the calculator: a headline, an example rental for a real Showroom car, two belts of Showroom cars with their rentals at the planner's default terms, how it works, and Get Started. The hero runs a slow emerald gradient with a drifting Apex monogram matrix; every animation moves only transform, there is a Pause Animation button, and reduced motion stops it all. `js/boot.js` decides before first paint (`html.landing-pending`), so returning visitors, anyone who finished or dismissed setup, and `?onboarding` links go straight to the calculator; `?welcome` shows the introduction again.
 - **Quick picks in setup**: Compact SUVs, Hybrids and Electric, and Family SUVs add real catalogue cars to the shortlist, which the visitor still reviews.
-- **Answer first on the Lease page**: the chosen car's monthly rental, debt-to-income meter, down payment, amount financed, income needed and the budget ceiling now lead the page. Every figure comes from the rows the comparison already uses. Show Above picks the car, Undo Removal restores a removed one, and an empty shortlist offers the ready-made shortlists.
+- **Answer first on the Lease page**: the chosen car's monthly rental, debt-to-income meter, down payment, amount financed, income needed and the budget ceiling now lead the page. Every figure comes from the rows the comparison already uses. Show Above picks the car, Undo Removal restores a removed one, and an empty shortlist offers the ready-made shortlists. Behind the solid cards, drifting emerald glows and a faint monogram grid move slowly and stop under reduced motion.
 - **Browser checks** for the landing (first visit, dismissal, returning visitors, quick picks, pause and reduced motion) in `test/browser/onboarding.spec.mjs`.
 
 ### Changed
