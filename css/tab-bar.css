@@ -9,4 +9,10 @@
   .site-header nav>a{display:none}
   .toast,body.has-budget-bar .toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
 }
+/* The budget bar only shows up to 640px. It sits on the tabs (57px tall), and the page and toasts clear both. */
+@media screen and (max-width:640px){
+  .budget-bar{bottom:calc(57px + env(safe-area-inset-bottom,0px));padding-bottom:var(--space-10)}
+  body.has-budget-bar{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+  body.has-budget-bar .toast{bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+}
 @media print{.tab-bar{display:none!important}}

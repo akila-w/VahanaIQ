@@ -96,12 +96,14 @@ document.addEventListener("change", event => {
 });
 
 $("defaultRate").addEventListener("change", event => {
-  const rate = Number(event.target.value);
-  if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
+  const entered = event.target.value.trim();
+  const rate = Number(entered);
+  if (entered === "" || !Number.isFinite(rate) || rate < 0 || rate > 100) {
     announce("Enter a rate between 0% and 100%.");
     return;
   }
-  saveLoan("rate", rate);
+  // The planner only restores strings, like the other loan fields.
+  saveLoan("rate", String(rate));
 });
 
 $("exportData").addEventListener("click", () => {

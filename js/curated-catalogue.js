@@ -189,6 +189,8 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
     const downPct = Math.min(100, Math.max(settings.down, minDownFor(offer.condition || 'New', m.financeClass, offer.firstRegisteredOn)));
     const effectiveRate = settings.rateType === 'flat' ? flatToEffective(settings.rate, settings.tenure) : settings.rate;
     const rental = downPct >= 100 ? 0 : calcRental(price * (1 - downPct / 100), effectiveRate, settings.tenure);
+    // As in buildAffordabilityHtml: an unconfirmed price gives an illustration, never a verdict.
+    if (offerEvidenceStatus(offer) !== 'confirmed') return { rental, fit: 'illustrative' };
     if (!settings.income) return { rental, fit: 'na' };
     const dtiPct = (rental + settings.debt + (settings.insurance > 0 ? settings.insurance / 12 : 0)) / settings.income * 100;
     return { rental, fit: dtiPct <= settings.dti * 100 + 1e-9 ? 'ok' : dtiPct <= DTI_STRETCH_PCT ? 'mid' : 'bad' };
@@ -485,7 +487,9 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
     const toggle = $('budgetToggle');
     if (toggle) {
       toggle.setAttribute('aria-pressed', String(budgetOnly && Boolean(settings.income)));
-      toggle.textContent = settings.income ? 'Only Cars Within My Budget' : 'Add Your Income to Filter by Budget';
+      // Rewriting unchanged text mid-click (a search box's blur renders) makes WebKit drop the click.
+      const label = settings.income ? 'Only Cars Within My Budget' : 'Add Your Income to Filter by Budget';
+      if (toggle.textContent !== label) toggle.textContent = label;
     }
   }
 
@@ -506,7 +510,7 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
       const isMarked = Boolean(review.flags[m.id] || review.flags[m.modelId]);
       const inComp = isCarInComparison(m);
       const monthly = monthlyFit(m, low);
-      const rentalHtml = monthly && showroomSettings.rentals !== false ? `<p class="card-rental"><span class="card-rental-value">${money(monthly.rental)} <small>a month</small></span>${monthly.fit === 'na' ? '' : `<span class="card-fit" data-fit="${monthly.fit}">${{ ok: 'Comfortable', mid: 'Stretching', bad: 'Out of reach' }[monthly.fit]}</span>`}</p>` : '';
+      const rentalHtml = monthly && showroomSettings.rentals !== false ? `<p class="card-rental"><span class="card-rental-value">${money(monthly.rental)} <small>a month</small></span>${monthly.fit === 'na' ? '' : `<span class="card-fit" data-fit="${monthly.fit}">${{ ok: 'Comfortable', mid: 'Stretching', bad: 'Out of reach', illustrative: 'Illustrative only · Price unverified' }[monthly.fit]}</span>`}</p>` : '';
       return `<article class="card"><button class="photo-button" data-open="${esc(m.id)}" aria-label="View ${esc(m.name)}">${photo(p,m.name,page === 0 && i === 0)}${mark(m)?`<span class="brand-badge" aria-label="${esc(m.make)}">${mark(m)}</span>`:''}${p.studio && p.origin === "owner-upload" ? '<span class="photo-count">Your Photo</span>' : (m.images.length > 1 ? `<span class="photo-count">${m.images.length} Views</span>` : "")}</button><div class="card-body"><h3>${esc(cardTitle)} <span class="model-year">${esc(m.cardYear)}</span></h3><div class="card-meta"><span><img src="assets/icons/lucide/car.svg" alt="" width="16" height="16" loading="lazy">${esc(m.body)}</span>${fuels.length?`<span><img src="assets/icons/lucide/fuel.svg" alt="" width="16" height="16" loading="lazy">${esc(fuels.join(' / '))}</span>`:''}</div><div class="price-area"><p class="price ${low?'':'quote'}">${low?`${offerCount>1?'From ':''}${money(low.amount)}`:'Price on Request'}</p><p class="price-label">${low?`${esc(kinds[low.kind] || low.kind || '')}${low.year?' · '+esc(low.year):''} · ${esc(classification(low))}`:'Request a Matching Current Quotation'}</p>${low?.kind === 'estimated' ? '<p class="estimate-methodology">Estimated Price based on Sri Lanka Customs Tariff, engine capacity/EV tier &amp; distributor bracket</p>' : ''}</div>${rentalHtml}<div class="sources">${p.sourcePage?`<a href="${safeUrl(p.sourcePage)}" target="_blank" rel="noopener noreferrer" title="${esc(m.make)} · Official Website · Rights Reserved">Photo Source ↗</a>`:p.studio?'<span class="studio-credit">Photo Studio · This Device</span>':''}${low?`<a href="${safeUrl(low.sourceUrl)}" target="_blank" rel="noopener noreferrer">Price Source ↗</a>`:''}</div><div class="card-actions"><button data-open="${esc(m.id)}">${m.offers.length>1?'Compare Purchase Options':'View Details'} <span aria-hidden="true">↗</span></button><button class="flag" data-flag="${esc(m.id)}" aria-label="Mark ${esc(m.name)} for review" aria-pressed="${isMarked}">${isMarked?'✓ Marked':'Mark for Review'}</button><button class="compare-btn" data-compare="${esc(m.id)}" aria-label="Add ${esc(m.name)} to comparison" aria-pressed="${inComp}">${inComp?'✓ In Comparison':'Add to Comparison'}</button></div></div></article>`;
     }).join('') || '<div class="empty"><h3>No Vehicles Found</h3><p>Try a different search or reset the filters.</p></div>';
     $('pageCount').textContent = `${all.length?page+1:0} / ${Math.ceil(all.length/size)}`;

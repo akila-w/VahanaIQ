@@ -471,3 +471,119 @@ test.describe('Number choices and phone tabs', () => {
     await context.close();
   });
 });
+
+// Findings from the review of PR 51, 06/11/2026
+test.describe('Showroom verdicts need a confirmed price', () => {
+  const cards = page => page.locator('#vehicles .card');
+  const fit = page => cards(page).first().locator('.card-fit');
+  const search = async (page, text) => { await page.fill('#search', text); await expect(cards(page).first().or(page.locator('#resultCount', { hasText: /^0 /}))).toBeVisible(); };
+
+  test('a disputed or unverified price gets no verdict and stays out of the budget filter', async ({ page }) => {
+    await page.goto(`${BASE_URL}/catalogue.html`);
+    await page.evaluate(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '1000000' })));
+    await page.reload();
+
+    // The representative offer: the A3's only price comes from a page about another model.
+    await search(page, 'Audi A3');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'illustrative');
+    await expect(fit(page)).toHaveText('Illustrative only · Price unverified');
+    await expect(cards(page).first().locator('.card-rental-value')).toContainText('a month');
+
+    // A confirmed price keeps its verdict, so the check is on the evidence and not the card.
+    await search(page, 'Raize');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'ok');
+    await expect(fit(page)).toHaveText('Comfortable');
+
+    await page.locator('#budgetToggle').click();
+    await expect(fit(page)).toHaveAttribute('data-fit', 'ok');
+    await page.fill('#search', 'Audi A3');
+    await expect(cards(page)).toHaveCount(0);
+
+    // An offer chosen by the price filter: Estimated Prices are never confirmed.
+    await page.fill('#search', '');
+    await page.selectOption('#priceType', 'estimated');
+    await expect(cards(page)).toHaveCount(0);
+    await page.locator('#budgetToggle').click();
+    await expect(cards(page).first()).toBeVisible();
+    await expect(page.locator('#vehicles .card-fit:not([data-fit="illustrative"])')).toHaveCount(0);
+
+    // The fallback when the filter leaves no offer: Price on Request has nothing to judge.
+    await page.selectOption('#priceType', 'quote');
+    await page.locator('#budgetToggle').click();
+    await expect(cards(page)).toHaveCount(0);
+  });
+
+  test('an unconfirmed rental is marked illustrative before any income is entered', async ({ page }) => {
+    await page.goto(`${BASE_URL}/catalogue.html`);
+    await search(page, 'Audi A3');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'illustrative');
+    await search(page, 'Raize');
+    await expect(fit(page)).toHaveCount(0);
+  });
+});
+
+test('loan defaults chosen in Settings reach the planner and the Showroom', async ({ page }) => {
+  await page.goto(`${BASE_URL}/settings.html`);
+  await page.fill('#defaultRate', '12.5');
+  await page.locator('#defaultRate').blur();
+  for (const [name, value] of [['rateType', 'flat'], ['tenure', '60'], ['down', '70'], ['dti', '0.5']]) {
+    await page.locator(`input[name="${name}"][value="${value}"]`).check({ force: true });
+  }
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1')));
+  const inputs = await stored();
+  for (const name of ['rate', 'rateType', 'tenure', 'down', 'dti']) expect(typeof inputs[name], name).toBe('string');
+
+  // A blank box is not a rate of 0%.
+  await page.fill('#defaultRate', '');
+  await page.locator('#defaultRate').blur();
+  expect((await stored()).rate).toBe('12.5');
+
+  await page.goto(`${BASE_URL}/index.html`);
+  await expect(page.locator('#rate')).toHaveValue('12.5');
+  await expect(page.locator('#tenure')).toHaveValue('60');
+  await expect(page.locator('#down')).toHaveValue('70');
+  await expect(page.locator('#dti')).toHaveValue('0.5');
+  await expect(page.locator('#rateType')).toHaveValue('flat');
+
+  await page.goto(`${BASE_URL}/catalogue.html`);
+  await expect(page.locator('#termsText')).toContainText('12.5%');
+  await expect(page.locator('#termsText')).toContainText('60 months · 70% down');
+});
+
+test.describe('The budget bar on phones', () => {
+  for (const [width, height] of [[320, 568], [390, 844]]) {
+    test(`sits above the tabs at ${width}px and hides nothing`, async ({ browser, browserName }) => {
+      const context = await browser.newContext(phone(browserName, { width, height }));
+      await seedReturning(context);
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/index.html`);
+      await page.evaluate(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '500000' })));
+      await page.reload();
+      const toEnd = () => page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+      await toEnd();
+      await expect(page.locator('#budgetBar')).toBeVisible();
+      await expect(page.locator('#budgetBar')).toContainText('Max rental');
+
+      // The bar's arrival makes the page longer, so go to the new end before measuring.
+      await expect.poll(async () => { await toEnd(); return page.evaluate(() => document.querySelector('footer.foot').getBoundingClientRect().bottom <= document.querySelector('#budgetBar').getBoundingClientRect().top + 0.5); }, { message: 'the end of the page clears the bar' }).toBe(true);
+      await expect.poll(() => page.evaluate(() => {
+        const bar = document.querySelector('#budgetBar').getBoundingClientRect();
+        return document.querySelector('.tab-bar').getBoundingClientRect().top - bar.bottom;
+      })).toBeGreaterThanOrEqual(-0.5);
+      const box = await page.evaluate(() => {
+        const bar = document.querySelector('#budgetBar').getBoundingClientRect();
+        return {
+          barTop: bar.top,
+          view: window.innerHeight,
+          toastBottom: parseFloat(getComputedStyle(document.querySelector('.toast')).bottom)
+        };
+      });
+      expect(box.toastBottom, 'a toast clears the bar').toBeGreaterThanOrEqual(box.view - box.barTop);
+
+      const tabs = page.locator('.tab-bar a');
+      await expect(tabs).toHaveCount(3);
+      for (let i = 0; i < 3; i++) await tabs.nth(i).click({ trial: true, timeout: 3000 });
+      await context.close();
+    });
+  }
+});
