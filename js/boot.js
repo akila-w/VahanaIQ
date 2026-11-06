@@ -4,6 +4,13 @@ try {
   var theme = localStorage.getItem("vahanaiq_theme");
   if (theme === "light" || theme === "dark") document.documentElement.setAttribute("data-theme", theme);
 } catch (e) {}
+// Text size, motion and tips from settings.html
+try {
+  var saved = JSON.parse(localStorage.getItem("vahanaiq_settings_v1")) || {};
+  if (saved.text === "large" || saved.text === "larger") document.documentElement.dataset.text = saved.text;
+  if (saved.motion === "full" || saved.motion === "reduced") document.documentElement.dataset.motion = saved.motion;
+  if (saved.tips === false) document.documentElement.dataset.tips = "off";
+} catch (e) {}
 try {
   var now = Date.now() / 1000;
   var rootStyle = document.documentElement.style;

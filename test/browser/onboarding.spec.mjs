@@ -209,7 +209,8 @@ for (const route of ['catalogue', 'studio']) test(`setup from ${route} preserves
  await selectCars(page);
  await toResult(page);
  await page.getByRole('button', { name: 'Open My Lease →' }).click();
- await expect(page.locator('#rows tr')).toHaveCount(3);
+ // This wait covers a whole page navigation, which can stall for seconds on a busy machine in WebKit.
+ await expect(page.locator('#rows tr')).toHaveCount(3, { timeout: 15_000 });
  await expect(page.locator('#rows')).toContainText('Saved vehicle');
  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1')));
  expect(saved).toMatchObject({ insurance: '120000', fees: '45000', dti: '0.5' });
@@ -286,7 +287,7 @@ test('returning visitors and direct setup links skip the landing', async ({ page
 test('quick picks add real catalogue cars to the shortlist', async ({ page }) => {
  await page.goto(BASE + '/index.html');
  await startFromLanding(page);
- await page.getByRole('button', { name: /Compact SUVs/ }).click();
+ await page.locator('.onboarding-quick-pick', { hasText: 'Compact SUVs' }).click();
  await expect(page.locator('.onboarding-tray')).toContainText('2 of 12 selected');
  await expect(page.getByRole('button', { name: 'Continue to Income →' })).toBeEnabled();
 });

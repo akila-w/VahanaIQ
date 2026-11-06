@@ -439,3 +439,226 @@ test.describe('Motion', () => {
     expect(after).not.toBe(before);
   });
 });
+
+test.describe('Answer first', () => {
+  test('a ready-made shortlist fills the card, and Show Above and Undo Removal keep it true', async ({ page }) => {
+    await page.goto(`${BASE_URL}/index.html`);
+    await page.locator('#readyShortlists button', { hasText: 'Compact SUVs' }).click();
+    await expect(page.locator('#rows tr')).toHaveCount(2);
+    await expect(page.locator('#answerName')).toContainText('Suzuki Fronx');
+
+    const raize = page.locator('#rows tr', { hasText: 'Toyota Raize' });
+    const rental = (await raize.locator('.v-rent').innerText()).trim();
+    await raize.locator('[data-act="focus"]').click();
+    await expect(page.locator('#answerName')).toContainText('Toyota Raize');
+    await expect(raize.locator('[data-act="focus"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#answerRental')).toHaveText(/^LKR [\d,]+\.\d\d$/);
+    await expect(page.locator('#answerRentalText')).toContainText(rental);
+
+    await page.fill('#income', '350000');
+    await page.locator('#income').dispatchEvent('change');
+    await expect(page.locator('#answerDti')).toHaveText(/^\d+\.\d%$/);
+    await expect(page.locator('#answerStatusText')).toHaveText(/Comfortable|Stretching|Out of reach/);
+    await expect(page.locator('#answerCeiling')).toContainText('Vehicles up to LKR');
+
+    await raize.locator('[data-act="remove"]').click();
+    await expect(page.locator('#undoText')).toContainText('Toyota Raize');
+    await expect(page.locator('#answerName')).toContainText('Suzuki Fronx');
+    await expect(page.locator('#undoRemovalBtn')).toBeFocused();
+    await page.locator('#undoRemovalBtn').click();
+    await expect(page.locator('#rows tr')).toHaveCount(2);
+    await expect(page.locator('#undoBar')).toBeHidden();
+    await expect(page.locator('#answerName')).toContainText('Toyota Raize');
+  });
+});
+
+test.describe('Showroom and Settings', () => {
+  test('cards show the rental on saved terms, and the budget toggle and brand strip filter', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '350000', rate: '16', tenure: '84', down: '60', dti: '0.4' })));
+    await page.goto(`${BASE_URL}/catalogue.html`);
+    await expect(page.locator('#termsText')).toContainText('16% · 84 months · 60% down');
+    await expect(page.locator('.card-rental').first()).toContainText('a month');
+    const count = async () => parseInt(await page.locator('#resultCount').innerText(), 10);
+    await expect.poll(count).toBeGreaterThan(0);
+    const all = await count();
+    await page.locator('#budgetToggle').click();
+    await expect(page.locator('#budgetToggle')).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(count).toBeLessThan(all);
+    await expect(page.locator('.card-fit[data-fit="bad"]')).toHaveCount(0);
+    await page.locator('#budgetToggle').click();
+    const chip = page.locator('.brand-strip-group:first-child .brand-chip', { hasText: 'Toyota' });
+    await chip.focus();
+    await chip.press('Enter');
+    await expect(chip).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#make')).toHaveValue('Toyota');
+  });
+
+  test('settings apply at once, survive reload, and delete keeps nothing but the sign-in', async ({ page }) => {
+    await page.goto(`${BASE_URL}/settings.html`);
+    await page.getByText('Dark', { exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.locator('input[name="motion"][value="reduced"] + span').click();
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
+    await page.locator('input[name="tenure"][value="60"] + span').click();
+    await page.locator('#hideEstimated').check();
+    await page.reload();
+    await expect(page.locator('input[name="tenure"][value="60"]')).toBeChecked();
+    await expect(page.locator('#hideEstimated')).toBeChecked();
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
+    const download = page.waitForEvent('download');
+    await page.locator('#exportData').click();
+    expect((await download).suggestedFilename()).toBe('vahanaiq-data.json');
+    await page.locator('#askDelete').click();
+    await expect(page.locator('#keepData')).toBeFocused();
+    await page.locator('#deleteData').click();
+    await expect(page.locator('#settingsSaved')).toContainText('deleted');
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
+    expect(await page.evaluate(() => localStorage.getItem('vahanaiq_settings_v1'))).toBeNull();
+  });
+});
+
+test.describe('Number choices and phone tabs', () => {
+  test('choices change what is displayed, not the amount worked out', async ({ page }) => {
+    await page.goto(`${BASE_URL}/index.html`);
+    await page.locator('#readyShortlists button').first().click();
+    await expect(page.locator('#answerRental')).toHaveText(/^LKR [\d,]+\.\d\d$/);
+    await page.evaluate(() => localStorage.setItem('vahanaiq_settings_v1', JSON.stringify({ currency: 'rs', cents: 'no', large: 'lakhs' })));
+    await page.reload();
+    await expect(page.locator('#answerRental')).toHaveText(/^Rs\. [\d,]+$/);
+    await expect(page.locator('#answerDown')).toContainText('lakhs');
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_comparison_v3')).cars[0].price);
+    expect(Number.isFinite(stored) && stored > 1e6).toBe(true);
+  });
+
+  test('phones get bottom tabs, wider screens do not', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    for (const [file, tab] of [['index.html', 'Lease'], ['catalogue.html', 'Showroom'], ['settings.html', 'Settings']]) {
+      await page.goto(`${BASE_URL}/${file}`);
+      await expect(page.locator('.tab-bar a[aria-current="page"]')).toHaveText(tab);
+      expect(await pageWidth(page)).toBeLessThanOrEqual(390);
+    }
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page.locator('.tab-bar')).toBeHidden();
+    await context.close();
+  });
+});
+
+// Findings from the review of PR 51, 06/11/2026
+test.describe('Showroom verdicts need a confirmed price', () => {
+  const cards = page => page.locator('#vehicles .card');
+  const fit = page => cards(page).first().locator('.card-fit');
+  const search = async (page, text) => { await page.fill('#search', text); await expect(cards(page).first().or(page.locator('#resultCount', { hasText: /^0 /}))).toBeVisible(); };
+
+  test('a disputed or unverified price gets no verdict and stays out of the budget filter', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '1000000' })));
+    await page.goto(`${BASE_URL}/catalogue.html`);
+
+    // The representative offer: the A3's only price comes from a page about another model.
+    await search(page, 'Audi A3');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'illustrative');
+    await expect(fit(page)).toHaveText('Illustrative only · Price unverified');
+    await expect(cards(page).first().locator('.card-rental-value')).toContainText('a month');
+
+    // A confirmed price keeps its verdict, so the check is on the evidence and not the card.
+    await search(page, 'Raize');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'ok');
+    await expect(fit(page)).toHaveText('Comfortable');
+
+    await page.locator('#budgetToggle').click();
+    await expect(fit(page)).toHaveAttribute('data-fit', 'ok');
+    await page.fill('#search', 'Audi A3');
+    await expect(cards(page)).toHaveCount(0);
+
+    // An offer chosen by the price filter: Estimated Prices are never confirmed.
+    await page.fill('#search', '');
+    await page.selectOption('#priceType', 'estimated');
+    await expect(cards(page)).toHaveCount(0);
+    await page.locator('#budgetToggle').click();
+    await expect(cards(page).first()).toBeVisible();
+    await expect(page.locator('#vehicles .card-fit:not([data-fit="illustrative"])')).toHaveCount(0);
+
+    // The fallback when the filter leaves no offer: Price on Request has nothing to judge.
+    await page.selectOption('#priceType', 'quote');
+    await page.locator('#budgetToggle').click();
+    await expect(cards(page)).toHaveCount(0);
+  });
+
+  test('an unconfirmed rental is marked illustrative before any income is entered', async ({ page }) => {
+    await page.goto(`${BASE_URL}/catalogue.html`);
+    await search(page, 'Audi A3');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'illustrative');
+    await search(page, 'Raize');
+    await expect(fit(page)).toHaveCount(0);
+  });
+});
+
+test('loan defaults chosen in Settings reach the planner and the Showroom', async ({ page }) => {
+  await page.goto(`${BASE_URL}/settings.html`);
+  await page.fill('#defaultRate', '12.5');
+  await page.locator('#defaultRate').blur();
+  for (const [name, value] of [['rateType', 'flat'], ['tenure', '60'], ['down', '70'], ['dti', '0.5']]) {
+    await page.locator(`input[name="${name}"][value="${value}"]`).check({ force: true });
+  }
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1')));
+  const inputs = await stored();
+  for (const name of ['rate', 'rateType', 'tenure', 'down', 'dti']) expect(typeof inputs[name], name).toBe('string');
+
+  // A blank box is not a rate of 0%.
+  await page.fill('#defaultRate', '');
+  await page.locator('#defaultRate').blur();
+  expect((await stored()).rate).toBe('12.5');
+
+  await page.goto(`${BASE_URL}/index.html`);
+  await expect(page.locator('#rate')).toHaveValue('12.5');
+  await expect(page.locator('#tenure')).toHaveValue('60');
+  await expect(page.locator('#down')).toHaveValue('70');
+  await expect(page.locator('#dti')).toHaveValue('0.5');
+  await expect(page.locator('#rateType')).toHaveValue('flat');
+
+  await page.goto(`${BASE_URL}/catalogue.html`);
+  await expect(page.locator('#termsText')).toContainText('12.5%');
+  await expect(page.locator('#termsText')).toContainText('60 months · 70% down');
+});
+
+test.describe('The budget bar on phones', () => {
+  for (const [width, height] of [[320, 568], [390, 844]]) {
+    test(`sits above the tabs at ${width}px and hides nothing`, async ({ browser, browserName }) => {
+      const context = await browser.newContext(phone(browserName, { width, height }));
+      await seedReturning(context);
+      // Seed before any page script runs: written after the page has rendered, the income is
+      // overwritten when that render's autosave fires, so the bar has nothing to show.
+      await context.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '500000' })));
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/index.html`);
+      await expect(page.locator('#budgetBar')).toContainText('Max rental');
+      const toEnd = () => page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+
+      // The page can still grow as it loads, so keep going until the budget panel has really left the screen.
+      await expect.poll(async () => { await toEnd(); return page.evaluate(() => document.querySelector('#budgetPanel').getBoundingClientRect().bottom <= 0); }, { message: 'the budget panel has scrolled out of view' }).toBe(true);
+      await expect(page.locator('#budgetBar')).toBeVisible();
+
+      // The bar's arrival makes the page longer, so go to the new end before measuring.
+      await expect.poll(async () => { await toEnd(); return page.evaluate(() => document.querySelector('footer.foot').getBoundingClientRect().bottom <= document.querySelector('#budgetBar').getBoundingClientRect().top + 0.5); }, { message: 'the end of the page clears the bar' }).toBe(true);
+      await expect.poll(() => page.evaluate(() => {
+        const bar = document.querySelector('#budgetBar').getBoundingClientRect();
+        return document.querySelector('.tab-bar').getBoundingClientRect().top - bar.bottom;
+      })).toBeGreaterThanOrEqual(-0.5);
+      const box = await page.evaluate(() => {
+        const bar = document.querySelector('#budgetBar').getBoundingClientRect();
+        return {
+          barTop: bar.top,
+          view: window.innerHeight,
+          toastBottom: parseFloat(getComputedStyle(document.querySelector('.toast')).bottom)
+        };
+      });
+      expect(box.toastBottom, 'a toast clears the bar').toBeGreaterThanOrEqual(box.view - box.barTop);
+
+      const tabs = page.locator('.tab-bar a');
+      await expect(tabs).toHaveCount(3);
+      for (let i = 0; i < 3; i++) await tabs.nth(i).click({ trial: true, timeout: 3000 });
+      await context.close();
+    });
+  }
+});

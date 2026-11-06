@@ -44,7 +44,7 @@ export async function confirmAdmin() {
 // It is never part of a page's own markup, so visitors' pages carry no trace of it.
 export function renderAdminLinks(doc = document) {
   const admin = isAdminHint();
-  for (const nav of doc.querySelectorAll('nav[aria-label="Main"], nav[aria-label="Explore"]')) {
+  for (const nav of doc.querySelectorAll('nav[aria-label="Main"], nav[aria-label="Explore"], nav[aria-label="Tabs"]')) {
     const existing = nav.querySelector("a[data-admin-link]");
     if (!admin) { existing?.remove(); continue; }
     if (existing) continue;
