@@ -288,8 +288,10 @@ test('relative links and assets work under a GitHub Pages project path', async (
   await page.goto(`${BASE}/VahanaIQ/about.html`);
   await page.locator('#helpCentreButton').click();
   await page.getByRole('link', { name: 'Catalogue tour', exact: true }).click();
-  // The address clears when the page's modules run. Every file here is fulfilled through
-  // the route, which is slow in WebKit, so this needs more than the default 5 seconds.
+  // The address clears when the page's modules run, so this waits on catalogue start-up, which
+  // the default 5 seconds is too tight for in WebKit. Routing is not the cause: routed and direct
+  // loads match (PR 58). Still unexplained: this test's median rose from 3.0s on the Ubuntu 24.04
+  // image to 6.4s on 26.04, and this test would no longer notice a slowdown under 15 seconds.
   await expect(page).toHaveURL(`${BASE}/VahanaIQ/catalogue.html`, { timeout: 15_000 });
   await expect(page.locator('#guidedTour')).toBeVisible();
   await page.unrouteAll({ behavior: 'wait' });
