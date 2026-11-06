@@ -288,7 +288,9 @@ test('relative links and assets work under a GitHub Pages project path', async (
   await page.goto(`${BASE}/VahanaIQ/about.html`);
   await page.locator('#helpCentreButton').click();
   await page.getByRole('link', { name: 'Catalogue tour', exact: true }).click();
-  await expect(page).toHaveURL(`${BASE}/VahanaIQ/catalogue.html`);
+  // The address clears when the page's modules run. Every file here is fulfilled through
+  // the route, which is slow in WebKit, so this needs more than the default 5 seconds.
+  await expect(page).toHaveURL(`${BASE}/VahanaIQ/catalogue.html`, { timeout: 15_000 });
   await expect(page.locator('#guidedTour')).toBeVisible();
   await page.unrouteAll({ behavior: 'wait' });
 });
