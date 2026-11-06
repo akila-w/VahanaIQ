@@ -175,8 +175,9 @@ vahanaiq/
 
 ## Catalogue Photo Studio
 
-The Photo Studio (`studio.html`) is where the catalogue's pictures are arranged by hand. Serve the site over HTTP (`python3 -m http.server 8000` or `node test/serve-qa-fixtures.mjs`), open it from the
-catalogue's header (**Photo Studio**) or its footer, pick an entry, and:
+The Photo Studio (`studio.html`) is where the catalogue's pictures are arranged by hand. Serve the site over HTTP (`python3 -m http.server 8000` or `node test/serve-qa-fixtures.mjs`), sign in with
+the administrator's Google account (`ADMIN_UID` in `js/config.js`), open **Studio** from the header or footer,
+pick an entry, and:
 
 - **Add photos** with the *Add Photos* button (any number at once), by dragging files onto the strip,
   or by pasting a screenshot with ⌘V/Ctrl+V. A file must be an image and no larger than 12 MB, and an
@@ -193,6 +194,12 @@ device; a photo is not sent to the AI service or synced to an account. **Undo My
 entry's published photos, and the export dialog's *Remove all studio photos* clears the browser's copy.
 The catalogue page applies the saved photos as it loads, marks the card **Your Photo** and hides the
 manufacturer source link for uploaded photos, which have no published origin.
+
+Everyone else gets an ordinary not-found page at `studio.html` and no link to it (`js/admin.js`,
+`js/studio-page.js`). This decides what the page shows, not who may read a secret: the studio's code is in
+this public repository and its photos stay in the administrator's browser, so there is no server data
+behind the check. Should anything of the studio's ever write to Firestore, `firestore.rules` must check the
+same UID.
 
 ### Publishing a studio change
 

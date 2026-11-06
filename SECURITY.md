@@ -44,7 +44,7 @@ issue. If you are unsure whether something is sensitive, use private reporting.
    - Actuarial helpers in `js/calculator.js` guard `rental()` against division by zero, clamp `getSettings()` inputs, and cap `yearlySchedule()` at 600 months.
 
 4. **Storage & Device Boundary**
-   - Photo Studio uploads (`vahanaiq_catalogue_photos` in IndexedDB, up to 12 MB per file and 12 photos per entry) stay on the device and are never uploaded to the proxy or Firebase.
+   - Photo Studio uploads (`vahanaiq_catalogue_photos` in IndexedDB, up to 12 MB per file and 12 photos per entry) stay on the device and are never uploaded to the proxy or Firebase. `studio.html` shows them only to the Firebase account in `ADMIN_UID` (`js/config.js`, `js/admin.js`). That check is a client-side visibility rule for a static site, not access control: with Firebase unreachable it trusts the sign-in record in the browser so the studio still opens offline, and it guards no server data.
    - Cloud sync (`firestore.rules` and `js/account.js`) restricts `users/{uid}` to the authenticated owner (`request.auth.uid == uid`) and whitelists fields (`version`, `data`, `updatedAt`). Because `firestore.rules` CEL `request.resource.data.data.size() <= 900000` counts characters rather than UTF-8 bytes, `js/account.js` enforces a stricter `700,000`-byte UTF-8 budget via `TextEncoder` before uploading and surfaces sync errors in the UI.
 
 5. **Catalogue price publication & governance**
