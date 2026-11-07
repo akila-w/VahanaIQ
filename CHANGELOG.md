@@ -12,6 +12,7 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-15`.
 
 ### Added
+- **Photo removal requests**: Terms & Notices now tells photo owners how to ask for a photo to be removed or credited differently.
 - **Hero result card**: the landing page shows the answer VahanaIQ gives on round example figures (a LKR 12,000,000 car and LKR 350,000 take-home pay), with the rental counting up and the debt-to-income bar filling. It replaces the photo of one car, so no vehicle is singled out.
 - **Information pages**: a shared header, a side list and a reading column. How Rentals Are Worked Out and Prices and Sources are now their own pages, `rentals.html` and `prices.html`, with their wording unchanged.
 - **Settings**: a section list, a live preview that works out a real rental from the choices made, and a sync row that opens the account dialog.
