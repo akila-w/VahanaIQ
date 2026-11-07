@@ -319,43 +319,77 @@ test.describe('Phone journeys', () => {
     await context.close();
   });
 
-  test('Photo Studio: saving one entry keeps another entry\'s waiting save, and a reset stays reset', async ({ browser }) => {
-    // This test reloads, and a worker's requests would pass blockFirebase
+  // These reload, and a worker's requests would pass blockFirebase. Each change and the action racing it
+  // run in one task, so the action always lands inside the change's 400ms wait.
+  const openStudioToSave = async (browser, setup) => {
     const context = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
     await seedReturning(context);
     await blockFirebase(context);
     const page = await context.newPage();
+    if (setup) await page.addInitScript(setup);
     await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
     await expect(page.locator('#frameStatus')).not.toBeEmpty();
-    const changeZoom = () => {
-      const range = document.getElementById('zoomRange');
-      range.value = String(Number(range.value) + 0.5);
-      range.dispatchEvent(new Event('input', { bubbles: true }));
+    return { context, page };
+  };
+  const inOneTask = (page, steps) => page.evaluate(list => {
+    const actions = {
+      zoom: () => { const range = document.getElementById('zoomRange'); range.value = String(Number(range.value) + 0.5); range.dispatchEvent(new Event('input', { bubbles: true })); },
+      otherEntry: () => document.querySelectorAll('#modelList [data-model]')[2].click(),
+      save: () => document.getElementById('saveFrameBtn').click(),
+      reset: () => document.getElementById('resetModelBtn').click()
     };
-    // All in one task, so Save Frame always lands inside the first entry's 400ms wait
-    await page.evaluate(change => {
-      eval(`(${change})`)();
-      document.querySelectorAll('#modelList [data-model]')[2].click();
-      document.getElementById('saveFrameBtn').click();
-    }, changeZoom.toString());
-    await page.waitForTimeout(800);
-    await page.reload({ waitUntil: 'load' });
-    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
-
-    // A reset straight after a change must not be undone by that change's waiting save
-    await page.locator('#modelList [data-model]').first().click();
-    await expect(page.locator('#resetModelBtn')).toBeVisible();
-    page.once('dialog', dialog => dialog.accept());
-    await page.evaluate(change => {
-      eval(`(${change})`)();
-      document.getElementById('resetModelBtn').click();
-    }, changeZoom.toString());
-    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    for (const step of list) actions[step]();
+  }, steps);
+  const reloadAfterSaves = async page => {
     await page.waitForTimeout(800);
     await page.reload({ waitUntil: 'load' });
     await expect(page.locator('#frameStatus')).not.toBeEmpty();
     await page.waitForTimeout(500);
+  };
+
+  test('Photo Studio: Save Frame on one entry keeps another entry\'s waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom', 'otherEntry', 'save']);
+    // The second entry has no changes of its own, so this is also the Nothing to save path
+    await expect(page.locator('#toast')).toContainText('Nothing to save');
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
+    await context.close();
+  });
+
+  test('Photo Studio: changing a second entry keeps the first entry\'s waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom', 'otherEntry', 'zoom']);
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 2');
+    await context.close();
+  });
+
+  test('Photo Studio: a waiting save does not undo a reset', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom']);
+    await expect(page.locator('#resetModelBtn')).toBeVisible();
+    await page.waitForTimeout(800);
+    page.once('dialog', dialog => dialog.accept());
+    await inOneTask(page, ['zoom', 'reset']);
     await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await context.close();
+  });
+
+  test('Photo Studio: a failed write says so, from Save Frame and from a waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser, () => {
+      IDBObjectStore.prototype.put = () => { throw new Error('Storage is full'); };
+    });
+    await inOneTask(page, ['zoom', 'save']);
+    await expect(page.locator('#toast')).toContainText('could not save the frame');
+    await expect(page.locator('#storageNote')).toHaveClass(/is-alert/);
+    await page.reload({ waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await expect(page.locator('#storageNote')).not.toHaveClass(/is-alert/);
+    await inOneTask(page, ['zoom']);
+    await expect(page.locator('#storageNote')).toHaveClass(/is-alert/);
     await context.close();
   });
 
