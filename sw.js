@@ -107,9 +107,12 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
+  const say = message => new BroadcastChannel("probe").postMessage(message);
+  say("started");
   event.waitUntil(caches.keys()
     .then(keys => Promise.all(keys.filter(k => k.startsWith("vahanaiq-") && k !== CACHE).map(k => caches.delete(k))))
-    .then(() => self.clients.claim()));
+    .then(() => { say("cleaned"); return self.clients.claim(); })
+    .then(() => say("claimed"), error => { say("claim-failed " + error); throw error; }));
 });
 
 self.addEventListener("fetch", event => {
