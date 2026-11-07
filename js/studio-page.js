@@ -34,6 +34,13 @@ const admin = await confirmAdmin();
 if (admin) showStudio();
 document.documentElement.classList.remove("account-pending");
 if (admin) {
-  await import("./catalogue-data.js?v=2.12.0");
-  await Promise.all([import("./catalogue-studio.js?v=2.12.0"), import("./onboarding.js?v=2.12.0")]);
+  try {
+    await import("./catalogue-data.js?v=2.12.0");
+    await Promise.all([import("./catalogue-studio.js?v=2.12.0"), import("./onboarding.js?v=2.12.0")]);
+  } catch {
+    // Leaving the page cancels these too; then nobody sees this and nothing has gone wrong.
+    const status = $("modelCount");
+    status.classList.add("is-alert");
+    status.textContent = "The Photo Studio could not load. Reload the page to try again.";
+  }
 }

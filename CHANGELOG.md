@@ -25,6 +25,11 @@ Landing introduction, a redesigned guided setup and an answer-first Lease page, 
 - **Browser checks** for the landing (first visit, dismissal, returning visitors, quick picks, pause and reduced motion) in `test/browser/onboarding.spec.mjs`.
 
 ### Changed
+- **Phone tabs**: the bottom bar is about 10px shorter and uses less of the space above the home indicator, with tap targets still at least 44px.
+- **Showroom on phones**: the first car now starts in the first screen. The introduction, the edition and the counts step aside, and the filters open from a Filters button that shows how many are set.
+- **Lease Planner on phones**: a shorter heading brings the monthly rental near the top of the screen, the comparison tools fit in two rows, and Show Full Columns no longer appears.
+- **Car details**: a car with one photo no longer shows photo controls.
+- **Information pages on phones**: the current page comes first in the page list.
 - **Planner layout**: Loan Terms and a new Your Income card sit beside the answer. Flat rates, presets, insurance, fees and the valuation structure moved under Advanced, the gauge and cash flow under Full Budget Breakdown, and filters behind Filters & Sort. No control was removed and no sum changed.
 - **Phone header**: the brand and Guided Setup only. The theme and sign-in are in Settings, and Print is hidden on phones.
 - **After guided setup**: the planner opens at the top with the rental, not partway down at the shortlist.
@@ -36,6 +41,10 @@ Landing introduction, a redesigned guided setup and an answer-first Lease page, 
 - **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
 
 ### Fixed
+- **Photo Studio**: if its scripts cannot load, the page says so and offers a reload. Leaving the page while they load no longer raises an error.
+- **Phone status bar**: on phones the strip behind the status bar and Dynamic Island takes the page's tint and the page fades from it, so the background reaches the top of the screen on every page, in Guided Setup and in the car details. Settings now allows the page to reach the screen edges too.
+- **Showroom brands**: on phones the logos sit in a row you swipe, because the moving strip showed blank in Safari on the iPhone simulator. Brand logos sit on white, so dark logos stay readable in dark mode.
+- **Phone wording that was cut off**: shorter search hints in the Showroom and Guided Setup, and the Showroom filter labels fit on the narrowest phones.
 - **One name for each thing**: the site now says Lease Planner, Showroom, Comparison and Terms & Notices everywhere, in menus, buttons, messages and Help Centre. File names and addresses such as `catalogue.html` are unchanged, so existing links still work.
 - **Prices on the landing belt and in guided setup** now use the site's own price rule (confirmed evidence first, then the lowest amount), as the Showroom and ready-made shortlists already did. The calculation is unchanged, but some shown figures move: Toyota Raize LKR 12,500,000 and Suzuki Fronx LKR 11,350,000. The first trim offered, in setup and in Add a Vehicle, follows the same rule, and the Settings preview now uses the Raize's price.
 - **Logo**: on every page it opens the landing page.

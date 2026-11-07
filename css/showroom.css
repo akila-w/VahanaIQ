@@ -4,7 +4,7 @@
 .brand-strip-track{display:flex;width:max-content;animation:brand-strip-scroll 70s linear infinite}
 .brand-strip-view:hover .brand-strip-track,.brand-strip-view:focus-within .brand-strip-track,.brand-strip.is-paused .brand-strip-track{animation-play-state:paused}
 .brand-strip-group{display:flex;gap:8px;padding-right:8px;flex:none}
-.brand-chip{min-width:104px;min-height:64px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);font:600 12px/1.2 inherit;cursor:pointer}
+.brand-chip{min-width:104px;min-height:64px;padding:8px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#142a25;font:600 12px/1.2 inherit;cursor:pointer}
 .brand-chip img{display:block;width:72px;height:26px;object-fit:contain}
 .brand-chip:hover{border-color:var(--accent)}
 .brand-chip[aria-pressed="true"]{border:2px solid var(--accent);padding:7px 11px}
@@ -43,3 +43,58 @@
 .compare-link strong{display:flex;align-items:center;min-height:36px;padding:0 14px;border-radius:10px;background:var(--btn-bg,#103e36);color:var(--btn-fg,#fff)}
 @media (max-width:640px){.compare-link{position:static;transform:none;justify-content:space-between;margin:0 0 12px;white-space:normal;box-shadow:none}}
 @media print{.compare-link{display:none!important}}
+
+/* Phones: the first car on the first screen. The heading stays, the counts repeat the results line, and the
+   filters wait behind one button. */
+.filter-toggle{display:none}
+.gallery-controls[hidden]{display:none}
+@media screen and (max-width:600px){
+  main .hero{display:block;padding:12px 0 8px;margin:0}
+  main .hero .eyebrow,main .hero .intro,main .hero-aside{display:none!important}
+  main .hero h1{margin:0;font-size:23px;line-height:1.15}
+  .brand-chip{min-width:84px;min-height:44px;padding:4px 8px}
+  .brand-chip[aria-pressed="true"]{padding:3px 7px}
+  .brand-chip img{width:60px;height:20px}
+  .brand-chip{position:relative}
+  .brand-chip span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  /* A row to swipe, not a moving strip: Safari draws nothing while a layer this wide is moving. */
+  .brand-strip{margin:0 0 8px}
+  .brand-strip-track{animation:none;width:auto}
+  .brand-strip-view{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;mask-image:none;-webkit-mask-image:none}
+  .brand-strip-view::-webkit-scrollbar{display:none}
+  .brand-strip-group[aria-hidden="true"],.brand-strip-foot{display:none}
+  .brand-strip-group{padding-right:0}
+  main .filters{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;padding:4px 8px 4px 12px;margin:0 0 8px}
+  main .filters .search-field{flex:1 1 0;min-width:0;padding:0;border:0;margin:0}
+  main .filters .search-field input{min-width:0;min-height:44px;font-size:16px}
+  .filter-toggle{display:inline-flex;align-items:center;flex:none;min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:var(--radius-control);background:var(--panel);color:var(--ink);font:600 13px var(--font-sans)}
+  .filter-toggle:hover,.filter-toggle:active{background:var(--panel)}
+  .filter-toggle[aria-expanded="true"]{border-color:var(--accent);color:var(--accent);background:var(--panel)}
+  main .filters .filter-row{display:none;flex:1 0 100%;padding:8px 0}
+  main .filters .filter-row.is-open{display:grid}
+  main .terms-line{margin:0 0 4px!important;padding:0!important;font-size:12px}
+  main .results-line{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;margin:0 0 8px!important;padding:0!important}
+  main .results-line #resultCount,main .results-line > :has(#resultCount){flex:1 1 100%}
+  main .results-line .budget-toggle{flex:1 1 auto;min-height:36px;padding:0 10px;font-size:12px}
+  main .results-line #reviewFilter{flex:none;min-height:36px;padding:0 4px;font-size:12px;white-space:nowrap}
+  main #vehicles{gap:12px}
+  #vehicles .card .photo-button{aspect-ratio:16/9;background:#fff}
+  #vehicles .card .photo-button img{object-fit:contain}
+  #vehicles .card .brand-badge{transform:scale(.72);transform-origin:top left}
+  #vehicles .card .card-body{padding:10px 12px 12px}
+  #vehicles .card h3{margin:0 0 4px;font-size:18px}
+  #vehicles .card .card-meta{margin:0 0 6px;font-size:12px}
+  #vehicles .card .card-meta span{padding:1px 6px}
+  #vehicles .card .price-area{margin:0 0 6px}
+  #vehicles .card .price{margin:0;font-size:20px}
+  #vehicles .card .price-label{margin:0;font-size:12px;line-height:1.35}
+  #vehicles .card .sources{margin:4px 0!important;padding:0!important;min-height:0!important;font-size:12px}
+  #vehicles .card .card-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-top:8px;margin-top:0}
+  #vehicles .card .card-actions button{min-height:44px;padding:4px 8px;font-size:13px;line-height:1.2}
+  #vehicles .card .card-actions .compare-btn{order:-1;grid-column:auto!important}
+  #vehicles .card .card-actions .flag{grid-column:1/-1!important;min-height:32px}
+}
+@media screen and (max-width:360px){
+  main .filters .filter-row.is-open{grid-template-columns:1fr}
+  main .filters .filter-row > button{grid-column:auto}
+}
