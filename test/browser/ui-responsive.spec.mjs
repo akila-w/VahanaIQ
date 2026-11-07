@@ -291,6 +291,153 @@ test.describe('Phone journeys', () => {
     await context.close();
   });
 
+  test('Photo Studio: Reset stays hidden until an entry changes, and the Frame panel edits the one saved setting', async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    const reset = page.locator('#resetModelBtn');
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#stageBadge')).toHaveText('Cover · 8:5');
+    await expect(page.locator('#filterAll')).toHaveText(/^All \d+$/);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await expect(page.locator('#positionAuto')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.model-flag')).toHaveCount(0);
+
+    // The tools the artboard does not show are still there, one click away
+    await page.locator('.frame-tools summary').click();
+    for (const id of ['#zoomIn', '#zoomOut', '#fitBtn', '#centreBtn', '#resetFrameBtn', '#toggleBaselinesBtn', '#toggleGridBtn', '#toggleMarginsBtn']) await expect(page.locator(id)).toBeVisible();
+    await page.locator('#toggleGridBtn').click();
+    await expect(page.locator('#cropGuides')).toHaveClass(/hide-grid/);
+    await expect(page.locator('.guide-grid')).toBeHidden();
+
+    const pressedBackground = await page.locator('#backgroundPlate').getAttribute('aria-pressed') === 'true' ? '#backgroundOriginal' : '#backgroundPlate';
+    await page.locator(pressedBackground).click();
+    await expect(page.locator(pressedBackground)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#positionManual')).toHaveAttribute('aria-pressed', 'true');
+    await expect(reset).toBeVisible();
+    await expect(reset).toHaveText(/^Reset .+ to original photos…$/);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
+    await expect(page.locator('.model-flag')).toHaveText('Edited');
+
+    await page.locator('#saveFrameBtn').click();
+    await expect(page.locator('#toast')).toContainText('saved in this browser');
+    await page.locator('#filterEdited').click();
+    await expect(page.locator('#modelList [data-model]')).toHaveCount(1);
+
+    // Automatic undoes a manual choice, so the entry is no longer edited
+    await page.locator('#positionAuto').click();
+    await expect(page.locator('#positionAuto')).toHaveAttribute('aria-pressed', 'true');
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+
+    // Reset asks first: declining keeps the edit, accepting restores the published photos
+    await page.locator('#filterAll').click();
+    await page.locator(pressedBackground).click();
+    await expect(reset).toBeVisible();
+    page.once('dialog', dialog => dialog.dismiss());
+    await reset.click();
+    await expect(reset).toBeVisible();
+    page.once('dialog', dialog => dialog.accept());
+    await reset.click();
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#zoomValue')).toHaveText('100%');
+    await context.close();
+  });
+
+  // These reload, and a worker's requests would pass blockFirebase. Each change and the action racing it
+  // run in one task, so the action always lands inside the change's 400ms wait.
+  const openStudioToSave = async (browser, setup) => {
+    const context = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    if (setup) await page.addInitScript(setup);
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    return { context, page };
+  };
+  const inOneTask = (page, steps) => page.evaluate(list => {
+    const actions = {
+      zoom: () => { const range = document.getElementById('zoomRange'); range.value = String(Number(range.value) + 0.5); range.dispatchEvent(new Event('input', { bubbles: true })); },
+      otherEntry: () => document.querySelectorAll('#modelList [data-model]')[2].click(),
+      save: () => document.getElementById('saveFrameBtn').click(),
+      reset: () => document.getElementById('resetModelBtn').click()
+    };
+    for (const step of list) actions[step]();
+  }, steps);
+  const reloadAfterSaves = async page => {
+    await page.waitForTimeout(800);
+    await page.reload({ waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await page.waitForTimeout(500);
+  };
+
+  test('Photo Studio: Save Frame on one entry keeps another entry\'s waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom', 'otherEntry', 'save']);
+    // The second entry has no changes of its own, so this is also the Nothing to save path
+    await expect(page.locator('#toast')).toContainText('Nothing to save');
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
+    await context.close();
+  });
+
+  test('Photo Studio: changing a second entry keeps the first entry\'s waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom', 'otherEntry', 'zoom']);
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 2');
+    await context.close();
+  });
+
+  test('Photo Studio: a waiting save does not undo a reset', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom']);
+    await expect(page.locator('#resetModelBtn')).toBeVisible();
+    await page.waitForTimeout(800);
+    page.once('dialog', dialog => dialog.accept());
+    await inOneTask(page, ['zoom', 'reset']);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await context.close();
+  });
+
+  test('Photo Studio: a failed write says so, from Save Frame and from a waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser, () => {
+      IDBObjectStore.prototype.put = () => { throw new Error('Storage is full'); };
+    });
+    await inOneTask(page, ['zoom', 'save']);
+    await expect(page.locator('#toast')).toContainText('could not save the frame');
+    await expect(page.locator('#storageNote')).toHaveClass(/is-alert/);
+    await page.reload({ waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await expect(page.locator('#storageNote')).not.toHaveClass(/is-alert/);
+    await inOneTask(page, ['zoom']);
+    await expect(page.locator('#storageNote')).toHaveClass(/is-alert/);
+    await context.close();
+  });
+
+  test('Photo Studio controls are 44px touch targets on a phone', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await page.locator('.frame-tools summary').click();
+    const small = await page.evaluate(() => [...document.querySelectorAll('#main button, #main a, #main summary, #main label.btn, .film-add label, .site-header .header-actions button, .site-header .header-actions label, .header-tour-btn')]
+      .filter(el => el.offsetParent)
+      .map(el => ({ name: el.id || el.className, box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.height < 43.5 || box.width < 43.5)
+      .map(({ name, box }) => `${name} ${Math.round(box.width)}x${Math.round(box.height)}`));
+    expect(small).toEqual([]);
+    await context.close();
+  });
+
   test('choosing a Photo Studio entry on a phone brings the editor into view', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);

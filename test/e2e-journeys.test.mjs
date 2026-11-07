@@ -132,11 +132,11 @@ if (shouldRun("Reset studio changes for an entry") || shouldRun("studio")) {
 
   const studioJs = fs.readFileSync("js/catalogue-studio.js", "utf8");
   assert.ok(studioJs.includes('$("resetModelBtn").addEventListener'), "catalogue-studio.js must handle resetModelBtn click");
-  assert.ok(studioJs.includes('$("zoomValue").textContent = "1.00×"'), "Undo must restore zoom display to 1.00×");
+  assert.ok(studioJs.includes('$("zoomValue").textContent = "100%"'), "Undo must restore zoom display to 100%");
   assert.ok(studioJs.includes('$("zoomRange").value = "1"'), "Undo must restore zoom range value to 1");
   assert.ok(studioJs.includes('This entry is back to the published photos.'), "Undo must toast published photo confirmation");
 
-  console.log("  ✓ Reset studio changes for an entry PASSED: undo restores entry state and fully resets zoom to 1.00×.\n");
+  console.log("  ✓ Reset studio changes for an entry PASSED: undo restores entry state and fully resets zoom to 100%.\n");
 }
 
 // -------------------------------------------------------------
@@ -399,7 +399,7 @@ if (shouldRun("Remove a photo from a vehicle entry") || shouldRun("studio")) {
   const studioJs = fs.readFileSync("js/catalogue-studio.js", "utf8");
   assert.ok(studioJs.includes("data-remove"), "catalogue-studio.js must handle data-remove");
   assert.ok(studioJs.includes("removeItem"), "catalogue-studio.js must call removeItem");
-  assert.ok(studioJs.includes("Photo removed. Undo My Changes brings the published set back."), "Removal must toast confirmation");
+  assert.ok(studioJs.includes("Photo removed. Reset to original photos brings the published set back."), "Removal must toast confirmation");
 
   const { newRecord, uploadItem, addItem, setCover, removeItem } = await import("../js/catalogue-photos.js");
   const catData = JSON.parse(fs.readFileSync("data/catalogue.json", "utf8"));

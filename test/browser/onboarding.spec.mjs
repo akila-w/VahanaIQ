@@ -375,7 +375,8 @@ test('the administrator gets the studio, an Admin badge and the links', async ({
  await expect(link.locator('.admin-badge')).toHaveText('Admin');
  await expect(page.locator('.page-missing')).toHaveCount(0);
  await expect(page.locator('#exportBtn')).toBeVisible();
- await expect(page.locator('#accountBtn')).toHaveText('Akila');
+ await expect(page.locator('#accountBtn')).toContainText('Signed in · Admin');
+ await expect(page.locator('#accountBtn')).toHaveAttribute('aria-label', /Account: Akila/);
  for (const route of ['index', 'catalogue']) {
   await page.goto(`${BASE}/${route}.html`);
   await expect(page.locator('nav[aria-label="Main"] a[data-admin-link]')).toHaveAttribute('href', 'studio.html');

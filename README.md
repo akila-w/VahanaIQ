@@ -179,7 +179,7 @@ The Photo Studio (`studio.html`) is where the catalogue's pictures are arranged 
 the administrator's Google account (`ADMIN_UID` in `js/config.js`), open **Studio** from the header or footer,
 pick an entry, and:
 
-- **Add photos** with the *Add Photos* button (any number at once), by dragging files onto the strip,
+- **Add photos** with the *Upload Photos* or *Add Photo* button (any number at once), by dragging files onto the strip,
   or by pasting a screenshot with ⌘V/Ctrl+V. A file must be an image and no larger than 12 MB, and an
   entry keeps at most 12 photos.
 - **Frame a photo** by dragging it in the preview, scrolling to zoom (or using the slider, **+**/**−**),
@@ -190,7 +190,7 @@ pick an entry, and:
   added; after that the cover only changes when you say so.
 
 Everything is kept in this browser's own IndexedDB (`vahanaiq_catalogue_photos`) and never leaves the
-device; a photo is not sent to the AI service or synced to an account. **Undo My Changes** restores one
+device; a photo is not sent to the AI service or synced to an account. **Reset to original photos** restores one
 entry's published photos, and the export dialog's *Remove all studio photos* clears the browser's copy.
 The catalogue page applies the saved photos as it loads, marks the card **Your Photo** and hides the
 manufacturer source link for uploaded photos, which have no published origin.
@@ -206,7 +206,7 @@ same UID.
 The photos on the live site only change when you apply an export:
 
 ```bash
-# 1. Photo Studio → Export My Photos → Download The Export File   (vahanaiq-studio-photos-DATE.json)
+# 1. Photo Studio → Export Changes (.json) → Download The Export File   (vahanaiq-studio-photos-DATE.json)
 # 2. From the project folder:
 node scripts/apply-studio-photos.mjs vahanaiq-studio-photos-DATE.json --dry-run   # report only
 node scripts/apply-studio-photos.mjs vahanaiq-studio-photos-DATE.json
