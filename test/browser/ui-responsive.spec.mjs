@@ -149,15 +149,21 @@ test.describe('Layout: nothing is wider than the screen', () => {
       const page = await context.newPage();
       await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
       await addToyotas(page);
-      const box = await page.evaluate(async () => {
-        const income = document.getElementById('incomePanel').getBoundingClientRect();
-        window.scrollTo({ top: income.top + window.scrollY - 200, behavior: 'instant' });
-        await new Promise(requestAnimationFrame);
-        return {
-          answer: document.getElementById('answerPanel').getBoundingClientRect().toJSON(),
-          income: document.getElementById('incomePanel').getBoundingClientRect().toJSON()
-        };
-      });
+      // The page can still be moving after filling the income, so settle with the income at 200px.
+      let box;
+      await expect.poll(async () => {
+        box = await page.evaluate(async () => {
+          const income = document.getElementById('incomePanel').getBoundingClientRect();
+          window.scrollTo({ top: income.top + window.scrollY - 200, behavior: 'instant' });
+          await new Promise(requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
+          return {
+            answer: document.getElementById('answerPanel').getBoundingClientRect().toJSON(),
+            income: document.getElementById('incomePanel').getBoundingClientRect().toJSON()
+          };
+        });
+        return Math.abs(box.income.top - 200);
+      }).toBeLessThanOrEqual(2);
       expect(box.answer.left).toBeGreaterThan(box.income.right);
       expect(box.answer.top).toBeGreaterThanOrEqual(0);
       expect(box.answer.top).toBeLessThan(height);

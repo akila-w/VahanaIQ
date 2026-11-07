@@ -157,9 +157,13 @@ async function activatedFromObserver(observer) {
   // Cache cleanup happens inside activate, before clients.claim resolves. Opening
   // a controlled document during that transition can race claiming in WebKit.
   // Observe the actual state from outside the scope before starting navigation.
-  await expect.poll(() => observer.evaluate(async () =>
-    (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state
-  )).toBe('activated');
+  // Each read reloads the observer: WebKit can leave a page's worker object at "activating"
+  // for good, while a new page in the same moment already sees "activated".
+  await expect.poll(async () => {
+    await observer.reload();
+    return observer.evaluate(async () =>
+      (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state);
+  }).toBe('activated');
 }
 
 async function activate(context, page, revision) {
