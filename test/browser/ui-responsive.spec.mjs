@@ -457,11 +457,18 @@ for (const [width, height] of [[1366, 768], [1440, 900]]) {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
       await page.setViewportSize({ width, height: height - 40 });
       await page.mouse.move(width / 2, height / 2);
+      // The guard can only act 80ms after a scroll event, so recording the furthest point on each
+      // one always sees where the wheel took the page, however slowly this test reads it.
+      await page.evaluate(() => {
+        window.furthestScroll = 0;
+        window.addEventListener('scroll', () => { window.furthestScroll = Math.max(window.furthestScroll, window.scrollY); }, { passive: true });
+      });
+      // Firefox moves the page at most about one screen per wheel event, whatever the distance.
       await page.mouse.wheel(0, 1600);
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
-      const scrolled = await page.evaluate(() => window.scrollY);
+      await expect.poll(() => page.evaluate(() => window.furthestScroll)).toBeGreaterThan(height / 2);
       await page.waitForTimeout(300);
-      expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+      const { furthest, now } = await page.evaluate(() => ({ furthest: window.furthestScroll, now: window.scrollY }));
+      expect(now).toBe(furthest);
       await context.close();
     });
 
