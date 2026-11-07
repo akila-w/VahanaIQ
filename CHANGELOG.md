@@ -7,12 +7,17 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ## [Unreleased] - 01/11/2026
 
-Landing introduction and a redesigned guided setup, from the VahanaIQ Redesign canvas. No calculation, threshold, rounding or number format changed. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-6`.
+Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-14`.
 
 ### Added
+- **Settings page (`settings.html`)**: theme, text size, motion, loan defaults, Showroom choices, tips, data download and delete. Numbers and Dates choose the currency label, whole rupees, millions or lakhs, and the date format; these change what is displayed, never a calculation.
+- **Phone tabs**: Lease, Showroom and Settings stay at the bottom of the screen on phones.
+- **Showroom**: a brand strip that filters by brand, the monthly rental and fit on each card, the terms in use with Change Terms, and Only Cars Within My Budget.
+- **About page**: How Rentals Are Worked Out, and Prices and Sources.
 - **Photo Studio is the administrator's alone**: `studio.html` is an ordinary not-found page unless the signed-in Firebase account matches `ADMIN_UID`. Studio links, photo tools, guided tour, help and policy text no longer appear for anyone else. The check decides what the page shows; the studio's photos stay in that browser and there is no server data behind it.
 - **Landing introduction on the Lease page (`index.html`)**: first-time visitors see what VahanaIQ is before the calculator: a headline, an example rental for a real Showroom car, two belts of Showroom cars with their rentals at the planner's default terms, how it works, and Get Started. The hero runs a slow emerald gradient with a drifting Apex monogram matrix; every animation moves only transform, there is a Pause Animation button, and reduced motion stops it all. `js/boot.js` decides before first paint (`html.landing-pending`), so returning visitors, anyone who finished or dismissed setup, and `?onboarding` links go straight to the calculator; `?welcome` shows the introduction again.
 - **Quick picks in setup**: Compact SUVs, Hybrids and Electric, and Family SUVs add real catalogue cars to the shortlist, which the visitor still reviews.
+- **Answer first on the Lease page**: the chosen car's monthly rental, debt-to-income meter, down payment, amount financed, income needed and the budget ceiling now lead the page. Every figure comes from the rows the comparison already uses. Show Above picks the car, Undo Removal restores a removed one, and an empty shortlist offers the ready-made shortlists. Behind the solid cards, drifting emerald glows and a faint monogram grid move slowly and stop under reduced motion.
 - **Browser checks** for the landing (first visit, dismissal, returning visitors, quick picks, pause and reduced motion) in `test/browser/onboarding.spec.mjs`.
 
 ### Changed
@@ -20,6 +25,11 @@ Landing introduction and a redesigned guided setup, from the VahanaIQ Redesign c
 - **Setup on phones** is a true full-screen sheet (the browser's default dialog gutters are removed) with its header and footer padded clear of the Dynamic Island and home indicator. The backdrop is a still emerald gradient with the monogram matrix, with no blur.
 - **Home-screen app on iPhone**: `apple-mobile-web-app-status-bar-style` is `black-translucent` on the Lease, Showroom and Studio pages, so the page runs under the status bar.
 - **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
+
+### Fixed
+- **Showroom verdicts**: a disputed, estimated or unverified price no longer says Comfortable, Stretching or Out of Reach, and no longer passes Only Cars Within My Budget. Its rental stays, marked Illustrative only · Price unverified. No calculation changed.
+- **Settings interest rate**: the rate chosen in Settings now reaches the planner, and a blank box no longer counts as 0%.
+- **Budget bar on phones**: it now sits above the bottom tabs, which stay tappable, and the end of the page and any toast clear both.
 
 ---
 

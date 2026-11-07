@@ -103,6 +103,14 @@ label, .field-label, .filter-row label, .studio-field {
   white-space: nowrap !important;
 }
 
+/* Lease page section links carry an icon; the current one is a tinted tab (01/11/2026). */
+.site-header nav a.nav-icon-link {
+  padding: 8px 12px !important;
+}
+@media (max-width: 600px) {
+  .site-header nav a.nav-icon-link { padding: 6px 10px !important; }
+}
+
 .header-actions {
   display: flex !important;
   align-items: center !important;
@@ -3136,3 +3144,10 @@ html.landing-pending body::after { display: none !important; }
   .landing { display: none !important; }
   html.landing-pending body > :not(.landing) { display: revert !important; }
 }
+
+/* settings.html: Reduced turns off motion whatever the device says; tips can be hidden */
+html[data-motion="reduced"] *,html[data-motion="reduced"] *::before,html[data-motion="reduced"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html[data-tips="off"] .guide-context{display:none!important}
+html[data-text="large"]{zoom:1.125}
+html[data-text="larger"]{zoom:1.25}
+

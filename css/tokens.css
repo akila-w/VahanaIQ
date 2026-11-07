@@ -67,6 +67,19 @@
   --aurora-opacity: 0.3;
   --glass-bg: rgba(255, 255, 255, 0.58);
   --glass-border: rgba(255, 255, 255, 0.65);
+  --answer-bg: #103e36;
+  --answer-ink: #ffffff;
+  --answer-soft: #c9d8d0;
+  --answer-eyebrow: #99f6e4;
+  --answer-track: #1f5248;
+  --answer-chip: #0e1a16;
+  --answer-ok: #6ee7b7;
+  --answer-mid: #fbbf24;
+  --answer-bad: #fca5a5;
+  --answer-fill: #5eead4;
+  --ambient-glow-a: rgba(45, 212, 191, 0.26);
+  --ambient-glow-b: rgba(167, 243, 208, 0.3);
+  --ambient-mark: rgba(16, 62, 54, 0.05);
   --shadow-logo: 0 2px 8px rgba(15, 118, 110, 0.25);
   --shadow-budget-bar: 0 -4px 16px rgba(0, 0, 0, 0.12);
   --shadow-toast: 0 8px 24px rgba(0, 0, 0, 0.25);
@@ -167,6 +180,10 @@
     --aurora-opacity: 0.15;
     --glass-bg: rgba(22, 34, 49, 0.46);
     --glass-border: rgba(255, 255, 255, 0.16);
+    --answer-bg: #0e3a33;
+    --ambient-glow-a: rgba(45, 212, 191, 0.12);
+    --ambient-glow-b: rgba(16, 185, 129, 0.1);
+    --ambient-mark: rgba(94, 234, 212, 0.05);
     --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
     --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
   }
@@ -201,6 +218,10 @@
   --aurora-opacity: 0.15;
   --glass-bg: rgba(22, 34, 49, 0.46);
   --glass-border: rgba(255, 255, 255, 0.16);
+  --answer-bg: #0e3a33;
+  --ambient-glow-a: rgba(45, 212, 191, 0.12);
+  --ambient-glow-b: rgba(16, 185, 129, 0.1);
+  --ambient-mark: rgba(94, 234, 212, 0.05);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
   --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
 }
@@ -233,6 +254,19 @@
     --aurora-opacity: 0;
     --glass-bg: #ffffff;
     --glass-border: #cbd5e1;
+    --answer-bg: #ffffff;
+    --answer-ink: #142a25;
+    --answer-soft: #475569;
+    --answer-eyebrow: #103e36;
+    --answer-track: #e2e8f0;
+    --answer-chip: #f5f6f3;
+    --answer-ok: #1f5138;
+    --answer-mid: #80520b;
+    --answer-bad: #b91c1c;
+    --answer-fill: #103e36;
+    --ambient-glow-a: rgba(255, 255, 255, 0);
+    --ambient-glow-b: rgba(255, 255, 255, 0);
+    --ambient-mark: rgba(255, 255, 255, 0);
     --shadow-card: none;
     --glass-shadow: none;
   }

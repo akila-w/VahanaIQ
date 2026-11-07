@@ -163,6 +163,16 @@ export const TENURE_PRESETS = [36, 60, 84];
 export const DOWN_PRESETS = [40, 60, 70];
 
 /**
+ * Ready-made shortlists of Showroom catalogue IDs, offered by the guided setup's quick picks
+ * and by the Lease page when its shortlist is empty.
+ */
+export const READY_SHORTLISTS = [
+  ["Compact SUVs", ["suzuki-fronx", "toyota-raize"]],
+  ["Hybrids and Electric", ["toyota-aqua", "byd-atto-3", "honda-vezel"]],
+  ["Family SUVs", ["honda-vezel", "byd-atto-3", "byd-sealion-5"]]
+];
+
+/**
  * Rate boundary limits for slider and input validation.
  */
 export const MIN_RATE = 0;
