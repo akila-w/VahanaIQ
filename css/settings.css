@@ -27,8 +27,9 @@
 #defaultRate{min-height:44px;width:120px;padding:0 12px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink)}
 .toggle{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:44px;padding:12px 0;border-top:1px solid var(--line);cursor:pointer}
 .toggle:first-of-type{border-top:0}
+.toggle strong{display:block;margin-bottom:2px;font-size:15px;font-weight:600}
 .toggle input{width:22px;height:22px;flex:none;accent-color:var(--accent)}
-.settings-page .btn-outline{display:inline-flex;align-items:center;min-height:44px;margin:8px 8px 8px 0;text-decoration:none}
+.settings-page .btn-outline{display:inline-flex;align-items:center;min-height:44px;margin:8px 8px 8px 0;padding:0 16px;border:1px solid var(--control-border,var(--line));border-radius:10px;background:var(--panel);color:var(--ink);font-weight:600;text-decoration:none}
 .data-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;padding:14px 0;border-top:1px solid var(--line)}
 .data-row:first-of-type{border-top:0;padding-top:0}
 .data-row>div:first-child{flex:1 1 260px;min-width:0}
@@ -51,7 +52,7 @@
 .preview-rental{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
 .preview-terms{margin-top:4px!important;color:var(--mute);font-size:13px}
 .number-preview{margin:8px 0 0;color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums}
-.settings-foot{margin-top:8px}
+footer.foot.settings-foot{margin-top:8px;padding-left:0;padding-right:0}
 @media (max-width:1100px){
   .settings-layout{grid-template-columns:180px minmax(0,1fr)}
   .settings-preview{position:static;grid-column:2}

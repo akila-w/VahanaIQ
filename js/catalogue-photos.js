@@ -107,7 +107,7 @@ export function moveItem(record, id, delta) {
 // The catalogue always shows at least one photo, so the last one cannot go.
 export function removeItem(record, id) {
   if (!itemById(record, id)) return { record, error: "That photo is not in this entry any more." };
-  if (record.items.length < 2) return { record, error: "A catalogue entry must keep at least one photo." };
+  if (record.items.length < 2) return { record, error: "A Showroom entry must keep at least one photo." };
   const items = record.items.filter(item => item.id !== id);
   return { record: { ...record, items, coverId: record.coverId === id ? items[0].id : record.coverId } };
 }

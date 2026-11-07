@@ -232,7 +232,7 @@ main.page-exit {
     max-height: none;
     overflow: visible;
   }
-  main > .answer-panel,
+  .answer-column > .answer-panel,
   main > #budgetPanel,
   main > #comparisonPanel,
   main > #savingsPanel {
@@ -2776,6 +2776,9 @@ button.remove-row-btn:hover {
   background: var(--callout-warn-bg);
   color: var(--bad);
 }
+/* --bad is too light for small text on this tint in the light theme. */
+:root:not([data-theme="dark"]) .tag.bad { color: #b91c1c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag.bad { color: var(--bad); } }
 
 .cond-tag {
   display: inline-flex;
@@ -4208,7 +4211,7 @@ button.btn.btn-danger {
 
 /* ==========================================================================
    BANK QUOTATION PRINTOUT STYLESHEET
-   Unified, page-break-safe A4 statutory lease quotation layout conforming
+   Unified, page-break-safe A4 lease estimate layout conforming
    to Central Bank of Sri Lanka (CBSL) Directions No. 01 of 2026.
    ========================================================================== */
 /* settings.html: Reduced turns off motion whatever the device says; tips can be hidden */
@@ -4361,7 +4364,7 @@ html[data-text="larger"]{zoom:1.25}
   }
 
   .site-header::after {
-    content: "STATUTORY LEASE FINANCING QUOTATION\A Central Bank of Sri Lanka Directions No. 01 of 2026";
+    content: "LEASE ESTIMATE, NOT A LENDER'S QUOTATION\A Down payments follow Central Bank of Sri Lanka Directions No. 01 of 2026";
     white-space: pre-line;
     text-align: right;
     font-size: 7pt;
@@ -8601,7 +8604,7 @@ main > .panel {
 }
 main > .hero .hero-aside { animation-delay: 40ms; }
 main > .terms-panel { animation-delay: 60ms; }
-main > .answer-panel { animation: rise-in var(--duration-enter) var(--easing-out) 80ms backwards; }
+.answer-column > .answer-panel { animation: rise-in var(--duration-enter) var(--easing-out) 80ms backwards; }
 main > #budgetPanel { animation-delay: 100ms; }
 main > #comparisonPanel { animation-delay: 140ms; }
 main > #savingsPanel { animation-delay: 180ms; }
@@ -9216,13 +9219,15 @@ button.ready-shortlist:active { transform: scale(0.98); }
 @media (prefers-reduced-motion: reduce) {
   .ambient-glow,
   .answer-status-dot::after,
-  main > .answer-panel,
+  .answer-column > .answer-panel,
   p.answer-help:not([hidden]),
   .undo-bar:not([hidden]) { animation: none !important; }
   button.answer-cta svg,
   button.ready-shortlist,
   button.answer-help-btn { transition: none !important; }
 }
+
+.answer-column { display: contents; }
 
 /* Information pages: the shared header, a side list of the five pages and one reading column. */
 main.settings-page { display: block; }
@@ -9276,6 +9281,7 @@ main.info-page.info-layout {
 .info-layout .info-sections h2 { margin: 0 0 8px; font-size: 24px; font-weight: 700; letter-spacing: -.5px; }
 .info-foot { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--mute); font-size: 13px; }
 .info-foot p { margin: 0; }
+.info-foot #helpCentreButton { margin-left: 0; padding-left: 0; }
 .info-header-actions .btn-outline { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
 @media (max-width: 760px) {
   main.info-page.info-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 24px 16px 48px; }

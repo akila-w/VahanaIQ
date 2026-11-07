@@ -29,7 +29,7 @@ export function validateReviewDocument(document, expectedModelId) {
     || document.publicationAllowed !== false || document.catalogueModelId !== expectedModelId
     || !Array.isArray(document.candidates) || !document.candidates.length
     || document.candidates.length > MAX_CANDIDATES) {
-    throw Error("This is not a compatible pending PhotoHarvest review for the selected catalogue model.");
+    throw Error("This is not a compatible pending PhotoHarvest review for the selected Showroom model.");
   }
   if (!document.acquisitionManifest || document.acquisitionManifest.version !== 1
     || document.acquisitionManifest.status !== "completed" || !SHA256.test(document.acquisitionManifest.sha256 || "")) {

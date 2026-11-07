@@ -57,8 +57,8 @@ if (shouldRun("Compare vehicle against budget settings")) {
   runCount++;
   console.log("TEST JOURNEY 3: Compare vehicle against budget settings");
   const catalogueHtml = fs.readFileSync("catalogue.html", "utf8");
-  assert.ok(catalogueHtml.includes('id="reviewBar"'), "catalogue.html must have #reviewBar for Your Catalogue Review");
-  assert.ok(catalogueHtml.includes('id="affordabilityPanel"'), "Your Catalogue Review must contain #affordabilityPanel");
+  assert.ok(catalogueHtml.includes('id="reviewBar"'), "catalogue.html must have #reviewBar for Your Showroom Review");
+  assert.ok(catalogueHtml.includes('id="affordabilityPanel"'), "Your Showroom Review must contain #affordabilityPanel");
 
   const catalogueJs = fs.readFileSync("js/curated-catalogue.js", "utf8");
   assert.ok(catalogueJs.includes('renderAffordabilityPanel'), "curated-catalogue.js must implement renderAffordabilityPanel");
@@ -67,7 +67,7 @@ if (shouldRun("Compare vehicle against budget settings")) {
   assert.ok(catalogueJs.includes('vahanaiq_inputs_v1'), "Budget settings must read from vahanaiq_inputs_v1");
   assert.ok(catalogueJs.includes('detail-affordability'), "Vehicle details dialog must render budget affordability review section");
 
-  console.log("  ✓ Compare vehicle against budget settings PASSED: Your Catalogue Review renders affordability panel comparing selected vehicle against entered budget.\n");
+  console.log("  ✓ Compare vehicle against budget settings PASSED: Your Showroom Review renders affordability panel comparing selected vehicle against entered budget.\n");
 }
 
 // -------------------------------------------------------------
@@ -419,7 +419,7 @@ if (shouldRun("Remove a photo from a vehicle entry") || shouldRun("studio")) {
 
   // Attempting to remove the last photo must be blocked
   const blocked = removeItem(removed.record, removed.record.items[0].id);
-  assert.equal(blocked.error, "A catalogue entry must keep at least one photo.");
+  assert.equal(blocked.error, "A Showroom entry must keep at least one photo.");
 
   console.log("  ✓ Remove a photo from a vehicle entry PASSED: photo removal updates set, preserves cover, and enforces minimum photo guard.\n");
 }

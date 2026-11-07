@@ -631,7 +631,7 @@ test.describe('Motion', () => {
 });
 
 test.describe('Answer first', () => {
-  test('a ready-made shortlist fills the card, and Show Above and Undo Removal keep it true', async ({ page }) => {
+  test('a ready-made comparison fills the card, and Show Above and Undo Removal keep it true', async ({ page }) => {
     await page.goto(`${BASE_URL}/index.html`);
     await page.locator('#readyShortlists button', { hasText: 'Compact SUVs' }).click();
     await expect(page.locator('#rows tr')).toHaveCount(2);
@@ -724,7 +724,7 @@ test.describe('Number choices and phone tabs', () => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
     const page = await context.newPage();
-    for (const [file, tab] of [['index.html', 'Lease'], ['catalogue.html', 'Showroom'], ['settings.html', 'Settings']]) {
+    for (const [file, tab] of [['index.html', 'Lease Planner'], ['catalogue.html', 'Showroom'], ['settings.html', 'Settings']]) {
       await page.goto(`${BASE_URL}/${file}`);
       await expect(page.locator('.tab-bar a[aria-current="page"]')).toHaveText(tab);
       expect(await pageWidth(page)).toBeLessThanOrEqual(390);
@@ -782,6 +782,111 @@ test.describe('Showroom verdicts need a confirmed price', () => {
     await search(page, 'Raize');
     await expect(fit(page)).toHaveCount(0);
   });
+});
+
+for (const width of [1024, 1440, 1920]) test(`the rental card never covers the Comparison or Budget Breakdown at ${width}px`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 900 });
+  await page.goto(`${BASE_URL}/index.html`);
+  await page.locator('#readyShortlists button').first().click();
+  await page.locator('#budgetDetails summary').click();
+  const overlap = await page.evaluate(async () => {
+    const card = document.getElementById('answerPanel');
+    const others = ['budgetPanel', 'comparisonPanel', 'savingsPanel'].map(id => document.getElementById(id));
+    let worst = 0;
+    for (let y = 0; y < document.documentElement.scrollHeight - innerHeight; y += 60) {
+      scrollTo(0, y);
+      await new Promise(requestAnimationFrame);
+      const a = card.getBoundingClientRect();
+      for (const el of others) {
+        const b = el.getBoundingClientRect();
+        worst = Math.max(worst, Math.min(Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top), Math.min(a.right, b.right) - Math.max(a.left, b.left)));
+      }
+    }
+    return worst;
+  });
+  expect(overlap).toBeLessThanOrEqual(0);
+});
+
+test('guided setup and the ready-made comparison price a car the same way', async ({ page }) => {
+  await page.goto(`${BASE_URL}/index.html`);
+  await page.locator('#readyShortlists button').first().click();
+  const ready = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_comparison_v3')).cars.map(c => [c.catalogueId, c.price]));
+  await page.evaluate(() => localStorage.clear());
+  await page.goto(`${BASE_URL}/index.html?onboarding=1`);
+  await page.locator('.onboarding-quick-pick', { hasText: 'Compact SUVs' }).click();
+  await page.getByRole('button', { name: /^Continue to Income/ }).click();
+  await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
+  await page.getByRole('button', { name: /^Continue to Down Payment/ }).click();
+  await page.getByRole('button', { name: /See My Result/ }).click();
+  await page.getByRole('button', { name: /^Open My Lease/ }).click();
+  await expect(page.locator('#rows tr')).toHaveCount(2);
+  const setup = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_comparison_v3')).cars.map(c => [c.catalogueId, c.price]));
+  expect(setup.sort()).toEqual(ready.sort());
+});
+
+test('the logo opens the landing page and the footer columns line up', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${BASE_URL}/index.html`);
+  const tops = await page.locator('.foot-link-groups .site-links h3').evaluateAll(els => els.map(el => Math.round(el.getBoundingClientRect().top)));
+  expect(new Set(tops).size).toBe(1);
+  await page.locator('.site-header .brand').click();
+  await expect(page.locator('#landingTitle')).toBeVisible();
+});
+
+test('a printed estimate keeps its labels, choices and every column on the A4 page', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${BASE_URL}/index.html`);
+  await addToyotas(page);
+  await page.locator('#budgetDetails summary').click();
+  await page.setViewportSize({ width: 703, height: 1000 });
+  await page.emulateMedia({ media: 'print' });
+  for (const id of ['rate', 'tenure', 'down']) {
+    const box = await page.locator(`label[for="${id}"]`).boundingBox();
+    expect(box.width, `${id} label`).toBeGreaterThan(60);
+  }
+  await expect(page.locator('[data-seg="dti"] .seg-btn.active')).toBeVisible();
+  await expect(page.locator('#filtersToggle')).toBeHidden();
+  await expect(page.locator('td.v-status').first()).toBeHidden();
+  await expect(page.locator('#budgetGraphic')).toBeVisible();
+  await expect(page.locator('#budgetLinearView')).toBeHidden();
+  const overflow = () => page.locator('#comparisonPanel').evaluate(panel => {
+    const right = panel.getBoundingClientRect().right;
+    return Math.max(...[...panel.querySelectorAll('th, td')].map(cell => cell.getBoundingClientRect().right)) - right;
+  });
+  expect(await overflow(), 'with an income').toBeLessThanOrEqual(0);
+  // With no income, each row says what income the car needs instead. Fields are edited on screen, never mid-print.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ media: 'screen' });
+  await page.locator('#income').fill('');
+  await expect(page.locator('td.v-bar').first()).toContainText('Need');
+  await page.setViewportSize({ width: 703, height: 1000 });
+  await page.emulateMedia({ media: 'print' });
+  expect(await overflow(), 'without an income').toBeLessThanOrEqual(0);
+  await page.locator('#budgetDetails').evaluate(details => { details.open = false; });
+  await expect(page.locator('#budgetPanel')).toBeHidden();
+});
+
+test('Help Centre lines up with the footer text on Settings and the information pages', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const path of ['settings.html', 'about.html']) {
+    await page.goto(`${BASE_URL}/${path}`);
+    const left = selector => page.locator(selector).evaluate(el => el.getBoundingClientRect().left + parseFloat(getComputedStyle(el).paddingLeft));
+    expect(await left('#helpCentreButton'), path).toBeCloseTo(await left('footer.info-foot'), 0);
+  }
+  await page.goto(`${BASE_URL}/settings.html`);
+  const footer = await page.locator('footer.settings-foot').boundingBox();
+  const copy = await page.locator('footer.settings-foot p').first().boundingBox();
+  expect(copy.x).toBeCloseTo(footer.x, 0);
+});
+
+test('Help Centre has a full touch target on a phone', async ({ browser, browserName }) => {
+  const context = await browser.newContext(phone(browserName));
+  await seedReturning(context);
+  const page = await context.newPage();
+  await page.goto(`${BASE_URL}/catalogue.html`);
+  const box = await page.locator('#helpCentreButton').boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  await context.close();
 });
 
 test('the Settings preview uses saved loan values that its choices do not offer', async ({ page }) => {

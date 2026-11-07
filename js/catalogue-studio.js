@@ -68,7 +68,7 @@ function recordFor(model) {
 
 function itemLabel(item) {
   if (item.kind === UPLOAD) return item.name || "Your photo";
-  return item.caption ? item.caption.split("·")[0].trim() : "Catalogue photo";
+  return item.caption ? item.caption.split("·")[0].trim() : "Showroom photo";
 }
 
 function photoUrl(item) {
@@ -353,12 +353,12 @@ $("harvestFolder").addEventListener("change", async event => {
   $("harvestSummary").textContent = "Verifying review manifest and local image hashes…";
   try {
     const model = selectedModel();
-    if (!model) throw Error("Choose a catalogue model first.");
+    if (!model) throw Error("Choose a Showroom model first.");
     const bundle = await readReviewFolder(input.files, model.id);
     if (token !== harvestLoadToken || selectedModel()?.id !== model.id) return;
     $("harvestSummary").textContent =
       bundle.matched.length + " candidate photo(s) for " + model.name
-      + ". All are unapproved; none were added to the catalogue.";
+      + ". All are unapproved; none were added to the Showroom.";
     for (const { file, candidate } of bundle.matched) {
       const li = document.createElement("li");
       const picture = document.createElement("img");
@@ -453,7 +453,7 @@ export async function hasValidImageMagicBytes(file) {
 
 async function addFiles(list) {
   const model = selectedModel();
-  if (!model) { toast("Open a catalogue entry first."); return; }
+  if (!model) { toast("Open a Showroom entry first."); return; }
   let incoming = [...(list || [])].filter(file => file && /^image\//.test(file.type || ""));
   if (!incoming.length && typeof window !== "undefined") {
     const fixture = window.__VAHANAIQ_STUDIO_FIXTURE_FILE__ || (typeof window.__VAHANAIQ_GET_STUDIO_FIXTURE__ === "function" ? window.__VAHANAIQ_GET_STUDIO_FIXTURE__() : null);
@@ -1011,14 +1011,14 @@ async function start() {
     }
   } catch (error) {
     $("modelCount").textContent = "";
-    $("editorEmpty").textContent = "The catalogue data could not be loaded. Open the studio from the project folder, or from the live site, and try again.";
+    $("editorEmpty").textContent = "The Showroom data could not be loaded. Open the studio from the project folder, or from the live site, and try again.";
     $("exportBtn").disabled = true;
     return;
   }
   state.models = [...state.catalogue.models].sort((a, b) => a.name.localeCompare(b.name));
   if (!state.models.length) {
     $("modelCount").textContent = "";
-    $("editorEmpty").textContent = "The catalogue has no entries to work with.";
+    $("editorEmpty").textContent = "The Showroom has no entries to work with.";
     $("exportBtn").disabled = true;
     return;
   }

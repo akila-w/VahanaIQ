@@ -30,7 +30,7 @@
   <a class="skip" id="skipLink" href="#main">Skip to Main Content</a>
   <header class="site-header">
     <div class="header-brand-group">
-      <a class="brand" href="index.html">
+      <a class="brand" href="index.html?welcome">
         <img src="assets/icons/logo-v-mark-transparent-light.svg" alt="" class="brand-logo logo-light" width="36" height="36">
         <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" class="brand-logo logo-dark" width="36" height="36">
         <div class="brand-text">
@@ -39,7 +39,7 @@
         </div>
       </a>
       <nav aria-label="Main">
-        <a href="index.html">Lease</a>
+        <a href="index.html">Lease Planner</a>
         <a href="catalogue.html">Showroom</a>
       </nav>
     </div>
@@ -75,7 +75,7 @@
       </section>
       <div class="studio-layout">
         <section id="models" class="studio-panel studio-models" aria-labelledby="modelsTitle">
-          <h2 id="modelsTitle" class="sr-only">Catalogue Entries</h2>
+          <h2 id="modelsTitle" class="sr-only">Showroom Entries</h2>
           <label class="studio-search" for="modelSearch">
             <span class="sr-only">Find a model</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -92,7 +92,7 @@
           <header class="studio-panel editor-head">
             <div>
               <p class="editor-make" id="editorMake">Vehicle Framing</p>
-              <h2 id="editorTitle">Choose a Catalogue Entry</h2>
+              <h2 id="editorTitle">Choose a Showroom Entry</h2>
             </div>
             <div class="editor-actions">
               <a class="btn-outline" id="openCatalogue" href="catalogue.html">View in Showroom</a>
@@ -104,7 +104,7 @@
           <div id="editorWork" class="editor-work" hidden>
             <section class="studio-panel stage-card" aria-labelledby="photosTitle">
               <div class="crop-stage">
-                <canvas id="cropStage" width="800" height="500" tabindex="0" role="img" aria-label="Preview of the framed catalogue photo. Drag to move the photo, scroll or use the zoom slider to zoom, and use the arrow keys to nudge it."></canvas>
+                <canvas id="cropStage" width="800" height="500" tabindex="0" role="img" aria-label="Preview of the framed Showroom photo. Drag to move the photo, scroll or use the zoom slider to zoom, and use the arrow keys to nudge it."></canvas>
                 <div class="crop-guides" id="cropGuides" aria-hidden="true">
                   <div class="guide-grid">
                     <span class="grid-line grid-v grid-v-1"></span>
@@ -203,10 +203,10 @@
       </section>
       <section aria-labelledby="footFraming">
         <h3 class="foot-h" id="footFraming">Framing Standards</h3>
-        <p>All display frames use standardized 8:5 proportions. Zoom, focus and mode choices stay on this device, and the catalogue page in this browser reflects your framing immediately.</p>
+        <p>All display frames use standardized 8:5 proportions. Zoom, focus and mode choices stay on this device, and the Showroom page in this browser reflects your framing immediately.</p>
       </section>
       <section aria-labelledby="footPublishing">
-        <h3 class="foot-h" id="footPublishing">Publishing to Catalogue</h3>
+        <h3 class="foot-h" id="footPublishing">Publishing to the Showroom</h3>
         <p>Export your photos and run the bake script to update the repository data. VahanaIQ is an independent personal project.</p>
       </section>
     </div>
@@ -228,7 +228,7 @@
           <ol>
             <li>Keep the download beside the working files (exports are not committed).</li>
             <li>From the project folder run <code>node scripts/apply-studio-photos.mjs vahanaiq-studio-photos-DATE.json</code>. It writes the framed photos into <code>assets/images/curated-catalogue/</code> and updates <code>data/catalogue.json</code> and <code>js/catalogue-data.js</code> together, so the two can never drift.</li>
-            <li>Review the change, then commit and push. The published catalogue will then show your photos, your order and your cover.</li>
+            <li>Review the change, then commit and push. The published Showroom will then show your photos, your order and your cover.</li>
           </ol>
           <p>Published photos you removed are left out of the export; the rest of the entry's prices are untouched.</p>
         </details>
@@ -236,7 +236,7 @@
     </dialog>
   </template>
   <footer class="foot">
-    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html">Lease</a><a href="catalogue.html">Showroom</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Catalogue Data</a></nav></div><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
+    <div class="foot-link-groups"><nav class="site-links" aria-label="Explore"><h3 class="sr-only">Explore</h3><a href="index.html">Lease Planner</a><a href="catalogue.html">Showroom</a></nav><nav class="site-links" aria-label="Information"><h3 class="sr-only">Information</h3><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms &amp; Notices</a><a href="data/catalogue.json" download>Showroom Data</a></nav></div><p class="copyright">© <span id="copyrightYear">2026</span> Akila Wickramasinghe. Vehicle trademarks and images belong to their respective owners. See Photo Credits and Terms &amp; Notices.</p><p class="foot-meta">
       <a href="https://www.cbsl.gov.lk/sites/default/files/cbslweb_documents/laws/CBSL_Act_Directions_No_1_of_2026_e.pdf" target="_blank" rel="noopener">CBSL Directions No. 01 of 2026 (PDF)</a>
       <a href="https://github.com/akila-w/vahanaiq" target="_blank" rel="noopener">Source on GitHub</a>
       <span>VahanaIQ v2.12.0</span>

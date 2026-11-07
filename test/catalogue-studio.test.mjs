@@ -182,7 +182,7 @@ assert.deepEqual(moved.items.map(item => item.id), [upload.id, publishedItems[0]
 assert.equal(moveItem(moved, upload.id, -1), moved, "A photo cannot move past the start");
 assert.equal(moveItem(record, upload.id, 1), record, "or past the end");
 
-assert.equal(removeItem(newRecord(TEST_MODEL), publishedItems[0].id).error, "A catalogue entry must keep at least one photo.");
+assert.equal(removeItem(newRecord(TEST_MODEL), publishedItems[0].id).error, "A Showroom entry must keep at least one photo.");
 assert.equal(removeItem(newRecord(TEST_MODEL), "official:nope").error, "That photo is not in this entry any more.");
 const removed = removeItem(record, upload.id);
 assert.equal(removed.error, undefined);
