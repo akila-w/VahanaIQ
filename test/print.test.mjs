@@ -141,8 +141,8 @@ console.log("✓ Page break hygiene (tr, thead, .panel, .ltv-split-container, #b
 // 5. Statutory Quotation Branding & CBSL Regulatory Disclosures
 assert.match(
   printCss,
-  /\.site-header::after\s*\{[^}]*STATUTORY LEASE FINANCING QUOTATION/i,
-  "Site header must carry statutory quotation watermark / title in print"
+  /\.site-header::after\s*\{[^}]*LEASE ESTIMATE, NOT A LENDER'S QUOTATION/i,
+  "The printed header must say this is an estimate, not a lender's quotation"
 );
 assert.match(
   printCss,

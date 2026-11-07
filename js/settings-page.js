@@ -58,7 +58,7 @@ function check(name, value) {
 }
 
 // The live preview: one real sum, redrawn on the choices made on this page. A new Raize needs at least 60% down.
-const PREVIEW_PRICE = 12250000;
+const PREVIEW_PRICE = 12500000;
 const chosen = name => document.querySelector(`input[name="${name}"]:checked`)?.value;
 // The planner can save values these choices do not offer, such as 100% down from the cash strategy.
 const loanValue = (name, settings) => Number(chosen(name) ?? read(INPUTS_KEY)[name] ?? settings.loan?.[name]);

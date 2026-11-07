@@ -26,3 +26,38 @@
   .answer-photo{display:none!important}
 }
 @media print{.tab-bar{display:none!important}}
+
+/* Printouts: figures only, without the page controls. Loaded last so it wins over the screen layers. */
+@media print {
+  .site-header nav, .site-header .header-actions, .tab-bar { display: none !important; }
+  /* Only the chosen limit prints, as plain text. */
+  button.seg-btn.active { display: inline-flex !important; justify-content: flex-start !important; width: auto !important; min-height: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; font-size: 8.5pt !important; font-weight: 700 !important; color: var(--ink) !important; }
+  [data-seg] { display: block !important; min-height: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; }
+  .terms-subcard-grid.cols-4 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; align-items: end !important; }
+  .terms-field.terms-field-pills { display: block !important; }
+  #loanTermsHead .terms-field label { min-height: 0 !important; margin-bottom: 2pt !important; }
+  #loanTermsHead .stepper-wrap { width: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 2pt 4pt !important; }
+  #comparisonPanel.few-cars #filtersToggle, #comparisonPanel #filtersToggle, .budget-view-switcher, .foot-link-groups, .foot-meta #openPhotoCreditsBtn, .foot-meta #footerSourceGuide { display: none !important; }
+  /* A closed section has nothing to show, so its heading is left out. */
+  .budget-panel:has(> .budget-details:not([open])), .terms-advanced:not([open]) { display: none !important; }
+  .terms-advanced > summary::after, .budget-summary::after { content: none !important; }
+  /* The shortlist starts its own page, so its heading never separates from the table. */
+  #comparisonPanel { break-before: page !important; break-inside: auto !important; }
+  /* Fits A4 width: Status repeats Affordability, headings wrap, and on-screen minimum widths are released. */
+  #comparisonPanel table { min-width: 0 !important; }
+  #comparisonPanel th.secondary:not(.n), #comparisonPanel td.v-status, #comparisonPanel .car .thumb { display: none !important; }
+  #comparisonPanel th, #comparisonPanel th button[data-k] { white-space: normal !important; }
+  #comparisonPanel th, #comparisonPanel td { min-width: 0 !important; position: static !important; box-shadow: none !important; padding-inline: 1.5pt !important; }
+  #comparisonPanel td, #comparisonPanel td .cell-metric, #comparisonPanel td .cell-metric b, #comparisonPanel td .price-val, #comparisonPanel td .v-dp-val { font-size: 7pt !important; }
+  #comparisonPanel td .cell-metric, #comparisonPanel td .price-wrap, #comparisonPanel td .dp-wrap { min-width: 0 !important; }
+  #comparisonPanel td .micro-sub { font-size: 5.5pt !important; }
+  #comparisonPanel td.name { width: 92pt !important; }
+  #comparisonPanel td.v-bar { width: 72pt !important; }
+  #comparisonPanel td.v-bar .v-bar-inner { min-width: 0 !important; max-width: none !important; }
+  #comparisonPanel td.v-bar .tag { font-size: 5.5pt !important; padding: 1pt 2pt !important; white-space: normal !important; }
+  #comparisonPanel td.v-bar .bar-micro-metric { font-size: 5.5pt !important; white-space: normal !important; }
+  #comparisonPanel .v-badge-lowest * { font-size: 5.5pt !important; padding-block: 0 !important; min-height: 0 !important; }
+  #comparisonPanel .name small.v-spec { display: block !important; white-space: normal !important; }
+  #comparisonPanel .v-spec > * { all: unset; font-size: 6pt; color: var(--mute); }
+  #comparisonPanel .v-spec > * + *::before { content: " · "; }
+}

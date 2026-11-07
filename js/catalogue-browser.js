@@ -326,7 +326,8 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
         $("catalogueTrimSelect").innerHTML = offers.map((o, idx) =>
           `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${displayAmount(o.amount)}` : ""} (Brand New)</option>`
         ).join("");
-        $("catalogueTrimSelect").value = "0";
+        // Start on the price the Showroom and ready-made shortlists show for this car.
+        $("catalogueTrimSelect").value = String(Math.max(0, offers.indexOf(representativePriceOffer(offers))));
       } else {
         $("catalogueTrimWrap").hidden = true;
       }

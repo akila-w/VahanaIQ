@@ -70,7 +70,7 @@
 <div class="ambient" aria-hidden="true"><span class="ambient-glow ambient-glow-a"></span><span class="ambient-glow ambient-glow-b"></span></div>
 <a class="skip" href="#answerPanel">Skip to Your Monthly Rental</a>
 <noscript><p class="noscript">VahanaIQ needs JavaScript to calculate lease rentals. Please turn it on and reload the page.</p></noscript>
-<section class="landing" id="landing" aria-labelledby="landingTitle">
+<section class="landing" id="landing" role="main" aria-labelledby="landingTitle">
   <div class="landing-hero">
     <div class="landing-bg" aria-hidden="true"><span class="landing-glow landing-glow-a"></span><span class="landing-glow landing-glow-b"></span><span class="landing-matrix"></span></div>
     <header class="landing-head">
@@ -147,7 +147,7 @@
 </section>
 <header class="site-header">
   <div class="header-brand-group">
-    <a class="brand" href="index.html">
+    <a class="brand" href="index.html?welcome">
       <img src="assets/icons/logo-v-mark-transparent-light.svg" alt="" class="brand-logo logo-light" width="36" height="36">
       <img src="assets/icons/logo-v-mark-transparent-dark.svg" alt="" class="brand-logo logo-dark" width="36" height="36">
       <div class="brand-text">
@@ -211,6 +211,7 @@
     </div>
   </section>
 
+  <div class="answer-column">
   <section class="answer-panel" id="answerPanel" aria-labelledby="answerTitle" tabindex="-1">
     <h2 class="sr-only" id="answerTitle">Your Monthly Rental</h2>
     <div class="answer-card is-empty" id="answerCard" data-fit="na">
@@ -248,6 +249,7 @@
       <button class="btn answer-cta" id="browseBudgetBtn" type="button"><span id="browseBudgetLabel">Browse Cars</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
     </div>
   </section>
+  </div>
 
   <section class="panel terms-panel" id="loanTermsHead" aria-labelledby="h-terms">
     <div class="panel-head">

@@ -522,7 +522,7 @@ for (const qf of ["all", "under15m", "electrified", "suv", "cbsl40", "official"]
 }
 assert(style.includes('.quick-filter-chips'), "css/style.css must include quick-filter-chips");
 assert(style.includes('@media print'), "css/style.css must include @media print");
-assert(style.includes('STATUTORY LEASE FINANCING QUOTATION'), "css/style.css must include statutory lease financing quotation watermark in print");
+assert(style.includes("LEASE ESTIMATE, NOT A LENDER'S QUOTATION"), "the printed header must say this is an estimate, not a lender's quotation");
 console.log("✓ index.html Elements, Sort Options & Cache Busters PASSED\n");
 
 // -------------------------------------------------------------

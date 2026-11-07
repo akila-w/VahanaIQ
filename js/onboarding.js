@@ -1,7 +1,7 @@
 import { ONBOARDING_KEY, MIN_SHORTLIST, readOnboarding, validTerms, mergeShortlist } from './onboarding-state.js?v=2.12.0';
 import { searchCatalogue } from './catalogue-search.js?v=2.12.0';
 import { rental, flatToEffective, minDownFor } from './calculator.js?v=2.12.0';
-import { validPrice, vehicleBatchError } from './vehicle-validation.js?v=2.12.0';
+import { validPrice, vehicleBatchError, representativePriceOffer } from './vehicle-validation.js?v=2.12.0';
 import { safeImageUrl } from './safe-url.js?v=2.12.0';
 import { DEFAULT_RATE, DEFAULT_TENURE, DEFAULT_DOWN, CONDITIONS, READY_SHORTLISTS } from './constants.js?v=2.12.0';
 
@@ -117,7 +117,7 @@ function init(forcedOpen = false) {
   // Allow Escape key and cancel event to close dialog
   dialog.addEventListener('cancel', () => exitOnboarding());
 
-  const top = el('header', 'onboarding-head');
+  const top = el('div', 'onboarding-head');
   const brandGroup = el('div', 'onboarding-brand-group');
   for (const theme of ['light', 'dark']) {
     const mark = el('img', `onboarding-mark logo-${theme}`);
@@ -163,7 +163,7 @@ function init(forcedOpen = false) {
   top.append(brandGroup, stepper, closeBtn);
 
   const body = el('div', 'onboarding-body');
-  const foot = el('footer', 'onboarding-foot');
+  const foot = el('div', 'onboarding-foot');
   const status = el('p', 'onboarding-status');
   status.setAttribute('role', 'status');
 
@@ -378,7 +378,7 @@ function init(forcedOpen = false) {
 
     // Quick picks add real catalogue cars; the visitor still reviews and edits the shortlist.
     const quickPicks = READY_SHORTLISTS.map(([label, ids]) => [label, ids.map(id => models.find(m => m.id === id)).filter(Boolean)
-      .map(model => [model, (model.offers || []).find(o => validPrice(o.amount))]).filter(([, offer]) => offer)])
+      .map(model => [model, representativePriceOffer(model.offers)]).filter(([, offer]) => offer)])
       .filter(([, cars]) => cars.length >= MIN_SHORTLIST);
     if (quickPicks.length) {
       const picks = el('div', 'onboarding-quick-picks');
@@ -541,7 +541,7 @@ function init(forcedOpen = false) {
 
         // Header info
         const info = el('div', 'onboarding-car-info');
-        const nameHeading = el('h3', 'onboarding-car-title', model.name);
+        const nameHeading = el('h2', 'onboarding-car-title', model.name);
         info.append(nameHeading);
 
         // Dynamic price display
@@ -561,6 +561,9 @@ function init(forcedOpen = false) {
           opt.value = i;
           options.append(opt);
         }
+        // Start on the price the Showroom and ready-made shortlists show for this car.
+        const usual = offers.indexOf(representativePriceOffer(offers));
+        if (usual > 0) options.value = String(usual);
 
         // Action button container
         const btnRow = el('div', 'onboarding-car-actions');
@@ -923,7 +926,7 @@ function init(forcedOpen = false) {
         card.append(thumb);
       }
       card.append(
-        el('h3', 'result-name', car.name),
+        el('h2', 'result-name', car.name),
         el('p', 'result-price', `${formatLKR(car.price)} · ${car.priceBasis || 'Published'}`),
         el('strong', 'result-rental', `${formatLKR(monthly)} / mo`),
         el('p', 'result-meta', `${formatLKR(car.price * d / 100)} down (${d}%) · ${terms.tenure} months`)
@@ -1004,7 +1007,7 @@ const lkr = n => 'LKR ' + Math.round(n).toLocaleString('en-LK');
 // The rental each card shows: catalogue price, the CBSL minimum (never below the planner's
 // default), the planner's default rate and tenure. The same sums the planner itself runs.
 function quote(model) {
-  const offer = (model.offers || []).find(o => validPrice(o.amount));
+  const offer = representativePriceOffer(model.offers);
   const photo = model.images?.[0]?.smallSrc || model.images?.[0]?.src;
   if (!offer || !photo) return null;
   const down = Math.max(DEFAULT_DOWN, minDownFor(offer.condition || 'New', model.financeClass, offer.firstRegisteredOn));
