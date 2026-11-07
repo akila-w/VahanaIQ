@@ -7,7 +7,7 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ## [Unreleased] - 01/11/2026
 
-- PhotoHarvest review (draft, not released): the read-only review panel now sits under the photo strip in the rebuilt Photo Studio, inside the administrator's view. Offline shell `vahanaiq-v2.12.0-offline-18`.
+- PhotoHarvest review (draft, not released): the read-only review panel now sits under the photo strip in the rebuilt Photo Studio, inside the administrator's view. Offline shell `vahanaiq-v2.12.0-offline-19`.
 
 Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-15`.
 

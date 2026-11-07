@@ -368,7 +368,6 @@ $("harvestFolder").addEventListener("change", async event => {
       picture.alt = "Unapproved image candidate: " + (candidate.originalFileName || candidate.file);
       picture.width = 160;
       picture.height = 100;
-      picture.loading = "lazy";
       li.append(picture);
       const details = document.createElement("div");
       const strong = document.createElement("strong");
