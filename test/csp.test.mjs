@@ -14,6 +14,7 @@ const SHIPPED_PAGES = [
   'catalogue.html',
   'studio.html',
   'about.html',
+  'settings.html',
   'privacy.html',
   'terms.html'
 ];

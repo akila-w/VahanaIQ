@@ -6,7 +6,7 @@ export function prepareBulkSelection(vehicles, selectedIds = []) {
   for (const v of vehicles) {
     if (selected.has(v.id) || seen.has(v.id)) continue;
     seen.add(v.id);
-    if (!validPrice(v.price) || v.priceBasis === 'conflicting') { skipped.push(v); continue; }
+    if (!validPrice(v.price) || v.priceBasis === 'conflicting' || (v.priceVerification === 'unverified' && v.custom !== true)) { skipped.push(v); continue; }
     eligible.push(v);
   }
   return { eligible, skipped };

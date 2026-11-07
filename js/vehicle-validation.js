@@ -45,3 +45,38 @@ export function validateSearchResponse(data, query) {
   }
   return data;
 }
+
+
+// Provenance of a catalogue offer is independent of whether its price is numeric.
+// An unchecked source, an estimated tariff bracket or a contradictory review note
+// must never be treated as a verified seller asking/starting amount.
+const CONTRADICTED_PRICE = /\b(?:another model|different model|wrong model|mismatch(?:ed)?|conflict(?:ing)?|not verified|unverified|could not be retrieved|cannot be verified|does not verif(?:y|ied)|not substantiated|unsupported (?:price|amount|source))\b/i;
+const AMOUNT_IN_EXCERPT = /\b(\d[\d,]*(?:\.\d+)?)\s*(million|mn|m)?\b/gi;
+
+export function offerEvidenceStatus(offer) {
+  if (!validPrice(offer?.amount)) return "unavailable";
+  const note = typeof offer.note === "string" ? offer.note : "";
+  if (CONTRADICTED_PRICE.test(note)) return "disputed";
+  if (offer.kind === "estimated" || /estim/i.test(String(offer.sourceStatus || ""))) return "estimated";
+  if (offer.sourceStatus !== "ok" || !["official", "dealer", "launch"].includes(offer.kind)) return "unverified";
+  if (typeof offer.sourceUrl !== "string" || !/^https:\/\//i.test(offer.sourceUrl)) return "unverified";
+  if (typeof offer.checkedOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(offer.checkedOn)) return "unverified";
+  // Source excerpts are retained in the curated data. Match the *amount* to the
+  // excerpt, not just a generic source domain, status label or vehicle name.
+  const excerpt = typeof offer.evidence === "string" ? offer.evidence : "";
+  const numbers = excerpt.matchAll(AMOUNT_IN_EXCERPT);
+  for (const match of numbers) {
+    const n = Number(match[1].replaceAll(",", ""));
+    const amount = n * (match[2] ? 1_000_000 : 1);
+    if (Number.isFinite(amount) && Math.abs(amount - offer.amount) < 0.01) return "confirmed";
+  }
+  return "unverified";
+}
+
+export function representativePriceOffer(offers) {
+  const confidence = { confirmed: 0, unverified: 1, estimated: 2, disputed: 3 };
+  return (Array.isArray(offers) ? offers : [])
+    .filter(offer => validPrice(offer?.amount))
+    .map((offer, index) => ({ offer, index, rank: confidence[offerEvidenceStatus(offer)] ?? 4 }))
+    .sort((a, b) => a.rank - b.rank || a.offer.amount - b.offer.amount || a.index - b.index)[0]?.offer || null;
+}

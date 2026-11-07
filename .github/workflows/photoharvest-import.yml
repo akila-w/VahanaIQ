@@ -27,11 +27,11 @@ jobs:
   local-review-import:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
       - name: Browser review module tests
@@ -52,8 +52,8 @@ jobs:
       matrix:
         browser: [chromium, webkit, firefox]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '22'
       - uses: actions/setup-python@v5
@@ -63,12 +63,14 @@ jobs:
         run: |
           npm ci
           python -m pip install 'Pillow>=10,<13'
+          sudo sed -i -E '/azure\.archive\.ubuntu\.com/s/priority:[0-9]+/priority:9/' /etc/apt/apt-mirrors.txt \
+            || echo "::warning::Could not reorder the apt mirrors; installing with the image's defaults"
           npx playwright install --with-deps ${{ matrix.browser }}
       - name: Exercise Photo Studio review with synthetic local files
         run: npx playwright test test/browser/photoharvest-review.spec.mjs --browser=${{ matrix.browser }} --workers=1 --reporter=list,github
       - name: Retain failure evidence
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: photoharvest-review-${{ matrix.browser }}
           path: test-results/

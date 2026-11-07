@@ -126,14 +126,22 @@
   // visible area changes while a text field or menu has focus and that field is out of sight,
   // it is brought back to the middle of what is visible. Safari can undo its scroll just after
   // the last resize, so scrolling is checked the same way for a moment afterwards.
+  // All of this applies only while a keyboard is open, which is when the visible area falls well
+  // short of the layout viewport. Other resizes must not move the page: a desktop window being
+  // resized, or WebKit reporting a resize from 0x0 at first layout, would otherwise throw a
+  // visitor who has scrolled away back to the field. Scale is allowed for so pinch zoom is not
+  // mistaken for a keyboard.
+  const KEYBOARD_MIN_HEIGHT = 100;
   const FIELD = 'input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="file"]), select, textarea';
   function initFocusedFieldGuard() {
     const vv = window.visualViewport;
     if (!vv || typeof vv.addEventListener !== 'function') return;
     let timer = 0;
     let settleUntil = 0;
+    const keyboardOpen = () => document.documentElement.clientHeight - vv.height * vv.scale > KEYBOARD_MIN_HEIGHT;
     const schedule = () => { clearTimeout(timer); timer = setTimeout(reveal, 80); };
     const reveal = () => {
+      if (!keyboardOpen()) return;
       const el = document.activeElement;
       if (!el || typeof el.matches !== 'function' || !el.matches(FIELD)) return;
       // iOS Safari measures element boxes from the visible area (its scrollY is the visual
@@ -143,7 +151,11 @@
       if (box.top >= top && box.bottom <= top + vv.height) return;
       el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'instant' });
     };
-    vv.addEventListener('resize', () => { settleUntil = Date.now() + 1000; schedule(); });
+    vv.addEventListener('resize', () => {
+      if (!keyboardOpen()) { settleUntil = 0; clearTimeout(timer); return; }
+      settleUntil = Date.now() + 1000;
+      schedule();
+    });
     window.addEventListener('scroll', () => { if (Date.now() < settleUntil) schedule(); }, { passive: true });
   }
   initFocusedFieldGuard();

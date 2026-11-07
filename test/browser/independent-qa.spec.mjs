@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 // Real worker behaviour is covered separately in offline.spec.mjs.
 test.use({ serviceWorkers: 'block' });
 
-import { seedReturning } from './returning-user.mjs';
+import { seedReturning, blockFirebase } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 import fs from 'node:fs';
@@ -21,6 +21,7 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
     test.setTimeout(60000);
     const context = await browser.newContext({ viewport: { width, height: 900 }, colorScheme: theme, reducedMotion: 'reduce' });
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
@@ -35,15 +36,15 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
           const r = rect(el);
           return r.width && r.height && (r.left < -1 || r.right > innerWidth + 1);
         }).map(el => ({ element: el.id || el.className || el.tagName, text: el.textContent.slice(0, 80), left: rect(el).left, right: rect(el).right }));
-        const terms = document.querySelector('#loanTermsHead'), budget = document.querySelector('#budgetPanel');
-        return { width: innerWidth, scrollWidth: document.documentElement.scrollWidth, outside, welcomeInHero: !!document.querySelector('.hero > .guide-invitation'), columns: terms && budget ? Math.abs(rect(terms).top - rect(budget).top) : null };
+        const terms = document.querySelector('#loanTermsHead'), answer = document.querySelector('#answerPanel');
+        return { width: innerWidth, scrollWidth: document.documentElement.scrollWidth, outside, welcomeInHero: !!document.querySelector('.hero > .guide-invitation'), columns: terms && answer ? Math.abs(rect(terms).top - rect(answer).top) : null };
       });
       measurements.push({ route, ...measurement });
       expect.soft(measurement.scrollWidth, `${route}: page overflow`).toBeLessThanOrEqual(width);
       expect.soft(measurement.outside, `${route}: clipped headings/controls`).toEqual([]);
       if (route === 'index' && width >= 1366) {
         expect.soft(measurement.welcomeInHero).toBe(true);
-        expect.soft(measurement.columns, 'loan terms and budget start at same vertical position').toBeLessThanOrEqual(1);
+        expect.soft(measurement.columns, 'loan terms and the answer card start at same vertical position').toBeLessThanOrEqual(1);
       }
       if (['about', 'privacy', 'terms'].includes(route)) {
         const info = await page.locator('main').evaluate(el => ({ display: getComputedStyle(el).display, width: el.clientWidth, sectionWidth: el.querySelector('.info-sections').clientWidth, padding: parseFloat(getComputedStyle(el).paddingLeft) }));
@@ -212,6 +213,7 @@ test('catalogue transfer preserves finance class and registration age', async ({
 });
 
 test('Photo Studio accepts the real JPEG fixture and refuses invalid uploads', async ({ page }) => {
+  await blockFirebase(page.context());
   await page.goto(`${BASE}/studio.html`);
   await page.locator('#modelList button').first().click();
   const before = await page.locator('#filmstrip > *').count();

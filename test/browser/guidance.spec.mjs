@@ -153,7 +153,7 @@ test('quick explanations fit a short touch viewport and reposition after rotatio
   await context.close();
 });
 
-for (const [name, steps] of [['catalogue', 3], ['studio', 3]]) {
+for (const [name, steps] of [['catalogue', 3]]) {
   test(`${name} tour works with page controls and completes`, async ({ page }) => {
     await go(page, `${name}.html?guide=tour`);
     await expect(page.locator('#guidedTour')).toContainText(`1 of ${steps}`);
@@ -288,7 +288,9 @@ test('relative links and assets work under a GitHub Pages project path', async (
   await page.goto(`${BASE}/VahanaIQ/about.html`);
   await page.locator('#helpCentreButton').click();
   await page.getByRole('link', { name: 'Catalogue tour', exact: true }).click();
-  await expect(page).toHaveURL(`${BASE}/VahanaIQ/catalogue.html`);
+  // The address clears once the catalogue's modules have run. In WebKit on CI that takes about
+  // 3 seconds, routed or not, and can pass the default 5 seconds on a cold or busy runner.
+  await expect(page).toHaveURL(`${BASE}/VahanaIQ/catalogue.html`, { timeout: 15_000 });
   await expect(page.locator('#guidedTour')).toBeVisible();
   await page.unrouteAll({ behavior: 'wait' });
 });

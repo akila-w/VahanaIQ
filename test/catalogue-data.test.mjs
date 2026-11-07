@@ -22,9 +22,9 @@ assert.ok(baked.identity, "js/catalogue-data.js must define window.__VAHANAIQ_ID
 const catalogue = readJson("data/catalogue.json");
 const identity = readJson("data/identity.json");
 assert.deepEqual(baked.catalogue, catalogue,
-  "js/catalogue-data.js has drifted from data/catalogue.json; re-run scripts/build-curated-catalogue.py");
+  "js/catalogue-data.js has drifted from data/catalogue.json; use the approval-controlled two-file publication workflow; do not run the legacy image builder");
 assert.deepEqual(baked.identity, identity,
-  "js/catalogue-data.js has drifted from data/identity.json; re-run scripts/build-curated-catalogue.py");
+  "js/catalogue-data.js has drifted from data/identity.json; use the approval-controlled two-file publication workflow; do not run the legacy image builder");
 
 assert.ok(catalogue.models.length >= 100, "Guard against publishing an incomplete catalogue");
 assert.match(catalogue.checkedOn, /^\d{4}-\d{2}-\d{2}$/, "The catalogue must state when it was checked");

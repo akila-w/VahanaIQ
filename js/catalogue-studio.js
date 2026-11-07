@@ -113,12 +113,19 @@ function renderModelList() {
     return `${model.name} ${model.make} ${model.model} ${model.body}`.toLowerCase().includes(query);
   });
   $("modelCount").textContent = `${rows.length === state.models.length ? rows.length : `${rows.length} of ${state.models.length}`} `
-    + `entr${rows.length === 1 ? "y" : "ies"} · ${state.records.size} changed in this browser`;
-  $("modelList").innerHTML = rows.map(model => `<li><button class="model-row${model.id === state.modelId ? " is-current" : ""}" type="button" data-model="${esc(model.id)}">
-      <span class="model-name">${esc(model.name)}</span>
-      <span class="model-meta">${esc(model.make)} · ${esc(model.body || "Vehicle")} · ${model.images.length} photo${model.images.length === 1 ? "" : "s"}</span>
-      ${state.records.has(model.id) ? '<span class="model-flag">Changed</span>' : ""}
-    </button></li>`).join("") || '<li class="studio-empty">No entry matches that search.</li>';
+    + `entr${rows.length === 1 ? "y" : "ies"} · ${state.records.size} edited in this browser`;
+  $("filterAll").textContent = `All ${state.models.length}`;
+  $("filterEdited").textContent = `Edited ${state.records.size}`;
+  $("filterAll").setAttribute("aria-pressed", String(state.filter === "all"));
+  $("filterEdited").setAttribute("aria-pressed", String(state.filter === "edited"));
+  const none = state.filter === "edited" && !query ? "No entry has been edited in this browser yet." : "No entry matches that search.";
+  $("modelList").innerHTML = rows.map(model => `<li><button class="model-row" type="button" data-model="${esc(model.id)}"${model.id === state.modelId ? ' aria-current="true"' : ""}>
+      <span class="model-text">
+        <span class="model-name">${esc(model.name)}</span>
+        <span class="model-meta">${esc(model.body || "Vehicle")} · ${model.images.length} photo${model.images.length === 1 ? "" : "s"}</span>
+      </span>
+      ${state.records.has(model.id) ? '<span class="model-flag">Edited</span>' : ""}
+    </button></li>`).join("") || `<li class="studio-empty">${none}</li>`;
 }
 
 // ---------------------------- the photo strip ----------------------------
@@ -127,7 +134,7 @@ async function renderFilmstrip(model, record, token) {
   const items = orderedItems(record);
   $("photoCount").textContent = `${items.length} photo${items.length === 1 ? "" : "s"}`;
   $("filmstrip").innerHTML = items.map((item, index) => `<li class="film${item.id === state.itemId ? " is-current" : ""}" data-item="${esc(item.id)}">
-      <button class="film-photo" type="button" data-frame="${esc(item.id)}" aria-label="Frame ${esc(itemLabel(item))}">
+      <button class="film-photo" type="button" data-frame="${esc(item.id)}" aria-pressed="${item.id === state.itemId}" aria-label="Frame ${esc(itemLabel(item))}">
         <canvas width="${THUMB_WIDTH / 2}" height="${THUMB_HEIGHT / 2}" aria-hidden="true"></canvas>
         ${index === 0 ? '<span class="film-cover">Cover</span>' : ""}
         ${item.kind === UPLOAD ? '<span class="film-upload">Your Photo</span>' : ""}
@@ -139,7 +146,7 @@ async function renderFilmstrip(model, record, token) {
         <button type="button" class="quiet" data-move="${esc(item.id)}" data-delta="1"${index === items.length - 1 ? " disabled" : ""} aria-label="Move ${esc(itemLabel(item))} later">→</button>
         <button type="button" class="quiet" data-remove="${esc(item.id)}"${items.length < 2 ? " disabled" : ""} aria-label="Remove ${esc(itemLabel(item))}">Remove</button>
       </div>
-    </li>`).join("");
+    </li>`).join("") + `<li class="film-add"><label for="photoFiles"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Add Photo</label></li>`;
   const nodes = new Map([...$("filmstrip").querySelectorAll(".film")].map(node => [node.dataset.item, node]));
   for (const item of items) {
     if (token !== renderToken) return;
@@ -159,6 +166,7 @@ async function renderFilmstrip(model, record, token) {
 // A record that no longer differs from the published catalogue is dropped, so the browser never keeps
 // a stale copy of an entry the studio has been told to leave alone.
 async function commit(model, record, message) {
+  cancelSave(model.id);
   const next = { ...record, updatedAt: new Date().toISOString() };
   if (recordIsEdited(next, model)) {
     state.records.set(model.id, next);
@@ -200,6 +208,7 @@ async function renderEditor() {
   $("editorMake").textContent = `${model.make} · ${model.body || "Vehicle"}`;
   $("editorTitle").textContent = model.name;
   $("resetModelBtn").hidden = !state.records.has(model.id);
+  $("resetModelBtn").textContent = `Reset ${model.model || model.name} to original photos…`;
   const isTall = /suv|pickup|van|crossover|truck|kei/i.test(`${model.body || ""} ${model.name || ""}`);
   const guides = $("cropGuides");
   if (guides) guides.classList.toggle("is-low-roof", !isTall);
@@ -238,9 +247,32 @@ function describeFrame(item, photo, mode) {
       ? `Vehicle found at ${Math.round(photo.trim.width)}×${Math.round(photo.trim.height)} px of ${photo.source.width}×${photo.source.height}.`
       : "The whole photo is kept, because nothing stood out from the background.");
   }
-  parts.push(`Zoom ${item.frame.zoom.toFixed(2)}× · focus ${Math.round(item.frame.focusX * 100)}% across, ${Math.round(item.frame.focusY * 100)}% down.`);
+  parts.push(`Zoom ${zoomText(item.frame.zoom)} · focus ${Math.round(item.frame.focusX * 100)}% across, ${Math.round(item.frame.focusY * 100)}% down.`);
   parts.push(`Exports at ${FRAME_WIDTH}×${FRAME_HEIGHT} and ${THUMB_WIDTH}×${THUMB_HEIGHT}.`);
   return parts.join(" ");
+}
+
+const FRAME_CONTROLS = ["zoomRange", "fitBtn", "centreBtn", "resetFrameBtn", "positionAuto", "positionManual",
+  "backgroundPlate", "backgroundOriginal", "saveFrameBtn"];
+
+function zoomText(zoom) {
+  return `${Math.round(zoom * 100)}%`;
+}
+
+function setPressed(id, pressed) {
+  $(id).setAttribute("aria-pressed", String(pressed));
+}
+
+// Position and Background are two views of one setting, frame.mode, so neither adds anything to a saved
+// record or to the export. Automatic means the photo still decides (mode "auto") and has not been moved;
+// choosing a background, or moving the photo, is a manual framing.
+function paintFrameChoices(item, mode) {
+  const { mode: chosen, focusX, focusY } = item.frame;
+  const automatic = chosen === "auto" && Math.abs(focusX - 0.5) < 1e-6 && Math.abs(focusY - 0.5) < 1e-6;
+  setPressed("positionAuto", automatic);
+  setPressed("positionManual", !automatic);
+  setPressed("backgroundPlate", mode === "plate");
+  setPressed("backgroundOriginal", mode !== "plate");
 }
 
 function paintStage(item) {
@@ -252,10 +284,11 @@ function paintStage(item) {
   $("zoomRange").min = String(range.min);
   $("zoomRange").max = String(range.max);
   $("zoomRange").value = String(item.frame.zoom);
-  $("zoomValue").textContent = `${item.frame.zoom.toFixed(2)}×`;
+  $("zoomValue").textContent = zoomText(item.frame.zoom);
   $("zoomOut").disabled = item.frame.zoom <= range.min + 1e-6;
   $("zoomIn").disabled = item.frame.zoom >= range.max - 1e-6;
-  for (const id of ["zoomRange", "fitBtn", "centreBtn", "resetFrameBtn", "frameMode"]) $(id).disabled = false;
+  for (const id of FRAME_CONTROLS) $(id).disabled = false;
+  paintFrameChoices(item, mode);
   $("frameStatus").textContent = describeFrame(item, photo, mode);
 }
 
@@ -270,21 +303,23 @@ function paintFilm(item) {
 async function renderStage(token) {
   const model = selectedModel();
   const item = model ? currentItem(recordFor(model)) : null;
-  const controls = ["zoomRange", "zoomOut", "zoomIn", "fitBtn", "centreBtn", "resetFrameBtn", "frameMode"];
   if (!item) {
     $("cropHint").hidden = false;
+    $("stageBadge").hidden = true;
     $("frameItem").textContent = "No photo selected";
     $("frameStatus").textContent = "";
     $("zoomRange").value = "1";
-    $("zoomValue").textContent = "1.00×";
-    for (const id of controls) $(id).disabled = true;
+    $("zoomValue").textContent = "100%";
+    for (const id of [...FRAME_CONTROLS, "zoomOut", "zoomIn"]) $(id).disabled = true;
     const ctx = $("cropStage").getContext("2d");
     ctx.clearRect(0, 0, $("cropStage").width, $("cropStage").height);
     return;
   }
   $("cropHint").hidden = true;
   $("frameItem").textContent = itemLabel(item);
-  $("frameMode").value = item.frame.mode;
+  const position = orderedItems(recordFor(model)).findIndex(entry => entry.id === item.id);
+  $("stageBadge").textContent = position === 0 ? "Cover · 8:5" : `Photo ${position + 1} · 8:5`;
+  $("stageBadge").hidden = false;
   let photo;
   try {
     photo = await photoFor(item);
@@ -504,15 +539,27 @@ $("filmstrip").addEventListener("click", async event => {
     if (result.error) { note("photoError", result.error); return; }
     forgetPhotos(removed ? [removed] : []);
     if (state.itemId === button.dataset.remove) state.itemId = orderedItems(result.record)[0].id;
-    await commit(model, result.record, "Photo removed. Undo My Changes brings the published set back.");
+    await commit(model, result.record, "Photo removed. Reset to original photos brings the published set back.");
   }
 });
-// Saves are written together, so dragging a photo does not hammer the browser's storage.
-let saveTimer = 0;
+// Saves are written together, so dragging a photo does not hammer the browser's storage. Each entry has
+// its own timer: another entry's save is never cancelled, and a newer write cancels the entry's older one.
+const saveTimers = new Map();
+
+function cancelSave(modelId) {
+  clearTimeout(saveTimers.get(modelId));
+  saveTimers.delete(modelId);
+}
+
+function showResetLink() {
+  const model = selectedModel();
+  $("resetModelBtn").hidden = !(model && state.records.has(model.id));
+}
 
 function scheduleSave(model, record, delay = 400) {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
+  cancelSave(model.id);
+  saveTimers.set(model.id, setTimeout(async () => {
+    saveTimers.delete(model.id);
     if (recordIsEdited(record, model)) {
       const saved = await writeEdit(record);
       if (!saved) markStorageUnavailable();
@@ -520,8 +567,8 @@ function scheduleSave(model, record, delay = 400) {
       await deleteEdit(model.id);
     }
     renderModelList();
-    $("resetModelBtn").hidden = !state.records.has(model.id);
-  }, delay);
+    showResetLink();
+  }, delay));
 }
 
 // The frame path stays cheap: only the stage and the one thumbnail are redrawn while dragging.
@@ -692,10 +739,42 @@ $("centreBtn").addEventListener("click", () => {
   if (!active) return;
   setFrame({ ...active.item.frame, focusX: 0.5, focusY: 0.5 }, { persist: true, message: "Centred the photo." });
 });
-$("frameMode").addEventListener("change", event => {
+$("positionAuto").addEventListener("click", () => {
   const active = activeItem();
   if (!active) return;
-  setFrame({ ...active.item.frame, mode: event.target.value }, { persist: true, message: "Framing changed." });
+  setFrame({ ...active.item.frame, mode: "auto", focusX: 0.5, focusY: 0.5 }, { persist: true, message: "The photo decides its framing again." });
+});
+$("positionManual").addEventListener("click", () => {
+  const active = activeItem();
+  if (!active || !active.photo) return;
+  const mode = resolveMode(active.item.frame, active.photo.spec.background);
+  setFrame({ ...active.item.frame, mode }, { persist: true, message: "Manual framing. Drag the photo to place it." });
+  $("cropStage").focus();
+});
+for (const [id, mode] of [["backgroundPlate", "plate"], ["backgroundOriginal", "scene"]]) {
+  $(id).addEventListener("click", () => {
+    const active = activeItem();
+    if (!active) return;
+    setFrame({ ...active.item.frame, mode }, { persist: true, message: "Framing changed." });
+  });
+}
+// Frames already save as they change. This writes any save still waiting and says where it went.
+$("saveFrameBtn").addEventListener("click", async () => {
+  const active = activeItem();
+  if (!active) return;
+  const { model, record } = active;
+  cancelSave(model.id);
+  const edited = recordIsEdited(record, model);
+  const saved = edited ? await writeEdit(record) : await deleteEdit(model.id);
+  renderModelList();
+  showResetLink();
+  if (!edited) {
+    toast("Nothing to save: this entry matches the published photos.");
+    return;
+  }
+  if (!saved) markStorageUnavailable();
+  toast(saved ? "Frame saved in this browser. Export Changes when you are ready to publish."
+    : "This browser could not save the frame. Export the file to keep your work.");
 });
 $("resetFrameBtn").addEventListener("click", async () => {
   const model = selectedModel();
@@ -710,7 +789,7 @@ $("resetFrameBtn").addEventListener("click", async () => {
 // On single-column layouts (phones and tablets) the editor sits below the entry list, so a
 // choice there brings the editor into view; focus stays on the list for keyboard users.
 function revealEditor() {
-  if (typeof window.matchMedia !== "function" || !window.matchMedia("(max-width: 1020px)").matches) return;
+  if (typeof window.matchMedia !== "function" || !window.matchMedia("(max-width: 900px)").matches) return;
   const editor = document.querySelector(".studio-editor");
   if (!editor || typeof editor.scrollIntoView !== "function") return;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -725,14 +804,18 @@ $("modelSearch").addEventListener("input", event => {
   state.query = event.target.value;
   renderModelList();
 });
-$("modelFilter").addEventListener("change", event => {
-  state.filter = event.target.value;
+$("modelFilter").addEventListener("click", event => {
+  const button = event.target.closest("[data-filter]");
+  if (!button) return;
+  state.filter = button.dataset.filter;
   renderModelList();
 });
 
 $("resetModelBtn").addEventListener("click", async () => {
   const model = selectedModel();
   if (!model || !state.records.has(model.id)) return;
+  if (!globalThis.confirm(`Reset ${model.name} to its published photos? Your uploads and framing for this entry will be removed from this browser.`)) return;
+  cancelSave(model.id);
   const record = state.records.get(model.id);
   state.records.delete(model.id);
   forgetPhotos(record.items);
@@ -747,7 +830,7 @@ $("resetModelBtn").addEventListener("click", async () => {
 
   // Fully reset Photo Studio view state on undo, restoring zoom control & readout
   $("zoomRange").value = "1";
-  $("zoomValue").textContent = "1.00×";
+  $("zoomValue").textContent = "100%";
 
   renderModelList();
   await renderEditor();
@@ -855,7 +938,7 @@ let pendingFileName = "";
 $("exportBtn").addEventListener("click", async () => {
   const button = $("exportBtn");
   button.disabled = true;
-  button.textContent = "Preparing…";
+  $("exportLabel").textContent = "Preparing…";
   let failure = "";
   try {
     pendingManifest = await exportManifest();
@@ -879,7 +962,7 @@ $("exportBtn").addEventListener("click", async () => {
   $("exportDialog").showModal();
   (problems.length ? $("exportClose") : $("exportDownload")).focus();
   button.disabled = false;
-  button.textContent = "Export My Photos";
+  $("exportLabel").textContent = "Export Changes (.json)";
 });
 
 $("exportClose").addEventListener("click", () => $("exportDialog").close());
@@ -903,6 +986,7 @@ $("exportDownload").addEventListener("click", () => {
 $("exportClear").addEventListener("click", async () => {
   if (!state.records.size) return;
   if (!globalThis.confirm(`Remove the changes made to ${state.records.size} entr${state.records.size === 1 ? "y" : "ies"} in this browser?`)) return;
+  for (const id of [...saveTimers.keys()]) cancelSave(id);
   const records = [...state.records.values()];
   state.records.clear();
   for (const record of records) forgetPhotos(record.items);

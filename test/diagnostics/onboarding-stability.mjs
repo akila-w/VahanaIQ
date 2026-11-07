@@ -3,6 +3,7 @@ import {test,expect} from '@playwright/test';
 import {writeFile} from 'node:fs/promises';
 import {readFileSync} from 'node:fs';
 import {observeOnboarding} from './onboarding-observer.mjs';
+import {seedStudioAdmin,blockFirebase} from '../browser/returning-user.mjs';
 const base=process.env.BASE_URL||'http://127.0.0.1:8123';
 const mode=process.env.ONBOARDING_INTERACTION||'focus-explicit';
 const cssVariant=process.env.ONBOARDING_CSS||'current';
@@ -30,6 +31,7 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
  test.describe(`${route} case ${i}`,()=>{
  if(process.env.ONBOARDING_VARIANTS==='1'&&i%3===2)test.use({serviceWorkers:'block'});
  test(`${mode} saved-state journey`,async({page,browserName})=>{
+  if(route==='studio'){await seedStudioAdmin(page.context());await blockFirebase(page.context());}
   const variants=process.env.ONBOARDING_VARIANTS==='1';
   const width=Number(process.env.ONBOARDING_WIDTH||(variants?[1280,390,1440][i%3]:1280));
   await page.setViewportSize({width,height:width===1280?720:844});
@@ -43,7 +45,6 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
    await page.route('**/assets/images/**',async route=>{heldImages++;await gate;await route.continue();});
   }
   await page.goto(`${base}/${route}.html?onboarding=1`,{waitUntil:delayedImages?'domcontentloaded':'load'});
-  await page.getByRole('button',{name:'Start Guided Setup (Takes 2 min) →',exact:true}).click();
   await expect(page.locator('.onboarding-body')).toHaveCSS('overflow-anchor',cssVariant==='baseline-auto'?'auto':'none');
   const search=page.getByRole('searchbox',{name:'Search vehicles',exact:true});
   for(const [index,name]of ['Toyota Aqua','Toyota Camry Hybrid'].entries()){
@@ -90,9 +91,10 @@ for(let i=0;i<Number(process.env.ONBOARDING_CASES||6);i++)for(const route of ['c
    expect(heldImages).toBeGreaterThan(0);
    await page.locator('.onboarding-car img').evaluateAll(images=>Promise.all(images.map(image=>image.decode())));
   }
-  await page.getByRole('button',{name:'Continue to Loan Terms →'}).click();
-  await page.getByRole('button',{name:'Continue to Affordability Check →'}).click();
+  await page.getByRole('button',{name:'Continue to Income →'}).click();
   await page.getByRole('button',{name:'Skip Income'}).click();
+  await page.getByRole('button',{name:'Continue to Down Payment →'}).click();
+  await page.getByRole('button',{name:'See My Result →'}).click();
   await page.getByRole('button',{name:'Open My Lease →'}).click();
   await expect(page.locator('#rows tr')).toHaveCount(3);
   await expect(page.locator('#rows')).toContainText('Saved vehicle');

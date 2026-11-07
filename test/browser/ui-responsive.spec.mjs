@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-import { seedReturning } from './returning-user.mjs';
+import { seedReturning, blockFirebase } from './returning-user.mjs';
 test.beforeEach(async ({context}) => { await seedReturning(context); });
 
 
@@ -31,10 +31,39 @@ async function addToyotas(page) {
 
 const pageWidth = page => page.evaluate(() => document.documentElement.scrollWidth);
 
+// Only iOS Safari shows a keyboard here, so the visible area is made to report the height an open
+// keyboard leaves, and resizes as it does then. Null puts the real height back: the keyboard closes.
+// The layout viewport stays 844px tall, so a field the guard centres sits at about 420px.
+const KEYBOARD_OPEN_HEIGHT = 600;
+const setVisibleHeight = (page, height) => page.evaluate(value => {
+  const v = window.visualViewport;
+  if (value === null) delete v.height;
+  else Object.defineProperty(v, 'height', { configurable: true, get: () => value });
+  v.dispatchEvent(new Event('resize'));
+}, height);
+
+const incomeInSight = page => page.evaluate(() => {
+  const box = document.getElementById('income').getBoundingClientRect();
+  return box.top >= 0 && box.bottom <= window.visualViewport.height;
+});
+
+// The guard waits 80ms after a scroll, so 300ms is long enough to see it move the page.
+async function expectStaysScrolled(page) {
+  const scrolled = await page.evaluate(async () => {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+    await new Promise(requestAnimationFrame);
+    return window.scrollY;
+  });
+  expect(scrolled).toBeGreaterThan(0);
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+}
+
 test('all six routes fit the requested 375×812 phone viewport in both themes', async ({ browser, browserName }) => {
   for (const theme of ['light', 'dark']) {
     const context = await browser.newContext({ ...phone(browserName, { width: 375, height: 812 }), colorScheme: theme });
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     for (const pageName of ['index', 'catalogue', 'studio', 'about', 'privacy', 'terms']) {
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
@@ -51,6 +80,7 @@ test.describe('Layout: nothing is wider than the screen', () => {
       test(`${pageName}.html at ${width}px`, async ({ browser, browserName }) => {
         const context = await browser.newContext(phone(browserName, { width, height }));
         await seedReturning(context);
+        if (pageName === 'studio') await blockFirebase(context);
     const page = await context.newPage();
         await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
         await page.waitForTimeout(400);
@@ -87,6 +117,7 @@ test.describe('Layout: nothing is wider than the screen', () => {
     test(`${pageName}.html fits 320px with a wide fallback font`, async ({ browser, browserName }) => {
       const context = await browser.newContext(phone(browserName, { width: 320, height: 568 }));
       await seedReturning(context);
+        if (pageName === 'studio') await blockFirebase(context);
     const page = await context.newPage();
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
       await page.addStyleTag({ content: '* { font-family: Verdana, "DejaVu Sans", sans-serif !important; }' });
@@ -248,6 +279,7 @@ test.describe('Phone journeys', () => {
   test('every field on a phone is at least 16px, so iOS does not zoom on focus', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     for (const pageName of ['index', 'catalogue', 'studio']) {
       await page.goto(`${BASE_URL}/${pageName}.html`, { waitUntil: 'load' });
@@ -259,9 +291,157 @@ test.describe('Phone journeys', () => {
     await context.close();
   });
 
+  test('Photo Studio: Reset stays hidden until an entry changes, and the Frame panel edits the one saved setting', async ({ browser }) => {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    const reset = page.locator('#resetModelBtn');
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#stageBadge')).toHaveText('Cover · 8:5');
+    await expect(page.locator('#filterAll')).toHaveText(/^All \d+$/);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await expect(page.locator('#positionAuto')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.model-flag')).toHaveCount(0);
+
+    // The tools the artboard does not show are still there, one click away
+    await page.locator('.frame-tools summary').click();
+    for (const id of ['#zoomIn', '#zoomOut', '#fitBtn', '#centreBtn', '#resetFrameBtn', '#toggleBaselinesBtn', '#toggleGridBtn', '#toggleMarginsBtn']) await expect(page.locator(id)).toBeVisible();
+    await page.locator('#toggleGridBtn').click();
+    await expect(page.locator('#cropGuides')).toHaveClass(/hide-grid/);
+    await expect(page.locator('.guide-grid')).toBeHidden();
+
+    const pressedBackground = await page.locator('#backgroundPlate').getAttribute('aria-pressed') === 'true' ? '#backgroundOriginal' : '#backgroundPlate';
+    await page.locator(pressedBackground).click();
+    await expect(page.locator(pressedBackground)).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#positionManual')).toHaveAttribute('aria-pressed', 'true');
+    await expect(reset).toBeVisible();
+    await expect(reset).toHaveText(/^Reset .+ to original photos…$/);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
+    await expect(page.locator('.model-flag')).toHaveText('Edited');
+
+    await page.locator('#saveFrameBtn').click();
+    await expect(page.locator('#toast')).toContainText('saved in this browser');
+    await page.locator('#filterEdited').click();
+    await expect(page.locator('#modelList [data-model]')).toHaveCount(1);
+
+    // Automatic undoes a manual choice, so the entry is no longer edited
+    await page.locator('#positionAuto').click();
+    await expect(page.locator('#positionAuto')).toHaveAttribute('aria-pressed', 'true');
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+
+    // Reset asks first: declining keeps the edit, accepting restores the published photos
+    await page.locator('#filterAll').click();
+    await page.locator(pressedBackground).click();
+    await expect(reset).toBeVisible();
+    page.once('dialog', dialog => dialog.dismiss());
+    await reset.click();
+    await expect(reset).toBeVisible();
+    page.once('dialog', dialog => dialog.accept());
+    await reset.click();
+    await expect(reset).toBeHidden();
+    await expect(page.locator('#zoomValue')).toHaveText('100%');
+    await context.close();
+  });
+
+  // These reload, and a worker's requests would pass blockFirebase. Each change and the action racing it
+  // run in one task, so the action always lands inside the change's 400ms wait.
+  const openStudioToSave = async (browser, setup) => {
+    const context = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    if (setup) await page.addInitScript(setup);
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    return { context, page };
+  };
+  const inOneTask = (page, steps) => page.evaluate(list => {
+    const actions = {
+      zoom: () => { const range = document.getElementById('zoomRange'); range.value = String(Number(range.value) + 0.5); range.dispatchEvent(new Event('input', { bubbles: true })); },
+      otherEntry: () => document.querySelectorAll('#modelList [data-model]')[2].click(),
+      save: () => document.getElementById('saveFrameBtn').click(),
+      reset: () => document.getElementById('resetModelBtn').click()
+    };
+    for (const step of list) actions[step]();
+  }, steps);
+  const reloadAfterSaves = async page => {
+    await page.waitForTimeout(800);
+    await page.reload({ waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await page.waitForTimeout(500);
+  };
+
+  test('Photo Studio: Save Frame on one entry keeps another entry\'s waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom', 'otherEntry', 'save']);
+    // The second entry has no changes of its own, so this is also the Nothing to save path
+    await expect(page.locator('#toast')).toContainText('Nothing to save');
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
+    await context.close();
+  });
+
+  test('Photo Studio: changing a second entry keeps the first entry\'s waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom', 'otherEntry', 'zoom']);
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 2');
+    await context.close();
+  });
+
+  test('Photo Studio: a waiting save does not undo a reset', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser);
+    await inOneTask(page, ['zoom']);
+    await expect(page.locator('#resetModelBtn')).toBeVisible();
+    await page.waitForTimeout(800);
+    page.once('dialog', dialog => dialog.accept());
+    await inOneTask(page, ['zoom', 'reset']);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await reloadAfterSaves(page);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await context.close();
+  });
+
+  test('Photo Studio: a failed write says so, from Save Frame and from a waiting save', async ({ browser }) => {
+    const { context, page } = await openStudioToSave(browser, () => {
+      IDBObjectStore.prototype.put = () => { throw new Error('Storage is full'); };
+    });
+    await inOneTask(page, ['zoom', 'save']);
+    await expect(page.locator('#toast')).toContainText('could not save the frame');
+    await expect(page.locator('#storageNote')).toHaveClass(/is-alert/);
+    await page.reload({ waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await expect(page.locator('#storageNote')).not.toHaveClass(/is-alert/);
+    await inOneTask(page, ['zoom']);
+    await expect(page.locator('#storageNote')).toHaveClass(/is-alert/);
+    await context.close();
+  });
+
+  test('Photo Studio controls are 44px touch targets on a phone', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await page.locator('.frame-tools summary').click();
+    const small = await page.evaluate(() => [...document.querySelectorAll('#main button, #main a, #main summary, #main label.btn, .film-add label, .site-header .header-actions button, .site-header .header-actions label, .header-tour-btn')]
+      .filter(el => el.offsetParent)
+      .map(el => ({ name: el.id || el.className, box: el.getBoundingClientRect() }))
+      .filter(({ box }) => box.height < 43.5 || box.width < 43.5)
+      .map(({ name, box }) => `${name} ${Math.round(box.width)}x${Math.round(box.height)}`));
+    expect(small).toEqual([]);
+    await context.close();
+  });
+
   test('choosing a Photo Studio entry on a phone brings the editor into view', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
+    await blockFirebase(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
     await page.locator('#modelList [data-model]').nth(2).click();
@@ -272,7 +452,8 @@ test.describe('Phone journeys', () => {
   test('a focused field that ends up out of sight when the visible area changes is brought back', async ({ browser, browserName }) => {
     // iOS Safari can undo its own keyboard scroll (seen in the iOS 27 Simulator). Only Safari
     // shows a keyboard, so this checks the guard in js/page-transitions.js directly: the field
-    // is focused off-screen, then the visible area reports a resize as it does when a keyboard opens.
+    // is focused off-screen, then the visible area shrinks and reports a resize as it does when
+    // a keyboard opens.
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
     const page = await context.newPage();
@@ -283,12 +464,66 @@ test.describe('Phone journeys', () => {
       // Income is now always visible in the Budget panel.
       document.getElementById('income').focus({ preventScroll: true });
       window.scrollTo(0, document.documentElement.scrollHeight);
-      window.visualViewport.dispatchEvent(new Event('resize'));
     });
-    await expect.poll(() => page.evaluate(() => {
-      const box = document.getElementById('income').getBoundingClientRect();
-      return box.top >= 0 && box.bottom <= window.innerHeight;
-    })).toBe(true);
+    await setVisibleHeight(page, KEYBOARD_OPEN_HEIGHT);
+    await expect.poll(() => incomeInSight(page)).toBe(true);
+    await context.close();
+  });
+
+  test('a scroll just after the keyboard opens that hides the focused field is undone', async ({ browser, browserName }) => {
+    // Safari's own undo arrives as a scroll after the last resize, with the field already in sight.
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+    await page.locator('#toggleTerms').click();
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+      const income = document.getElementById('income');
+      income.focus({ preventScroll: true });
+      income.scrollIntoView({ block: 'center', behavior: 'instant' });
+    });
+    await setVisibleHeight(page, KEYBOARD_OPEN_HEIGHT);
+    expect(await incomeInSight(page)).toBe(true);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect.poll(() => incomeInSight(page)).toBe(true);
+    await context.close();
+  });
+
+  test('once the keyboard has closed, scrolling away from the focused field stays where it is', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+    await page.locator('#toggleTerms').click();
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+      const income = document.getElementById('income');
+      income.focus({ preventScroll: true });
+      income.scrollIntoView({ block: 'center', behavior: 'instant' });
+    });
+    await setVisibleHeight(page, KEYBOARD_OPEN_HEIGHT);
+    await setVisibleHeight(page, null);
+    await expectStaysScrolled(page);
+    await context.close();
+  });
+
+  test('pinch zoom does not count as the keyboard opening', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+    await page.locator('#toggleTerms').click();
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+      document.getElementById('income').focus({ preventScroll: true });
+      const v = window.visualViewport;
+      const height = document.documentElement.clientHeight / 2;
+      Object.defineProperty(v, 'height', { configurable: true, get: () => height });
+      Object.defineProperty(v, 'scale', { configurable: true, get: () => 2 });
+      v.dispatchEvent(new Event('resize'));
+    });
+    await expectStaysScrolled(page);
     await context.close();
   });
 
@@ -337,6 +572,66 @@ test.describe('Phone journeys', () => {
   });
 });
 
+for (const [width, height] of [[1366, 768], [1440, 900]]) {
+  test.describe(`a focused field at ${width}x${height} with no on-screen keyboard`, () => {
+    // A desktop has no on-screen keyboard to hide a field behind, so resizing the visible area must
+    // not move the page. The split-scroll test above failed intermittently on this. Only the height
+    // changes here: WebKit itself scrolls to a focused text field whose width changes.
+    const open = async browser => {
+      const context = await browser.newContext({ viewport: { width, height } });
+      await seedReturning(context);
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+      await addToyotas(page);
+      await expect(page.locator('#income')).toBeFocused();
+      // WebKit reports a resize from 0x0 at first layout; outlast it so each test checks its own.
+      await page.waitForTimeout(1100);
+      return { context, page };
+    };
+
+    test('scrolling after a resize event stays where it is', async ({ browser }) => {
+      const { context, page } = await open(browser);
+      await page.evaluate(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        window.visualViewport.dispatchEvent(new Event('resize'));
+      });
+      await expectStaysScrolled(page);
+      await context.close();
+    });
+
+    test('resizing the window and then wheeling down the page stays where it is', async ({ browser }) => {
+      const { context, page } = await open(browser);
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.setViewportSize({ width, height: height - 40 });
+      await page.mouse.move(width / 2, height / 2);
+      // The guard can only act 80ms after a scroll event, so recording the furthest point on each
+      // one always sees where the wheel took the page, however slowly this test reads it.
+      await page.evaluate(() => {
+        window.furthestScroll = 0;
+        window.addEventListener('scroll', () => { window.furthestScroll = Math.max(window.furthestScroll, window.scrollY); }, { passive: true });
+      });
+      // Firefox moves the page at most about one screen per wheel event, whatever the distance.
+      await page.mouse.wheel(0, 1600);
+      await expect.poll(() => page.evaluate(() => window.furthestScroll)).toBeGreaterThan(height / 2);
+      await page.waitForTimeout(300);
+      const { furthest, now } = await page.evaluate(() => ({ furthest: window.furthestScroll, now: window.scrollY }));
+      expect(now).toBe(furthest);
+      await context.close();
+    });
+
+    test('resizing the window after scrolling away stays where it is', async ({ browser }) => {
+      const { context, page } = await open(browser);
+      await page.evaluate(() => window.scrollTo({ top: 2000, behavior: 'instant' }));
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+      const scrolled = await page.evaluate(() => window.scrollY);
+      await page.setViewportSize({ width, height: height - 40 });
+      await page.waitForTimeout(300);
+      expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+      await context.close();
+    });
+  });
+}
+
 test.describe('Motion', () => {
   test('reduced motion: nothing animates and figures are final at once', async ({ browser, browserName }) => {
     const context = await browser.newContext({ ...phone(browserName), reducedMotion: 'reduce' });
@@ -360,4 +655,227 @@ test.describe('Motion', () => {
     expect(after).toMatch(/^rotate\(-?\d+(\.\d)?, 160, 150\)$/);
     expect(after).not.toBe(before);
   });
+});
+
+test.describe('Answer first', () => {
+  test('a ready-made shortlist fills the card, and Show Above and Undo Removal keep it true', async ({ page }) => {
+    await page.goto(`${BASE_URL}/index.html`);
+    await page.locator('#readyShortlists button', { hasText: 'Compact SUVs' }).click();
+    await expect(page.locator('#rows tr')).toHaveCount(2);
+    await expect(page.locator('#answerName')).toContainText('Suzuki Fronx');
+
+    const raize = page.locator('#rows tr', { hasText: 'Toyota Raize' });
+    const rental = (await raize.locator('.v-rent').innerText()).trim();
+    await raize.locator('[data-act="focus"]').click();
+    await expect(page.locator('#answerName')).toContainText('Toyota Raize');
+    await expect(raize.locator('[data-act="focus"]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#answerRental')).toHaveText(/^LKR [\d,]+\.\d\d$/);
+    await expect(page.locator('#answerRentalText')).toContainText(rental);
+
+    await page.fill('#income', '350000');
+    await page.locator('#income').dispatchEvent('change');
+    await expect(page.locator('#answerDti')).toHaveText(/^\d+\.\d%$/);
+    await expect(page.locator('#answerStatusText')).toHaveText(/Comfortable|Stretching|Out of reach/);
+    await expect(page.locator('#answerCeiling')).toContainText('Vehicles up to LKR');
+
+    await raize.locator('[data-act="remove"]').click();
+    await expect(page.locator('#undoText')).toContainText('Toyota Raize');
+    await expect(page.locator('#answerName')).toContainText('Suzuki Fronx');
+    await expect(page.locator('#undoRemovalBtn')).toBeFocused();
+    await page.locator('#undoRemovalBtn').click();
+    await expect(page.locator('#rows tr')).toHaveCount(2);
+    await expect(page.locator('#undoBar')).toBeHidden();
+    await expect(page.locator('#answerName')).toContainText('Toyota Raize');
+  });
+});
+
+test.describe('Showroom and Settings', () => {
+  test('cards show the rental on saved terms, and the budget toggle and brand strip filter', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '350000', rate: '16', tenure: '84', down: '60', dti: '0.4' })));
+    await page.goto(`${BASE_URL}/catalogue.html`);
+    await expect(page.locator('#termsText')).toContainText('16% · 84 months · 60% down');
+    await expect(page.locator('.card-rental').first()).toContainText('a month');
+    const count = async () => parseInt(await page.locator('#resultCount').innerText(), 10);
+    await expect.poll(count).toBeGreaterThan(0);
+    const all = await count();
+    await page.locator('#budgetToggle').click();
+    await expect(page.locator('#budgetToggle')).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(count).toBeLessThan(all);
+    await expect(page.locator('.card-fit[data-fit="bad"]')).toHaveCount(0);
+    await page.locator('#budgetToggle').click();
+    const chip = page.locator('.brand-strip-group:first-child .brand-chip', { hasText: 'Toyota' });
+    await chip.focus();
+    await chip.press('Enter');
+    await expect(chip).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#make')).toHaveValue('Toyota');
+  });
+
+  test('settings apply at once, survive reload, and delete keeps nothing but the sign-in', async ({ page }) => {
+    await page.goto(`${BASE_URL}/settings.html`);
+    await page.getByText('Dark', { exact: true }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await page.locator('input[name="motion"][value="reduced"] + span').click();
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
+    await page.locator('input[name="tenure"][value="60"] + span').click();
+    await page.locator('#hideEstimated').check();
+    await page.reload();
+    await expect(page.locator('input[name="tenure"][value="60"]')).toBeChecked();
+    await expect(page.locator('#hideEstimated')).toBeChecked();
+    await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
+    const download = page.waitForEvent('download');
+    await page.locator('#exportData').click();
+    expect((await download).suggestedFilename()).toBe('vahanaiq-data.json');
+    await page.locator('#askDelete').click();
+    await expect(page.locator('#keepData')).toBeFocused();
+    await page.locator('#deleteData').click();
+    await expect(page.locator('#settingsSaved')).toContainText('deleted');
+    await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
+    expect(await page.evaluate(() => localStorage.getItem('vahanaiq_settings_v1'))).toBeNull();
+  });
+});
+
+test.describe('Number choices and phone tabs', () => {
+  test('choices change what is displayed, not the amount worked out', async ({ page }) => {
+    await page.goto(`${BASE_URL}/index.html`);
+    await page.locator('#readyShortlists button').first().click();
+    await expect(page.locator('#answerRental')).toHaveText(/^LKR [\d,]+\.\d\d$/);
+    await page.evaluate(() => localStorage.setItem('vahanaiq_settings_v1', JSON.stringify({ currency: 'rs', cents: 'no', large: 'lakhs' })));
+    await page.reload();
+    await expect(page.locator('#answerRental')).toHaveText(/^Rs\. [\d,]+$/);
+    await expect(page.locator('#answerDown')).toContainText('lakhs');
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_comparison_v3')).cars[0].price);
+    expect(Number.isFinite(stored) && stored > 1e6).toBe(true);
+  });
+
+  test('phones get bottom tabs, wider screens do not', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    for (const [file, tab] of [['index.html', 'Lease'], ['catalogue.html', 'Showroom'], ['settings.html', 'Settings']]) {
+      await page.goto(`${BASE_URL}/${file}`);
+      await expect(page.locator('.tab-bar a[aria-current="page"]')).toHaveText(tab);
+      expect(await pageWidth(page)).toBeLessThanOrEqual(390);
+    }
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(page.locator('.tab-bar')).toBeHidden();
+    await context.close();
+  });
+});
+
+// Findings from the review of PR 51, 06/11/2026
+test.describe('Showroom verdicts need a confirmed price', () => {
+  const cards = page => page.locator('#vehicles .card');
+  const fit = page => cards(page).first().locator('.card-fit');
+  const search = async (page, text) => { await page.fill('#search', text); await expect(cards(page).first().or(page.locator('#resultCount', { hasText: /^0 /}))).toBeVisible(); };
+
+  test('a disputed or unverified price gets no verdict and stays out of the budget filter', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '1000000' })));
+    await page.goto(`${BASE_URL}/catalogue.html`);
+
+    // The representative offer: the A3's only price comes from a page about another model.
+    await search(page, 'Audi A3');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'illustrative');
+    await expect(fit(page)).toHaveText('Illustrative only · Price unverified');
+    await expect(cards(page).first().locator('.card-rental-value')).toContainText('a month');
+
+    // A confirmed price keeps its verdict, so the check is on the evidence and not the card.
+    await search(page, 'Raize');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'ok');
+    await expect(fit(page)).toHaveText('Comfortable');
+
+    await page.locator('#budgetToggle').click();
+    await expect(fit(page)).toHaveAttribute('data-fit', 'ok');
+    await page.fill('#search', 'Audi A3');
+    await expect(cards(page)).toHaveCount(0);
+
+    // An offer chosen by the price filter: Estimated Prices are never confirmed.
+    await page.fill('#search', '');
+    await page.selectOption('#priceType', 'estimated');
+    await expect(cards(page)).toHaveCount(0);
+    await page.locator('#budgetToggle').click();
+    await expect(cards(page).first()).toBeVisible();
+    await expect(page.locator('#vehicles .card-fit:not([data-fit="illustrative"])')).toHaveCount(0);
+
+    // The fallback when the filter leaves no offer: Price on Request has nothing to judge.
+    await page.selectOption('#priceType', 'quote');
+    await page.locator('#budgetToggle').click();
+    await expect(cards(page)).toHaveCount(0);
+  });
+
+  test('an unconfirmed rental is marked illustrative before any income is entered', async ({ page }) => {
+    await page.goto(`${BASE_URL}/catalogue.html`);
+    await search(page, 'Audi A3');
+    await expect(fit(page)).toHaveAttribute('data-fit', 'illustrative');
+    await search(page, 'Raize');
+    await expect(fit(page)).toHaveCount(0);
+  });
+});
+
+test('loan defaults chosen in Settings reach the planner and the Showroom', async ({ page }) => {
+  await page.goto(`${BASE_URL}/settings.html`);
+  await page.fill('#defaultRate', '12.5');
+  await page.locator('#defaultRate').blur();
+  for (const [name, value] of [['rateType', 'flat'], ['tenure', '60'], ['down', '70'], ['dti', '0.5']]) {
+    await page.locator(`input[name="${name}"][value="${value}"]`).check({ force: true });
+  }
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_inputs_v1')));
+  const inputs = await stored();
+  for (const name of ['rate', 'rateType', 'tenure', 'down', 'dti']) expect(typeof inputs[name], name).toBe('string');
+
+  // A blank box is not a rate of 0%.
+  await page.fill('#defaultRate', '');
+  await page.locator('#defaultRate').blur();
+  expect((await stored()).rate).toBe('12.5');
+
+  await page.goto(`${BASE_URL}/index.html`);
+  await expect(page.locator('#rate')).toHaveValue('12.5');
+  await expect(page.locator('#tenure')).toHaveValue('60');
+  await expect(page.locator('#down')).toHaveValue('70');
+  await expect(page.locator('#dti')).toHaveValue('0.5');
+  await expect(page.locator('#rateType')).toHaveValue('flat');
+
+  await page.goto(`${BASE_URL}/catalogue.html`);
+  await expect(page.locator('#termsText')).toContainText('12.5%');
+  await expect(page.locator('#termsText')).toContainText('60 months · 70% down');
+});
+
+test.describe('The budget bar on phones', () => {
+  for (const [width, height] of [[320, 568], [390, 844]]) {
+    test(`sits above the tabs at ${width}px and hides nothing`, async ({ browser, browserName }) => {
+      const context = await browser.newContext(phone(browserName, { width, height }));
+      await seedReturning(context);
+      // Seed before any page script runs: written after the page has rendered, the income is
+      // overwritten when that render's autosave fires, so the bar has nothing to show.
+      await context.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ income: '500000' })));
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/index.html`);
+      await expect(page.locator('#budgetBar')).toContainText('Max rental');
+      const toEnd = () => page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+
+      // The page can still grow as it loads, so keep going until the budget panel has really left the screen.
+      await expect.poll(async () => { await toEnd(); return page.evaluate(() => document.querySelector('#budgetPanel').getBoundingClientRect().bottom <= 0); }, { message: 'the budget panel has scrolled out of view' }).toBe(true);
+      await expect(page.locator('#budgetBar')).toBeVisible();
+
+      // The bar's arrival makes the page longer, so go to the new end before measuring.
+      await expect.poll(async () => { await toEnd(); return page.evaluate(() => document.querySelector('footer.foot').getBoundingClientRect().bottom <= document.querySelector('#budgetBar').getBoundingClientRect().top + 0.5); }, { message: 'the end of the page clears the bar' }).toBe(true);
+      await expect.poll(() => page.evaluate(() => {
+        const bar = document.querySelector('#budgetBar').getBoundingClientRect();
+        return document.querySelector('.tab-bar').getBoundingClientRect().top - bar.bottom;
+      })).toBeGreaterThanOrEqual(-0.5);
+      const box = await page.evaluate(() => {
+        const bar = document.querySelector('#budgetBar').getBoundingClientRect();
+        return {
+          barTop: bar.top,
+          view: window.innerHeight,
+          toastBottom: parseFloat(getComputedStyle(document.querySelector('.toast')).bottom)
+        };
+      });
+      expect(box.toastBottom, 'a toast clears the bar').toBeGreaterThanOrEqual(box.view - box.barTop);
+
+      const tabs = page.locator('.tab-bar a');
+      await expect(tabs).toHaveCount(3);
+      for (let i = 0; i < 3; i++) await tabs.nth(i).click({ trial: true, timeout: 3000 });
+      await context.close();
+    });
+  }
 });

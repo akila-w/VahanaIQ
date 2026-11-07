@@ -1,8 +1,9 @@
+import { shown as displayAmount } from "./number-format.js?v=2.12.0";
 import { formatDate as displayDate } from "./dates.js?v=2.12.0";
 import { baseVehicles as fallbackCatalogue } from "./market-catalogue.js?v=2.12.0";
 import { fmt, esc, minDownFor, safeUrl } from "./calculator.js?v=2.12.0";
 import { parseMoneyText, formatMoneyText, attachMoneyInput } from "./money-input.js?v=2.12.0";
-import { validPrice } from "./vehicle-validation.js?v=2.12.0";
+import { validPrice, offerEvidenceStatus, representativePriceOffer } from "./vehicle-validation.js?v=2.12.0";
 import { newVehicleId } from "./storage.js?v=2.12.0";
 import { openModal, closeModal } from "./modal.js?v=2.12.0";
 import { searchCatalogue } from "./catalogue-search.js?v=2.12.0";
@@ -28,12 +29,14 @@ export function getUnifiedCatalogue(fallbackList = fallbackCatalogue) {
 
   return unified.models.map(m => {
     const pricedOffers = (m.offers || []).filter(o => Number.isFinite(o.amount) && o.amount > 0);
-    const best = pricedOffers.reduce((b, o) => !b || o.amount < b.amount ? o : b, null) || m.offers?.[0] || null;
+    const best = representativePriceOffer(pricedOffers) || m.offers?.[0] || null;
+    const evidenceStatus = offerEvidenceStatus(best);
     const existing = fallbackMap.get(m.id) || fallbackMap.get(best?.id) || fallbackMap.get(`${m.make} ${m.model || m.name}`.toLowerCase()) || {};
 
     const photo = m.images?.[0]?.smallSrc || m.images?.[0]?.src || existing.img || "";
-    const price = best && Number.isFinite(best.amount) && best.amount > 0 ? best.amount : (existing.price || null);
-    const priceBasis = best && price ? (["official", "dealer", "launch"].includes(best.kind) ? (best.kind === "launch" ? "starting" : "published") : "estimated") : (existing.priceBasis || "unpublished");
+    const price = best && validPrice(best.amount) ? best.amount : null;
+    const priceBasis = evidenceStatus === "confirmed" ? (best.kind === "launch" ? "starting" : "published")
+      : evidenceStatus === "disputed" ? "conflicting" : price ? "estimated" : "unpublished";
     const cond = best?.condition || existing.cond || "New";
     const fuel = best?.fuel || m.offers?.find(o => o.fuel)?.fuel || existing.fuel || "";
     const route = best?.route === "Distributor" ? "Official" : best?.route === "Dealer Listing" ? "Dealer" : (existing.w || "Grey");
@@ -59,17 +62,17 @@ export function getUnifiedCatalogue(fallbackList = fallbackCatalogue) {
       cond: cond,
       price: price,
       priceBasis: priceBasis,
-      priceCheckedMonth: "2026-10",
-      pricePublishedMonth: null,
+      priceCheckedMonth: best?.checkedOn?.slice(0, 7) || null,
+      pricePublishedMonth: best?.sourcePublishedOn?.match(/^\d{4}-\d{2}/)?.[0] || null,
       priceSourceUrl: (best?.sourceUrl || m.sourceUrl || "").replace(/^http:\/\//, "https://"),
       sourceUrl: (m.sourceUrl || "").replace(/^http:\/\//, "https://"),
       checkedOn: m.checkedOn || "2026-10-23",
-      availability: best?.sourceStatus === "estimated" ? "estimated" : (existing.availability || "marketed"),
+      availability: evidenceStatus !== "confirmed" ? "estimated" : (existing.availability || "marketed"),
       img: photo,
       custom: false,
-      priceVerification: price ? "confirmed" : "unverified",
+      priceVerification: evidenceStatus === "confirmed" ? "confirmed" : "unverified",
       priceScope: "model",
-      priceVerifiedOn: m.checkedOn || "2026-10-23",
+      priceVerifiedOn: evidenceStatus === "confirmed" ? (best?.checkedOn || null) : null,
       power: existing.power || "",
       torque: existing.torque || "",
       transmission: existing.transmission || "",
@@ -92,7 +95,7 @@ const FUELS = { Petrol: "Petrol", Diesel: "Diesel", HEV: "Hybrid", PHEV: "Plug-i
 const UNKNOWN_SPEC = "Specifications to confirm";
 const photoFor = v => photoForModel(v);
 const hasPrice = v => validPrice(v.price);
-const publishedPrice = v => hasPrice(v) && ['published', 'starting'].includes(v.priceBasis);
+const publishedPrice = v => hasPrice(v) && v.priceVerification === "confirmed" && ['published', 'starting'].includes(v.priceBasis);
 // Published prices first, then conflicting sources, then price on request
 const priceRank = v => publishedPrice(v) ? 0 : hasPrice(v) && v.priceBasis !== "conflicting" ? 1 : 2;
 const byName = (a, b) => a.make.localeCompare(b.make) || a.name.localeCompare(b.name);
@@ -133,22 +136,22 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
 
   // Estimated rental for a priced car, at its legal minimum down payment or the chosen one if higher
   function rentalLine(v, t) {
-    if (!hasPrice(v) || v.priceBasis === 'conflicting' || !t || !(t.f > 0)) return "";
+    if (!publishedPrice(v) || !t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor(v.cond, v.financeClass, v.firstRegisteredOn));
-    return down < 100 ? `About LKR ${fmt(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
+    return down < 100 ? `About LKR ${displayAmount(v.price * (1 - down / 100) * t.f)} a month with ${down}% down` : "";
   }
 
   // One line for every car without a price: what each LKR 1.00 million of quote costs a month
   function perMillionLine(t) {
     if (!t || !(t.f > 0)) return "";
     const down = Math.max(t.down, minDownFor("New"));
-    return down < 100 ? `No price yet? Each LKR 1.00 million of a brand-new car's quote is about LKR ${fmt(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
+    return down < 100 ? `No price yet? Each LKR 1.00 million of a brand-new car's quote is about LKR ${displayAmount(1e6 * (1 - down / 100) * t.f)} a month with ${down}% down.` : "";
   }
 
   function priceText(v) {
     if (v.priceBasis === 'conflicting') return 'Price needs confirmation';
-    if (hasPrice(v) && !publishedPrice(v)) return `Unverified estimate · LKR ${fmt(v.price)}`;
-    if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${fmt(v.price)}`;
+    if (hasPrice(v) && !publishedPrice(v)) return `Unverified indicative price · LKR ${displayAmount(v.price)}`;
+    if (hasPrice(v)) return `${v.priceBasis === "starting" ? "From " : ""}LKR ${displayAmount(v.price)}`;
     return v.priceBasis === "conflicting" ? "Prices differ between sources" : "Price on request";
   }
 
@@ -186,7 +189,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
         </div>
         ${detailRows.length ? `<details class="catalogue-spec-details"><summary>Specifications &amp; trim details</summary><dl class="catalogue-spec-grid">${detailRows.map(([k, val]) => `<div><dt>${esc(k)}</dt><dd>${esc(val)}</dd></div>`).join("")}</dl></details>` : ""}
         <div class="catalogue-card-foot">
-          <p class="hint catalogue-provenance">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${v.priceVerifiedOn ? ` · Verified ${displayDate(v.priceVerifiedOn)}` : ""}</p>
+          <p class="hint catalogue-provenance">${esc(routeLabel(v))} · ${esc(availabilityLabel(v))}${v.priceVerifiedOn && publishedPrice(v) ? ` · Price checked ${displayDate(v.priceVerifiedOn)}` : ""}</p>
           <div class="source-links"><a href="${safeUrl(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.text)}<span class="sr-only"> for ${esc(v.name)}</span> ↗</a>${credit ? formatCreditHtml(credit) : ""}</div>
           <button class="btn-outline" type="button" data-catalogue-id="${esc(v.id)}" ${selected ? "disabled" : ""} aria-label="${selected ? "In comparison" : "Choose"} ${esc(v.name)}">${selected ? "In Comparison ✓" : "Choose & Add"}</button>
         </div>
@@ -247,6 +250,13 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   };
   for (const id of ["addVehicleBtn", "openCatalogueBtn"]) if ($(id)) $(id).addEventListener("click", () => open($(id)));
   $("browseEmptyBtn").addEventListener("click", () => open($("browseEmptyBtn")));
+  // The Lease page's ceiling opens the catalogue filtered to the visitor's monthly budget
+  if ($("browseBudgetBtn")) $("browseBudgetBtn").addEventListener("click", () => {
+    const t = terms?.();
+    $("catalogueAffordability").value = t?.income && t.room > 0 ? "within" : "";
+    page = 0;
+    open($("browseBudgetBtn"));
+  });
   $("closeCatalogueBtn").addEventListener("click", () => closeModal($("catalogueModal")));
   $("catalogueSearch").addEventListener("input", () => { page = 0; render(); });
   for (const id of [...FILTERS, "catalogueSort"]) $(id).addEventListener("change", () => { page = 0; render(); });
@@ -283,14 +293,15 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       if (focusPrice) $("cataloguePrice").focus();
       return;
     }
-    const brandNewPrice = o && validPrice(o.amount) ? o.amount : (validPrice(pending.price) && pending.priceBasis !== "conflicting" ? pending.price : null);
+    const chosenStatus = o ? offerEvidenceStatus(o) : (publishedPrice(pending) ? "confirmed" : "unverified");
+    const brandNewPrice = o ? (chosenStatus === "confirmed" ? o.amount : null) : (publishedPrice(pending) ? pending.price : null);
     $("cataloguePrice").value = brandNewPrice ? formatMoneyText(String(brandNewPrice)) : "";
-    if (o && o.amount && $("catalogueTrimWrap") && !$("catalogueTrimWrap").hidden) {
+    if (o && chosenStatus === "confirmed" && $("catalogueTrimWrap") && !$("catalogueTrimWrap").hidden) {
       $("cataloguePriceNote").textContent = `Source-backed Brand New amount (${o.kind || "published"}), checked ${displayDate(o.checkedOn || pending.checkedOn)}. Confirm current quote.`;
     } else {
       $("cataloguePriceNote").textContent = pending.priceBasis === "conflicting"
         ? "The source does not establish a reliable price for this variant. Enter a confirmed quote."
-        : publishedPrice(pending)
+        : !o && publishedPrice(pending)
         ? "Source-backed asking/starting amount, checked " + displayDate(pending.priceVerifiedOn || pending.checkedOn) + ". Confirm the exact specification and current quote."
         : validPrice(pending.price)
         ? "Unverified catalogue estimate. Replace it with a seller quote before relying on the calculation."
@@ -313,7 +324,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       if (offers.length > 1) {
         $("catalogueTrimWrap").hidden = false;
         $("catalogueTrimSelect").innerHTML = offers.map((o, idx) =>
-          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${fmt(o.amount)}` : ""} (Brand New)</option>`
+          `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${displayAmount(o.amount)}` : ""} (Brand New)</option>`
         ).join("");
         $("catalogueTrimSelect").value = "0";
       } else {
@@ -358,11 +369,12 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     }
     const o = getSelectedOffer();
     const refPrice = o && validPrice(o.amount) ? o.amount : pending.price;
-    const published = cond === "New" && price === refPrice;
+    const published = cond === "New" && price === refPrice && (o ? offerEvidenceStatus(o) === "confirmed" : publishedPrice(pending));
     const vehicle = { ...pending, id: newVehicleId(), catalogueId: pending.id, name, price, cond,
       img: pending.img || photoFor(pending),
       custom: true, legacy: false, priceBasis: published ? pending.priceBasis : "user-entered",
-      priceSourceUrl: published ? (o?.sourceUrl || pending.priceSourceUrl) : null, priceCheckedMonth: published ? pending.priceCheckedMonth : null };
+      priceSourceUrl: published ? (o?.sourceUrl || pending.priceSourceUrl) : null, priceCheckedMonth: published ? (o?.checkedOn?.slice(0, 7) || pending.priceCheckedMonth) : null,
+      priceVerification: published ? "confirmed" : "unverified", priceVerifiedOn: published ? (o?.checkedOn || pending.priceVerifiedOn) : null };
     if (!onAdd(vehicle)) return;
     closeModal($("catalogueAddModal"));
     closeModal($("catalogueModal"));

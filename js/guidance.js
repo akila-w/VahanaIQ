@@ -9,7 +9,7 @@ const { articles, tours, quickHelp = {} } = guidanceContent;
 let storage;
 try { storage = window.localStorage; } catch { /* In-memory preferences still work. */ }
 let state = readGuidance(storage);
-const page = document.querySelector('#loanTermsHead') ? 'calculator' : document.querySelector('#vehicles') ? 'catalogue' : document.querySelector('#models') ? 'studio' : null;
+const page = document.querySelector('#loanTermsHead') ? 'calculator' : document.querySelector('#vehicles') ? 'catalogue' : null;
 const $ = selector => document.querySelector(selector);
 const make = (tag, className, text) => {
   const el = document.createElement(tag);
@@ -182,7 +182,7 @@ function nextSuggestion() {
     if (!Number(($('#income')?.value || '').replaceAll(',', ''))) return 'Next: add your income for an optional affordability check, or compare the rental and total cost.';
     return 'Next: compare your shortlisted vehicles, then explore the Savings Planner for the up-front cash.';
   }
-  return page === 'catalogue' ? 'Next: open a vehicle to check the price source and variant before adding it to your comparison.' : 'Next: choose an entry to arrange its photos. Your edits stay on this device.';
+  return 'Next: open a vehicle to check the price source and variant before adding it to your comparison.';
 }
 renderInvitation();
 // Refresh suggestions only on relevant interactions; never store or copy input values.
@@ -270,7 +270,7 @@ window.visualViewport?.addEventListener('scroll', positionContext);
 
 const context = page === 'calculator' ? [
   ['#rateTypeLabel', 'rate'], ['label[for="down"]', 'deposit'], ['#h-sum', 'budget'], ['#h-list', 'compare'], ['#h-savings', 'savings']
-] : page === 'catalogue' ? [['#resultCount', 'prices'], ['#reviewHeading', 'compare']] : page === 'studio' ? [['#modelsTitle', 'studio']] : [];
+] : page === 'catalogue' ? [['#resultCount', 'prices'], ['#reviewHeading', 'compare']] : [];
 for (const [selector, id] of context) {
   const anchor = $(selector);
   if (!anchor) continue;

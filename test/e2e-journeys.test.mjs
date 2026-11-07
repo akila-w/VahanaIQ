@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { representativePriceOffer, offerEvidenceStatus } from "../js/vehicle-validation.js";
 
 console.log("============================================================");
 console.log("AUTOMATED E2E JOURNEYS TEST SUITE");
@@ -131,11 +132,11 @@ if (shouldRun("Reset studio changes for an entry") || shouldRun("studio")) {
 
   const studioJs = fs.readFileSync("js/catalogue-studio.js", "utf8");
   assert.ok(studioJs.includes('$("resetModelBtn").addEventListener'), "catalogue-studio.js must handle resetModelBtn click");
-  assert.ok(studioJs.includes('$("zoomValue").textContent = "1.00×"'), "Undo must restore zoom display to 1.00×");
+  assert.ok(studioJs.includes('$("zoomValue").textContent = "100%"'), "Undo must restore zoom display to 100%");
   assert.ok(studioJs.includes('$("zoomRange").value = "1"'), "Undo must restore zoom range value to 1");
   assert.ok(studioJs.includes('This entry is back to the published photos.'), "Undo must toast published photo confirmation");
 
-  console.log("  ✓ Reset studio changes for an entry PASSED: undo restores entry state and fully resets zoom to 1.00×.\n");
+  console.log("  ✓ Reset studio changes for an entry PASSED: undo restores entry state and fully resets zoom to 100%.\n");
 }
 
 // -------------------------------------------------------------
@@ -165,15 +166,22 @@ if (shouldRun("Change the catalogue price source")) {
   // Re-evaluate getOfferForCard logic from curated-catalogue.js
   const funcMatch = catalogueJs.match(/function getOfferForCard[\s\S]*?return \{ offer: best, count: matching\.length \};\s*\}/);
   const pricedMatch = catalogueJs.match(/const priced = m => m\.offers\.filter\(o => Number\.isFinite\(o\.amount\) && o\.amount > 0\);/);
-  const evalFunc = new Function(`${pricedMatch[0]}\n${funcMatch[0]}\nreturn getOfferForCard;`)();
+  assert.ok(funcMatch && pricedMatch, "Catalogue price filtering logic must be available for the isolated journey");
+  // Supply the production selection helper to the isolated function. Do not
+  // duplicate its logic: the test must exercise the same confidence ordering.
+  const evalFunc = new Function("representativePriceOffer", "offerEvidenceStatus", `${pricedMatch[0]}\n${funcMatch[0]}\nreturn getOfferForCard;`)(representativePriceOffer, offerEvidenceStatus);
 
   const a3Priced = evalFunc(a3, "priced");
   const a4Priced = evalFunc(a4, "priced");
   const a5Priced = evalFunc(a5, "priced");
 
-  assert.equal(a3Priced.offer.kind, "launch", "Audi A3 must display Published Launch Price under Published Prices filter");
-  assert.equal(a4Priced.offer.kind, "launch", "Audi A4 must display Published Launch Price under Published Prices filter");
-  assert.equal(a5Priced.offer.kind, "launch", "Audi A5 must display Published Launch Price under Published Prices filter");
+  assert.equal(a3Priced.offer, null, "Audi A3 mismatched launch source must not appear under Published Prices");
+  assert.equal(a4Priced.offer, null, "Audi A4 unsupported launch amount must not appear under Published Prices");
+  assert.equal(a5Priced.offer, null, "Audi A5 unsupported launch amount must not appear under Published Prices");
+  assert.equal(evalFunc(a3, "launch").offer.kind, "launch", "Explicit launch-source filter may display a disputed amount with a warning");
+  assert.equal(offerEvidenceStatus(evalFunc(a3, "launch").offer), "disputed", "A3 cannot be promoted by an explicit source filter");
+  assert.equal(offerEvidenceStatus(evalFunc(a4, "launch").offer), "disputed", "A4 cannot be promoted by an explicit source filter");
+  assert.ok(catData.models.some(m => evalFunc(m, "priced").offer), "Verified published-price filter must still return valid vehicles");
 
   // Under dealer filter, Toyota Yaris Cross shows its Brand New dealer asking price
   const ycDealer = evalFunc(yarisCross, "dealer");
@@ -391,7 +399,7 @@ if (shouldRun("Remove a photo from a vehicle entry") || shouldRun("studio")) {
   const studioJs = fs.readFileSync("js/catalogue-studio.js", "utf8");
   assert.ok(studioJs.includes("data-remove"), "catalogue-studio.js must handle data-remove");
   assert.ok(studioJs.includes("removeItem"), "catalogue-studio.js must call removeItem");
-  assert.ok(studioJs.includes("Photo removed. Undo My Changes brings the published set back."), "Removal must toast confirmation");
+  assert.ok(studioJs.includes("Photo removed. Reset to original photos brings the published set back."), "Removal must toast confirmation");
 
   const { newRecord, uploadItem, addItem, setCover, removeItem } = await import("../js/catalogue-photos.js");
   const catData = JSON.parse(fs.readFileSync("data/catalogue.json", "utf8"));

@@ -5,6 +5,42 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ---
 
+## [Unreleased] - 01/11/2026
+
+- PhotoHarvest review (draft, not released): the read-only review panel now sits under the photo strip in the rebuilt Photo Studio, inside the administrator's view. Offline shell `vahanaiq-v2.12.0-offline-18`.
+
+Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-15`.
+
+### Added
+- **Settings page (`settings.html`)**: theme, text size, motion, loan defaults, Showroom choices, tips, data download and delete. Numbers and Dates choose the currency label, whole rupees, millions or lakhs, and the date format; these change what is displayed, never a calculation.
+- **Phone tabs**: Lease, Showroom and Settings stay at the bottom of the screen on phones.
+- **Showroom**: a brand strip that filters by brand, the monthly rental and fit on each card, the terms in use with Change Terms, and Only Cars Within My Budget.
+- **About page**: How Rentals Are Worked Out, and Prices and Sources.
+- **Photo Studio is the administrator's alone**: `studio.html` is an ordinary not-found page unless the signed-in Firebase account matches `ADMIN_UID`. Studio links, photo tools, guided tour, help and policy text no longer appear for anyone else. The check decides what the page shows; the studio's photos stay in that browser and there is no server data behind it.
+- **Landing introduction on the Lease page (`index.html`)**: first-time visitors see what VahanaIQ is before the calculator: a headline, an example rental for a real Showroom car, two belts of Showroom cars with their rentals at the planner's default terms, how it works, and Get Started. The hero runs a slow emerald gradient with a drifting Apex monogram matrix; every animation moves only transform, there is a Pause Animation button, and reduced motion stops it all. `js/boot.js` decides before first paint (`html.landing-pending`), so returning visitors, anyone who finished or dismissed setup, and `?onboarding` links go straight to the calculator; `?welcome` shows the introduction again.
+- **Quick picks in setup**: Compact SUVs, Hybrids and Electric, and Family SUVs add real catalogue cars to the shortlist, which the visitor still reviews.
+- **Answer first on the Lease page**: the chosen car's monthly rental, debt-to-income meter, down payment, amount financed, income needed and the budget ceiling now lead the page. Every figure comes from the rows the comparison already uses. Show Above picks the car, Undo Removal restores a removed one, and an empty shortlist offers the ready-made shortlists. Behind the solid cards, drifting emerald glows and a faint monogram grid move slowly and stop under reduced motion.
+- **Browser checks** for the landing (first visit, dismissal, returning visitors, quick picks, pause and reduced motion) in `test/browser/onboarding.spec.mjs`.
+
+### Changed
+- **Photo Studio's admin view** follows the Studio artboard (offline shell revision `vahanaiq-v2.12.0-offline-17`). The heading is "Frame every Showroom photo." with a note that changes stay in this browser until exported. The left list has search, All and Edited counts and an Edited tag; the model header has View in Showroom and Upload Photos; the stage has a Cover badge above thumbnails with Add Photo; and the header has Export Changes (.json) and a Signed in · Admin pill. A Frame panel holds Zoom (now shown as a percentage), Position, Background, Save Frame and a reset link. Position and Background are two views of the existing framing setting, so saved records and the export format are unchanged. Frames still save as they change; Save Frame writes any waiting save and confirms it. Reset to original photos, formerly Undo My Changes, now asks first. −, +, Fit, Centre, Reset this frame and the baseline, grid and margin guides moved under More framing tools.
+- **Guided setup**: five one-question steps, cars first: Cars, Income, Loan Length (tenure and rate), Down Payment (CBSL minimums explained) and Your Result, which leads with the budget ceiling and marks each car Comfortable, Stretching or Out of reach. Later steps show live rentals for the visitor's own shortlist. The welcome step is gone: the landing introduction does that job on the Lease page. The two-car minimum, saved drafts, Escape, Exit to Lease and the hand-over to the calculator are unchanged.
+- **Setup on phones** is a true full-screen sheet (the browser's default dialog gutters are removed) with its header and footer padded clear of the Dynamic Island and home indicator. The backdrop is a still emerald gradient with the monogram matrix, with no blur.
+- **Home-screen app on iPhone**: `apple-mobile-web-app-status-bar-style` is `black-translucent` on the Lease, Showroom and Studio pages, so the page runs under the status bar.
+- **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
+
+### Fixed
+- **Photo Studio's reset control and other hidden elements** no longer show when marked hidden: shared button rules gave them a display value that beat the `hidden` attribute, so Undo My Changes showed with nothing changed.
+- **Photo Studio animation**: colour, border and shadow transitions on its controls are gone, and the guides no longer use a drop-shadow filter; only transform and opacity animate, and all of it stops under reduced motion.
+- **Photo Studio saves**: each entry now has its own waiting save, so saving or changing one entry can no longer cancel another's, and a waiting save can no longer undo a reset.
+- **Grid guide colour in light mode**: the page no longer applies the dark theme's grid colour when the theme follows the device.
+- **Page no longer jumps back to a focused field on a desktop or after the keyboard closes**: the iPhone keyboard guard in `js/page-transitions.js` treated every change to the visible area as a keyboard opening. With a text field focused, resizing a desktop window threw a visitor who had scrolled away back to that field, with or without scrolling afterwards, and pinch zoom did the same. It now acts only while a keyboard is open, when the visible area falls well short of the layout viewport. WebKit also reports a resize at first layout, which made `test/browser/ui-responsive.spec.mjs` fail intermittently. No calculation, threshold or rounding changed.
+- **Showroom verdicts**: a disputed, estimated or unverified price no longer says Comfortable, Stretching or Out of Reach, and no longer passes Only Cars Within My Budget. Its rental stays, marked Illustrative only · Price unverified. No calculation changed.
+- **Settings interest rate**: the rate chosen in Settings now reaches the planner, and a blank box no longer counts as 0%.
+- **Budget bar on phones**: it now sits above the bottom tabs, which stay tappable, and the end of the page and any toast clear both.
+
+---
+
 ## [2.12.0] - 26/10/2026
 
 UI/UX pass: mobile layout, touch, focus and motion. No calculation, threshold, rounding or number format changed; every displayed figure was checked against the live v2.11.6 site for 8 term scenarios. Reports: `docs/uiux-audit.md`, `docs/uiux-improvements.md`, `docs/uiux-qa-results.md`, `docs/motion-design.md`, `docs/iphone-qa-checklist.md`, `docs/release-readiness.md`.
