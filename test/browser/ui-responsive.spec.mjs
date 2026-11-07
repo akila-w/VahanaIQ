@@ -1065,3 +1065,30 @@ test.describe('Phone layout', () => {
     await context.close();
   });
 });
+
+test.describe('Photo Studio loading', () => {
+  test('leaving while its scripts load raises no error', async ({ page, context }) => {
+    await blockFirebase(context);
+    await context.route(/catalogue-studio\.js/, async route => {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      await route.continue().catch(() => {});
+    });
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#models')).toBeAttached();
+    await page.goto(`${BASE_URL}/about.html`);
+    await expect(page.locator('h1')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('a script that cannot load is reported on the page', async ({ page, context }) => {
+    await blockFirebase(context);
+    await context.route(/catalogue-studio\.js/, route => route.abort());
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${BASE_URL}/studio.html`);
+    await expect(page.locator('#modelCount')).toHaveText('The Photo Studio could not load. Reload the page to try again.');
+    expect(errors).toEqual([]);
+  });
+});

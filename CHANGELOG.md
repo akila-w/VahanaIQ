@@ -41,6 +41,7 @@ Landing introduction, a redesigned guided setup and an answer-first Lease page, 
 - **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
 
 ### Fixed
+- **Photo Studio**: if its scripts cannot load, the page says so and offers a reload. Leaving the page while they load no longer raises an error.
 - **Phone status bar**: on phones the strip behind the status bar and Dynamic Island takes the page's tint and the page fades from it, so the background reaches the top of the screen on every page, in Guided Setup and in the car details. Settings now allows the page to reach the screen edges too.
 - **Showroom brands**: on phones the logos sit in a row you swipe, because the moving strip showed blank in Safari on the iPhone simulator. Brand logos sit on white, so dark logos stay readable in dark mode.
 - **Phone wording that was cut off**: shorter search hints in the Showroom and Guided Setup, and the Showroom filter labels fit on the narrowest phones.
