@@ -656,7 +656,6 @@ function render() {
   $("resetCatalogWrap").hidden = !cars.length;
   if ($("emptyState")) $("emptyState").hidden = hasCars;
   if ($("comparisonBody")) $("comparisonBody").hidden = !hasCars;
-  if ($("openCatalogueBtn")) $("openCatalogueBtn").hidden = !hasCars;
   if ($("toggleColsBtn")) $("toggleColsBtn").hidden = !hasCars;
   if ($("comparisonPanel") && $("comparisonPanel").classList) {
     $("comparisonPanel").classList.toggle("few-cars", rows.length <= 2);
@@ -1310,18 +1309,18 @@ let budgetPanelVisible = null;
 function syncBudgetBar() {
   let panelVisible = budgetPanelVisible;
   if (panelVisible === null) {
-    const box = $("budgetPanel").getBoundingClientRect ? $("budgetPanel").getBoundingClientRect() : null;
+    const box = $("answerPanel").getBoundingClientRect ? $("answerPanel").getBoundingClientRect() : null;
     panelVisible = !box || (box.bottom > 0 && box.top < window.innerHeight);
   }
   const show = !!budgetBarText && !panelVisible;
   $("budgetBar").hidden = !show;
   if (document.body && document.body.classList) document.body.classList.toggle("has-budget-bar", show);
 }
-if (typeof IntersectionObserver === "function" && typeof document.getElementById === "function" && $("budgetPanel")) {
+if (typeof IntersectionObserver === "function" && typeof document.getElementById === "function" && $("answerPanel")) {
   new IntersectionObserver(entries => {
     budgetPanelVisible = entries[entries.length - 1].isIntersecting;
     syncBudgetBar();
-  }).observe($("budgetPanel"));
+  }).observe($("answerPanel"));
 } else if (typeof window.addEventListener === "function") {
   window.addEventListener("scroll", syncBudgetBar, { passive: true });
   window.addEventListener("resize", syncBudgetBar);
@@ -2624,6 +2623,7 @@ function openAddFlow(tab, opener) {
 $("openAiModalBtn").addEventListener("click", () => openAddFlow("ai", $("addVehicleBtn") || $("openAiModalBtn")));
 if ($("openManualBtn")) $("openManualBtn").addEventListener("click", () => openAddFlow("manual", $("addVehicleBtn")));
 if ($("aiEmptyBtn")) $("aiEmptyBtn").addEventListener("click", () => openAddFlow("ai", $("aiEmptyBtn")));
+if ($("describeCarBtn")) $("describeCarBtn").addEventListener("click", () => openAddFlow("ai", $("describeCarBtn")));
 let screenComparisonLimit = comparisonLimit;
 let printFootnotes = [];
 window.addEventListener("beforeprint", () => {
@@ -3335,7 +3335,7 @@ if ($('toggleTerms')) $('toggleTerms').addEventListener('click', () => {
 for (const [btnId, panelId, closedText, openText] of [
   ['toggleCostsDrawer', 'termsSubcardCosts', '+ Optional Incidental Costs (Insurance & Up-front Fees)', '− Optional Incidental Costs (Insurance & Up-front Fees)'],
   ['toggleLtvDrawer', 'ltvSplitContainer', '+ Vehicle Valuation Financing Structure (CBSL Directions No. 01 of 2026)', '− Vehicle Valuation Financing Structure (CBSL Directions No. 01 of 2026)'],
-  ['toggleSavingsDrawer', 'savingsPlannerLayout', 'Expand Deposit & Savings Trajectory Planner', 'Collapse Deposit & Savings Trajectory Planner']
+  ['toggleSavingsDrawer', 'savingsPlannerLayout', 'Change Savings and Date', 'Close Savings Planner']
 ]) {
   const btn = $(btnId);
   if (btn && typeof btn.addEventListener === 'function') {
@@ -3489,7 +3489,7 @@ if (pageNav && typeof pageNav.addEventListener === "function") {
 }
 
 function checkUrlHash() {
-  const SECTION_HASHES = ["#budgetPanel", "#comparisonPanel", "#savingsPanel"];
+  const SECTION_HASHES = ["#budgetPanel", "#incomePanel", "#comparisonPanel", "#savingsPanel"];
   if (SECTION_HASHES.includes(window.location.hash)) {
     try {
       history.replaceState(null, "", window.location.pathname + window.location.search);

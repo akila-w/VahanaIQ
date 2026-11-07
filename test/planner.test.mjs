@@ -70,7 +70,8 @@ const elementIds = [
   'plannerVehicle', 'plannerVehicleBadge', 'plannerGoal', 'plannerSaved', 'plannerMode',
   'plannerPercent', 'plannerPercentWrap', 'plannerMonthly', 'plannerMonthlyWrap',
   'plannerDate', 'plannerCalendar', 'plannerName', 'plannerSave',
-  'plannerScenarios', 'plannerDelete', 'plannerResult', 'toast'
+  'plannerScenarios', 'plannerDelete', 'plannerResult', 'toast',
+  'savingsIntro', 'savingsSummary', 'savingsSummarySaved', 'savingsSummaryDate', 'savingsSummaryMonthly'
 ];
 
 for (const id of elementIds) {

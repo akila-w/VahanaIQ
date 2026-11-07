@@ -48,8 +48,8 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
       }
       if (['about', 'privacy', 'terms'].includes(route)) {
         const info = await page.locator('main').evaluate(el => ({ display: getComputedStyle(el).display, width: el.clientWidth, sectionWidth: el.querySelector('.info-sections').clientWidth, padding: parseFloat(getComputedStyle(el).paddingLeft) }));
-        expect.soft(info.display).toBe('block');
-        expect.soft(Math.abs(info.sectionWidth - (info.width - 2 * info.padding))).toBeLessThanOrEqual(1);
+        // The side list and reading column share the page; the sections keep to the column.
+        expect.soft(info.sectionWidth).toBeLessThanOrEqual(info.width - 2 * info.padding + 1);
       }
       if (route === 'studio') {
         const colors = await page.locator('#modelSearch').evaluate(el => ({ background: getComputedStyle(el).backgroundColor, expected: getComputedStyle(document.documentElement).getPropertyValue('--select-bg').trim() }));
@@ -90,6 +90,7 @@ test('all gauge boundaries and the exact overflow example render actual values',
   await page.setViewportSize({ width: 390, height: 844 });
   await seed(page, { income: '220000', rate: '0', tenure: '12', down: '60' });
   await page.goto(`${BASE}/index.html`);
+  await page.locator('#budgetDetails summary').click();
   await expect(page.locator('#budgetDtiHero')).toHaveText('110.1% DTI');
   await expect(page.locator('#budgetCashflowLabel')).toContainText('Monthly shortfall: LKR 22,317.18');
   await expect(page.locator('#budgetCashflowBar')).toHaveAttribute('aria-label', /110.1%.*22,317.18/);
@@ -230,6 +231,7 @@ test('Photo Studio accepts the real JPEG fixture and refuses invalid uploads', a
 test('budget modes persist through edits, escape vehicle names and allocate insurance', async ({ page }) => {
  await seed(page, { income: '100000', rate: '0', tenure: '84', down: '60', insurance: '120000', fees: '0' }, { ...fixture, name: '<img id="injected-vehicle" src="invalid">Vehicle name' });
  await page.goto(`${BASE}/index.html`);
+ await page.locator('#budgetDetails summary').click();
  for (const mode of ['linear', 'ceiling']) {
   await page.locator(`[data-budget-mode="${mode}"]`).click();
   await page.locator('#income').fill('110000');

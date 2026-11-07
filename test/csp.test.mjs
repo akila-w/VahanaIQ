@@ -16,7 +16,9 @@ const SHIPPED_PAGES = [
   'about.html',
   'settings.html',
   'privacy.html',
-  'terms.html'
+  'terms.html',
+  'rentals.html',
+  'prices.html'
 ];
 
 const EXPECTED_CSP = "default-src 'self'; script-src 'self' https://www.gstatic.com https://apis.google.com https://accounts.google.com; style-src 'self' 'unsafe-inline' https://accounts.google.com; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebaseapp.com https://accounts.google.com https://vahanaiq-search-71962876227.asia-south1.run.app; frame-src https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self';";

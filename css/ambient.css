@@ -1,0 +1,43 @@
+/* The site's background, shared by every page that has one. The body stays clear so the fixed layer shows. */
+html { background-color: var(--bg, #f5f6f3); }
+body.has-ambient { background: transparent !important; animation: none !important; }
+/* Ambient background: two drifting glows behind the solid cards, replacing the older aurora.
+   The logo pattern is not here: only Landing (.landing-matrix) and Guided Setup (its backdrop) draw it. */
+.has-ambient::before,
+.has-ambient::after { display: none !important; }
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.ambient-glow {
+  position: absolute;
+  width: 80vmax;
+  height: 80vmax;
+  border-radius: var(--radius-circle);
+  will-change: transform;
+}
+.ambient-glow-a {
+  left: -26vmax;
+  top: -34vmax;
+  background: radial-gradient(closest-side, var(--ambient-glow-a), transparent);
+  animation: ambient-float-a 26s ease-in-out infinite alternate;
+}
+.ambient-glow-b {
+  right: -30vmax;
+  bottom: -38vmax;
+  background: radial-gradient(closest-side, var(--ambient-glow-b), transparent);
+  animation: ambient-float-b 32s ease-in-out infinite alternate;
+}
+@keyframes ambient-float-a { to { transform: translate(16vmax, 10vmax) scale(1.08); } }
+@keyframes ambient-float-b { to { transform: translate(-14vmax, -12vmax) scale(1.12); } }
+
+@media (prefers-reduced-motion: reduce) { .ambient-glow { animation: none; } }
+:root[data-motion="reduced"] .ambient-glow { animation: none; }
+@media print { .ambient { display: none !important; } }
+
+/* Studio follows its artboard: a plain working surface. */
+body.studio-flat { background: var(--bg, #f5f6f3) !important; animation: none !important; }
+body.studio-flat::before, body.studio-flat::after { display: none !important; }

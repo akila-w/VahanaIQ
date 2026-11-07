@@ -24,7 +24,7 @@ export const articles = [
 export const tours = {
   calculator: { name: 'Calculator', href: 'index.html', steps: [
     { target: '#loanTermsHead', title: 'Start with your loan terms', text: 'Use your lender’s quoted rate and term. Open the terms and try a control: the figures update as you change it.', action: 'Explore loan terms', focus: '#rate', expand: '#toggleTerms', article: 'rate' },
-    { target: '#budgetPanel', title: 'Make the budget personal', text: 'Income is optional. Add take-home pay and existing repayments in Loan Terms to see how much room remains for a vehicle.', action: 'Explore income inputs', focus: '#income', expand: '#toggleTerms', article: 'budget' },
+    { target: '#incomePanel', title: 'Make the budget personal', text: 'Income is optional. Add take-home pay and existing repayments to see how much room remains for a vehicle.', action: 'Explore income inputs', focus: '#income', article: 'budget' },
     { target: '#comparisonPanel', title: 'Bring in vehicles to compare', text: 'Use Add a Vehicle to browse the catalogue or enter a quote. Your chosen terms apply to the comparison; no example data is added for you.', action: 'Add a vehicle', focus: '#addVehicleBtn', click: true, article: 'compare' },
     { target: '#savingsPanel', title: 'Plan your next step', text: 'Open the Savings Planner when you are ready to work towards a deposit. Help Centre keeps these explanations and tours available at any time.', action: 'Explore savings planner', focus: '#plannerVehicle', expand: '#toggleSavingsDrawer', article: 'savings' }
   ] },

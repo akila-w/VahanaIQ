@@ -1,6 +1,7 @@
 // settings.html: preferences that apply straight away and stay in this browser. js/boot.js applies
 // text size, motion and tips before first paint; js/curated-catalogue.js reads the Showroom choices.
 import { shown } from "./number-format.js?v=2.12.0";
+import { rental, flatToEffective } from "./calculator.js?v=2.12.0";
 
 const SETTINGS_KEY = "vahanaiq_settings_v1";
 const THEME_KEY = "vahanaiq_theme";
@@ -56,10 +57,24 @@ function check(name, value) {
   if (input) input.checked = true;
 }
 
+// The live preview: one real sum, redrawn on the choices made on this page. A new Raize needs at least 60% down.
+const PREVIEW_PRICE = 12250000;
+const chosen = name => document.querySelector(`input[name="${name}"]:checked`)?.value;
+// The planner can save values these choices do not offer, such as 100% down from the cash strategy.
+const loanValue = (name, settings) => Number(chosen(name) ?? read(INPUTS_KEY)[name] ?? settings.loan?.[name]);
 function preview(settings) {
   const label = settings.currency === "rs" ? "Rs." : "LKR";
   const day = settings.date === "numeric" ? "22-10-2026" : "22 Oct 2026";
-  $("numberPreview").textContent = `Price ${label} ${shown(12250000, settings)} · ${label} ${shown(97324.17, settings)} a month · Checked ${day}`;
+  const tenure = loanValue("tenure", settings) || 84;
+  const down = Math.min(Math.max(loanValue("down", settings) || 60, 60), 100);
+  const entered = Number($("defaultRate").value);
+  const rate = Number.isFinite(entered) && entered >= 0 ? entered : 16;
+  const flat = chosen("rateType") === "flat";
+  const monthly = rental(PREVIEW_PRICE * (1 - down / 100), flat ? flatToEffective(rate, tenure) : rate, tenure);
+  $("previewPrice").textContent = `From ${label} ${shown(PREVIEW_PRICE, settings)}`;
+  $("previewRental").textContent = `${label} ${shown(monthly, settings)} a month`;
+  $("previewTerms").textContent = `${tenure} months · ${rate}% ${flat ? "flat" : "reducing"} · ${down}% down`;
+  $("numberPreview").textContent = `Prices checked ${day}`;
 }
 
 function restore() {
@@ -74,7 +89,6 @@ function restore() {
   check("cents", settings.cents || "yes");
   check("large", settings.large || "full");
   check("date", settings.date || "friendly");
-  preview(settings);
   check("rateType", inputs.rateType || settings.loan?.rateType || "reducing");
   check("tenure", inputs.tenure || settings.loan?.tenure || 84);
   check("down", inputs.down || settings.loan?.down || 60);
@@ -84,6 +98,7 @@ function restore() {
   $("budgetOnly").checked = settings.budgetOnly === true;
   $("hideEstimated").checked = settings.hideEstimated === true;
   $("tips").checked = settings.tips !== false;
+  preview(settings);
 }
 
 document.addEventListener("change", event => {
@@ -91,7 +106,7 @@ document.addEventListener("change", event => {
   if (name === "theme") applyTheme(value);
   else if (name === "text" || name === "motion") saveSetting(name, value);
   else if (["currency", "cents", "large", "date"].includes(name)) { preview(saveSetting(name, value)); }
-  else if (name === "rateType" || name === "tenure" || name === "down" || name === "dti") saveLoan(name, value);
+  else if (name === "rateType" || name === "tenure" || name === "down" || name === "dti") { saveLoan(name, value); preview(read(SETTINGS_KEY)); }
   else if (["rentals", "budgetOnly", "hideEstimated", "tips"].includes(id)) saveSetting(id, checked);
 });
 
@@ -104,6 +119,7 @@ $("defaultRate").addEventListener("change", event => {
   }
   // The planner only restores strings, like the other loan fields.
   saveLoan("rate", String(rate));
+  preview(read(SETTINGS_KEY));
 });
 
 $("exportData").addEventListener("click", () => {
@@ -149,4 +165,53 @@ $("deleteData").addEventListener("click", () => {
   announce("Your saved data was deleted from this browser.");
 });
 
+// Sign-in lives on the planner's account dialog. Show who is signed in, if anyone.
+function showAccount() {
+  let signedIn = false, name = "";
+  try {
+    signedIn = Boolean(localStorage.getItem("vahanaiq_account_v1"));
+    name = localStorage.getItem("vahanaiq_account_name_v1") || "";
+  } catch (e) {}
+  if (!signedIn) return;
+  $("syncTitle").textContent = "Syncing across your devices";
+  $("syncHint").textContent = name ? `Signed in as ${name}.` : "You are signed in.";
+  $("syncLink").textContent = "Manage Account";
+}
+
+// Marks the section being read in the side list.
+const sectionLinks = [...document.querySelectorAll(".settings-nav a")];
+function markSection(id) {
+  for (const link of sectionLinks) {
+    if (link.getAttribute("href") === `#${id}`) link.setAttribute("aria-current", "true");
+    else link.removeAttribute("aria-current");
+  }
+}
+// A chosen section stays marked while the page scrolls to it. The last card can be too short to
+// reach the marker line, so the end of the page always marks it.
+let chosenUntil = 0;
+for (const link of sectionLinks) {
+  link.addEventListener("click", () => {
+    chosenUntil = Date.now() + 1000;
+    markSection(link.getAttribute("href").slice(1));
+  });
+}
+window.addEventListener("scroll", () => {
+  const end = document.documentElement.scrollHeight - 4;
+  if (Date.now() > chosenUntil && window.scrollY + window.innerHeight >= end) {
+    markSection(sectionLinks[sectionLinks.length - 1].getAttribute("href").slice(1));
+  }
+}, { passive: true });
+if (typeof IntersectionObserver === "function") {
+  const observer = new IntersectionObserver(entries => {
+    if (Date.now() < chosenUntil) return;
+    const showing = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+    if (showing) markSection(showing.target.id);
+  }, { rootMargin: "-20% 0px -65% 0px" });
+  for (const link of sectionLinks) {
+    const section = document.querySelector(link.getAttribute("href"));
+    if (section) observer.observe(section);
+  }
+}
+
 restore();
+showAccount();

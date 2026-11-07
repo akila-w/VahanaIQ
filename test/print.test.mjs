@@ -47,7 +47,6 @@ const suppressedSelectors = [
   ".filters-toggle",
   ".comparison-tools",
   "#resetCatalogWrap",
-  "#openCatalogueBtn",
   "#shareBtn",
   "#resetCatalogBtn",
   "#showMoreVehicles",
