@@ -157,37 +157,22 @@ async function activatedFromObserver(observer) {
   // Cache cleanup happens inside activate, before clients.claim resolves. Opening
   // a controlled document during that transition can race claiming in WebKit.
   // Observe the actual state from outside the scope before starting navigation.
-  const read = page => page.evaluate(async () => {
-    const r = await navigator.serviceWorker.getRegistration('/VahanaIQ/');
-    return { active: r?.active?.state, waiting: r?.waiting?.state, installing: r?.installing?.state };
-  });
+  const read = page => page.evaluate(async () => (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state);
   const started = Date.now();
   let state;
-  while (Date.now() - started < 15000) {
-    state = (await read(observer)).active;
+  while (Date.now() - started < 8000) {
+    state = await read(observer);
     if (state === 'activated') break;
     await new Promise(resolve => setTimeout(resolve, 200));
   }
-  const phases = () => observer.evaluate(() => (window.__probe || []).join(','));
-  console.log(`PROBE activation ${state} after ${Date.now() - started} ms phases ${await phases()}`);
+  const before = state;
   if (state !== 'activated') {
-    const context = observer.context();
-    const second = await context.newPage();
-    await second.goto(site.origin + '/__blank.html');
-    console.log(`PROBE STUCK old observer ${JSON.stringify(await read(observer))} new observer ${JSON.stringify(await read(second))} caches ${JSON.stringify(await second.evaluate(() => caches.keys()))} phases ${await phases()}`);
-    const visitor = await context.newPage();
-    const opening = Date.now();
-    const outcome = await visitor.goto(site.origin + '/VahanaIQ/index.html', { timeout: 30000 }).then(response => `loaded ${response?.status()} fromWorker ${response?.fromServiceWorker()}`, error => 'failed ' + error.message.split('\n')[0]);
-    const seen = await visitor.evaluate(() => ({ controller: navigator.serviceWorker.controller?.state ?? null, rate: !!document.querySelector('#rate'), modules: Object.keys(window.__offlineModules || {}).length })).catch(error => 'unreadable ' + error.message.split('\n')[0]);
-    console.log(`PROBE STUCK visitor ${outcome} in ${Date.now() - opening} ms ${JSON.stringify(seen)}`);
-    const waited = Date.now();
-    let recovered = false;
-    while (Date.now() - waited < 45000) {
-      if ((await read(second)).active === 'activated') { recovered = true; break; }
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-    console.log(`PROBE STUCK ${recovered ? 'recovered' : 'still stuck'} after a further ${Date.now() - waited} ms, old observer ${JSON.stringify(await read(observer))} phases ${await phases()}`);
+    const reloaded = Date.now();
+    await observer.reload();
+    state = await read(observer);
+    console.log(`PROBE STALE before ${before} after reload ${state} in ${Date.now() - reloaded} ms`);
   }
+  console.log(`PROBE activation ${state} after ${Date.now() - started} ms`);
   expect(state).toBe('activated');
 }
 
