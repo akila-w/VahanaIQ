@@ -784,6 +784,17 @@ test.describe('Showroom verdicts need a confirmed price', () => {
   });
 });
 
+test('the Settings preview uses saved loan values that its choices do not offer', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('vahanaiq_inputs_v1', JSON.stringify({ tenure: '66', down: '100', rate: '16' })));
+  await page.goto(`${BASE_URL}/settings.html`);
+  await expect(page.locator('#previewTerms')).toContainText('66 months');
+  await expect(page.locator('#previewTerms')).toContainText('100% down');
+  await expect(page.locator('#previewRental')).toContainText('0.00 a month');
+  await page.locator('input[name="down"][value="70"]').check({ force: true });
+  await expect(page.locator('#previewTerms')).toContainText('70% down');
+  await expect(page.locator('#previewRental')).not.toContainText('0.00 a month');
+});
+
 test('loan defaults chosen in Settings reach the planner and the Showroom', async ({ page }) => {
   await page.goto(`${BASE_URL}/settings.html`);
   await page.fill('#defaultRate', '12.5');

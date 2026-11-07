@@ -60,11 +60,13 @@ function check(name, value) {
 // The live preview: one real sum, redrawn on the choices made on this page. A new Raize needs at least 60% down.
 const PREVIEW_PRICE = 12250000;
 const chosen = name => document.querySelector(`input[name="${name}"]:checked`)?.value;
+// The planner can save values these choices do not offer, such as 100% down from the cash strategy.
+const loanValue = (name, settings) => Number(chosen(name) ?? read(INPUTS_KEY)[name] ?? settings.loan?.[name]);
 function preview(settings) {
   const label = settings.currency === "rs" ? "Rs." : "LKR";
   const day = settings.date === "numeric" ? "22-10-2026" : "22 Oct 2026";
-  const tenure = Number(chosen("tenure")) || 84;
-  const down = Math.max(Number(chosen("down")) || 60, 60);
+  const tenure = loanValue("tenure", settings) || 84;
+  const down = Math.min(Math.max(loanValue("down", settings) || 60, 60), 100);
   const entered = Number($("defaultRate").value);
   const rate = Number.isFinite(entered) && entered >= 0 ? entered : 16;
   const flat = chosen("rateType") === "flat";
