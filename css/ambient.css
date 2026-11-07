@@ -41,3 +41,28 @@ body.has-ambient { background: transparent !important; animation: none !importan
 /* Studio follows its artboard: a plain working surface. */
 body.studio-flat { background: var(--bg, #f5f6f3) !important; animation: none !important; }
 body.studio-flat::before, body.studio-flat::after { display: none !important; }
+
+/* The status bar and Dynamic Island. Safari paints that strip with the root background and starts fixed layers
+   below it, so no layer can reach it. The root takes the tint instead, and the page fades from the same tint. */
+@media screen and (max-width: 760px) {
+  :root { --edge-tint: color-mix(in srgb, #2dd4bf 16%, var(--bg)); --landing-edge: #0e2b26; }
+  html:has(> body.has-ambient) { background-color: var(--edge-tint) !important; }
+  .ambient::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 160px;
+    background: linear-gradient(to bottom, var(--edge-tint), transparent);
+  }
+  html.landing-pending.landing-pending { background-color: var(--landing-edge) !important; }
+  .landing-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 140px;
+    background: linear-gradient(to bottom, var(--landing-edge), transparent);
+  }
+  html:has(.onboarding[open]),
+  html:has(> body.has-ambient dialog#detail[open]),
+  html:has(> body.has-ambient dialog#guide[open]) { background-color: var(--panel) !important; }
+}

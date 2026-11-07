@@ -495,7 +495,13 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
     }
   }
 
+  // Phones keep the filters behind one button; the count says when some are in use.
+  function updateFilterCount() {
+    const active = ['make', 'body', 'priceType'].filter(id => $(id).value).length + ($('sort').value === 'make' ? 0 : 1);
+    $('filterCount').textContent = active ? ` (${active})` : '';
+  }
   function render() {
+    updateFilterCount();
     syncBrandStrip();
     syncBudget();
     const all = list(); page = Math.max(0, Math.min(page, Math.ceil(all.length/size)-1));
@@ -537,6 +543,7 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
     }
     $('photoNote').textContent = p.note || '';
     $('galleryPrevious').disabled = imageIndex === 0; $('galleryNext').disabled = imageIndex === current.images.length-1;
+    $('galleryPrevious').parentElement.hidden = current.images.length < 2;
     if ($('galleryCoverBadge')) $('galleryCoverBadge').hidden = imageIndex !== 0;
     if ($('galleryMakeCoverBtn')) $('galleryMakeCoverBtn').hidden = imageIndex === 0;
     if ($('galleryRemoveBtn')) $('galleryRemoveBtn').hidden = current.images.length < 2;
@@ -990,6 +997,11 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
   if ($('footerSourceGuide')) $('footerSourceGuide').addEventListener('click', () => $('guide').showModal());
   ['search','make','body','priceType','sort'].forEach(id => { const el = $(id); if (!el) return; const handler = () => { if (!data) return; if ($('vehicles')) $('vehicles').classList.remove('initial-load'); page = 0; render(); }; el.addEventListener('input', handler); el.addEventListener('change', handler); });
   $('clear').addEventListener('click',() => { if (!data) return; if ($('vehicles')) $('vehicles').classList.remove('initial-load'); for (const id of ['search','make','body','priceType']) $(id).value = ''; budgetOnly = false; $('sort').value = 'make'; reviewOnly = false; page = 0; render(); });
+  $('filterToggle').addEventListener('click', () => {
+    const open = $('filterToggle').getAttribute('aria-expanded') !== 'true';
+    $('filterToggle').setAttribute('aria-expanded', String(open));
+    $('filterRow').classList.toggle('is-open', open);
+  });
   $('brandStripTrack')?.addEventListener('click', e => {
     const b = e.target.closest('.brand-chip');
     if (!b || !data) return;
