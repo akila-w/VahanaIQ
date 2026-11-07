@@ -95,7 +95,8 @@ for (const mode of ['desktop', 'reduced', 'touch']) {
       if (mode === 'desktop' && !style.disabled) expect(style.transition).toContain('transform');
       const help = page.locator('#helpCentreButton');
       const before = await help.boundingBox(); await help.hover(); const after = await help.boundingBox();
-      expect(after.width).toBe(before.width); expect(after.height).toBe(before.height);
+      // Firefox's sub-pixel layout can report 16.5 as 16.50006, so a real size change is what is tested.
+      expect(after.width).toBeCloseTo(before.width, 2); expect(after.height).toBeCloseTo(before.height, 2);
       expect(await help.evaluate(el => getComputedStyle(el).transform)).toBe('none');
     }
     await page.goto(`${BASE}/catalogue.html`);
