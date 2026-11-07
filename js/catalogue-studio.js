@@ -165,6 +165,7 @@ async function renderFilmstrip(model, record, token) {
 // A record that no longer differs from the published catalogue is dropped, so the browser never keeps
 // a stale copy of an entry the studio has been told to leave alone.
 async function commit(model, record, message) {
+  cancelSave(model.id);
   const next = { ...record, updatedAt: new Date().toISOString() };
   if (recordIsEdited(next, model)) {
     state.records.set(model.id, next);
@@ -471,12 +472,24 @@ $("filmstrip").addEventListener("click", async event => {
     await commit(model, result.record, "Photo removed. Reset to original photos brings the published set back.");
   }
 });
-// Saves are written together, so dragging a photo does not hammer the browser's storage.
-let saveTimer = 0;
+// Saves are written together, so dragging a photo does not hammer the browser's storage. Each entry has
+// its own timer: another entry's save is never cancelled, and a newer write cancels the entry's older one.
+const saveTimers = new Map();
+
+function cancelSave(modelId) {
+  clearTimeout(saveTimers.get(modelId));
+  saveTimers.delete(modelId);
+}
+
+function showResetLink() {
+  const model = selectedModel();
+  $("resetModelBtn").hidden = !(model && state.records.has(model.id));
+}
 
 function scheduleSave(model, record, delay = 400) {
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
+  cancelSave(model.id);
+  saveTimers.set(model.id, setTimeout(async () => {
+    saveTimers.delete(model.id);
     if (recordIsEdited(record, model)) {
       const saved = await writeEdit(record);
       if (!saved) markStorageUnavailable();
@@ -484,8 +497,8 @@ function scheduleSave(model, record, delay = 400) {
       await deleteEdit(model.id);
     }
     renderModelList();
-    $("resetModelBtn").hidden = !state.records.has(model.id);
-  }, delay);
+    showResetLink();
+  }, delay));
 }
 
 // The frame path stays cheap: only the stage and the one thumbnail are redrawn while dragging.
@@ -679,12 +692,12 @@ for (const [id, mode] of [["backgroundPlate", "plate"], ["backgroundOriginal", "
 $("saveFrameBtn").addEventListener("click", async () => {
   const active = activeItem();
   if (!active) return;
-  clearTimeout(saveTimer);
   const { model, record } = active;
+  cancelSave(model.id);
   const edited = recordIsEdited(record, model);
   const saved = edited ? await writeEdit(record) : await deleteEdit(model.id);
   renderModelList();
-  $("resetModelBtn").hidden = !state.records.has(model.id);
+  showResetLink();
   if (!edited) {
     toast("Nothing to save: this entry matches the published photos.");
     return;
@@ -732,6 +745,7 @@ $("resetModelBtn").addEventListener("click", async () => {
   const model = selectedModel();
   if (!model || !state.records.has(model.id)) return;
   if (!globalThis.confirm(`Reset ${model.name} to its published photos? Your uploads and framing for this entry will be removed from this browser.`)) return;
+  cancelSave(model.id);
   const record = state.records.get(model.id);
   state.records.delete(model.id);
   forgetPhotos(record.items);
@@ -902,6 +916,7 @@ $("exportDownload").addEventListener("click", () => {
 $("exportClear").addEventListener("click", async () => {
   if (!state.records.size) return;
   if (!globalThis.confirm(`Remove the changes made to ${state.records.size} entr${state.records.size === 1 ? "y" : "ies"} in this browser?`)) return;
+  for (const id of [...saveTimers.keys()]) cancelSave(id);
   const records = [...state.records.values()];
   state.records.clear();
   for (const record of records) forgetPhotos(record.items);

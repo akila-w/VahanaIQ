@@ -319,6 +319,46 @@ test.describe('Phone journeys', () => {
     await context.close();
   });
 
+  test('Photo Studio: saving one entry keeps another entry\'s waiting save, and a reset stays reset', async ({ browser }) => {
+    // This test reloads, and a worker's requests would pass blockFirebase
+    const context = await browser.newContext({ serviceWorkers: 'block', viewport: { width: 1440, height: 900 } });
+    await seedReturning(context);
+    await blockFirebase(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    const changeZoom = () => {
+      const range = document.getElementById('zoomRange');
+      range.value = String(Number(range.value) + 0.5);
+      range.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    // All in one task, so Save Frame always lands inside the first entry's 400ms wait
+    await page.evaluate(change => {
+      eval(`(${change})`)();
+      document.querySelectorAll('#modelList [data-model]')[2].click();
+      document.getElementById('saveFrameBtn').click();
+    }, changeZoom.toString());
+    await page.waitForTimeout(800);
+    await page.reload({ waitUntil: 'load' });
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 1');
+
+    // A reset straight after a change must not be undone by that change's waiting save
+    await page.locator('#modelList [data-model]').first().click();
+    await expect(page.locator('#resetModelBtn')).toBeVisible();
+    page.once('dialog', dialog => dialog.accept());
+    await page.evaluate(change => {
+      eval(`(${change})`)();
+      document.getElementById('resetModelBtn').click();
+    }, changeZoom.toString());
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await page.waitForTimeout(800);
+    await page.reload({ waitUntil: 'load' });
+    await expect(page.locator('#frameStatus')).not.toBeEmpty();
+    await page.waitForTimeout(500);
+    await expect(page.locator('#filterEdited')).toHaveText('Edited 0');
+    await context.close();
+  });
+
   test('Photo Studio controls are 44px touch targets on a phone', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
