@@ -406,7 +406,7 @@ function init(forcedOpen = false) {
     const searchWrap = el('div', 'onboarding-search-wrap');
     const search = el('input', 'onboarding-search');
     search.type = 'search';
-    search.placeholder = 'Search by make or model, e.g. Toyota, BYD, Vezel';
+    search.placeholder = 'Search make or model';
     search.setAttribute('aria-label', 'Search vehicles');
     search.value = query;
     searchWrap.append(search);
