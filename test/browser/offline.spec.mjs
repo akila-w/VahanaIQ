@@ -158,14 +158,21 @@ async function activatedFromObserver(observer) {
   // a controlled document during that transition can race claiming in WebKit.
   // Observe the actual state from outside the scope before starting navigation.
   const started = Date.now();
-  let state, seen = 0;
-  while (Date.now() - started < 60000) {
+  let state;
+  while (Date.now() - started < 15000) {
     state = await observer.evaluate(async () => (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state);
-    seen++;
     if (state === 'activated') break;
     await new Promise(resolve => setTimeout(resolve, 200));
   }
-  console.log(`PROBE activation ${state} after ${Date.now() - started} ms, ${seen} reads`);
+  const phases = await observer.evaluate(() => window.__probe);
+  console.log(`PROBE activation ${state} after ${Date.now() - started} ms phases ${phases.join(',')}`);
+  if (state !== 'activated') {
+    const visitor = await observer.context().newPage();
+    const opening = Date.now();
+    const outcome = await visitor.goto(site.origin + '/VahanaIQ/index.html', { timeout: 30000 }).then(() => 'loaded', error => 'failed ' + error.message.split('\n')[0]);
+    const after = await observer.evaluate(async () => (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state);
+    console.log(`PROBE STUCK visitor ${outcome} in ${Date.now() - opening} ms, then ${after}, phases ${(await observer.evaluate(() => window.__probe)).join(',')}`);
+  }
   expect(state).toBe('activated');
 }
 
@@ -173,6 +180,7 @@ async function activate(context, page, revision) {
   // The observer is outside /VahanaIQ/, so it cannot keep the old worker alive.
   const observer = await context.newPage();
   await observer.goto(site.origin + '/__blank.html');
+  await observer.evaluate(() => { window.__probe = []; new BroadcastChannel('probe').onmessage = event => window.__probe.push(event.data); });
   await page.close();
   await expect.poll(() => observer.evaluate(() => caches.keys())).toEqual([`vahanaiq-test-${revision}`]);
   await activatedFromObserver(observer);
@@ -186,7 +194,7 @@ async function consistent(page, revision) {
   expect(await page.evaluate(() => [...new Set(Object.values(window.__offlineModules))])).toEqual([revision]);
 }
 
-for (let run = 0; run < 12; run++) test(`two complete cache revisions wait, activate, clean up and roll back without data loss ${run}`, async ({ page, context }) => {
+for (let run = 0; run < 20; run++) test(`two complete cache revisions wait, activate, clean up and roll back without data loss ${run}`, async ({ page, context }) => {
   test.setTimeout(150000);
   site.state.revision = 'A';
   await page.goto(site.origin + '/VahanaIQ/index.html');
