@@ -1773,8 +1773,8 @@ body::after {
 }
 
 input[type="range"].terms-slider {
-  height: 6px !important;
-  margin: 6px 0 4px !important;
+  height: 24px !important;
+  margin: 0 !important;
 }
 
 .terms-slider::-webkit-slider-thumb {
@@ -3188,7 +3188,9 @@ html[data-text="larger"]{zoom:1.25}
   body.planner-page > main > .hero { grid-column: 1 / -1; flex-wrap: nowrap; }
   body.planner-page > main > .terms-panel { grid-column: 1; grid-row: 2; position: static !important; margin: 0; padding: 20px; }
   body.planner-page > main > .income-panel { grid-column: 1; grid-row: 3; margin: 0; }
-  body.planner-page > main > .answer-panel { grid-column: 2; grid-row: 2 / span 2; position: sticky; top: 76px; margin: 0; }
+  /* The column is as tall as Terms and Income, so the pinned card stops before the Shortlist. */
+  body.planner-page > main > .answer-column { display: block; grid-column: 2; grid-row: 2 / span 2; align-self: stretch; min-width: 0; }
+  .answer-column > .answer-panel { position: sticky; top: 76px; margin: 0; }
   body.planner-page > main > #budgetPanel,
   body.planner-page > main > #comparisonPanel,
   body.planner-page > main > #savingsPanel { grid-column: 1 / -1; margin: 0; }
@@ -3236,7 +3238,7 @@ html[data-text="larger"]{zoom:1.25}
 .savings-summary dt { color: var(--mute); font-size: 12px; }
 .savings-summary dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
 .foot-link-groups { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 24px; width: 100%; }
-.foot-link-groups .site-links { display: flex !important; flex-wrap: wrap; align-items: center; gap: 0 14px; margin: 0; width: auto; }
+.foot-link-groups .site-links { display: flex !important; flex-wrap: wrap; align-items: center; align-content: flex-start; gap: 0 14px; margin: 0; width: auto; }
 .foot-link-groups .site-links h3 { flex: 1 0 100%; margin: 0 0 2px; color: var(--mute); font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
 .foot-link-groups .site-links a { display: inline-flex; align-items: center; min-height: 32px; padding: 0; }
 @media screen and (max-width: 760px) {
@@ -3261,4 +3263,3 @@ html[data-text="larger"]{zoom:1.25}
   .foot-link-groups .site-links { display: contents !important; }
   .foot-link-groups .site-links h3 { display: none; }
 }
-@media print { .budget-details > :not(summary), .terms-advanced > :not(summary) { display: block !important; } }

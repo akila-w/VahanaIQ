@@ -13,7 +13,7 @@ function showStudio() {
   document.body.append(view.querySelector("#exportDialog"));
   document.title = "Photo Studio · VahanaIQ";
   $("skipLink").href = "#models";
-  $("skipLink").textContent = "Skip to Catalogue Entries";
+  $("skipLink").textContent = "Skip to Showroom Entries";
   renderAdminLinks();
   document.querySelector('nav[aria-label="Main"]').append(view.querySelector("#restartOnboardingBtn"));
   for (const link of document.querySelectorAll("a[data-admin-link]")) link.setAttribute("aria-current", "page");

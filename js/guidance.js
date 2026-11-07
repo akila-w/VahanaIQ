@@ -178,9 +178,9 @@ function renderInvitation() {
 }
 function nextSuggestion() {
   if (page === 'calculator') {
-    if (!$('#rows tr')) return 'Next: add a vehicle from the catalogue or enter a quote to begin your comparison.';
+    if (!$('#rows tr')) return 'Next: add a vehicle from the Showroom or enter a quote to begin your comparison.';
     if (!Number(($('#income')?.value || '').replaceAll(',', ''))) return 'Next: add your income for an optional affordability check, or compare the rental and total cost.';
-    return 'Next: compare your shortlisted vehicles, then explore the Savings Planner for the up-front cash.';
+    return 'Next: compare your chosen vehicles, then explore the Savings Planner for the up-front cash.';
   }
   return 'Next: open a vehicle to check the price source and variant before adding it to your comparison.';
 }

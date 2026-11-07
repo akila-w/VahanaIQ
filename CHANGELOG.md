@@ -36,6 +36,16 @@ Landing introduction, a redesigned guided setup and an answer-first Lease page, 
 - **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
 
 ### Fixed
+- **One name for each thing**: the site now says Lease Planner, Showroom, Comparison and Terms & Notices everywhere, in menus, buttons, messages and Help Centre. File names and addresses such as `catalogue.html` are unchanged, so existing links still work.
+- **Prices on the landing belt and in guided setup** now use the site's own price rule (confirmed evidence first, then the lowest amount), as the Showroom and ready-made shortlists already did. The calculation is unchanged, but some shown figures move: Toyota Raize LKR 12,500,000 and Suzuki Fronx LKR 11,350,000. The first trim offered, in setup and in Add a Vehicle, follows the same rule, and the Settings preview now uses the Raize's price.
+- **Logo**: on every page it opens the landing page.
+- **The rental card** no longer covers the Shortlist or Budget Breakdown while scrolling on a wide screen.
+- **Printing the Lease page**: Loan Terms labels no longer sit behind their values, the chosen Debt-to-Income limit prints, every money column fits on A4, the shortlist starts its own page, and closed sections, hidden budget views, filter controls and footer links stay off the paper. Status is left out because Affordability says the same. The printed header says this is an estimate and that down payments follow CBSL Directions No. 01 of 2026.
+- **Settings header** has the same Lease, Showroom and Settings links as other pages, and its footer lines up with the page. Settings section buttons and toggles are styled consistently.
+- **Footer**: Help Centre lines up with the text beside it on information pages, has a full touch target on a phone Showroom, and the footer columns start level.
+- **Accessibility**: darker text for low-contrast labels, larger Loan Terms slider targets, one main landmark, one header and footer landmark in guided setup, and no skipped heading levels in guided setup or the Showroom.
+- **Page titles** no longer repeat the name on About.
+- **Missing pages** now show a VahanaIQ "Page Not Found" page with links back, in place of GitHub's.
 - **Photo Studio's reset control and other hidden elements** no longer show when marked hidden: shared button rules gave them a display value that beat the `hidden` attribute, so Undo My Changes showed with nothing changed.
 - **Photo Studio animation**: colour, border and shadow transitions on its controls are gone, and the guides no longer use a drop-shadow filter; only transform and opacity animate, and all of it stops under reduced motion.
 - **Photo Studio saves**: each entry now has its own waiting save, so saving or changing one entry can no longer cancel another's, and a waiting save can no longer undo a reset.

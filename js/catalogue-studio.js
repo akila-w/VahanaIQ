@@ -67,7 +67,7 @@ function recordFor(model) {
 
 function itemLabel(item) {
   if (item.kind === UPLOAD) return item.name || "Your photo";
-  return item.caption ? item.caption.split("·")[0].trim() : "Catalogue photo";
+  return item.caption ? item.caption.split("·")[0].trim() : "Showroom photo";
 }
 
 function photoUrl(item) {
@@ -384,7 +384,7 @@ export async function hasValidImageMagicBytes(file) {
 
 async function addFiles(list) {
   const model = selectedModel();
-  if (!model) { toast("Open a catalogue entry first."); return; }
+  if (!model) { toast("Open a Showroom entry first."); return; }
   let incoming = [...(list || [])].filter(file => file && /^image\//.test(file.type || ""));
   if (!incoming.length && typeof window !== "undefined") {
     const fixture = window.__VAHANAIQ_STUDIO_FIXTURE_FILE__ || (typeof window.__VAHANAIQ_GET_STUDIO_FIXTURE__ === "function" ? window.__VAHANAIQ_GET_STUDIO_FIXTURE__() : null);
@@ -942,14 +942,14 @@ async function start() {
     }
   } catch (error) {
     $("modelCount").textContent = "";
-    $("editorEmpty").textContent = "The catalogue data could not be loaded. Open the studio from the project folder, or from the live site, and try again.";
+    $("editorEmpty").textContent = "The Showroom data could not be loaded. Open the studio from the project folder, or from the live site, and try again.";
     $("exportBtn").disabled = true;
     return;
   }
   state.models = [...state.catalogue.models].sort((a, b) => a.name.localeCompare(b.name));
   if (!state.models.length) {
     $("modelCount").textContent = "";
-    $("editorEmpty").textContent = "The catalogue has no entries to work with.";
+    $("editorEmpty").textContent = "The Showroom has no entries to work with.";
     $("exportBtn").disabled = true;
     return;
   }

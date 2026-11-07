@@ -210,7 +210,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
       : "No matching vehicles. Try another make or model, or clear the filters.";
     $("catalogueClearFilters").hidden = !active && !$("catalogueSearch").value;
     $("catalogueFiltersCount").textContent = active ? `(${active})` : "";
-    $("cataloguePerMillion").textContent = f.catalogueAffordability === 'within' && !t?.income ? 'Enter your net income and loan terms above to filter by monthly budget.' : f.catalogueAffordability === 'within' ? `Using your income, existing payments, insurance, ${t.down}% down and current loan terms. Source-backed prices only; starting prices may increase. Deposit savings are checked in the planner.` : priced ? '' : perMillionLine(t);
+    $("cataloguePerMillion").textContent = f.catalogueAffordability === 'within' && !t?.income ? 'Enter your net income and loan terms above to filter by monthly budget.' : f.catalogueAffordability === 'within' ? `Using your income, existing payments, insurance, ${t.down}% down and current loan terms. Source-backed prices only; starting prices may increase. Deposit savings are checked in the Savings Planner.` : priced ? '' : perMillionLine(t);
     $("catalogueResults").innerHTML = matches.slice(start, start + pageSize).map(v => card(v, t)).join("");
     $("cataloguePrev").disabled = page === 0;
     $("catalogueNext").disabled = start + pageSize >= matches.length;
@@ -288,7 +288,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     const o = getSelectedOffer();
     if (cond !== "New") {
       $("cataloguePrice").value = "";
-      $("cataloguePriceNote").textContent = "Catalogue prices are for Brand New vehicles only. Enter your quotation or marketplace listing price for this condition.";
+      $("cataloguePriceNote").textContent = "Showroom prices are for Brand New vehicles only. Enter your quotation or marketplace listing price for this condition.";
       $("catalogueAddError").textContent = "";
       if (focusPrice) $("cataloguePrice").focus();
       return;
@@ -304,7 +304,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
         : !o && publishedPrice(pending)
         ? "Source-backed asking/starting amount, checked " + displayDate(pending.priceVerifiedOn || pending.checkedOn) + ". Confirm the exact specification and current quote."
         : validPrice(pending.price)
-        ? "Unverified catalogue estimate. Replace it with a seller quote before relying on the calculation."
+        ? "Unverified Showroom estimate. Replace it with a seller quote before relying on the calculation."
         : "No verified price is published here. Enter your quote to calculate a lease.";
     }
   }
@@ -326,7 +326,8 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
         $("catalogueTrimSelect").innerHTML = offers.map((o, idx) =>
           `<option value="${idx}">${esc(o.name || o.trim || pending.name)}${o.amount ? ` · LKR ${displayAmount(o.amount)}` : ""} (Brand New)</option>`
         ).join("");
-        $("catalogueTrimSelect").value = "0";
+        // Start on the price the Showroom and ready-made shortlists show for this car.
+        $("catalogueTrimSelect").value = String(Math.max(0, offers.indexOf(representativePriceOffer(offers))));
       } else {
         $("catalogueTrimWrap").hidden = true;
       }
