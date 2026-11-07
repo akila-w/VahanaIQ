@@ -31,6 +31,34 @@ async function addToyotas(page) {
 
 const pageWidth = page => page.evaluate(() => document.documentElement.scrollWidth);
 
+// Only iOS Safari shows a keyboard here, so the visible area is made to report the height an open
+// keyboard leaves, and resizes as it does then. Null puts the real height back: the keyboard closes.
+// The layout viewport stays 844px tall, so a field the guard centres sits at about 420px.
+const KEYBOARD_OPEN_HEIGHT = 600;
+const setVisibleHeight = (page, height) => page.evaluate(value => {
+  const v = window.visualViewport;
+  if (value === null) delete v.height;
+  else Object.defineProperty(v, 'height', { configurable: true, get: () => value });
+  v.dispatchEvent(new Event('resize'));
+}, height);
+
+const incomeInSight = page => page.evaluate(() => {
+  const box = document.getElementById('income').getBoundingClientRect();
+  return box.top >= 0 && box.bottom <= window.visualViewport.height;
+});
+
+// The guard waits 80ms after a scroll, so 300ms is long enough to see it move the page.
+async function expectStaysScrolled(page) {
+  const scrolled = await page.evaluate(async () => {
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
+    await new Promise(requestAnimationFrame);
+    return window.scrollY;
+  });
+  expect(scrolled).toBeGreaterThan(0);
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+}
+
 test('all six routes fit the requested 375×812 phone viewport in both themes', async ({ browser, browserName }) => {
   for (const theme of ['light', 'dark']) {
     const context = await browser.newContext({ ...phone(browserName, { width: 375, height: 812 }), colorScheme: theme });
@@ -277,7 +305,8 @@ test.describe('Phone journeys', () => {
   test('a focused field that ends up out of sight when the visible area changes is brought back', async ({ browser, browserName }) => {
     // iOS Safari can undo its own keyboard scroll (seen in the iOS 27 Simulator). Only Safari
     // shows a keyboard, so this checks the guard in js/page-transitions.js directly: the field
-    // is focused off-screen, then the visible area reports a resize as it does when a keyboard opens.
+    // is focused off-screen, then the visible area shrinks and reports a resize as it does when
+    // a keyboard opens.
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
     const page = await context.newPage();
@@ -288,12 +317,66 @@ test.describe('Phone journeys', () => {
       // Income is now always visible in the Budget panel.
       document.getElementById('income').focus({ preventScroll: true });
       window.scrollTo(0, document.documentElement.scrollHeight);
-      window.visualViewport.dispatchEvent(new Event('resize'));
     });
-    await expect.poll(() => page.evaluate(() => {
-      const box = document.getElementById('income').getBoundingClientRect();
-      return box.top >= 0 && box.bottom <= window.innerHeight;
-    })).toBe(true);
+    await setVisibleHeight(page, KEYBOARD_OPEN_HEIGHT);
+    await expect.poll(() => incomeInSight(page)).toBe(true);
+    await context.close();
+  });
+
+  test('a scroll just after the keyboard opens that hides the focused field is undone', async ({ browser, browserName }) => {
+    // Safari's own undo arrives as a scroll after the last resize, with the field already in sight.
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+    await page.locator('#toggleTerms').click();
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+      const income = document.getElementById('income');
+      income.focus({ preventScroll: true });
+      income.scrollIntoView({ block: 'center', behavior: 'instant' });
+    });
+    await setVisibleHeight(page, KEYBOARD_OPEN_HEIGHT);
+    expect(await incomeInSight(page)).toBe(true);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect.poll(() => incomeInSight(page)).toBe(true);
+    await context.close();
+  });
+
+  test('once the keyboard has closed, scrolling away from the focused field stays where it is', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+    await page.locator('#toggleTerms').click();
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+      const income = document.getElementById('income');
+      income.focus({ preventScroll: true });
+      income.scrollIntoView({ block: 'center', behavior: 'instant' });
+    });
+    await setVisibleHeight(page, KEYBOARD_OPEN_HEIGHT);
+    await setVisibleHeight(page, null);
+    await expectStaysScrolled(page);
+    await context.close();
+  });
+
+  test('pinch zoom does not count as the keyboard opening', async ({ browser, browserName }) => {
+    const context = await browser.newContext(phone(browserName));
+    await seedReturning(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+    await page.locator('#toggleTerms').click();
+    await page.evaluate(() => {
+      document.documentElement.style.scrollBehavior = 'auto';
+      document.getElementById('income').focus({ preventScroll: true });
+      const v = window.visualViewport;
+      const height = document.documentElement.clientHeight / 2;
+      Object.defineProperty(v, 'height', { configurable: true, get: () => height });
+      Object.defineProperty(v, 'scale', { configurable: true, get: () => 2 });
+      v.dispatchEvent(new Event('resize'));
+    });
+    await expectStaysScrolled(page);
     await context.close();
   });
 
@@ -341,6 +424,66 @@ test.describe('Phone journeys', () => {
     await context.close();
   });
 });
+
+for (const [width, height] of [[1366, 768], [1440, 900]]) {
+  test.describe(`a focused field at ${width}x${height} with no on-screen keyboard`, () => {
+    // A desktop has no on-screen keyboard to hide a field behind, so resizing the visible area must
+    // not move the page. The split-scroll test above failed intermittently on this. Only the height
+    // changes here: WebKit itself scrolls to a focused text field whose width changes.
+    const open = async browser => {
+      const context = await browser.newContext({ viewport: { width, height } });
+      await seedReturning(context);
+      const page = await context.newPage();
+      await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
+      await addToyotas(page);
+      await expect(page.locator('#income')).toBeFocused();
+      // WebKit reports a resize from 0x0 at first layout; outlast it so each test checks its own.
+      await page.waitForTimeout(1100);
+      return { context, page };
+    };
+
+    test('scrolling after a resize event stays where it is', async ({ browser }) => {
+      const { context, page } = await open(browser);
+      await page.evaluate(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        window.visualViewport.dispatchEvent(new Event('resize'));
+      });
+      await expectStaysScrolled(page);
+      await context.close();
+    });
+
+    test('resizing the window and then wheeling down the page stays where it is', async ({ browser }) => {
+      const { context, page } = await open(browser);
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      await page.setViewportSize({ width, height: height - 40 });
+      await page.mouse.move(width / 2, height / 2);
+      // The guard can only act 80ms after a scroll event, so recording the furthest point on each
+      // one always sees where the wheel took the page, however slowly this test reads it.
+      await page.evaluate(() => {
+        window.furthestScroll = 0;
+        window.addEventListener('scroll', () => { window.furthestScroll = Math.max(window.furthestScroll, window.scrollY); }, { passive: true });
+      });
+      // Firefox moves the page at most about one screen per wheel event, whatever the distance.
+      await page.mouse.wheel(0, 1600);
+      await expect.poll(() => page.evaluate(() => window.furthestScroll)).toBeGreaterThan(height / 2);
+      await page.waitForTimeout(300);
+      const { furthest, now } = await page.evaluate(() => ({ furthest: window.furthestScroll, now: window.scrollY }));
+      expect(now).toBe(furthest);
+      await context.close();
+    });
+
+    test('resizing the window after scrolling away stays where it is', async ({ browser }) => {
+      const { context, page } = await open(browser);
+      await page.evaluate(() => window.scrollTo({ top: 2000, behavior: 'instant' }));
+      await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000);
+      const scrolled = await page.evaluate(() => window.scrollY);
+      await page.setViewportSize({ width, height: height - 40 });
+      await page.waitForTimeout(300);
+      expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+      await context.close();
+    });
+  });
+}
 
 test.describe('Motion', () => {
   test('reduced motion: nothing animates and figures are final at once', async ({ browser, browserName }) => {

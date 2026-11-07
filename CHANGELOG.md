@@ -7,7 +7,7 @@ This project adheres to British English conventions and date format DD/MM/YYYY.
 
 ## [Unreleased] - 01/11/2026
 
-Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-14`.
+Landing introduction, a redesigned guided setup and an answer-first Lease page, from the VahanaIQ Redesign canvas. No calculation, threshold or rounding changed, and numbers read as before unless a visitor chooses otherwise in Settings. Asset version stays 2.12.0; the offline shell moves to revision `vahanaiq-v2.12.0-offline-15`.
 
 ### Added
 - **Settings page (`settings.html`)**: theme, text size, motion, loan defaults, Showroom choices, tips, data download and delete. Numbers and Dates choose the currency label, whole rupees, millions or lakhs, and the date format; these change what is displayed, never a calculation.
@@ -27,6 +27,7 @@ Landing introduction, a redesigned guided setup and an answer-first Lease page, 
 - **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
 
 ### Fixed
+- **Page no longer jumps back to a focused field on a desktop or after the keyboard closes**: the iPhone keyboard guard in `js/page-transitions.js` treated every change to the visible area as a keyboard opening. With a text field focused, resizing a desktop window threw a visitor who had scrolled away back to that field, with or without scrolling afterwards, and pinch zoom did the same. It now acts only while a keyboard is open, when the visible area falls well short of the layout viewport. WebKit also reports a resize at first layout, which made `test/browser/ui-responsive.spec.mjs` fail intermittently. No calculation, threshold or rounding changed.
 - **Showroom verdicts**: a disputed, estimated or unverified price no longer says Comfortable, Stretching or Out of Reach, and no longer passes Only Cars Within My Budget. Its rental stays, marked Illustrative only · Price unverified. No calculation changed.
 - **Settings interest rate**: the rate chosen in Settings now reaches the planner, and a blank box no longer counts as 0%.
 - **Budget bar on phones**: it now sits above the bottom tabs, which stay tappable, and the end of the page and any toast clear both.
