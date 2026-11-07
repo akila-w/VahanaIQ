@@ -157,9 +157,16 @@ async function activatedFromObserver(observer) {
   // Cache cleanup happens inside activate, before clients.claim resolves. Opening
   // a controlled document during that transition can race claiming in WebKit.
   // Observe the actual state from outside the scope before starting navigation.
-  await expect.poll(() => observer.evaluate(async () =>
-    (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state
-  )).toBe('activated');
+  const started = Date.now();
+  let state, seen = 0;
+  while (Date.now() - started < 60000) {
+    state = await observer.evaluate(async () => (await navigator.serviceWorker.getRegistration('/VahanaIQ/'))?.active?.state);
+    seen++;
+    if (state === 'activated') break;
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+  console.log(`PROBE activation ${state} after ${Date.now() - started} ms, ${seen} reads`);
+  expect(state).toBe('activated');
 }
 
 async function activate(context, page, revision) {
@@ -179,7 +186,8 @@ async function consistent(page, revision) {
   expect(await page.evaluate(() => [...new Set(Object.values(window.__offlineModules))])).toEqual([revision]);
 }
 
-test('two complete cache revisions wait, activate, clean up and roll back without data loss', async ({ page, context }) => {
+for (let run = 0; run < 12; run++) test(`two complete cache revisions wait, activate, clean up and roll back without data loss ${run}`, async ({ page, context }) => {
+  test.setTimeout(150000);
   site.state.revision = 'A';
   await page.goto(site.origin + '/VahanaIQ/index.html');
   await installed(page);
