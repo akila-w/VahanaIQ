@@ -690,7 +690,7 @@ function render() {
   if ($('comparisonCount')) $('comparisonCount').textContent = `${Math.min(comparisonLimit, list.length)} of ${list.length} matching vehicles · ${rows.length} in your comparison`;
   if ($('showMoreVehicles')) $('showMoreVehicles').hidden = list.length <= comparisonLimit;
   if ($('compactTerms')) $('compactTerms').textContent = `${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing'} · ${s.n} months · ${s.down}% down`;
-  if ($('calculationBasis')) $('calculationBasis').textContent = `Calculated from each selected vehicle's price, ${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing-balance'} interest, ${s.n} months and your ${s.down}% deposit (or the vehicle's higher legal minimum). ${s.income ? `Monthly budget uses your LKR ${displayAmount(s.income)} income, LKR ${displayAmount(s.debt)} existing payments and ${Math.round(s.dti * 100)}% limit.` : 'Add income to calculate a personal monthly budget.'} Fees and insurance use the amounts you enter. Catalogue prices are sourced amounts or clearly labelled estimates.`;
+  if ($('calculationBasis')) $('calculationBasis').textContent = `Calculated from each selected vehicle's price, ${s.rateInput}% ${s.rateType === 'flat' ? 'flat' : 'reducing-balance'} interest, ${s.n} months and your ${s.down}% deposit (or the vehicle's higher legal minimum). ${s.income ? `Monthly budget uses your LKR ${displayAmount(s.income)} income, LKR ${displayAmount(s.debt)} existing payments and ${Math.round(s.dti * 100)}% limit.` : 'Add income to calculate a personal monthly budget.'} Fees and insurance use the amounts you enter. Showroom prices are sourced amounts or clearly labelled estimates.`;
   refreshPlanner();
 
   const costsMetaEl = $("costsDrawerMeta");
@@ -1695,7 +1695,7 @@ function removeWithUndo(idx) {
   saveCars(cars);
   pendingRemoval = { car, idx };
   render();
-  $("undoText").textContent = `${car.name} removed from your shortlist.`;
+  $("undoText").textContent = `${car.name} removed from your comparison.`;
   $("undoBar").hidden = false;
   $("undoRemovalBtn").focus();
 }
@@ -1719,7 +1719,7 @@ function renderReadyShortlists() {
   readyShortlists = READY_SHORTLISTS
     .map(([title, ids]) => [title, prepareBulkSelection(ids.map(id => catalogue.find(v => v.id === id)).filter(Boolean)).eligible])
     .filter(([, list]) => list.length >= 2);
-  wrap.innerHTML = readyShortlists.map(([title, list], i) => `<button type="button" class="ready-shortlist" data-ready="${i}"><span class="ready-shortlist-title">${esc(title)}</span><span class="ready-shortlist-cars">${esc(list.map(v => v.name).join(", "))}</span><span class="ready-shortlist-use">Use This Shortlist <span aria-hidden="true">→</span></span></button>`).join("");
+  wrap.innerHTML = readyShortlists.map(([title, list], i) => `<button type="button" class="ready-shortlist" data-ready="${i}"><span class="ready-shortlist-title">${esc(title)}</span><span class="ready-shortlist-cars">${esc(list.map(v => v.name).join(", "))}</span><span class="ready-shortlist-use">Use This Comparison <span aria-hidden="true">→</span></span></button>`).join("");
   wrap.hidden = !readyShortlists.length;
 }
 if ($("readyShortlists")) $("readyShortlists").addEventListener("click", e => {

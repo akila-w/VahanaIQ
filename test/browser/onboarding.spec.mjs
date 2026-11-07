@@ -14,7 +14,7 @@ async function selectCars(page) {
  const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
  for (const [index, name] of ['Toyota Aqua', 'Toyota Camry Hybrid'].entries()) {
   await search.fill(name);
-  const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true });
+  const add = page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Comparison', exact: true });
   await add.scrollIntoViewIfNeeded();
   await expect(add).toBeInViewport();
   await add.click();
@@ -80,7 +80,7 @@ async function reviewedTerms(page, testInfo, deferFocus = false) {
   await expect(page.locator('.onboarding-result')).toHaveCount(2);
   await snapshot('before-completion');
   expect(await draftRate()).toBe('12');
-  await page.getByRole('button', { name: 'Open My Lease →', exact: true }).click();
+  await page.getByRole('button', { name: 'Open My Lease Planner →', exact: true }).click();
   await expect(page.locator('#onboarding')).toHaveCount(0);
   await expect(page.locator('#rows tr')).toHaveCount(2);
   await expect(page.locator('#rate')).toHaveValue('12');
@@ -208,7 +208,7 @@ for (const route of ['catalogue', 'studio']) test(`setup from ${route} preserves
  await page.goto(`${BASE}/${route}.html?onboarding=1`);
  await selectCars(page);
  await toResult(page);
- await page.getByRole('button', { name: 'Open My Lease →' }).click();
+ await page.getByRole('button', { name: 'Open My Lease Planner →' }).click();
  // This wait covers a whole page navigation, which can stall for seconds on a busy machine in WebKit.
  await expect(page.locator('#rows tr')).toHaveCount(3, { timeout: 15_000 });
  await expect(page.locator('#rows')).toContainText('Saved vehicle');
@@ -226,7 +226,7 @@ test('repeated Guided Setup clicks create only one dialog per click', async ({ p
   }).observe(document.body, { childList: true });
  });
  for (let index = 1; index <= 5; index++) {
-  await page.locator('#onboarding').getByRole('button', { name: 'Exit to Lease', exact: true }).click();
+  await page.locator('#onboarding').getByRole('button', { name: 'Exit Setup', exact: true }).click();
   await page.locator('#restartOnboardingBtn').click();
   await expect(page.locator('#onboarding')).toHaveCount(1);
   await expect.poll(() => page.evaluate(() => window.setupInsertions)).toBe(index);

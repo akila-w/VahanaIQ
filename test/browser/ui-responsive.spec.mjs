@@ -631,7 +631,7 @@ test.describe('Motion', () => {
 });
 
 test.describe('Answer first', () => {
-  test('a ready-made shortlist fills the card, and Show Above and Undo Removal keep it true', async ({ page }) => {
+  test('a ready-made comparison fills the card, and Show Above and Undo Removal keep it true', async ({ page }) => {
     await page.goto(`${BASE_URL}/index.html`);
     await page.locator('#readyShortlists button', { hasText: 'Compact SUVs' }).click();
     await expect(page.locator('#rows tr')).toHaveCount(2);
@@ -724,7 +724,7 @@ test.describe('Number choices and phone tabs', () => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
     const page = await context.newPage();
-    for (const [file, tab] of [['index.html', 'Lease'], ['catalogue.html', 'Showroom'], ['settings.html', 'Settings']]) {
+    for (const [file, tab] of [['index.html', 'Lease Planner'], ['catalogue.html', 'Showroom'], ['settings.html', 'Settings']]) {
       await page.goto(`${BASE_URL}/${file}`);
       await expect(page.locator('.tab-bar a[aria-current="page"]')).toHaveText(tab);
       expect(await pageWidth(page)).toBeLessThanOrEqual(390);
@@ -784,7 +784,7 @@ test.describe('Showroom verdicts need a confirmed price', () => {
   });
 });
 
-for (const width of [1024, 1440, 1920]) test(`the rental card never covers the Shortlist or Budget Breakdown at ${width}px`, async ({ page }) => {
+for (const width of [1024, 1440, 1920]) test(`the rental card never covers the Comparison or Budget Breakdown at ${width}px`, async ({ page }) => {
   await page.setViewportSize({ width, height: 900 });
   await page.goto(`${BASE_URL}/index.html`);
   await page.locator('#readyShortlists button').first().click();
@@ -807,7 +807,7 @@ for (const width of [1024, 1440, 1920]) test(`the rental card never covers the S
   expect(overlap).toBeLessThanOrEqual(0);
 });
 
-test('guided setup and the ready-made shortlist price a car the same way', async ({ page }) => {
+test('guided setup and the ready-made comparison price a car the same way', async ({ page }) => {
   await page.goto(`${BASE_URL}/index.html`);
   await page.locator('#readyShortlists button').first().click();
   const ready = await page.evaluate(() => JSON.parse(localStorage.getItem('vahanaiq_comparison_v3')).cars.map(c => [c.catalogueId, c.price]));
@@ -849,11 +849,16 @@ test('a printed estimate keeps its labels, choices and every column on the A4 pa
   await expect(page.locator('td.v-status').first()).toBeHidden();
   await expect(page.locator('#budgetGraphic')).toBeVisible();
   await expect(page.locator('#budgetLinearView')).toBeHidden();
-  const overflow = await page.locator('#comparisonPanel').evaluate(panel => {
+  const overflow = () => page.locator('#comparisonPanel').evaluate(panel => {
     const right = panel.getBoundingClientRect().right;
     return Math.max(...[...panel.querySelectorAll('th, td')].map(cell => cell.getBoundingClientRect().right)) - right;
   });
-  expect(overflow).toBeLessThanOrEqual(0);
+  expect(await overflow(), 'with an income').toBeLessThanOrEqual(0);
+  // With no income, each row says what income the car needs instead.
+  await page.locator('#income').fill('');
+  await page.locator('#income').dispatchEvent('input');
+  await expect(page.locator('td.v-bar').first()).toContainText('Need');
+  expect(await overflow(), 'without an income').toBeLessThanOrEqual(0);
   await page.locator('#budgetDetails').evaluate(details => { details.open = false; });
   await expect(page.locator('#budgetPanel')).toBeHidden();
 });

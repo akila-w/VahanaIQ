@@ -134,7 +134,7 @@ async function addPhotos(model, fileList) {
 
 async function removePhoto(model, photoIndex) {
   if (!model || !model.images || model.images.length < 2 || photoIndex < 0 || photoIndex >= model.images.length) {
-    return { success: false, error: "A catalogue entry must keep at least one photo." };
+    return { success: false, error: "A Showroom entry must keep at least one photo." };
   }
   const modelId = model.modelId || model.id;
   const existing = await readEdit(modelId);

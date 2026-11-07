@@ -10,7 +10,7 @@ const BASE = process.env.BASE_URL || 'http://127.0.0.1:8123';
 const KEY = 'vahanaiq_guidance_v1';
 const go = (page, name = 'index.html') => page.goto(`${BASE}/${name}`);
 const state = page => page.evaluate(key => JSON.parse(localStorage.getItem(key)), KEY);
-const start = async page => { await page.locator('#helpCentreButton').click(); await page.getByRole('button', { name: /(?:Start|Restart|Resume) (?:Calculator|Catalogue|Studio) tour/ }).first().click(); };
+const start = async page => { await page.locator('#helpCentreButton').click(); await page.getByRole('button', { name: /(?:Start|Restart|Resume) (?:Lease Planner|Showroom|Studio) tour/ }).first().click(); };
 
 test('returning users have a quiet workspace and can start guidance from Help', async ({ page }) => {
   await go(page);
@@ -18,7 +18,7 @@ test('returning users have a quiet workspace and can start guidance from Help', 
   await expect(page.locator('.guide-invitation')).toBeHidden();
   await go(page, 'catalogue.html');
   await page.locator('#helpCentreButton').click();
-  await page.getByRole('button', { name: 'Start Catalogue tour' }).click();
+  await page.getByRole('button', { name: 'Start Showroom tour' }).click();
   await expect(page.locator('#guidedTour')).toContainText('1 of 3');
   await page.getByRole('button', { name: 'Skip tour' }).click();
   await expect(page.locator('#helpCentreButton')).toBeFocused();
@@ -36,7 +36,7 @@ test('tour resumes only on request, supports back, skip, restart and completion'
   await page.keyboard.press('Escape');
   expect((await state(page)).tours.calculator.status).toBe('skipped');
   await page.locator('#helpCentreButton').click();
-  await page.getByRole('button', { name: 'Restart Calculator tour' }).click();
+  await page.getByRole('button', { name: 'Restart Lease Planner tour' }).click();
   for (let i = 0; i < 3; i++) await page.getByRole('button', { name: 'Next', exact: true }).click();
   await page.getByRole('button', { name: 'Finish tour' }).click();
   expect((await state(page)).tours.calculator.status).toBe('completed');
@@ -226,7 +226,7 @@ for (const name of ['about', 'privacy', 'terms']) {
   test(`${name} keeps Help Centre available`, async ({ page }) => {
     await go(page, `${name}.html`); await page.locator('#helpCentreButton').click();
     await expect(page.locator('#helpCentre')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Calculator tour', exact: true })).toHaveAttribute('href', 'index.html?guide=tour');
+    await expect(page.getByRole('link', { name: 'Lease Planner tour', exact: true })).toHaveAttribute('href', 'index.html?guide=tour');
   });
 }
 
@@ -287,7 +287,7 @@ test('relative links and assets work under a GitHub Pages project path', async (
   });
   await page.goto(`${BASE}/VahanaIQ/about.html`);
   await page.locator('#helpCentreButton').click();
-  await page.getByRole('link', { name: 'Catalogue tour', exact: true }).click();
+  await page.getByRole('link', { name: 'Showroom tour', exact: true }).click();
   // The address clears once the catalogue's modules have run. In WebKit on CI that takes about
   // 3 seconds, routed or not, and can pass the default 5 seconds on a cold or busy runner.
   await expect(page).toHaveURL(`${BASE}/VahanaIQ/catalogue.html`, { timeout: 15_000 });

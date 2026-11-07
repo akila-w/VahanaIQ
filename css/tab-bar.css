@@ -2,7 +2,7 @@
 .tab-bar{display:none}
 @media screen and (max-width:760px){
   .tab-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-  .tab-bar a{flex:1 1 0;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--mute);font-size:12px;font-weight:600;text-decoration:none}
+  .tab-bar a{flex:1 1 0;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--mute);font-size:12px;font-weight:600;line-height:1.15;text-align:center;text-decoration:none}
   .tab-bar a[aria-current="page"]{color:var(--ink);font-weight:700;box-shadow:inset 0 2px 0 var(--accent)}
   .tab-bar a:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
   body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
@@ -36,6 +36,8 @@
   .terms-subcard-grid.cols-4 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; align-items: end !important; }
   .terms-field.terms-field-pills { display: block !important; }
   #loanTermsHead .terms-field label { min-height: 0 !important; margin-bottom: 2pt !important; }
+  #loanTermsHead .terms-field > .guide-context-row { margin-bottom: 0 !important; }
+  #incomePanel { margin-top: 8pt !important; }
   #loanTermsHead .stepper-wrap { width: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 2pt 4pt !important; }
   #comparisonPanel.few-cars #filtersToggle, #comparisonPanel #filtersToggle, .budget-view-switcher, .foot-link-groups, .foot-meta #openPhotoCreditsBtn, .foot-meta #footerSourceGuide { display: none !important; }
   /* A closed section has nothing to show, so its heading is left out. */
@@ -51,9 +53,11 @@
   #comparisonPanel td, #comparisonPanel td .cell-metric, #comparisonPanel td .cell-metric b, #comparisonPanel td .price-val, #comparisonPanel td .v-dp-val { font-size: 7pt !important; }
   #comparisonPanel td .cell-metric, #comparisonPanel td .price-wrap, #comparisonPanel td .dp-wrap { min-width: 0 !important; }
   #comparisonPanel td .micro-sub { font-size: 5.5pt !important; }
-  #comparisonPanel td.name { width: 92pt !important; }
-  #comparisonPanel td.v-bar { width: 72pt !important; }
+  #comparisonPanel td.name { width: 80pt !important; }
+  #comparisonPanel td.v-bar { width: 64pt !important; }
   #comparisonPanel td.v-bar .v-bar-inner { min-width: 0 !important; max-width: none !important; }
+  /* Every cell may wrap, so long names, notes and the income needed cannot push the table off the page. */
+  #comparisonPanel td, #comparisonPanel td * { white-space: normal !important; min-width: 0 !important; }
   #comparisonPanel td.v-bar .tag { font-size: 5.5pt !important; padding: 1pt 2pt !important; white-space: normal !important; }
   #comparisonPanel td.v-bar .bar-micro-metric { font-size: 5.5pt !important; white-space: normal !important; }
   #comparisonPanel .v-badge-lowest * { font-size: 5.5pt !important; padding-block: 0 !important; min-height: 0 !important; }

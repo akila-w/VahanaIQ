@@ -36,6 +36,7 @@ Landing introduction, a redesigned guided setup and an answer-first Lease page, 
 - **Favicon**: the SVG favicon has no background tile; it uses deep teals on light browser tabs and bright teals on dark ones. The app icons keep their tile.
 
 ### Fixed
+- **One name for each thing**: the site now says Lease Planner, Showroom, Comparison and Terms & Notices everywhere, in menus, buttons, messages and Help Centre. File names and addresses such as `catalogue.html` are unchanged, so existing links still work.
 - **Prices on the landing belt and in guided setup** now use the site's own price rule (confirmed evidence first, then the lowest amount), as the Showroom and ready-made shortlists already did. The calculation is unchanged, but some shown figures move: Toyota Raize LKR 12,500,000 and Suzuki Fronx LKR 11,350,000. The first trim offered, in setup and in Add a Vehicle, follows the same rule, and the Settings preview now uses the Raize's price.
 - **Logo**: on every page it opens the landing page.
 - **The rental card** no longer covers the Shortlist or Budget Breakdown while scrolling on a wide screen.

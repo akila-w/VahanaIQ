@@ -119,7 +119,7 @@ for (const mount of ['/', '/VahanaIQ/']) for (const entry of ['index.html', 'cat
     for (const route of ['index.html', 'catalogue.html', 'studio.html']) {
       await page.goto(site.origin + mount + route + '?offline=1');
       await functional(page, route);
-      await expect(page).toHaveTitle(route === 'index.html' ? /Lease/ : route === 'catalogue.html' ? /Catalogue/ : /Studio/);
+      await expect(page).toHaveTitle(route === 'index.html' ? /Lease/ : route === 'catalogue.html' ? /Showroom/ : /Studio/);
     }
     await page.goto(site.origin + mount);
     await expect(page.locator('#toggleSavingsDrawer')).toBeVisible();
@@ -259,13 +259,13 @@ test('empty-profile first-use setup remains functional immediately offline', asy
     const search = page.getByRole('searchbox', { name: 'Search vehicles', exact: true });
     for (const name of ['Toyota Aqua', 'Toyota Camry Hybrid']) {
       await search.fill(name);
-      await page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Shortlist', exact: true }).click();
+      await page.locator('.onboarding-car').filter({ has: page.getByRole('heading', { name, exact: true }) }).getByRole('button', { name: '+ Add to Comparison', exact: true }).click();
     }
     await page.getByRole('button', { name: 'Continue to Income →', exact: true }).click();
     await page.getByRole('button', { name: 'Skip Income', exact: true }).click();
     await page.getByRole('button', { name: 'Continue to Down Payment →', exact: true }).click();
     await page.getByRole('button', { name: 'See My Result →', exact: true }).click();
-    await page.getByRole('button', { name: 'Open My Lease →', exact: true }).click();
+    await page.getByRole('button', { name: 'Open My Lease Planner →', exact: true }).click();
     await expect(page.locator('#rows tr')).toHaveCount(2);
     expect(observed.failed).toEqual([]);
     expect(observed.exceptions).toEqual([]);

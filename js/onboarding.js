@@ -291,8 +291,8 @@ function init(forcedOpen = false) {
       renderResult();
     }
 
-    // Exit to Lease button in footer
-    const exitFootBtn = button('Exit to Lease', () => exitOnboarding(), 'btn-outline onboarding-exit-foot-btn');
+    // Exit Setup button in footer
+    const exitFootBtn = button('Exit Setup', () => exitOnboarding(), 'btn-outline onboarding-exit-foot-btn');
     foot.prepend(exitFootBtn);
 
     body.scrollTop = 0;
@@ -334,7 +334,7 @@ function init(forcedOpen = false) {
     const aside = el('aside', 'onboarding-terms-ticker');
     aside.setAttribute('aria-live', 'polite');
     const list = el('div', 'ticker-list');
-    aside.append(el('strong', 'ticker-title', 'Your shortlist on these terms'), list);
+    aside.append(el('strong', 'ticker-title', 'Your comparison on these terms'), list);
     const update = () => {
       list.replaceChildren();
       for (const car of selected) {
@@ -395,7 +395,7 @@ function init(forcedOpen = false) {
           }
           persist();
           paint();
-          status.textContent = added.length ? `Added ${added.join(', ')}.` : 'These cars are already in your shortlist.';
+          status.textContent = added.length ? `Added ${added.join(', ')}.` : 'These cars are already in your comparison.';
         }, 'onboarding-quick-pick');
         pick.append(el('span', 'quick-pick-title', `+ ${label}`), el('span', 'quick-pick-cars', cars.map(([m]) => m.name).join(', ')));
         picks.append(pick);
@@ -413,7 +413,7 @@ function init(forcedOpen = false) {
     body.append(searchWrap);
 
     const tray = el('div', 'onboarding-tray');
-    tray.setAttribute('aria-label', 'Selected vehicles shortlist');
+    tray.setAttribute('aria-label', 'Selected vehicles for comparison');
     body.append(tray);
 
     const results = el('div', 'onboarding-cars');
@@ -454,7 +454,7 @@ function init(forcedOpen = false) {
       if (!form.reportValidity() || !nameInput.value.trim() || selected.length >= 12) return;
       const id = 'quote-' + nameInput.value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 100);
       if (selected.some(c => c.id === id)) {
-        status.textContent = 'This vehicle is already in your shortlist.';
+        status.textContent = 'This vehicle is already in your comparison.';
         return;
       }
       selected.push({
@@ -495,7 +495,7 @@ function init(forcedOpen = false) {
 
       // Shortlist tray counter
       const trayHeader = el('div', 'tray-header');
-      const trayTitle = el('strong', '', `Shortlist (${selected.length} of 12 selected)`);
+      const trayTitle = el('strong', '', `Comparison (${selected.length} of 12 selected)`);
       const trayHint = el('span', 'tray-hint', selected.length < MIN_SHORTLIST ? `Need at least ${MIN_SHORTLIST - selected.length} more` : 'Ready to continue');
       trayHeader.append(trayTitle, trayHint);
       tray.append(trayHeader);
@@ -524,7 +524,7 @@ function init(forcedOpen = false) {
       const found = searchCatalogue(models, query);
       more.hidden = found.length <= limit;
       status.textContent = storageOK
-        ? `${found.length} vehicles found. ${selected.length} in your shortlist.`
+        ? `${found.length} vehicles found. ${selected.length} in your comparison.`
         : 'Browser storage is unavailable. Keep this tab open.';
 
       for (const model of found.slice(0, limit)) {
@@ -567,7 +567,7 @@ function init(forcedOpen = false) {
 
         // Action button container
         const btnRow = el('div', 'onboarding-car-actions');
-        const selectBtn = button('+ Add to Shortlist', null, 'btn onboarding-car-btn');
+        const selectBtn = button('+ Add to Comparison', null, 'btn onboarding-car-btn');
         const removeBtn = button('Remove', null, 'btn-outline onboarding-car-remove-btn');
 
         const updateTrimState = () => {
@@ -586,7 +586,7 @@ function init(forcedOpen = false) {
 
           if (!isSelected) {
             card.classList.remove('is-selected');
-            selectBtn.textContent = '+ Add to Shortlist';
+            selectBtn.textContent = '+ Add to Comparison';
             selectBtn.className = 'btn onboarding-car-btn';
             selectBtn.disabled = selected.length >= 12;
             removeBtn.hidden = true;
@@ -595,7 +595,7 @@ function init(forcedOpen = false) {
             removeBtn.hidden = false;
             const offerTitle = [model.name, offer.trim, offer.year].filter(Boolean).join(' ').slice(0, 200);
             if (currentCar.name === offerTitle && currentCar.price === offer.amount) {
-              selectBtn.textContent = 'Shortlisted ✓';
+              selectBtn.textContent = 'Added ✓';
               selectBtn.className = 'btn-outline onboarding-car-btn is-added';
               selectBtn.disabled = true;
             } else {
@@ -642,7 +642,7 @@ function init(forcedOpen = false) {
       if (!found.length) {
         results.append(
           el('div', 'onboarding-no-results', [
-            el('p', '', models.length ? 'No matching vehicles found. Try another make or model name, or enter a quote below.' : 'Loading catalogue database…')
+            el('p', '', models.length ? 'No matching vehicles found. Try another make or model name, or enter a quote below.' : 'Loading the Showroom…')
           ])
         );
       }
@@ -723,7 +723,7 @@ function init(forcedOpen = false) {
 
     // Interactive DTI feedback card
     const dtiCard = el('div', 'onboarding-dti-card');
-    const dtiHeader = el('strong', 'dti-card-title', 'How your shortlist fits');
+    const dtiHeader = el('strong', 'dti-card-title', 'How your comparison fits');
     const dtiMeter = el('div', 'onboarding-dti-meter');
     const dtiBar = el('div', 'onboarding-dti-bar');
     const dtiFill = el('div', 'onboarding-dti-fill');
@@ -777,7 +777,7 @@ function init(forcedOpen = false) {
       if (dtiPct <= 40) {
         dtiFill.className = 'onboarding-dti-fill safe';
         const buffer = Math.round((income * 0.4) - totalCommitments);
-        dtiText.innerHTML = `<span class="tag ok">Comfortable (${dtiPct}% of income)</span> An average car on your shortlist fits within the recommended 40% limit, with <strong>${formatLKR(buffer)} a month</strong> to spare.`;
+        dtiText.innerHTML = `<span class="tag ok">Comfortable (${dtiPct}% of income)</span> An average car in your comparison fits within the recommended 40% limit, with <strong>${formatLKR(buffer)} a month</strong> to spare.`;
       } else if (dtiPct <= 50) {
         dtiFill.className = 'onboarding-dti-fill mid';
         dtiText.innerHTML = `<span class="tag mid">Stretching (${dtiPct}% of income)</span> Within the 50% maximum, but it leaves less room for insurance, fuel and upkeep.`;
@@ -891,7 +891,7 @@ function init(forcedOpen = false) {
   function renderResult() {
     title(
       'Here is where you stand.',
-      `${terms.tenure} months at ${terms.rate}% ${terms.rateType === 'flat' ? 'flat' : 'reducing balance'}, with at least ${terms.down}% down. Everything can be changed in the planner.`,
+      `${terms.tenure} months at ${terms.rate}% ${terms.rateType === 'flat' ? 'flat' : 'reducing balance'}, with at least ${terms.down}% down. Everything can be changed in the Lease Planner.`,
       'Step 5 of 5 · Your Result'
     );
 
@@ -909,8 +909,8 @@ function init(forcedOpen = false) {
           ? `Keeps the rental and your existing payments within 40% of your ${formatLKR(income)} take-home pay.`
           : 'Your existing payments already use 40% of your income. A larger down payment or longer term will help.'));
     } else {
-      summary.append(el('span', 'summary-label', 'Monthly rentals for your shortlist'),
-        el('span', 'summary-note', 'Add your income in the planner to see which cars are comfortable and your budget ceiling.'));
+      summary.append(el('span', 'summary-label', 'Monthly rentals for your comparison'),
+        el('span', 'summary-note', 'Add your income in the Lease Planner to see which cars are comfortable and your budget ceiling.'));
     }
     body.append(summary);
 
@@ -944,7 +944,7 @@ function init(forcedOpen = false) {
       finish(true);
     }, 'btn-outline onboarding-tour-btn');
 
-    const openBtn = button('Open My Lease →', () => {
+    const openBtn = button('Open My Lease Planner →', () => {
       finish(false);
     }, 'btn btn-primary');
 
@@ -1105,7 +1105,7 @@ function closeLanding() {
   landing?.remove();
 }
 
-// Leaving for the planner or Showroom counts as dismissing setup, as Exit to Lease does; the
+// Leaving for the planner or Showroom counts as dismissing setup, as Exit Setup does; the
 // Guided Setup button stays in the header for later.
 function dismissLanding() {
   try {
