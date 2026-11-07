@@ -127,14 +127,15 @@ test.describe('Layout: nothing is wider than the screen', () => {
     });
   }
 
-  test('catalogue hero stays stacked on phones (UX-02)', async ({ browser, browserName }) => {
+  test('catalogue hero fits on phones and the counts stay above the cars (UX-02)', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
     const page = await context.newPage();
     await page.goto(`${BASE_URL}/catalogue.html`, { waitUntil: 'load' });
-    await expect(page.locator('#metrics strong').first()).toBeVisible();
-    const aside = await page.locator('.hero-aside').boundingBox();
-    expect(aside.x + aside.width).toBeLessThanOrEqual(390);
+    await expect(page.locator('.hero-aside')).toBeHidden();
+    await expect(page.locator('#resultCount')).toContainText('Vehicles');
+    const heading = await page.locator('main .hero h1').boundingBox();
+    expect(heading.x + heading.width).toBeLessThanOrEqual(390);
     await context.close();
   });
 
@@ -973,4 +974,127 @@ test.describe('The budget bar on phones', () => {
       await context.close();
     });
   }
+});
+
+test.describe('Phone layout', () => {
+  const open = async (browser, browserName, path, width = 390, height = 844, colorScheme = 'light') => {
+    const context = await browser.newContext({ ...phone(browserName, { width, height }), colorScheme });
+    await seedReturning(context);
+    const page = await context.newPage();
+    await page.goto(`${BASE_URL}/${path}`);
+    return { context, page };
+  };
+
+  for (const path of ['index.html', 'catalogue.html', 'settings.html', 'about.html']) {
+    test(`${path}: the top of the screen takes the page's tint and the bars stay short`, async ({ browser, browserName }) => {
+      const { context, page } = await open(browser, browserName, path);
+      await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', /viewport-fit=cover/);
+      const measured = await page.evaluate(() => {
+        const bar = document.querySelector('.tab-bar');
+        const swatch = document.createElement('i');
+        swatch.style.backgroundColor = 'var(--edge-tint)';
+        document.body.append(swatch);
+        const tint = getComputedStyle(swatch).backgroundColor;
+        swatch.remove();
+        return { bar: bar.getBoundingClientRect().height, tabs: [...bar.querySelectorAll('a')].map(a => a.getBoundingClientRect().height),
+          root: getComputedStyle(document.documentElement).backgroundColor, tint };
+      });
+      expect(measured.root).toBe(measured.tint);
+      expect(measured.bar).toBeLessThanOrEqual(49);
+      for (const height of measured.tabs) expect(height).toBeGreaterThanOrEqual(44);
+      await context.close();
+    });
+  }
+
+  test('Showroom opens with the first car on screen and the filters one tap away', async ({ browser, browserName }) => {
+    const { context, page } = await open(browser, browserName, 'catalogue.html');
+    await expect(page.locator('#vehicles .card').first()).toBeVisible();
+    const top = await page.locator('#vehicles .card').first().evaluate(card => card.getBoundingClientRect().top + scrollY);
+    expect(top, 'the first car starts in the first screen').toBeLessThan(450);
+
+    await expect(page.locator('#make')).toBeHidden();
+    await page.locator('#filterToggle').click();
+    await expect(page.locator('#filterToggle')).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#make')).toBeVisible();
+    await page.locator('#body').selectOption({ index: 1 });
+    await expect(page.locator('#filterToggle')).toContainText('(1)');
+    await page.locator('#filterToggle').click();
+    await expect(page.locator('#make')).toBeHidden();
+    await context.close();
+  });
+
+  test('the brand row is swiped by hand, keeps its names and has nothing to pause', async ({ browser, browserName }) => {
+    const { context, page } = await open(browser, browserName, 'catalogue.html');
+    await expect(page.locator('.brand-chip').first()).toBeVisible();
+    await expect(page.locator('#brandStripTrack')).toHaveCSS('animation-name', 'none');
+    await expect(page.locator('#brandStripPause')).toBeHidden();
+    await expect(page.locator('.brand-strip-group[aria-hidden="true"]')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Toyota', exact: true })).toHaveCount(1);
+    const view = await page.locator('.brand-strip-view').evaluate(el => ({ scroll: el.scrollWidth, client: el.clientWidth }));
+    expect(view.scroll).toBeGreaterThan(view.client);
+    await context.close();
+  });
+
+  test('brand logos sit on white in dark mode', async ({ browser, browserName }) => {
+    const { context, page } = await open(browser, browserName, 'catalogue.html', 390, 844, 'dark');
+    await expect(page.locator('.brand-chip').first()).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    await context.close();
+  });
+
+  test('Lease Planner: the rental comes high up and the tools fit in two rows', async ({ browser, browserName }) => {
+    const { context, page } = await open(browser, browserName, 'index.html');
+    await page.locator('#readyShortlists button').first().click();
+    await expect(page.locator('#rows tr').first()).toBeVisible();
+    await expect(page.locator('#toggleColsBtn')).toBeHidden();
+    const tops = await page.locator('#comparisonPanel .comparison-tools button:visible').evaluateAll(buttons =>
+      [...new Set(buttons.map(b => Math.round(b.getBoundingClientRect().top)))]);
+    expect(tops, 'the tools take two rows').toHaveLength(2);
+    await context.close();
+  });
+
+  test('a car with one photo shows no photo controls', async ({ browser, browserName }) => {
+    const { context, page } = await open(browser, browserName, 'catalogue.html');
+    await page.locator('#vehicles .card .photo-button').first().click();
+    await expect(page.locator('#detail')).toBeVisible();
+    const total = await page.locator('#galleryPosition').textContent();
+    if (/ of 1$/.test(total || '')) await expect(page.locator('#galleryControls')).toBeHidden();
+    else await expect(page.locator('#galleryControls')).toBeVisible();
+    await context.close();
+  });
+
+  test('the current information page comes first in the page list', async ({ browser, browserName }) => {
+    const { context, page } = await open(browser, browserName, 'prices.html');
+    const current = page.locator('.info-nav a[aria-current="page"]');
+    await expect(current).toHaveCSS('order', '-1');
+    const box = await current.boundingBox();
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    await context.close();
+  });
+});
+
+test.describe('Photo Studio loading', () => {
+  test('leaving while its scripts load raises no error', async ({ page, context }) => {
+    await blockFirebase(context);
+    await context.route(/catalogue-studio\.js/, async route => {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      await route.continue().catch(() => {});
+    });
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${BASE_URL}/studio.html`, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#models')).toBeAttached();
+    await page.goto(`${BASE_URL}/about.html`);
+    await expect(page.locator('h1')).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('a script that cannot load is reported on the page', async ({ page, context }) => {
+    await blockFirebase(context);
+    await context.route(/catalogue-studio\.js/, route => route.abort());
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${BASE_URL}/studio.html`);
+    await expect(page.locator('#modelCount')).toHaveText('The Photo Studio could not load. Reload the page to try again.');
+    expect(errors).toEqual([]);
+  });
 });

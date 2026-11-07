@@ -1,19 +1,22 @@
-/* Bottom tabs on phones: the site's main destinations, always in reach */
+/* Bottom tabs on phones: the site's main destinations, always in reach. Slim on purpose: 46px tabs keep a full
+   touch target, and they sit into the top of the home-indicator space rather than above all of it. */
 .tab-bar{display:none}
 @media screen and (max-width:760px){
-  .tab-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-  .tab-bar a{flex:1 1 0;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--mute);font-size:12px;font-weight:600;line-height:1.15;text-align:center;text-decoration:none}
+  :root{--tab-bar-height:calc(47px + max(2px,calc(env(safe-area-inset-bottom,0px) - 14px)))}
+  .tab-bar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;background:var(--panel);border-top:1px solid var(--line);padding-bottom:max(2px,calc(env(safe-area-inset-bottom,0px) - 14px))}
+  .tab-bar a{flex:1 1 0;min-width:0;min-height:46px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;color:var(--mute);font-size:11px;font-weight:600;line-height:1.1;text-align:center;white-space:nowrap;text-decoration:none}
+  .tab-bar svg{width:20px;height:20px}
   .tab-bar a[aria-current="page"]{color:var(--ink);font-weight:700;box-shadow:inset 0 2px 0 var(--accent)}
   .tab-bar a:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
-  body{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+  body{padding-bottom:calc(var(--tab-bar-height) + 8px)}
   .site-header nav>a{display:none}
-  .toast,body.has-budget-bar .toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  .toast,body.has-budget-bar .toast{bottom:calc(var(--tab-bar-height) + 12px)}
 }
-/* The budget bar only shows up to 640px. It sits on the tabs (57px tall), and the page and toasts clear both. */
+/* The budget bar only shows up to 640px. It sits on the tabs, and the page and toasts clear both. */
 @media screen and (max-width:640px){
-  .budget-bar{bottom:calc(57px + env(safe-area-inset-bottom,0px));padding-bottom:var(--space-10)}
-  body.has-budget-bar{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
-  body.has-budget-bar .toast{bottom:calc(136px + env(safe-area-inset-bottom,0px))}
+  .budget-bar{bottom:var(--tab-bar-height);padding-bottom:var(--space-10)}
+  body.has-budget-bar{padding-bottom:calc(var(--tab-bar-height) + 79px)}
+  body.has-budget-bar .toast{bottom:calc(var(--tab-bar-height) + 79px)}
 }
 /* Phones: the tabs carry the destinations and Settings carries the theme and sign-in, so the header is the brand and Guided Setup. */
 @media screen and (max-width:760px){
@@ -24,6 +27,34 @@
   .site-header nav>a,.site-header nav>a.nav-icon-link{display:none}
   .site-header .brand-tagline{display:block;font-size:10px;letter-spacing:0;text-transform:none}
   .answer-photo{display:none!important}
+}
+/* Phones, Lease Planner: the monthly rental near the top of the screen, and the comparison tools in two rows, four columns wide. */
+@media screen and (max-width:600px){
+  .toast{left:12px;right:12px;max-width:none;justify-content:center;text-align:center;transform:translateY(200%)}
+  .toast.show{transform:none}
+  body.planner-page .hero{display:block;padding-block:12px 10px;margin:0}
+  body.planner-page .hero .eyebrow,body.planner-page .hero .intro,body.planner-page .hero .edition,body.planner-page .hero-aside-meta{display:none}
+  body.planner-page .hero h1{margin:0 0 8px;font-size:23px;line-height:1.15}
+  body.planner-page .hero-aside{display:block;padding:0;margin:0;border:0}
+  body.planner-page .cbsl-badge-seal{display:flex!important;justify-content:space-between;width:100%;padding:6px 12px;box-shadow:none}
+  body.planner-page #comparisonPanel .comparison-tools{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;width:100%}
+  body.planner-page #comparisonPanel .comparison-tools > button:not(#toggleColsBtn),body.planner-page #resetCatalogWrap > button{display:inline-flex!important;align-items:center;gap:4px;width:100%;height:auto!important;min-height:44px;margin:0!important;padding:4px 6px!important;font-size:12px;line-height:1.15;justify-content:center;text-align:center}
+  body.planner-page #addVehicleBtn{grid-column:span 2;order:-3}
+  body.planner-page #describeCarBtn{grid-column:span 2;order:-2}
+  body.planner-page #toggleColsBtn{display:none!important}
+  body.planner-page #resetCatalogWrap:not([hidden]){display:contents!important}
+  body.planner-page #shareBtn,body.planner-page #comparisonPanel #printBtn{order:-1}
+  body.planner-page #resetCatalogBtn{grid-column:span 2}
+  body.planner-page #resetCatalogWrap[hidden] ~ #printBtn{grid-column:1/-1}
+  body.planner-page #comparisonPanel{padding-inline:12px}
+  body.planner-page #rows td.price-cell,body.planner-page #rows td.v-dp{align-items:baseline}
+  body.planner-page #comparisonPanel .name small.v-spec{line-height:1.35}
+  body.planner-page #comparisonPanel .v-spec > *{all:unset;font-size:12px;color:var(--mute)}
+  body.planner-page #comparisonBody{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px}
+  body.planner-page #comparisonBody > *{flex:1 1 100%;min-width:0}
+  body.planner-page #comparisonBody > .calculation-basis:not([open]){flex:1 1 0;margin:0}
+  body.planner-page #comparisonBody > .filters-toggle{flex:none;order:0;margin:0;min-height:40px}
+  body.planner-page #comparisonPanel .v-spec > * + *::before{content:" · "}
 }
 @media print{.tab-bar{display:none!important}}
 
