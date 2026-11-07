@@ -19,7 +19,7 @@ const reports = [...new Set([
 ])];
 // Jekyll can publish both the original Markdown and a generated HTML page.
 const REPORT_PATHS = reports.flatMap(name => [name, name.replace(/\.md$/, '.html')]);
-const PAGES = ['catalogue.html', 'studio.html', 'about.html', 'privacy.html', 'terms.html'];
+const PAGES = ['catalogue.html', 'studio.html', 'about.html', 'privacy.html', 'terms.html', 'rentals.html', 'prices.html'];
 const ASSETS = [
   'css/experience.css', 'css/tokens.css', 'css/style.css', 'css/style.min.css', 'css/curated-catalogue.css', 'css/catalogue-studio.css', 'js/app.js', 'js/config.js',
   'js/catalogue-data.js', 'js/curated-catalogue.js', 'js/admin.js', 'js/studio-page.js', 'js/catalogue-studio.js', 'js/catalogue-photo-overlay.js',

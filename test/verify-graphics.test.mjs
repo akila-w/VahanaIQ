@@ -260,6 +260,8 @@ registerEl("budgetLegend");
 registerEl("budgetLive");
 registerEl("budgetBar");
 registerEl("budgetPanel");
+registerEl("answerPanel");
+for (const id of ["savingsIntro", "savingsSummary", "savingsSummarySaved", "savingsSummaryDate", "savingsSummaryMonthly"]) registerEl(id);
 registerEl("budgetGraphic");
 registerEl("budgetNeedle");
 registerEl("dialTickMax");

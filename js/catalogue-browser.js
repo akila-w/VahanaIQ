@@ -119,7 +119,7 @@ function matchesFilters(v, f) {
 // terms() returns { f, down }: the rental per rupee financed and the chosen down payment (%)
 export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
   const $ = id => document.getElementById(id);
-  if (!$("openCatalogueBtn")) return () => {}; // Non-browser verification hosts.
+  if (!$("catalogueMake")) return () => {}; // Non-browser verification hosts.
   const pageSize = 12;
   let page = 0, pending = null, selection = "";
 
@@ -248,7 +248,7 @@ export function initCatalogue({ isSelected, onAdd, onAddBatch, terms }) {
     render();
     openModal($("catalogueModal"), opener, $("catalogueSearch"));
   };
-  for (const id of ["addVehicleBtn", "openCatalogueBtn"]) if ($(id)) $(id).addEventListener("click", () => open($(id)));
+  if ($("addVehicleBtn")) $("addVehicleBtn").addEventListener("click", () => open($("addVehicleBtn")));
   $("browseEmptyBtn").addEventListener("click", () => open($("browseEmptyBtn")));
   // The Lease page's ceiling opens the catalogue filtered to the visitor's monthly budget
   if ($("browseBudgetBtn")) $("browseBudgetBtn").addEventListener("click", () => {

@@ -192,6 +192,7 @@ export function initPlanner({ vehicles, settings }) {
       });
     }
     if (!v) {
+      $('savingsSummary').hidden = true;
       const targetDateVal = dateInputValue($('plannerDate').value);
       let dateWarn = '';
       if (targetDateVal) {
@@ -218,6 +219,11 @@ export function initPlanner({ vehicles, settings }) {
     const date = r.date ? formatDate([r.date.getFullYear(),String(r.date.getMonth()+1).padStart(2,'0'),String(r.date.getDate()).padStart(2,'0')].join('-')) : targetDateStr;
     const end = r.months === 0 ? 'Your goal is funded' : r.months === null ? (r.targetMonths ? `${r.targetMonths} ${r.targetMonths === 1 ? 'month' : 'months'} to target date` : 'Set a monthly contribution') : r.months > 1200 ? 'Over 100 years at this contribution' : `${r.months} ${r.months === 1 ? 'month' : 'months'} to your goal`;
     const savedAmount = parseMoneyText($('plannerSaved').value) || 0;
+    $('savingsIntro').textContent = `Short of the LKR ${displayAmount(r.deposit)} down payment for the ${v.name}? Set a date and see what to put aside each month.`;
+    $('savingsSummarySaved').textContent = `LKR ${displayAmount(savedAmount)}`;
+    $('savingsSummaryDate').textContent = targetDateStr || 'Not set';
+    $('savingsSummaryMonthly').textContent = `LKR ${displayAmount(r.required ?? r.monthly ?? 0)}`;
+    $('savingsSummary').hidden = false;
 
     const depPct = r.target > 0 ? (r.deposit / r.target * 100).toFixed(1) : '100.0';
     const feePct = r.target > 0 ? (((r.fees || 0) + (r.insurance || 0)) / r.target * 100).toFixed(1) : '0.0';

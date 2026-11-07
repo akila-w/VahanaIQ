@@ -247,6 +247,21 @@ test('completing setup starts the Calculator tour and preserves existing cost se
  expect(saved).toMatchObject({ insurance: '120000', fees: '45000' });
 });
 
+// Decision of 01/11/2026, reaffirmed 07/11/2026: the logo pattern is on Landing and Guided Setup only.
+test('the logo pattern shows on Landing and Guided Setup and nowhere else', async ({ page, context }) => {
+ await page.goto(`${BASE}/index.html`);
+ await expect(page.locator('#landing .landing-matrix')).toBeAttached();
+ await startFromLanding(page);
+ const backdrop = await page.locator('#onboarding').evaluate(el => getComputedStyle(el, '::backdrop').backgroundImage);
+ expect(backdrop).toContain('svg');
+ await context.addInitScript(key => localStorage.setItem(key, JSON.stringify({ version: 1, completed: true, step: 4 })), ONBOARDING_KEY);
+ for (const path of ['index.html', 'catalogue.html', 'settings.html', 'about.html', 'rentals.html', 'prices.html', 'privacy.html', 'terms.html']) {
+  await page.goto(`${BASE}/${path}`);
+  await expect(page.locator('.ambient-glow-a'), path).toBeAttached();
+  await expect(page.locator('.landing-matrix:visible, .ambient-grid'), path).toHaveCount(0);
+ }
+});
+
 test('first visit opens on the landing introduction with real Showroom cars', async ({ page }) => {
  await page.goto(BASE + '/index.html');
  await expect(page.locator('#landingTitle')).toHaveText('See the monthly lease rental of any car in Sri Lanka.');

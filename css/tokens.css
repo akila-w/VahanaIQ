@@ -79,7 +79,6 @@
   --answer-fill: #5eead4;
   --ambient-glow-a: rgba(45, 212, 191, 0.26);
   --ambient-glow-b: rgba(167, 243, 208, 0.3);
-  --ambient-mark: rgba(16, 62, 54, 0.05);
   --shadow-logo: 0 2px 8px rgba(15, 118, 110, 0.25);
   --shadow-budget-bar: 0 -4px 16px rgba(0, 0, 0, 0.12);
   --shadow-toast: 0 8px 24px rgba(0, 0, 0, 0.25);
@@ -183,7 +182,6 @@
     --answer-bg: #0e3a33;
     --ambient-glow-a: rgba(45, 212, 191, 0.12);
     --ambient-glow-b: rgba(16, 185, 129, 0.1);
-    --ambient-mark: rgba(94, 234, 212, 0.05);
     --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
     --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
   }
@@ -221,7 +219,6 @@
   --answer-bg: #0e3a33;
   --ambient-glow-a: rgba(45, 212, 191, 0.12);
   --ambient-glow-b: rgba(16, 185, 129, 0.1);
-  --ambient-mark: rgba(94, 234, 212, 0.05);
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
   --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
 }
@@ -266,7 +263,6 @@
     --answer-fill: #103e36;
     --ambient-glow-a: rgba(255, 255, 255, 0);
     --ambient-glow-b: rgba(255, 255, 255, 0);
-    --ambient-mark: rgba(255, 255, 255, 0);
     --shadow-card: none;
     --glass-shadow: none;
   }
