@@ -185,9 +185,8 @@ try {
 } finally { globalThis.fetch = realFetch; }
 // In-page section navigation targets
 const indexHtml = fs.readFileSync('index.html', 'utf8');
-ok(indexHtml.includes('class="page-nav"'));
-for (const id of ['budgetPanel', 'comparisonPanel', 'savingsPanel']) {
-  ok(indexHtml.includes(`href="#${id}"`));
+// Other pages and the guided tour link to these sections, so their ids must stay.
+for (const id of ['incomePanel', 'budgetPanel', 'comparisonPanel', 'savingsPanel']) {
   ok(indexHtml.includes(`id="${id}"`));
 }
 

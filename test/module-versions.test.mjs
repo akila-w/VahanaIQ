@@ -17,7 +17,9 @@ const SHIPPED_PAGES = [
   'about.html',
   'settings.html',
   'privacy.html',
-  'terms.html'
+  'terms.html',
+  'rentals.html',
+  'prices.html'
 ];
 
 console.log('=== RUNNING VAHANAIQ MODULE VERSIONS TEST SUITE ===\n');

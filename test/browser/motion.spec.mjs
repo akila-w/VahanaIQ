@@ -40,6 +40,7 @@ test('rapid chart changes retarget from the visible angle and reduced motion sto
   await page.goto(`${BASE}/index.html`);
   await page.locator('#addVehicleBtn').click(); await page.fill('#catalogueSearch', 'Toyota'); await page.locator('#catalogueAddSearch').click();
   if (await page.locator('#toggleTerms').isVisible()) await page.locator('#toggleTerms').click();
+  await page.locator('#budgetDetails summary').click();
   await expect(page.locator('#income')).toBeVisible();
   await page.fill('#income', '2500000'); await page.locator('#income').dispatchEvent('change');
   // The page background loops for ever, so only finite animations can be waited for
@@ -127,7 +128,7 @@ for (const width of [320, 390, 600, 768, 980, 1024, 1280, 1440, 1920]) for (cons
     await expect(page.locator('.foot-note[open]')).toHaveCount(3);
     await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
     await expect(page.locator('.foot-note[open]')).toHaveCount(1);
-    for (const link of await page.locator('.foot .site-links a, .foot-meta a, .foot-meta button').all()) {
+    for (const link of await page.locator('.foot .site-links a:visible, .foot-meta a:visible, .foot-meta button:visible').all()) {
       const rect = await link.boundingBox();
       // Firefox reports a 44px target as 43.99994 (sub-pixel rounding in its layout), so compare whole pixels.
       expect(Math.round(rect.height)).toBeGreaterThanOrEqual(44);

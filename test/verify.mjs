@@ -184,6 +184,7 @@ const domElements = {
   budgetLive: new MockElement("budgetLive"),
   budgetBar: new MockElement("budgetBar"),
   budgetPanel: new MockElement("budgetPanel"),
+  answerPanel: new MockElement("answerPanel"),
   budgetGraphic: new MockElement("budgetGraphic"),
   budgetNeedle: new MockElement("budgetNeedle"),
   budgetDtiHero: new MockElement("budgetDtiHero"),

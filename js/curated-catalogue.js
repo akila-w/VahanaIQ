@@ -479,6 +479,8 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
   }
   function syncBrandStrip() {
     for (const b of document.querySelectorAll('.brand-chip')) b.setAttribute('aria-pressed', String(b.dataset.make === $('make').value));
+    const make = $('make').value;
+    if ($('clearBrand')) { $('clearBrand').hidden = !make; $('clearBrandName').textContent = make; }
   }
   function syncBudget() {
     const settings = getBudgetSettings();
@@ -500,6 +502,8 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
     $('resultCount').textContent = `${all.length} ${all.length===1?'Vehicle':'Vehicles'} · ${all.reduce((n,m) => n+m.offers.length,0)} Purchase Options`;
     $('reviewCount').textContent = '('+cards.filter(m => review.flags[m.id] || review.flags[m.modelId] || review.notes[m.id] || review.notes[m.modelId] || isCarInComparison(m)).length+')';
     $('reviewFilter').setAttribute('aria-pressed',String(reviewOnly));
+    const onShortlist = cards.filter(m => isCarInComparison(m)).length;
+    if ($('compareLink')) { $('compareLink').hidden = onShortlist === 0; $('compareCount').textContent = `${onShortlist} ${onShortlist === 1 ? 'car' : 'cars'} on your shortlist`; }
     const type = $('priceType')?.value || '';
     $('vehicles').innerHTML = all.slice(page*size,page*size+size).map((m,i) => {
       const p = m.images[0];
@@ -994,13 +998,20 @@ import { isAdminHint, watchAdminLinks } from './admin.js?v=2.12.0';
     $('vehicles')?.classList.remove('initial-load');
     render();
   });
+  $('clearBrand')?.addEventListener('click', () => {
+    $('make').value = '';
+    page = 0;
+    $('vehicles')?.classList.remove('initial-load');
+    render();
+    $('vehicles')?.focus({ preventScroll: true });
+  });
   $('brandStripPause')?.addEventListener('click', e => {
     const paused = document.querySelector('.brand-strip').classList.toggle('is-paused');
     e.currentTarget.textContent = paused ? 'Play Brand Strip' : 'Pause Brand Strip';
   });
   $('budgetToggle')?.addEventListener('click', () => {
     if (!data) return;
-    if (!getBudgetSettings().income) { location.href = 'index.html#budgetPanel'; return; }
+    if (!getBudgetSettings().income) { location.href = 'index.html#incomePanel'; return; }
     budgetOnly = !budgetOnly;
     page = 0;
     $('vehicles')?.classList.remove('initial-load');

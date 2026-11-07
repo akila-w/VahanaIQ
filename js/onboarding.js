@@ -976,13 +976,15 @@ function init(forcedOpen = false) {
       dialog.remove();
       document.body.classList.remove('onboarding-active');
       document.querySelector('.guide-invitation')?.setAttribute('hidden', '');
-      document.querySelector('#h-list')?.focus();
+      // Open on the answer: the rental they came for, not the table further down.
+      document.querySelector('#answerPanel')?.focus({ preventScroll: true });
+      window.scrollTo({ top: 0, behavior: 'instant' });
 
       if (startTour) {
         window.dispatchEvent(new CustomEvent('vahanaiq:start-tour', { detail: { page: 'calculator' } }));
       }
     } else {
-      location.href = startTour ? 'index.html?guide=tour#loanTermsHead' : 'index.html#comparisonPanel';
+      location.href = startTour ? 'index.html?guide=tour#loanTermsHead' : 'index.html';
     }
   }
 }
@@ -1062,20 +1064,35 @@ function fillBelt(list, quotes) {
   list.replaceChildren(...quotes.map(q => tile(q, false)), ...quotes.map(q => tile(q, true)));
 }
 
-function fillExample(q) {
+// The hero shows the answer VahanaIQ gives, on round example figures. No one car is singled out.
+const EXAMPLE_PRICE = 12000000;
+const EXAMPLE_INCOME = 350000;
+const EXAMPLE_LIMIT = 0.4;
+function fillExample() {
   const figure = document.getElementById('landingExample');
-  if (!figure || !q) return;
-  const img = figure.querySelector('img');
-  img.src = safeImageUrl(q.model.images?.[0]?.src || q.photo);
-  img.alt = `${q.model.name}, manufacturer image`;
-  figure.querySelector('.landing-example-label').textContent = `Example · ${q.model.name} · ${lkr(q.price)}`;
-  const rentalLine = figure.querySelector('.landing-example-rental');
-  const per = document.createElement('small');
-  per.textContent = ' a month';
-  rentalLine.replaceChildren(lkr(q.monthly), per);
-  figure.querySelector('.landing-example-terms').textContent =
-    `${lkr(q.price * q.down / 100)} down (${q.down}%) · ${DEFAULT_TENURE} months at ${DEFAULT_RATE}%`;
+  if (!figure) return;
+  const set = (id, text) => { document.getElementById(id).textContent = text; };
+  const monthly = rental(EXAMPLE_PRICE * (1 - DEFAULT_DOWN / 100), DEFAULT_RATE, DEFAULT_TENURE);
+  const share = monthly / EXAMPLE_INCOME;
+  set('landingResultLabel', `Example · a ${lkr(EXAMPLE_PRICE)} car · ${lkr(EXAMPLE_INCOME)} take-home pay`);
+  set('landingResultText', lkr(monthly));
+  set('landingResultDti', `${(share * 100).toFixed(1)}%`);
+  set('landingResultDown', `${lkr(EXAMPLE_PRICE * DEFAULT_DOWN / 100)} (${DEFAULT_DOWN}%)`);
+  set('landingResultCeiling', lkr(EXAMPLE_PRICE * (EXAMPLE_INCOME * EXAMPLE_LIMIT) / monthly));
+  // The scale runs to 60%, as it does in the planner.
+  document.getElementById('landingResultFill').style.setProperty('--fill', String(Math.min(share / 0.6, 1)));
   figure.hidden = false;
+  const counter = document.getElementById('landingResultCount');
+  const still = root.dataset.motion === 'reduced' || (root.dataset.motion !== 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (still || typeof requestAnimationFrame !== 'function') { counter.textContent = lkr(monthly); return; }
+  const started = performance.now();
+  const step = now => {
+    const progress = Math.min((now - started) / 1300, 1);
+    const eased = 1 - (1 - progress) ** 3;
+    counter.textContent = lkr(monthly * eased);
+    if (progress < 1 && counter.isConnected) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 // Once the visitor moves on, the introduction leaves the page, so the planner keeps its
@@ -1103,7 +1120,7 @@ else if (landing) {
     fillBelt(document.getElementById('landingRowB'), quotes.slice(half));
     document.getElementById('landingBelts').hidden = false;
   }
-  fillExample(quotes[0]);
+  fillExample();
 
   landing.addEventListener('click', event => {
     const start = event.target.closest('[data-landing-start]');

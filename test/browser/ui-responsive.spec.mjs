@@ -142,39 +142,24 @@ test.describe('Layout: nothing is wider than the screen', () => {
   // and its bottom edge aligns flush with the bottom of the savings panel at the footer;
   // in one column (up to 1365px) it scrolls with the page as before.
   for (const [width, height] of [[1366, 768], [1440, 900]]) {
-    test(`loan terms use split scroll and align at the bottom beside results at ${width}px`, async ({ browser }) => {
+    test(`the answer stays in view beside the terms and income at ${width}px`, async ({ browser }) => {
       const context = await browser.newContext({ viewport: { width, height } });
       await seedReturning(context);
-    const page = await context.newPage();
+      const page = await context.newPage();
       await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
       await addToyotas(page);
-      const mid = await page.evaluate(async () => {
-        const terms = document.getElementById('loanTermsHead');
-        const results = document.getElementById('comparisonPanel').getBoundingClientRect();
-        window.scrollTo({ top: results.top + window.scrollY, behavior: 'instant' });
-        // Allow sticky positioning to settle before taking the exact pixel measurement.
+      const box = await page.evaluate(async () => {
+        const income = document.getElementById('incomePanel').getBoundingClientRect();
+        window.scrollTo({ top: income.top + window.scrollY - 200, behavior: 'instant' });
         await new Promise(requestAnimationFrame);
-        const style = getComputedStyle(terms);
         return {
-          box: terms.getBoundingClientRect().toJSON(),
-          overflowY: style.overflowY,
-          scrollHeight: terms.scrollHeight,
-          clientHeight: terms.clientHeight
+          answer: document.getElementById('answerPanel').getBoundingClientRect().toJSON(),
+          income: document.getElementById('incomePanel').getBoundingClientRect().toJSON()
         };
       });
-      expect(Math.round(mid.box.top)).toBe(16);
-      expect(mid.box.bottom).toBeLessThanOrEqual(height);
-      expect(mid.overflowY).toBe('auto');
-      if (height <= 800) expect(mid.scrollHeight).toBeGreaterThan(mid.clientHeight);
-
-      const bottomDiff = await page.evaluate(async () => {
-        const terms = document.getElementById('loanTermsHead');
-        const savings = document.getElementById('savingsPanel');
-        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
-        await new Promise(requestAnimationFrame);
-        return Math.abs(terms.getBoundingClientRect().bottom - savings.getBoundingClientRect().bottom);
-      });
-      expect(bottomDiff).toBeLessThanOrEqual(1);
+      expect(box.answer.left).toBeGreaterThan(box.income.right);
+      expect(box.answer.top).toBeGreaterThanOrEqual(0);
+      expect(box.answer.top).toBeLessThan(height);
       await context.close();
     });
   }
@@ -233,18 +218,6 @@ test.describe('Touch and focus', () => {
 });
 
 test.describe('Phone journeys', () => {
-  test('section switcher marks the section in view', async ({ browser, browserName }) => {
-    const context = await browser.newContext(phone(browserName));
-    await seedReturning(context);
-    const page = await context.newPage();
-    await page.goto(`${BASE_URL}/index.html`, { waitUntil: 'load' });
-    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; const el = document.getElementById('savingsPanel'); if (el) { el.scrollIntoView({ block: 'start' }); } });
-    await page.waitForTimeout(500);
-    const text = await page.locator('.page-nav a[aria-current="location"]').textContent();
-    expect(text?.trim()).toMatch(/Save|Compare/i);
-    await context.close();
-  });
-
   test('head-to-head opens with the at-a-glance matrix on a phone', async ({ browser, browserName }) => {
     const context = await browser.newContext(phone(browserName));
     await seedReturning(context);
@@ -873,8 +846,8 @@ test.describe('The budget bar on phones', () => {
       expect(box.toastBottom, 'a toast clears the bar').toBeGreaterThanOrEqual(box.view - box.barTop);
 
       const tabs = page.locator('.tab-bar a');
-      await expect(tabs).toHaveCount(3);
-      for (let i = 0; i < 3; i++) await tabs.nth(i).click({ trial: true, timeout: 3000 });
+      await expect(tabs).toHaveCount(4);
+      for (let i = 0; i < 4; i++) await tabs.nth(i).click({ trial: true, timeout: 3000 });
       await context.close();
     });
   }

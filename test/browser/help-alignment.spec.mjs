@@ -35,14 +35,14 @@ for (const width of widths) for (const theme of ['light', 'dark']) {
       }
       if (route === 'index' && width >= 980 && width <= 1365) {
         const controls = await page.locator('.terms-subcard-financing').evaluate(el =>
-          [el.querySelector('.seg-control'), ...['rate', 'tenure', 'down'].map(id => el.querySelector(`#${id}`).closest('.stepper-wrap'))].map(control => {
+          [...['rate', 'tenure', 'down'].map(id => el.querySelector(`#${id}`).closest('.stepper-wrap'))].map(control => {
             const field = control.closest('.terms-field');
             return { row: field.getBoundingClientRect().top, top: control.getBoundingClientRect().top, height: control.getBoundingClientRect().height };
           }));
-        expect(controls).toHaveLength(4);
+        expect(controls).toHaveLength(3);
         for (const control of controls) {
           expect(control.height, 'each finance control is visible').toBeGreaterThan(0);
-          expect(control.top, 'each finance control sits below its label').toBeGreaterThan(control.row);
+          expect(control.top, 'each finance control sits within its field').toBeGreaterThanOrEqual(control.row);
           for (const peer of controls.filter(peer => Math.abs(peer.row - control.row) <= 1)) {
             expect(Math.abs(peer.top - control.top), 'finance controls in the same grid row share a top edge').toBeLessThanOrEqual(1);
           }

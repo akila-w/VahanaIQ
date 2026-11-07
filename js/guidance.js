@@ -269,7 +269,7 @@ window.visualViewport?.addEventListener('resize', positionContext);
 window.visualViewport?.addEventListener('scroll', positionContext);
 
 const context = page === 'calculator' ? [
-  ['#rateTypeLabel', 'rate'], ['label[for="down"]', 'deposit'], ['#h-sum', 'budget'], ['#h-list', 'compare'], ['#h-savings', 'savings']
+  ['#rateTypeLabel', 'rate'], ['label[for="down"]', 'deposit'], ['#h-income', 'budget'], ['#h-list', 'compare'], ['#h-savings', 'savings']
 ] : page === 'catalogue' ? [['#resultCount', 'prices'], ['#reviewHeading', 'compare']] : [];
 for (const [selector, id] of context) {
   const anchor = $(selector);

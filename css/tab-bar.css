@@ -15,4 +15,14 @@
   body.has-budget-bar{padding-bottom:calc(136px + env(safe-area-inset-bottom,0px))}
   body.has-budget-bar .toast{bottom:calc(136px + env(safe-area-inset-bottom,0px))}
 }
+/* Phones: the tabs carry the destinations and Settings carries the theme and sign-in, so the header is the brand and Guided Setup. */
+@media screen and (max-width:760px){
+  .site-header{flex-wrap:nowrap!important;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px!important;min-height:0}
+  .site-header .header-actions{display:none!important}
+  .site-header .header-brand-group{display:flex;flex:1 1 auto;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:12px;width:100%;min-width:0}
+  .site-header nav{flex:none;margin:0;padding:0;border:0}
+  .site-header nav>a,.site-header nav>a.nav-icon-link{display:none}
+  .site-header .brand-tagline{display:block;font-size:10px;letter-spacing:0;text-transform:none}
+  .answer-photo{display:none!important}
+}
 @media print{.tab-bar{display:none!important}}

@@ -3151,3 +3151,114 @@ html[data-tips="off"] .guide-context{display:none!important}
 html[data-text="large"]{zoom:1.125}
 html[data-text="larger"]{zoom:1.25}
 
+
+/* Hero result card: the answer VahanaIQ gives, on example figures. The meter moves by transform only. */
+.landing-result { display: flex; flex-direction: column; gap: 6px; padding: 24px; color: #142a25; }
+.landing-result p { margin: 0; }
+.landing-result-label { font-size: 13px; color: #586b62; }
+.landing-result-eyebrow { margin-top: 10px !important; font-size: 12px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #0f766e; }
+.landing-result-rental { font-family: var(--font-display); font-size: clamp(34px, 4vw, 44px); font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.landing-result-rental small { font-family: var(--font-sans); font-size: 14px; font-weight: 500; letter-spacing: 0; color: #586b62; }
+.landing-result-fit { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; margin-top: 14px; font-size: 14px; color: #586b62; }
+.landing-result-fit strong { color: #142a25; font-variant-numeric: tabular-nums; }
+.landing-result-status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: #e3f4ec; color: #047857; font-size: 13px; font-weight: 700; animation: landing-result-pop .45s cubic-bezier(.2, .7, .2, 1) 1.1s both; }
+.landing-result-status > span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.landing-result-meter { position: relative; height: 10px; margin-top: 4px; border-radius: 5px; background: #e5ebe2; }
+.landing-result-meter > span { position: absolute; inset: 0; border-radius: 5px; background: #0f766e; transform: scaleX(var(--fill, 0)); transform-origin: left; animation: landing-result-fill 1.3s cubic-bezier(.2, .7, .2, 1) both; }
+.landing-result-meter i { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #142a25; }
+.landing-result-meter .at-40 { left: 66.667%; }
+.landing-result-meter .at-50 { left: 83.333%; }
+.landing-result-scale { position: relative; height: 18px; font-size: 12px; color: #586b62; font-variant-numeric: tabular-nums; }
+.landing-result-scale span { position: absolute; top: 0; }
+.landing-result-scale .at-40 { left: 66.667%; transform: translateX(-50%); }
+.landing-result-scale .at-50 { left: 83.333%; transform: translateX(-50%); }
+.landing-result-scale .at-end { right: 0; }
+.landing-result-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 10px 0 0; padding-top: 12px; border-top: 1px solid #dce3db; }
+.landing-result-stats dt { font-size: 12px; color: #586b62; }
+.landing-result-stats dd { margin: 0; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+@keyframes landing-result-fill { from { transform: scaleX(0); } }
+@keyframes landing-result-pop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .landing-result-meter > span, .landing-result-status { animation: none; } }
+:root[data-motion="reduced"] .landing-result-meter > span, :root[data-motion="reduced"] .landing-result-status { animation: none; }
+
+/* Planner, as on the Main artboard: terms and income beside the answer, then the shortlist.
+   The detail (gauge, presets, filters) stays one click away. Kept last so it wins over the older layers. */
+@media screen and (min-width: 980px) {
+  body.planner-page > main { display: grid; grid-template-columns: minmax(340px, 400px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  body.planner-page > main > .hero { grid-column: 1 / -1; flex-wrap: nowrap; }
+  body.planner-page > main > .terms-panel { grid-column: 1; grid-row: 2; position: static !important; margin: 0; padding: 20px; }
+  body.planner-page > main > .income-panel { grid-column: 1; grid-row: 3; margin: 0; }
+  body.planner-page > main > .answer-panel { grid-column: 2; grid-row: 2 / span 2; position: sticky; top: 76px; margin: 0; }
+  body.planner-page > main > #budgetPanel,
+  body.planner-page > main > #comparisonPanel,
+  body.planner-page > main > #savingsPanel { grid-column: 1 / -1; margin: 0; }
+}
+#loanTermsGrid { display: block; }
+.terms-panel .terms-subcard.terms-subcard-financing,
+.income-panel .terms-subcard.terms-subcard-income { padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; }
+.terms-panel .terms-field-rate { display: flex; flex-direction: column; align-items: stretch; width: 100%; }
+.terms-panel .terms-field-rate > * { width: 100%; max-width: none; }
+.income-panel .terms-field, .income-panel .input-adorn-wrap, .income-panel .seg-control { width: 100%; max-width: none; }
+.terms-panel .terms-subcard-grid.cols-4,
+.income-panel .terms-subcard-grid.cols-3 { display: flex; flex-direction: column; gap: 16px; }
+.terms-field-pills { display: grid; grid-template-columns: minmax(0, 1fr) 150px; align-items: center; gap: 8px 12px; }
+.terms-field-pills > label { margin: 0; }
+.terms-field-pills .stepper-wrap { width: 150px; max-width: none; }
+.terms-field-pills .stepper-wrap input { flex: 1 1 auto; min-width: 44px; padding-inline: 2px; }
+.terms-field-pills .stepper-suffix { display: none; }
+.terms-field-pills > .terms-slider { display: none; }
+.terms-field-pills > .preset-chips,
+.terms-field-pills > .hint { grid-column: 1 / -1; }
+.terms-field-pills .preset-chips { display: flex; flex-wrap: nowrap; gap: 6px; }
+.terms-field-pills .chip-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0; min-width: 0; min-height: 44px; padding: 4px 2px; border-radius: 10px; font-weight: 600; line-height: 1.15; }
+.terms-field-pills .chip-btn small { display: block; font-size: 10px; font-weight: 500; opacity: .85; }
+.terms-field-pills .chip-btn.active { border: 2px solid var(--accent); background: var(--hover-bg); color: var(--accent); font-weight: 700; }
+.terms-advanced { margin-top: 16px; border-top: 1px solid var(--line); }
+.terms-advanced > summary::after, .budget-summary::after { content: ""; flex: none; align-self: center; width: 8px; height: 8px; margin-left: auto; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .2s; }
+.terms-advanced[open] > summary::after, .budget-details[open] > .budget-summary::after { transform: rotate(-135deg); }
+.terms-advanced > summary::-webkit-details-marker, .budget-summary::-webkit-details-marker { display: none; }
+.terms-advanced > summary { position: relative; list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-height: 44px; padding: 12px 0 4px; font-weight: 700; cursor: pointer; }
+.terms-advanced-meta { color: var(--mute); font-size: 12px; font-weight: 400; }
+.terms-advanced-body { display: flex; flex-direction: column; gap: 14px; padding-top: 8px; }
+.income-panel .panel-head { margin-bottom: 12px; }
+#budgetPanel.budget-panel { padding-block: 0 !important; min-height: 0; }
+.budget-summary { list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; min-height: 56px; padding-block: 16px; cursor: pointer; }
+.budget-summary h2 { margin: 0; font-size: 1.1rem; }
+.budget-summary-meta { color: var(--mute); font-size: 13px; }
+.budget-details[open] { padding-bottom: 20px; }
+.comparison-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.comparison-tools .gemini-mark { vertical-align: -4px; }
+.filters-toggle { display: inline-flex !important; }
+#filtersToggle[aria-expanded="false"] ~ .quick-filter-chips,
+#toolsPanel.collapsed { display: none !important; }
+.savings-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 14px; }
+.savings-summary[hidden] { display: none; }
+.savings-summary dt { color: var(--mute); font-size: 12px; }
+.savings-summary dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.foot-link-groups { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 24px; width: 100%; }
+.foot-link-groups .site-links { display: flex !important; flex-wrap: wrap; align-items: center; gap: 0 14px; margin: 0; width: auto; }
+.foot-link-groups .site-links h3 { flex: 1 0 100%; margin: 0 0 2px; color: var(--mute); font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+.foot-link-groups .site-links a { display: inline-flex; align-items: center; min-height: 32px; padding: 0; }
+@media screen and (max-width: 760px) {
+  /* Phones: tenure and down payment are always in reach; Edit opens the rate and Advanced. */
+  #loanTermsGrid.mobile-collapsed { display: block !important; }
+  #loanTermsGrid.mobile-collapsed .terms-field-rate,
+  #loanTermsGrid.mobile-collapsed .terms-advanced,
+  #loanTermsGrid.mobile-collapsed .stepper-wrap,
+  #loanTermsGrid.mobile-collapsed .terms-field-pills > .hint { display: none; }
+  #loanTermsGrid.mobile-collapsed .terms-field-pills { grid-template-columns: minmax(0, 1fr); }
+  .savings-summary { grid-template-columns: minmax(0, 1fr); }
+  .comparison-tools #printBtn, #savingsDrawerMeta { display: none; }
+  .foot-cols { gap: 6px; }
+  /* The tabs and header already carry these on phones. */
+  .foot-link-groups .site-links[aria-label="Explore"] a:not([data-admin-link]),
+  .foot-link-groups a[href*="onboarding"] { display: none; }
+  footer.foot { padding-block: 16px 24px; }
+}
+@media screen and (max-width: 979px) {
+  /* One wrapped run of links, so a short group does not leave half a row empty. */
+  .foot-link-groups { display: flex !important; flex-wrap: wrap; gap: 0 14px; }
+  .foot-link-groups .site-links { display: contents !important; }
+  .foot-link-groups .site-links h3 { display: none; }
+}
+@media print { .budget-details > :not(summary), .terms-advanced > :not(summary) { display: block !important; } }
