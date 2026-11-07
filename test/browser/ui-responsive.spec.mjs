@@ -854,10 +854,13 @@ test('a printed estimate keeps its labels, choices and every column on the A4 pa
     return Math.max(...[...panel.querySelectorAll('th, td')].map(cell => cell.getBoundingClientRect().right)) - right;
   });
   expect(await overflow(), 'with an income').toBeLessThanOrEqual(0);
-  // With no income, each row says what income the car needs instead.
+  // With no income, each row says what income the car needs instead. Fields are edited on screen, never mid-print.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ media: 'screen' });
   await page.locator('#income').fill('');
-  await page.locator('#income').dispatchEvent('input');
   await expect(page.locator('td.v-bar').first()).toContainText('Need');
+  await page.setViewportSize({ width: 703, height: 1000 });
+  await page.emulateMedia({ media: 'print' });
   expect(await overflow(), 'without an income').toBeLessThanOrEqual(0);
   await page.locator('#budgetDetails').evaluate(details => { details.open = false; });
   await expect(page.locator('#budgetPanel')).toBeHidden();
